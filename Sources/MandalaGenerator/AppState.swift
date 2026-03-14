@@ -47,6 +47,40 @@ class AppState: ObservableObject {
         isGenerating = false
     }
 
+    private func suggestedFilename() -> String {
+        // Styles: up to 2 layers, abbreviated to 4 chars each
+        let styleAbbr = parameters.layers.prefix(2)
+            .map { String($0.style.displayName.prefix(4)).lowercased() }
+            .joined(separator: "+")
+        // Palette index, symmetry (omit if 1)
+        let pal = "p\(parameters.paletteIndex)"
+        let sym = parameters.symmetry > 1 ? "x\(parameters.symmetry)" : ""
+        // Stable hash over all parameters so any slider change gives a new filename
+        var h = parameters.seed
+        let mix: (UInt64) -> Void = { v in h = h &* 6364136223846793005 &+ v &+ 1 }
+        mix(UInt64(parameters.paletteIndex))
+        mix(UInt64(parameters.symmetry))
+        mix(UInt64(parameters.outputSize))
+        mix(UInt64(Int(parameters.density     * 1000)))
+        mix(UInt64(Int(parameters.complexity  * 1000)))
+        mix(UInt64(Int(parameters.glowIntensity * 1000)))
+        mix(UInt64(Int(parameters.colorDrift  * 1000)))
+        mix(UInt64(Int(parameters.ripple      * 1000)))
+        mix(UInt64(Int(parameters.wash        * 1000)))
+        mix(UInt64(Int(parameters.abstractLevel * 1000)))
+        mix(UInt64(Int(parameters.saturation  * 1000)))
+        mix(UInt64(Int(parameters.brightness  * 1000)))
+        for layer in parameters.layers {
+            mix(UInt64(bitPattern: Int64(layer.style.rawValue.hashValue)))
+            mix(UInt64(Int(layer.scale       * 1000)))
+            mix(UInt64(Int(layer.colorOffset * 1000)))
+        }
+        let hash = String(format: "%08x", h & 0xFFFFFFFF)
+        return (["mandala", styleAbbr, pal, sym, hash]
+            .filter { !$0.isEmpty }
+            .joined(separator: "-"))
+    }
+
     func randomizeSeed() {
         parameters.seed = UInt64.random(in: 1...UInt64.max)
     }
@@ -56,7 +90,7 @@ class AppState: ObservableObject {
         let panel = NSSavePanel()
         panel.title = "Save Mandala"
         panel.allowedContentTypes = [.png, .jpeg]
-        panel.nameFieldStringValue = "mandala-\(parameters.seed)"
+        panel.nameFieldStringValue = suggestedFilename()
         panel.begin { [weak self] response in
             guard response == .OK, let url = panel.url else { return }
             self?.writeImage(image, to: url)

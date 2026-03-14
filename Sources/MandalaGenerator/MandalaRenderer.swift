@@ -52,23 +52,36 @@ struct MandalaRenderer {
     static func render(params: MandalaParameters) -> NSImage {
         let bufferSize = params.outputSize * 2
         let palettes   = ColorPalettes.all
-        let palette    = palettes[max(0, min(palettes.count - 1, params.paletteIndex))]
+        let p1 = palettes[max(0, min(palettes.count - 1, params.paletteIndex))]
+        let palette: ColorPalette
+        if params.paletteBlend > 0.01 {
+            let p2 = palettes[max(0, min(palettes.count - 1, params.blendPaletteIndex))]
+            palette = p1.blended(with: p2, mix: params.paletteBlend)
+        } else {
+            palette = p1
+        }
 
         let cx = Float(bufferSize) * 0.5
         let cy = Float(bufferSize) * 0.5
-        let baseRadius = Double(bufferSize) * 0.42
+        let baseRadius = Double(bufferSize) * 0.48
         let layerCount = max(2, Int(params.complexity * 8) + 1)
         let symmetry   = max(1, min(8, params.symmetry))
 
-        // ── SINGLE PASS: background + fibers + structural curves ──
+        // ── SINGLE PASS: background + fibers + all style layers ──
         let buffer = PixelBuffer(width: bufferSize, height: bufferSize)
         var rng = SeededRNG(seed: params.seed)
         drawBackground(buffer: buffer, palette: palette, seed: params.seed)
         drawGrassFibers(buffer: buffer, params: params, palette: palette, rng: &rng)
-        drawStructuralLayers(buffer: buffer, cx: cx, cy: cy, baseRadius: baseRadius,
-                             params: params, palette: palette, rng: &rng,
-                             layerCount: layerCount, symmetry: symmetry,
-                             rippleAmount: Float(params.ripple), weightMul: 1.0)
+
+        for (li, layer) in params.layers.enumerated() {
+            let layerRadius = baseRadius * max(0.1, min(1.0, layer.scale))
+            var layerRng = SeededRNG(seed: params.seed &+ UInt64(li + 1) &* 0x9e3779b97f4a7c15)
+            drawStructuralLayers(buffer: buffer, cx: cx, cy: cy, baseRadius: layerRadius,
+                                 params: params, style: layer.style, colorOffset: layer.colorOffset,
+                                 palette: palette, rng: &layerRng,
+                                 layerCount: layerCount, symmetry: symmetry,
+                                 rippleAmount: Float(params.ripple), weightMul: 1.0)
+        }
 
         guard var result = buffer.toCGImage() else { return NSImage() }
 
@@ -92,13 +105,14 @@ struct MandalaRenderer {
 
     private static func drawStructuralLayers(buffer: PixelBuffer, cx: Float, cy: Float,
                                              baseRadius: Double, params: MandalaParameters,
+                                             style: MandalaStyle, colorOffset: Double,
                                              palette: ColorPalette, rng: inout SeededRNG,
                                              layerCount: Int, symmetry: Int,
                                              rippleAmount: Float, weightMul: Float) {
         var tasks: [CurveDrawTask] = []
         tasks.reserveCapacity(layerCount * symmetry * 2)
 
-        switch params.style {
+        switch style {
         case .spirograph:
             collectSpirographTasks(into: &tasks, cx: cx, cy: cy, radius: baseRadius,
                                    params: params, rng: &rng, layerCount: layerCount,
@@ -125,33 +139,86 @@ struct MandalaRenderer {
             collectFloralTasks(into: &tasks, cx: cx, cy: cy, radius: baseRadius,
                                params: params, rng: &rng, symmetry: symmetry,
                                rippleAmount: rippleAmount, weightMul: weightMul)
+        case .lissajous:
+            collectLissajousTasks(into: &tasks, cx: cx, cy: cy, radius: baseRadius,
+                                  params: params, rng: &rng, layerCount: layerCount,
+                                  symmetry: symmetry, rippleAmount: rippleAmount, weightMul: weightMul)
+        case .butterfly:
+            collectButterflyTasks(into: &tasks, cx: cx, cy: cy, radius: baseRadius,
+                                  params: params, rng: &rng, layerCount: layerCount,
+                                  symmetry: symmetry, rippleAmount: rippleAmount, weightMul: weightMul)
+        case .geometric:
+            collectGeometricTasks(into: &tasks, cx: cx, cy: cy, radius: baseRadius,
+                                  params: params, rng: &rng, layerCount: layerCount,
+                                  symmetry: symmetry, rippleAmount: rippleAmount, weightMul: weightMul)
         case .mixed:
-            let sub = layerCount / 5 + 1
-            collectSpirographTasks(into: &tasks, cx: cx, cy: cy, radius: baseRadius,
-                                   params: params, rng: &rng, layerCount: sub,
-                                   symmetry: symmetry, rippleAmount: rippleAmount, weightMul: weightMul)
-            collectRoseTasks(into: &tasks, cx: cx, cy: cy, radius: baseRadius * 0.9,
-                             params: params, rng: &rng, layerCount: sub,
-                             symmetry: symmetry, rippleAmount: rippleAmount, weightMul: weightMul)
-            drawStringArtLayers(buffer: buffer, cx: cx, cy: cy, radius: baseRadius * 0.8,
-                                params: params, palette: palette, rng: &rng,
-                                layerCount: sub, symmetry: symmetry)
-            drawSunburstLayers(buffer: buffer, cx: cx, cy: cy, radius: baseRadius * 0.7,
-                               params: params, palette: palette, rng: &rng,
-                               layerCount: sub, symmetry: symmetry)
-            collectEpitrochoidTasks(into: &tasks, cx: cx, cy: cy, radius: baseRadius * 0.6,
-                                    params: params, rng: &rng, layerCount: sub,
-                                    symmetry: symmetry, rippleAmount: rippleAmount, weightMul: weightMul)
+            // Seed-driven random zone selection — different every render
+            var zoneRng = SeededRNG(seed: params.seed &+ 0xbeef1234)
+            // Pick 3 distinct zone radii and assign a randomly chosen style to each
+            let zoneStyles: [MandalaStyle] = [.spirograph, .roseCurves, .epitrochoid, .lissajous,
+                                              .butterfly, .floral, .stringArt, .sunburst, .geometric]
+            let radii: [Double] = [1.0, 0.72, 0.45]
+            let sub = max(2, layerCount / 3)
+            for (zi, zRadius) in radii.enumerated() {
+                let pick = zoneStyles[Int(zoneRng.nextDouble() * Double(zoneStyles.count)) % zoneStyles.count]
+                let scaled = baseRadius * zRadius
+                let wmul = weightMul * Float(0.7 + zoneRng.nextDouble() * 0.6)
+                switch pick {
+                case .spirograph:
+                    collectSpirographTasks(into: &tasks, cx: cx, cy: cy, radius: scaled,
+                                           params: params, rng: &rng, layerCount: sub,
+                                           symmetry: symmetry, rippleAmount: rippleAmount, weightMul: wmul)
+                case .roseCurves:
+                    collectRoseTasks(into: &tasks, cx: cx, cy: cy, radius: scaled,
+                                     params: params, rng: &rng, layerCount: sub,
+                                     symmetry: symmetry, rippleAmount: rippleAmount, weightMul: wmul)
+                case .epitrochoid:
+                    collectEpitrochoidTasks(into: &tasks, cx: cx, cy: cy, radius: scaled,
+                                            params: params, rng: &rng, layerCount: sub,
+                                            symmetry: symmetry, rippleAmount: rippleAmount, weightMul: wmul)
+                case .lissajous:
+                    collectLissajousTasks(into: &tasks, cx: cx, cy: cy, radius: scaled,
+                                          params: params, rng: &rng, layerCount: sub,
+                                          symmetry: symmetry, rippleAmount: rippleAmount, weightMul: wmul)
+                case .butterfly:
+                    collectButterflyTasks(into: &tasks, cx: cx, cy: cy, radius: scaled,
+                                          params: params, rng: &rng, layerCount: sub,
+                                          symmetry: symmetry, rippleAmount: rippleAmount, weightMul: wmul)
+                case .floral:
+                    collectFloralTasks(into: &tasks, cx: cx, cy: cy, radius: scaled,
+                                       params: params, rng: &rng, symmetry: symmetry,
+                                       rippleAmount: rippleAmount, weightMul: wmul)
+                case .geometric:
+                    collectGeometricTasks(into: &tasks, cx: cx, cy: cy, radius: scaled,
+                                          params: params, rng: &rng, layerCount: sub,
+                                          symmetry: symmetry, rippleAmount: rippleAmount, weightMul: wmul)
+                case .stringArt:
+                    drawStringArtLayers(buffer: buffer, cx: cx, cy: cy, radius: scaled,
+                                        params: params, palette: palette, rng: &rng,
+                                        layerCount: sub, symmetry: symmetry)
+                case .sunburst:
+                    drawSunburstLayers(buffer: buffer, cx: cx, cy: cy, radius: scaled,
+                                       params: params, palette: palette, rng: &rng,
+                                       layerCount: sub, symmetry: symmetry)
+                case .mixed:
+                    collectSpirographTasks(into: &tasks, cx: cx, cy: cy, radius: scaled,
+                                           params: params, rng: &rng, layerCount: sub,
+                                           symmetry: symmetry, rippleAmount: rippleAmount, weightMul: wmul)
+                }
+                _ = zi
+            }
         }
 
-        executeTasksParallel(tasks, buffer: buffer, palette: palette, colorDrift: params.colorDrift)
+        executeTasksParallel(tasks, buffer: buffer, palette: palette,
+                             colorDrift: params.colorDrift, colorOffset: colorOffset)
     }
 
     /// Draw all CurveDrawTasks in parallel using per-thread sub-buffers, then merge.
     private static func executeTasksParallel(_ tasks: [CurveDrawTask],
                                              buffer: PixelBuffer,
                                              palette: ColorPalette,
-                                             colorDrift: Double) {
+                                             colorDrift: Double,
+                                             colorOffset: Double = 0) {
         guard !tasks.isEmpty else { return }
         let nThreads = max(1, min(tasks.count, ProcessInfo.processInfo.activeProcessorCount))
         let chunk = max(1, tasks.count / nThreads)
@@ -166,7 +233,7 @@ struct MandalaRenderer {
             for i in start..<end {
                 let t = tasks[i]
                 drawCurve(buffer: sub, cx: 0, cy: 0, xs: t.xs, ys: t.ys,
-                          palette: palette, tOffset: t.tOffset,
+                          palette: palette, tOffset: t.tOffset + colorOffset,
                           drift: t.drift, weight: t.weight, thickness: t.thickness)
             }
         }
@@ -244,7 +311,7 @@ struct MandalaRenderer {
         let w = Float(buffer.width)
         let cx = w * 0.5
         let cy = cx
-        let maxRadius = w * 0.46
+        let maxRadius = w * 0.48
         let nLines = Int(Double(15000) * params.density + 500)
         let symmetry = max(1, min(8, params.symmetry))
         let nThreads = max(1, ProcessInfo.processInfo.activeProcessorCount)
@@ -458,7 +525,7 @@ struct MandalaRenderer {
 
         // ── 1. OUTER LOOPING RING ──────────────────────────────────────────────
         // Formula: x = outerR*cos(t) + loopR*cos(k*t),  y = outerR*sin(t) + loopR*sin(k*t)
-        let outerR      = R * 0.46
+        let outerR      = R * 0.47
         let loopR       = R * Float(0.04 + params.density * 0.05)
         let nLoops      = nPetals * 3
         let outerSteps  = nLoops * 50
@@ -474,9 +541,9 @@ struct MandalaRenderer {
                                    weight: 0.8 * weightMul, thickness: 1))
 
         // ── 2. TEARDROP PETALS ────────────────────────────────────────────────
-        let petalDist  = R * 0.30
-        let petalLen   = R * 0.26
-        let petalW     = R * 0.10
+        let petalDist  = R * 0.57
+        let petalLen   = R * 0.51
+        let petalW     = R * 0.195
         let pinwheel   = Float(0.28 + params.complexity * 0.18)   // lean angle
         let nHatch     = max(25, Int(params.density * 70))
 
@@ -566,6 +633,182 @@ struct MandalaRenderer {
         tasks.append(CurveDrawTask(xs: fxs, ys: fys,
                                    tOffset: 0.52, drift: 0.08,
                                    weight: 1.3 * weightMul, thickness: 1))
+    }
+
+    // MARK: - Lissajous Layers
+
+    /// Lissajous figures: x = R·sin(a·t + δ),  y = R·cos(b·t)
+    private static func collectLissajousTasks(into tasks: inout [CurveDrawTask],
+                                              cx: Float, cy: Float, radius: Double,
+                                              params: MandalaParameters, rng: inout SeededRNG,
+                                              layerCount: Int, symmetry: Int,
+                                              rippleAmount: Float, weightMul: Float) {
+        let ratios: [(a: Int, b: Int)] = [
+            (1,2),(2,3),(3,4),(3,5),(4,5),(5,6),(1,3),(2,5),(3,7),(4,7),(5,7),(5,8),(6,7),(7,9)
+        ]
+        for i in 0..<layerCount {
+            let ratio  = ratios[i % ratios.count]
+            let a      = Float(ratio.a),  b = Float(ratio.b)
+            let R      = Float(radius) * Float(0.45 + rng.nextDouble() * 0.5)
+            let delta  = Float(rng.nextDouble() * .pi * 2)
+            let steps  = ratio.b * 280
+            var xs = [Float](); xs.reserveCapacity(steps + 1)
+            var ys = [Float](); ys.reserveCapacity(steps + 1)
+            for j in 0...steps {
+                let t = Float(j) / Float(steps) * .pi * 2
+                xs.append(R * sin(a * t + delta))
+                ys.append(R * cos(b * t))
+            }
+            let tOffset   = rng.nextDouble()
+            let weight    = Float(rng.nextDouble(in: 0.4...1.4)) * Float(params.complexity) * weightMul
+            let thickness = Int(rng.nextDouble(in: 1...2))
+            let ripSeed   = params.seed &+ UInt64(i * 53 + 7)
+            for sym in 0..<symmetry {
+                let angle = Double(sym) * .pi * 2 / Double(symmetry)
+                let cosA = Float(cos(angle)), sinA = Float(sin(angle))
+                var rxs = [Float](repeating: 0, count: xs.count)
+                var rys = [Float](repeating: 0, count: xs.count)
+                for j in 0..<xs.count {
+                    rxs[j] = cx + xs[j] * cosA - ys[j] * sinA
+                    rys[j] = cy + xs[j] * sinA + ys[j] * cosA
+                }
+                if rippleAmount > 0 {
+                    applyRippleToPoints(xs: &rxs, ys: &rys, amount: rippleAmount,
+                                        seed: ripSeed &+ UInt64(sym))
+                }
+                tasks.append(CurveDrawTask(xs: rxs, ys: rys,
+                                           tOffset: tOffset + Double(sym) * 0.09,
+                                           drift: params.colorDrift,
+                                           weight: weight, thickness: thickness))
+            }
+        }
+    }
+
+    // MARK: - Butterfly Layers
+
+    /// Temple H. Fay butterfly curve (polar): ρ = e^sin(θ) − 2·cos(4θ) + sin⁵((2θ−π)/24)
+    private static func collectButterflyTasks(into tasks: inout [CurveDrawTask],
+                                              cx: Float, cy: Float, radius: Double,
+                                              params: MandalaParameters, rng: inout SeededRNG,
+                                              layerCount: Int, symmetry: Int,
+                                              rippleAmount: Float, weightMul: Float) {
+        for i in 0..<layerCount {
+            let scale     = Float(radius) * Float(0.16 + rng.nextDouble() * 0.20)
+            let rotOffset = Float(rng.nextDouble() * .pi * 2)
+            let steps     = 2000   // 12π period
+            var xs = [Float](); xs.reserveCapacity(steps + 1)
+            var ys = [Float](); ys.reserveCapacity(steps + 1)
+            for j in 0...steps {
+                let theta = Float(j) / Float(steps) * .pi * 12
+                let s     = sin((2 * theta - .pi) / 24)
+                let rho   = exp(sin(theta)) - 2 * cos(4 * theta) + s * s * s * s * s
+                xs.append(scale * rho * cos(theta + rotOffset))
+                ys.append(scale * rho * sin(theta + rotOffset))
+            }
+            let tOffset   = rng.nextDouble()
+            let weight    = Float(rng.nextDouble(in: 0.3...0.9)) * Float(params.complexity) * weightMul
+            let ripSeed   = params.seed &+ UInt64(i * 71 + 11)
+            for sym in 0..<symmetry {
+                let angle = Double(sym) * .pi * 2 / Double(symmetry)
+                let cosA = Float(cos(angle)), sinA = Float(sin(angle))
+                var rxs = [Float](repeating: 0, count: xs.count)
+                var rys = [Float](repeating: 0, count: xs.count)
+                for j in 0..<xs.count {
+                    rxs[j] = cx + xs[j] * cosA - ys[j] * sinA
+                    rys[j] = cy + xs[j] * sinA + ys[j] * cosA
+                }
+                if rippleAmount > 0 {
+                    applyRippleToPoints(xs: &rxs, ys: &rys, amount: rippleAmount,
+                                        seed: ripSeed &+ UInt64(sym))
+                }
+                tasks.append(CurveDrawTask(xs: rxs, ys: rys,
+                                           tOffset: tOffset + Double(sym) * 0.11,
+                                           drift: params.colorDrift * 0.5,
+                                           weight: weight, thickness: 1))
+            }
+        }
+    }
+
+    // MARK: - Geometric Layers
+
+    /// Concentric architectural mandala: outer epitrochoid ring → middle rose → inner spirograph → central rosette.
+    private static func collectGeometricTasks(into tasks: inout [CurveDrawTask],
+                                              cx: Float, cy: Float, radius: Double,
+                                              params: MandalaParameters, rng: inout SeededRNG,
+                                              layerCount: Int, symmetry: Int,
+                                              rippleAmount: Float, weightMul: Float) {
+        let R = Float(radius)
+        // ── Outer border: epitrochoid ──
+        let eDenom = Double(5 + Int(rng.nextDouble() * 5))
+        let eR = radius * 0.9
+        let er = eR / eDenom
+        let ed = er * (0.6 + rng.nextDouble() * 0.5)
+        let (exs, eys) = epitrochoidPoints(R: eR, r: er, d: ed, steps: 3000)
+        for sym in 0..<symmetry {
+            let angle = Double(sym) * .pi * 2 / Double(symmetry)
+            let cosA = Float(cos(angle)), sinA = Float(sin(angle))
+            var rxs = [Float](repeating: 0, count: exs.count)
+            var rys = [Float](repeating: 0, count: exs.count)
+            for j in 0..<exs.count {
+                rxs[j] = cx + exs[j] * cosA - eys[j] * sinA
+                rys[j] = cy + exs[j] * sinA + eys[j] * cosA
+            }
+            if rippleAmount > 0 { applyRippleToPoints(xs: &rxs, ys: &rys, amount: rippleAmount, seed: params.seed &+ UInt64(sym)) }
+            tasks.append(CurveDrawTask(xs: rxs, ys: rys, tOffset: rng.nextDouble(),
+                                       drift: params.colorDrift, weight: 0.8 * weightMul, thickness: 1))
+        }
+        // ── Middle ring: layered rose curves at varied radii ──
+        let kVals = [5,6,7,8,9,10,11,12]
+        let midCount = max(2, layerCount / 2)
+        for i in 0..<midCount {
+            let k   = kVals[(i + Int(params.seed & 7)) % kVals.count]
+            let mR  = radius * (0.55 + rng.nextDouble() * 0.15)
+            let (rxs0, rys0) = rosePoints(k: k, radius: mR, steps: 2000)
+            let tOff = rng.nextDouble()
+            let w    = Float(rng.nextDouble(in: 0.5...1.2)) * Float(params.complexity) * weightMul
+            for sym in 0..<symmetry {
+                let angle = Double(sym) * .pi * 2 / Double(symmetry) + rng.nextDouble() * 0.2
+                let cosA = Float(cos(angle)), sinA = Float(sin(angle))
+                var rx = [Float](repeating: 0, count: rxs0.count)
+                var ry = [Float](repeating: 0, count: rxs0.count)
+                for j in 0..<rxs0.count {
+                    rx[j] = cx + rxs0[j] * cosA - rys0[j] * sinA
+                    ry[j] = cy + rxs0[j] * sinA + rys0[j] * cosA
+                }
+                if rippleAmount > 0 { applyRippleToPoints(xs: &rx, ys: &ry, amount: rippleAmount, seed: params.seed &+ UInt64(i * 37 + sym)) }
+                tasks.append(CurveDrawTask(xs: rx, ys: ry, tOffset: tOff + Double(sym) * 0.07,
+                                           drift: params.colorDrift, weight: w, thickness: 1))
+            }
+        }
+        // ── Inner ring: spirograph ──
+        let iR = radius * 0.32, ir = iR / Double(3 + Int(rng.nextDouble() * 4))
+        let id2 = ir * (0.5 + rng.nextDouble() * 0.7)
+        let (ixs, iys) = spiroPoints(R: iR, r: ir, d: id2, steps: 2000)
+        let iToff = rng.nextDouble()
+        let iW = Float(rng.nextDouble(in: 0.6...1.3)) * Float(params.complexity) * weightMul
+        for sym in 0..<symmetry {
+            let angle = Double(sym) * .pi * 2 / Double(symmetry)
+            let cosA = Float(cos(angle)), sinA = Float(sin(angle))
+            var rx = [Float](repeating: 0, count: ixs.count)
+            var ry = [Float](repeating: 0, count: ixs.count)
+            for j in 0..<ixs.count {
+                rx[j] = cx + ixs[j] * cosA - iys[j] * sinA
+                ry[j] = cy + ixs[j] * sinA + iys[j] * cosA
+            }
+            if rippleAmount > 0 { applyRippleToPoints(xs: &rx, ys: &ry, amount: rippleAmount, seed: params.seed &+ UInt64(100 + sym)) }
+            tasks.append(CurveDrawTask(xs: rx, ys: ry, tOffset: iToff + Double(sym) * 0.05,
+                                       drift: params.colorDrift * 0.6, weight: iW, thickness: 1))
+        }
+        // ── Centre: dense rose rosette ──
+        let cK = 8 + Int(params.seed & 3)
+        let cR = radius * 0.10
+        let (cxs, cys) = rosePoints(k: cK, radius: cR, steps: 1200)
+        var rcx = [Float](repeating: 0, count: cxs.count)
+        var rcy = [Float](repeating: 0, count: cxs.count)
+        for j in 0..<cxs.count { rcx[j] = cx + cxs[j]; rcy[j] = cy + cys[j] }
+        tasks.append(CurveDrawTask(xs: rcx, ys: rcy, tOffset: 0.0, drift: 0.2,
+                                   weight: 1.5 * weightMul, thickness: 1))
+        _ = R  // suppress warning
     }
 
     // MARK: - Epitrochoid Layers

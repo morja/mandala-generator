@@ -6,27 +6,30 @@ struct ParameterPanel: View {
     var body: some View {
         ScrollView(.vertical, showsIndicators: true) {
             VStack(spacing: 16) {
-                // PRESET Section
-                SectionCard(title: "Preset") {
-                    Picker("Style", selection: $appState.parameters.style) {
-                        ForEach(MandalaStyle.allCases) { style in
-                            Label(style.displayName, systemImage: style.sfSymbol)
-                                .tag(style)
+                // LAYERS Section
+                SectionCard(title: "Layers") {
+                    VStack(spacing: 8) {
+                        ForEach(appState.parameters.layers.indices, id: \.self) { i in
+                            LayerRow(layer: $appState.parameters.layers[i],
+                                     canDelete: appState.parameters.layers.count > 1) {
+                                appState.parameters.layers.remove(at: i)
+                            }
                         }
-                    }
-                    .pickerStyle(.menu)
-                    .labelsHidden()
-                }
-
-                // PALETTE Section
-                SectionCard(title: "Palette") {
-                    LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 8) {
-                        ForEach(Array(ColorPalettes.all.enumerated()), id: \.offset) { index, palette in
-                            PaletteSwatch(palette: palette, isSelected: appState.parameters.paletteIndex == index)
-                                .onTapGesture {
-                                    appState.parameters.paletteIndex = index
-                                }
+                        Button(action: {
+                            let styles = MandalaStyle.allCases
+                            let next = styles[appState.parameters.layers.count % styles.count]
+                            let offset = Double(appState.parameters.layers.count) * 0.33
+                            appState.parameters.layers.append(
+                                StyleLayer(style: next, scale: 0.6, colorOffset: offset.truncatingRemainder(dividingBy: 1.0))
+                            )
+                        }) {
+                            Label("Add Layer", systemImage: "plus.circle")
+                                .font(.caption)
+                                .frame(maxWidth: .infinity)
                         }
+                        .buttonStyle(.plain)
+                        .foregroundColor(.accentColor)
+                        .disabled(appState.parameters.layers.count >= 4)
                     }
                 }
 
@@ -169,17 +172,34 @@ struct ParameterPanel: View {
                 // Randomize All button
                 Button(action: {
                     appState.randomizeSeed()
-                    appState.parameters.paletteIndex = Int.random(in: 0..<ColorPalettes.all.count)
-                    appState.parameters.style = MandalaStyle.allCases.randomElement() ?? .mixed
-                    appState.parameters.complexity   = Double.random(in: 0.2...1.0)
-                    appState.parameters.density      = Double.random(in: 0.2...1.0)
-                    appState.parameters.colorDrift   = Double.random(in: 0.1...0.9)
-                    appState.parameters.symmetry     = Int.random(in: 1...8)
+                    appState.parameters.paletteIndex      = Int.random(in: 0..<ColorPalettes.all.count)
+                    appState.parameters.blendPaletteIndex = Int.random(in: 0..<ColorPalettes.all.count)
+                    appState.parameters.paletteBlend      = Double.random(in: 0.0...0.7)
+                    appState.parameters.complexity    = Double.random(in: 0.2...1.0)
+                    appState.parameters.density       = Double.random(in: 0.2...1.0)
+                    appState.parameters.colorDrift    = Double.random(in: 0.1...0.9)
+                    appState.parameters.symmetry      = Int.random(in: 1...8)
                     appState.parameters.ripple        = Double.random(in: 0.0...0.7)
                     appState.parameters.wash          = Double.random(in: 0.0...0.6)
                     appState.parameters.abstractLevel = Double.random(in: 0.1...0.8)
                     appState.parameters.saturation    = Double.random(in: 0.3...1.0)
                     appState.parameters.brightness    = Double.random(in: 0.3...0.7)
+                    // Randomize 1–3 layers
+                    let allStyles = MandalaStyle.allCases
+                    let nLayers = Int.random(in: 1...3)
+                    var usedStyles = Set<String>()
+                    var newLayers: [StyleLayer] = []
+                    for li in 0..<nLayers {
+                        var s = allStyles.randomElement() ?? .mixed
+                        while usedStyles.contains(s.rawValue) && usedStyles.count < allStyles.count {
+                            s = allStyles.randomElement() ?? .mixed
+                        }
+                        usedStyles.insert(s.rawValue)
+                        let scale = li == 0 ? Double.random(in: 0.7...1.0) : Double.random(in: 0.3...0.75)
+                        let coff  = Double.random(in: 0.0...1.0)
+                        newLayers.append(StyleLayer(style: s, scale: scale, colorOffset: coff))
+                    }
+                    appState.parameters.layers = newLayers
                     Task { await appState.generate() }
                 }) {
                     Label("Randomize All", systemImage: "shuffle")
@@ -245,38 +265,85 @@ private struct LabeledSlider: View {
     }
 }
 
-private struct PaletteSwatch: View {
+private struct LayerRow: View {
+    @Binding var layer: StyleLayer
+    let canDelete: Bool
+    let onDelete: () -> Void
+
+    var body: some View {
+        VStack(spacing: 4) {
+            HStack(spacing: 6) {
+                Picker("", selection: $layer.style) {
+                    ForEach(MandalaStyle.allCases) { style in
+                        Label(style.displayName, systemImage: style.sfSymbol).tag(style)
+                    }
+                }
+                .pickerStyle(.menu)
+                .labelsHidden()
+                .frame(maxWidth: .infinity)
+
+                if canDelete {
+                    Button(action: onDelete) {
+                        Image(systemName: "minus.circle.fill")
+                            .foregroundColor(.red.opacity(0.7))
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            HStack(spacing: 8) {
+                Text("Scale")
+                    .font(.caption2).foregroundColor(.secondary)
+                Slider(value: $layer.scale, in: 0.1...1.0)
+                    .accentColor(.blue)
+                Text(String(format: "%.2f", layer.scale))
+                    .font(.caption2).foregroundColor(.secondary).monospacedDigit()
+                    .frame(width: 30)
+            }
+            HStack(spacing: 8) {
+                Text("Colour")
+                    .font(.caption2).foregroundColor(.secondary)
+                Slider(value: $layer.colorOffset, in: 0.0...1.0)
+                    .accentColor(.purple)
+                Text(String(format: "%.2f", layer.colorOffset))
+                    .font(.caption2).foregroundColor(.secondary).monospacedDigit()
+                    .frame(width: 30)
+            }
+        }
+        .padding(.vertical, 4)
+        .padding(.horizontal, 2)
+        .background(Color(NSColor.windowBackgroundColor).opacity(0.3))
+        .cornerRadius(6)
+    }
+}
+
+struct PaletteSwatch: View {
     let palette: ColorPalette
     let isSelected: Bool
+    var isBlend: Bool = false
 
     var body: some View {
         VStack(spacing: 3) {
-            ZStack {
-                LinearGradient(
-                    gradient: Gradient(stops: palette.stops.map { stop in
-                        Gradient.Stop(
-                            color: Color(nsColor: stop.1),
-                            location: stop.0
-                        )
-                    }),
-                    startPoint: .leading,
-                    endPoint: .trailing
-                )
-                .frame(height: 24)
-                .cornerRadius(4)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 4)
-                        .stroke(isSelected ? Color.white : Color.clear, lineWidth: 2)
-                )
-            }
+            LinearGradient(
+                gradient: Gradient(stops: palette.stops.map {
+                    Gradient.Stop(color: Color(nsColor: $0.1), location: $0.0)
+                }),
+                startPoint: .leading, endPoint: .trailing
+            )
+            .frame(height: 22)
+            .cornerRadius(4)
+            .overlay(
+                RoundedRectangle(cornerRadius: 4)
+                    .stroke(isSelected ? Color.white : isBlend ? Color.orange : Color.clear,
+                            lineWidth: 2)
+            )
 
             Text(palette.name)
                 .font(.system(size: 9))
-                .foregroundColor(isSelected ? .primary : .secondary)
+                .foregroundColor(isSelected || isBlend ? .primary : .secondary)
                 .lineLimit(1)
         }
         .padding(3)
-        .background(isSelected ? Color.blue.opacity(0.2) : Color.clear)
+        .background(isSelected ? Color.blue.opacity(0.2) : isBlend ? Color.orange.opacity(0.15) : Color.clear)
         .cornerRadius(6)
         .contentShape(Rectangle())
     }
