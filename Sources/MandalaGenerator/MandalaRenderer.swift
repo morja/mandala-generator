@@ -2,6 +2,7 @@ import AppKit
 import CoreImage
 import CoreImage.CIFilterBuiltins
 import Foundation
+import os.lock
 
 // MARK: - SeededRNG
 
@@ -32,41 +33,95 @@ struct SeededRNG {
     }
 }
 
+// MARK: - CurveDrawTask
+
+/// All data needed to draw one curve — collected first, then drawn in parallel.
+private struct CurveDrawTask {
+    let xs: [Float]
+    let ys: [Float]
+    let tOffset: Double
+    let drift: Double
+    let weight: Float
+    let thickness: Int
+}
+
 // MARK: - MandalaRenderer
 
 struct MandalaRenderer {
 
     static func render(params: MandalaParameters) -> NSImage {
         let bufferSize = params.outputSize * 2
-        let buffer = PixelBuffer(width: bufferSize, height: bufferSize)
+        let palettes   = ColorPalettes.all
+        let palette    = palettes[max(0, min(palettes.count - 1, params.paletteIndex))]
 
-        var rng = SeededRNG(seed: params.seed)
-        let palettes = ColorPalettes.all
-        let palette = palettes[max(0, min(palettes.count - 1, params.paletteIndex))]
-
-        // 1. Background
-        drawBackground(buffer: buffer, palette: palette, seed: params.seed)
-
-        // 2. Grass/fiber fill
-        drawGrassFibers(buffer: buffer, params: params, palette: palette, rng: &rng)
-
-        // 3. Structural layers
         let cx = Float(bufferSize) * 0.5
         let cy = Float(bufferSize) * 0.5
         let baseRadius = Double(bufferSize) * 0.42
-
         let layerCount = max(2, Int(params.complexity * 8) + 1)
-        let symmetry = max(1, min(8, params.symmetry))
+        let symmetry   = max(1, min(8, params.symmetry))
 
+        // ── LAYER 1: painted base (background + grass + structural, no ripple) ──
+        let baseBuffer = PixelBuffer(width: bufferSize, height: bufferSize)
+        var rng1 = SeededRNG(seed: params.seed)
+        drawBackground(buffer: baseBuffer, palette: palette, seed: params.seed)
+        drawGrassFibers(buffer: baseBuffer, params: params, palette: palette, rng: &rng1)
+        drawStructuralLayers(buffer: baseBuffer, cx: cx, cy: cy, baseRadius: baseRadius,
+                             params: params, palette: palette, rng: &rng1,
+                             layerCount: layerCount, symmetry: symmetry,
+                             rippleAmount: 0, weightMul: 1.0)
+
+        var baseImage = baseBuffer.toCGImage()
+        baseImage = applyGlow(image: baseImage, intensity: params.glowIntensity * 0.9)
+        if params.wash > 0 {
+            baseImage = applyWash(image: baseImage, amount: params.wash)
+        }
+        if params.abstractLevel > 0.25 {
+            baseImage = applyPaintedEffect(image: baseImage, abstractLevel: params.abstractLevel)
+        }
+
+        // ── LAYER 2: crisp overlay (structural only, ripple applied, higher weight) ──
+        let crispBuffer = PixelBuffer(width: bufferSize, height: bufferSize)
+        var rng2 = SeededRNG(seed: params.seed)   // same seed → same geometry
+        drawStructuralLayers(buffer: crispBuffer, cx: cx, cy: cy, baseRadius: baseRadius,
+                             params: params, palette: palette, rng: &rng2,
+                             layerCount: layerCount, symmetry: symmetry,
+                             rippleAmount: Float(params.ripple), weightMul: 1.4)
+
+        var crispImage = crispBuffer.toCGImage()
+        crispImage = applyGlow(image: crispImage, intensity: min(1.0, params.glowIntensity * 1.1))
+
+        // ── COMPOSITE: screen-blend crisp on top of painted base ──
+        var result = screenComposite(base: baseImage, overlay: crispImage)
+
+        // ── COLOUR GRADE: saturation + brightness ──
+        result = applyColourGrade(image: result,
+                                  saturation: params.saturation,
+                                  brightness: params.brightness)
+
+        // ── FINAL: downscale ──
+        result = downscaleLanczos(image: result, targetSize: params.outputSize)
+        let size = NSSize(width: params.outputSize, height: params.outputSize)
+        return NSImage(cgImage: result, size: size)
+    }
+
+    // MARK: - Structural dispatch (shared between both layers)
+
+    private static func drawStructuralLayers(buffer: PixelBuffer, cx: Float, cy: Float,
+                                             baseRadius: Double, params: MandalaParameters,
+                                             palette: ColorPalette, rng: inout SeededRNG,
+                                             layerCount: Int, symmetry: Int,
+                                             rippleAmount: Float, weightMul: Float) {
         switch params.style {
         case .spirograph:
             drawSpirographLayers(buffer: buffer, cx: cx, cy: cy, radius: baseRadius,
                                  params: params, palette: palette, rng: &rng,
-                                 layerCount: layerCount, symmetry: symmetry)
+                                 layerCount: layerCount, symmetry: symmetry,
+                                 rippleAmount: rippleAmount, weightMul: weightMul)
         case .roseCurves:
             drawRoseLayers(buffer: buffer, cx: cx, cy: cy, radius: baseRadius,
                            params: params, palette: palette, rng: &rng,
-                           layerCount: layerCount, symmetry: symmetry)
+                           layerCount: layerCount, symmetry: symmetry,
+                           rippleAmount: rippleAmount, weightMul: weightMul)
         case .stringArt:
             drawStringArtLayers(buffer: buffer, cx: cx, cy: cy, radius: baseRadius,
                                 params: params, palette: palette, rng: &rng,
@@ -78,15 +133,18 @@ struct MandalaRenderer {
         case .epitrochoid:
             drawEpitrochoidLayers(buffer: buffer, cx: cx, cy: cy, radius: baseRadius,
                                   params: params, palette: palette, rng: &rng,
-                                  layerCount: layerCount, symmetry: symmetry)
+                                  layerCount: layerCount, symmetry: symmetry,
+                                  rippleAmount: rippleAmount, weightMul: weightMul)
         case .mixed:
             let sub = layerCount / 5 + 1
             drawSpirographLayers(buffer: buffer, cx: cx, cy: cy, radius: baseRadius,
                                  params: params, palette: palette, rng: &rng,
-                                 layerCount: sub, symmetry: symmetry)
+                                 layerCount: sub, symmetry: symmetry,
+                                 rippleAmount: rippleAmount, weightMul: weightMul)
             drawRoseLayers(buffer: buffer, cx: cx, cy: cy, radius: baseRadius * 0.9,
                            params: params, palette: palette, rng: &rng,
-                           layerCount: sub, symmetry: symmetry)
+                           layerCount: sub, symmetry: symmetry,
+                           rippleAmount: rippleAmount, weightMul: weightMul)
             drawStringArtLayers(buffer: buffer, cx: cx, cy: cy, radius: baseRadius * 0.8,
                                 params: params, palette: palette, rng: &rng,
                                 layerCount: sub, symmetry: symmetry)
@@ -95,25 +153,9 @@ struct MandalaRenderer {
                                layerCount: sub, symmetry: symmetry)
             drawEpitrochoidLayers(buffer: buffer, cx: cx, cy: cy, radius: baseRadius * 0.6,
                                   params: params, palette: palette, rng: &rng,
-                                  layerCount: sub, symmetry: symmetry)
+                                  layerCount: sub, symmetry: symmetry,
+                                  rippleAmount: rippleAmount, weightMul: weightMul)
         }
-
-        // 4. Convert buffer to CGImage and apply post-processing
-        var cgImage = buffer.toCGImage()
-
-        // 5. Apply glow
-        cgImage = applyGlow(image: cgImage, intensity: params.glowIntensity)
-
-        // 6. Painterly effects for abstractLevel > 0.3
-        if params.abstractLevel > 0.3 {
-            cgImage = applyPaintedEffect(image: cgImage, abstractLevel: params.abstractLevel)
-        }
-
-        // 7. Downscale 2x -> final size using Lanczos
-        cgImage = downscaleLanczos(image: cgImage, targetSize: params.outputSize)
-
-        let size = NSSize(width: params.outputSize, height: params.outputSize)
-        return NSImage(cgImage: cgImage, size: size)
     }
 
     // MARK: - Background
@@ -192,7 +234,8 @@ struct MandalaRenderer {
     private static func drawSpirographLayers(buffer: PixelBuffer, cx: Float, cy: Float,
                                              radius: Double, params: MandalaParameters,
                                              palette: ColorPalette, rng: inout SeededRNG,
-                                             layerCount: Int, symmetry: Int) {
+                                             layerCount: Int, symmetry: Int,
+                                             rippleAmount: Float = 0, weightMul: Float = 1) {
         let ratios: [(Double, Double)] = [(7, 3), (5, 2), (8, 5), (9, 4), (11, 6), (7, 4), (13, 5), (6, 5)]
         for i in 0..<layerCount {
             let idx = i % ratios.count
@@ -201,8 +244,9 @@ struct MandalaRenderer {
             let d = r * (0.4 + rng.nextDouble() * 0.7)
             let (xs, ys) = spiroPoints(R: R, r: r, d: d, steps: 3000)
             let tOffset = rng.nextDouble()
-            let weight = Float(rng.nextDouble(in: 0.4...1.2)) * Float(params.complexity)
+            let weight = Float(rng.nextDouble(in: 0.4...1.2)) * Float(params.complexity) * weightMul
             let thickness = Int(rng.nextDouble(in: 1...3))
+            let rippleSeed = params.seed &+ UInt64(i * 31 + 1)
 
             for sym in 0..<symmetry {
                 let angle = Double(sym) * Double.pi * 2.0 / Double(symmetry)
@@ -214,7 +258,11 @@ struct MandalaRenderer {
                     rxs[j] = cx + xs[j] * cosA - ys[j] * sinA
                     rys[j] = cy + xs[j] * sinA + ys[j] * cosA
                 }
-                drawCurve(buffer: buffer, cx: cx, cy: cy, xs: rxs, ys: rys,
+                if rippleAmount > 0 {
+                    applyRippleToPoints(xs: &rxs, ys: &rys, amount: rippleAmount,
+                                        seed: rippleSeed &+ UInt64(sym))
+                }
+                drawCurve(buffer: buffer, cx: 0, cy: 0, xs: rxs, ys: rys,
                           palette: palette, tOffset: tOffset + Double(sym) * 0.1,
                           drift: params.colorDrift, weight: weight, thickness: thickness)
             }
@@ -226,16 +274,18 @@ struct MandalaRenderer {
     private static func drawRoseLayers(buffer: PixelBuffer, cx: Float, cy: Float,
                                        radius: Double, params: MandalaParameters,
                                        palette: ColorPalette, rng: inout SeededRNG,
-                                       layerCount: Int, symmetry: Int) {
+                                       layerCount: Int, symmetry: Int,
+                                       rippleAmount: Float = 0, weightMul: Float = 1) {
         let kValues = [3, 4, 5, 6, 7, 8, 9, 2]
         for i in 0..<layerCount {
             let k = kValues[i % kValues.count]
             let r = radius * (0.5 + rng.nextDouble() * 0.5)
             let (xs, ys) = rosePoints(k: k, radius: r, steps: 2000)
             let tOffset = rng.nextDouble()
-            let weight = Float(rng.nextDouble(in: 0.5...1.4)) * Float(params.complexity)
+            let weight = Float(rng.nextDouble(in: 0.5...1.4)) * Float(params.complexity) * weightMul
             let thickness = Int(rng.nextDouble(in: 1...2))
             let rotOffset = rng.nextDouble() * Double.pi * 2.0
+            let rippleSeed = params.seed &+ UInt64(i * 47 + 7)
 
             for sym in 0..<symmetry {
                 let angle = Double(sym) * Double.pi * 2.0 / Double(symmetry) + rotOffset
@@ -247,7 +297,11 @@ struct MandalaRenderer {
                     rxs[j] = cx + xs[j] * cosA - ys[j] * sinA
                     rys[j] = cy + xs[j] * sinA + ys[j] * cosA
                 }
-                drawCurve(buffer: buffer, cx: cx, cy: cy, xs: rxs, ys: rys,
+                if rippleAmount > 0 {
+                    applyRippleToPoints(xs: &rxs, ys: &rys, amount: rippleAmount,
+                                        seed: rippleSeed &+ UInt64(sym))
+                }
+                drawCurve(buffer: buffer, cx: 0, cy: 0, xs: rxs, ys: rys,
                           palette: palette, tOffset: tOffset + Double(sym) * 0.07,
                           drift: params.colorDrift, weight: weight, thickness: thickness)
             }
@@ -342,7 +396,8 @@ struct MandalaRenderer {
     private static func drawEpitrochoidLayers(buffer: PixelBuffer, cx: Float, cy: Float,
                                               radius: Double, params: MandalaParameters,
                                               palette: ColorPalette, rng: inout SeededRNG,
-                                              layerCount: Int, symmetry: Int) {
+                                              layerCount: Int, symmetry: Int,
+                                              rippleAmount: Float = 0, weightMul: Float = 1) {
         let denominators = [3, 4, 5, 6, 7, 8, 9, 10]
         for i in 0..<layerCount {
             let denom = Double(denominators[i % denominators.count])
@@ -351,8 +406,9 @@ struct MandalaRenderer {
             let d = r * (0.5 + rng.nextDouble() * 0.8)
             let (xs, ys) = epitrochoidPoints(R: R, r: r, d: d, steps: 2500)
             let tOffset = rng.nextDouble()
-            let weight = Float(rng.nextDouble(in: 0.4...1.2)) * Float(params.complexity)
+            let weight = Float(rng.nextDouble(in: 0.4...1.2)) * Float(params.complexity) * weightMul
             let thickness = Int(rng.nextDouble(in: 1...2))
+            let rippleSeed = params.seed &+ UInt64(i * 61 + 13)
 
             for sym in 0..<symmetry {
                 let angle = Double(sym) * Double.pi * 2.0 / Double(symmetry)
@@ -364,7 +420,11 @@ struct MandalaRenderer {
                     rxs[j] = cx + xs[j] * cosA - ys[j] * sinA
                     rys[j] = cy + xs[j] * sinA + ys[j] * cosA
                 }
-                drawCurve(buffer: buffer, cx: cx, cy: cy, xs: rxs, ys: rys,
+                if rippleAmount > 0 {
+                    applyRippleToPoints(xs: &rxs, ys: &rys, amount: rippleAmount,
+                                        seed: rippleSeed &+ UInt64(sym))
+                }
+                drawCurve(buffer: buffer, cx: 0, cy: 0, xs: rxs, ys: rys,
                           palette: palette, tOffset: tOffset + Double(sym) * 0.08,
                           drift: params.colorDrift, weight: weight, thickness: thickness)
             }
@@ -373,6 +433,7 @@ struct MandalaRenderer {
 
     // MARK: - Curve Drawing Helper
 
+    /// Draw a curve. When xs/ys are already in absolute buffer coordinates, pass cx=0, cy=0.
     private static func drawCurve(buffer: PixelBuffer, cx: Float, cy: Float,
                                   xs: [Float], ys: [Float], palette: ColorPalette,
                                   tOffset: Double, drift: Double, weight: Float, thickness: Int) {
@@ -385,11 +446,13 @@ struct MandalaRenderer {
             let col = palette.color(at: tClamped)
             let c = (r: Float(col.redComponent), g: Float(col.greenComponent),
                      b: Float(col.blueComponent))
+            let ax0 = cx + xs[i],   ay0 = cy + ys[i]
+            let ax1 = cx + xs[i+1], ay1 = cy + ys[i+1]
             if thickness > 1 {
-                buffer.addThickLine(x0: xs[i], y0: ys[i], x1: xs[i + 1], y1: ys[i + 1],
+                buffer.addThickLine(x0: ax0, y0: ay0, x1: ax1, y1: ay1,
                                     color: c, weight: weight, thickness: thickness)
             } else {
-                buffer.addLine(x0: xs[i], y0: ys[i], x1: xs[i + 1], y1: ys[i + 1],
+                buffer.addLine(x0: ax0, y0: ay0, x1: ax1, y1: ay1,
                                color: c, weight: weight)
             }
         }
@@ -466,6 +529,101 @@ struct MandalaRenderer {
             }
         }
         return 10.0
+    }
+
+    // MARK: - Ripple distortion
+
+    /// Apply multi-frequency sine-wave ripple to absolute-coordinate point arrays.
+    private static func applyRippleToPoints(xs: inout [Float], ys: inout [Float],
+                                            amount: Float, seed: UInt64) {
+        let n = xs.count
+        guard n > 1 else { return }
+        // Three frequency bands for richer ripple
+        let f1 = 3.0 + Float(seed & 0x7) * 0.5
+        let f2 = 7.0 + Float((seed >> 4) & 0x7) * 0.7
+        let f3 = 13.0 + Float((seed >> 8) & 0x7) * 0.9
+        let p1 = Float(seed & 0xFF) / 255.0 * .pi * 2
+        let p2 = Float((seed >> 8) & 0xFF) / 255.0 * .pi * 2
+        let p3 = Float((seed >> 16) & 0xFF) / 255.0 * .pi * 2
+        // Scale factor so ripple is proportional to element spacing
+        let scale = amount * 18.0
+        for i in 0..<n {
+            let t = Float(i) / Float(n) * .pi * 2
+            let dx = (sin(t * f1 + p1) * 0.6 + sin(t * f2 + p2) * 0.3 + sin(t * f3 + p3) * 0.1) * scale
+            let dy = (cos(t * f1 + p1) * 0.6 + cos(t * f2 + p2) * 0.3 + cos(t * f3 + p3) * 0.1) * scale
+            xs[i] += dx
+            ys[i] += dy
+        }
+    }
+
+    // MARK: - Wash (watercolour bleed)
+
+    static func applyWash(image: CGImage, amount: Double) -> CGImage {
+        guard amount > 0 else { return image }
+        let ci  = CIImage(cgImage: image)
+        let ctx = CIContext(options: [.workingColorSpace: CGColorSpace(name: CGColorSpace.displayP3) as Any])
+        let ext = ci.extent
+        var result = ci
+
+        // Pass 1: soft blur mixed back → colour spread
+        let blurR1 = amount * 12.0
+        if let f = CIFilter(name: "CIGaussianBlur") {
+            f.setValue(ci, forKey: kCIInputImageKey)
+            f.setValue(blurR1, forKey: kCIInputRadiusKey)
+            if let blurred = f.outputImage?.cropped(to: ext) {
+                // Screen-blend the soft blur: bleed without destroying crisp parts
+                if let screen = CIFilter(name: "CIScreenBlendMode") {
+                    screen.setValue(result, forKey: kCIInputBackgroundImageKey)
+                    screen.setValue(blurred, forKey: kCIInputImageKey)
+                    if let out = screen.outputImage?.cropped(to: ext) { result = out }
+                }
+            }
+        }
+
+        // Pass 2: over-saturated heavy blur → chromatic bleed
+        if amount > 0.2, let sat = CIFilter(name: "CIColorControls") {
+            sat.setValue(result, forKey: kCIInputImageKey)
+            sat.setValue(1.5 + amount * 2.5, forKey: kCIInputSaturationKey)
+            sat.setValue(0.05, forKey: kCIInputBrightnessKey)
+            if let saturated = sat.outputImage,
+               let f2 = CIFilter(name: "CIGaussianBlur") {
+                f2.setValue(saturated, forKey: kCIInputImageKey)
+                f2.setValue(amount * 28.0, forKey: kCIInputRadiusKey)
+                if let blurredSat = f2.outputImage?.cropped(to: ext) {
+                    // Scale down before screen so it tints without blowing out
+                    if let cm = CIFilter(name: "CIColorMatrix") {
+                        let s = Float(amount * 0.45)
+                        cm.setValue(blurredSat, forKey: kCIInputImageKey)
+                        cm.setValue(CIVector(x: CGFloat(s), y:0,z:0,w:0), forKey: "inputRVector")
+                        cm.setValue(CIVector(x: 0,y: CGFloat(s),z:0,w:0), forKey: "inputGVector")
+                        cm.setValue(CIVector(x: 0,y:0,z: CGFloat(s),w:0), forKey: "inputBVector")
+                        cm.setValue(CIVector(x: 0,y:0,z:0,w:1),           forKey: "inputAVector")
+                        if let tinted = cm.outputImage?.cropped(to: ext),
+                           let screen = CIFilter(name: "CIScreenBlendMode") {
+                            screen.setValue(result, forKey: kCIInputBackgroundImageKey)
+                            screen.setValue(tinted,  forKey: kCIInputImageKey)
+                            if let out = screen.outputImage?.cropped(to: ext) { result = out }
+                        }
+                    }
+                }
+            }
+        }
+
+        return ctx.createCGImage(result, from: ext) ?? image
+    }
+
+    // MARK: - Screen composite (painted base + crisp overlay)
+
+    private static func screenComposite(base: CGImage, overlay: CGImage) -> CGImage {
+        let ciBase    = CIImage(cgImage: base)
+        let ciOverlay = CIImage(cgImage: overlay)
+        let ctx = CIContext(options: [.workingColorSpace: CGColorSpace(name: CGColorSpace.displayP3) as Any])
+        let ext = ciBase.extent
+        guard let screen = CIFilter(name: "CIScreenBlendMode") else { return base }
+        screen.setValue(ciBase,    forKey: kCIInputBackgroundImageKey)
+        screen.setValue(ciOverlay, forKey: kCIInputImageKey)
+        guard let out = screen.outputImage?.cropped(to: ext) else { return base }
+        return ctx.createCGImage(out, from: ext) ?? base
     }
 
     // MARK: - Post-processing
@@ -628,6 +786,26 @@ struct MandalaRenderer {
         let rect = CGRect(x: 0, y: 0, width: image.width, height: image.height)
         guard let output = context.createCGImage(result, from: rect) else { return image }
         return output
+    }
+
+    // MARK: - Colour grade (saturation + brightness)
+
+    private static func applyColourGrade(image: CGImage,
+                                         saturation: Double,
+                                         brightness: Double) -> CGImage {
+        let ci  = CIImage(cgImage: image)
+        let ctx = CIContext(options: [.workingColorSpace: CGColorSpace(name: CGColorSpace.displayP3) as Any])
+        let ext = ci.extent
+        guard let f = CIFilter(name: "CIColorControls") else { return image }
+        // saturation: slider 0→1 maps to CIColorControls 0→3 (0=grey, 1=normal, 3=vivid)
+        f.setValue(ci, forKey: kCIInputImageKey)
+        f.setValue(saturation * 3.0, forKey: kCIInputSaturationKey)
+        // brightness: slider 0→1 maps to -0.4 → +0.4 (0.5 = neutral)
+        f.setValue((brightness - 0.5) * 0.8, forKey: kCIInputBrightnessKey)
+        // slight contrast lift when brightness is high to keep punch
+        f.setValue(0.9 + brightness * 0.3, forKey: kCIInputContrastKey)
+        guard let out = f.outputImage?.cropped(to: ext) else { return image }
+        return ctx.createCGImage(out, from: ext) ?? image
     }
 
     private static func downscaleLanczos(image: CGImage, targetSize: Int) -> CGImage {

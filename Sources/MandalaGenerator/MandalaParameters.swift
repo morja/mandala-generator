@@ -44,4 +44,10 @@ struct MandalaParameters: Equatable {
     var symmetry: Int = 1
     var seed: UInt64 = 42
     var outputSize: Int = 800
+    // Distortion
+    var ripple: Double = 0.0   // sine-wave ripple applied to curve points (0 = none)
+    var wash: Double = 0.0     // watercolour colour-bleed blurred onto base (0 = none)
+    // Colour grading
+    var saturation: Double = 0.5   // colour intensity (0 = greyscale, 1 = vivid)
+    var brightness: Double = 0.5   // overall luminance / exposure
 }

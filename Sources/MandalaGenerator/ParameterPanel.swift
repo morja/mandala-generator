@@ -61,6 +61,49 @@ struct ParameterPanel: View {
                     }
                 }
 
+                // COLOUR Section
+                SectionCard(title: "Colour") {
+                    VStack(spacing: 10) {
+                        LabeledSlider(label: "Saturation", value: $appState.parameters.saturation, color: .pink)
+                        LabeledSlider(label: "Brightness", value: $appState.parameters.brightness, color: .yellow)
+                    }
+                }
+
+                // DISTORTION Section
+                SectionCard(title: "Distortion") {
+                    VStack(spacing: 10) {
+                        VStack(alignment: .leading, spacing: 2) {
+                            HStack {
+                                Text("Ripple")
+                                    .font(.subheadline)
+                                    .foregroundColor(.secondary)
+                                Spacer()
+                                Text(String(format: "%.2f", appState.parameters.ripple))
+                                    .font(.caption).foregroundColor(.secondary).monospacedDigit()
+                            }
+                            Slider(value: $appState.parameters.ripple, in: 0...1)
+                                .accentColor(.cyan)
+                            Text("Sine-wave distortion on curve points")
+                                .font(.system(size: 9)).foregroundColor(.secondary)
+                        }
+                        Divider()
+                        VStack(alignment: .leading, spacing: 2) {
+                            HStack {
+                                Text("Wash")
+                                    .font(.subheadline)
+                                    .foregroundColor(.secondary)
+                                Spacer()
+                                Text(String(format: "%.2f", appState.parameters.wash))
+                                    .font(.caption).foregroundColor(.secondary).monospacedDigit()
+                            }
+                            Slider(value: $appState.parameters.wash, in: 0...1)
+                                .accentColor(.teal)
+                            Text("Watercolour colour bleed on base layer")
+                                .font(.system(size: 9)).foregroundColor(.secondary)
+                        }
+                    }
+                }
+
                 // STRUCTURE Section
                 SectionCard(title: "Structure") {
                     VStack(spacing: 10) {
@@ -128,10 +171,15 @@ struct ParameterPanel: View {
                     appState.randomizeSeed()
                     appState.parameters.paletteIndex = Int.random(in: 0..<ColorPalettes.all.count)
                     appState.parameters.style = MandalaStyle.allCases.randomElement() ?? .mixed
-                    appState.parameters.complexity = Double.random(in: 0.2...1.0)
-                    appState.parameters.density    = Double.random(in: 0.2...1.0)
-                    appState.parameters.colorDrift = Double.random(in: 0.1...0.9)
-                    appState.parameters.symmetry   = Int.random(in: 1...8)
+                    appState.parameters.complexity   = Double.random(in: 0.2...1.0)
+                    appState.parameters.density      = Double.random(in: 0.2...1.0)
+                    appState.parameters.colorDrift   = Double.random(in: 0.1...0.9)
+                    appState.parameters.symmetry     = Int.random(in: 1...8)
+                    appState.parameters.ripple        = Double.random(in: 0.0...0.7)
+                    appState.parameters.wash          = Double.random(in: 0.0...0.6)
+                    appState.parameters.abstractLevel = Double.random(in: 0.1...0.8)
+                    appState.parameters.saturation    = Double.random(in: 0.3...1.0)
+                    appState.parameters.brightness    = Double.random(in: 0.3...0.7)
                     Task { await appState.generate() }
                 }) {
                     Label("Randomize All", systemImage: "shuffle")
@@ -177,6 +225,7 @@ private struct SectionCard<Content: View>: View {
 private struct LabeledSlider: View {
     let label: String
     @Binding var value: Double
+    var color: Color = .blue
 
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
@@ -191,7 +240,7 @@ private struct LabeledSlider: View {
                     .monospacedDigit()
             }
             Slider(value: $value, in: 0...1)
-                .accentColor(.blue)
+                .accentColor(color)
         }
     }
 }

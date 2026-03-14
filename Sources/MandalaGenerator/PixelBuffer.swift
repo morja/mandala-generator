@@ -1,3 +1,4 @@
+import Accelerate
 import CoreGraphics
 import Foundation
 
@@ -15,7 +16,22 @@ class PixelBuffer {
     }
 
     func clear() {
-        for i in data.indices { data[i] = 0 }
+        data.withUnsafeMutableBufferPointer { ptr in
+            vDSP_vclr(ptr.baseAddress!, 1, vDSP_Length(ptr.count))
+        }
+    }
+
+    /// Add another buffer into this one additively (vDSP SIMD — very fast).
+    func mergeAdding(_ other: PixelBuffer) {
+        precondition(other.data.count == data.count)
+        data.withUnsafeMutableBufferPointer { dst in
+            other.data.withUnsafeBufferPointer { src in
+                vDSP_vadd(dst.baseAddress!, 1,
+                          src.baseAddress!, 1,
+                          dst.baseAddress!, 1,
+                          vDSP_Length(dst.count))
+            }
+        }
     }
 
     /// Add a color additively at pixel (x, y). Weight is a brightness multiplier.
