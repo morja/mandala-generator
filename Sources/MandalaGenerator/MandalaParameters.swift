@@ -6,6 +6,7 @@ enum MandalaStyle: String, CaseIterable, Identifiable {
     case stringArt
     case sunburst
     case epitrochoid
+    case floral
     case mixed
 
     var id: String { rawValue }
@@ -17,6 +18,7 @@ enum MandalaStyle: String, CaseIterable, Identifiable {
         case .stringArt:    return "String Art"
         case .sunburst:     return "Sunburst"
         case .epitrochoid:  return "Epitrochoid"
+        case .floral:       return "Floral"
         case .mixed:        return "Mixed"
         }
     }
@@ -28,6 +30,7 @@ enum MandalaStyle: String, CaseIterable, Identifiable {
         case .stringArt:    return "network"
         case .sunburst:     return "sun.max"
         case .epitrochoid:  return "atom"
+        case .floral:       return "leaf"
         case .mixed:        return "sparkles"
         }
     }

@@ -60,198 +60,252 @@ struct MandalaRenderer {
         let layerCount = max(2, Int(params.complexity * 8) + 1)
         let symmetry   = max(1, min(8, params.symmetry))
 
-        // ── LAYER 1: painted base (background + grass + structural, no ripple) ──
-        let baseBuffer = PixelBuffer(width: bufferSize, height: bufferSize)
-        var rng1 = SeededRNG(seed: params.seed)
-        drawBackground(buffer: baseBuffer, palette: palette, seed: params.seed)
-        drawGrassFibers(buffer: baseBuffer, params: params, palette: palette, rng: &rng1)
-        drawStructuralLayers(buffer: baseBuffer, cx: cx, cy: cy, baseRadius: baseRadius,
-                             params: params, palette: palette, rng: &rng1,
+        // ── SINGLE PASS: background + fibers + structural curves ──
+        let buffer = PixelBuffer(width: bufferSize, height: bufferSize)
+        var rng = SeededRNG(seed: params.seed)
+        drawBackground(buffer: buffer, palette: palette, seed: params.seed)
+        drawGrassFibers(buffer: buffer, params: params, palette: palette, rng: &rng)
+        drawStructuralLayers(buffer: buffer, cx: cx, cy: cy, baseRadius: baseRadius,
+                             params: params, palette: palette, rng: &rng,
                              layerCount: layerCount, symmetry: symmetry,
-                             rippleAmount: 0, weightMul: 1.0)
+                             rippleAmount: Float(params.ripple), weightMul: 1.0)
 
-        var baseImage = baseBuffer.toCGImage()
-        baseImage = applyGlow(image: baseImage, intensity: params.glowIntensity * 0.9)
+        guard var result = buffer.toCGImage() else { return NSImage() }
+
+        // ── POST-PROCESS ──
+        result = applyGlow(image: result, intensity: params.glowIntensity)
         if params.wash > 0 {
-            baseImage = applyWash(image: baseImage, amount: params.wash)
+            result = applyWash(image: result, amount: params.wash)
         }
         if params.abstractLevel > 0.25 {
-            baseImage = applyPaintedEffect(image: baseImage, abstractLevel: params.abstractLevel)
+            result = applyPaintedEffect(image: result, abstractLevel: params.abstractLevel)
         }
-
-        // ── LAYER 2: crisp overlay (structural only, ripple applied, higher weight) ──
-        let crispBuffer = PixelBuffer(width: bufferSize, height: bufferSize)
-        var rng2 = SeededRNG(seed: params.seed)   // same seed → same geometry
-        drawStructuralLayers(buffer: crispBuffer, cx: cx, cy: cy, baseRadius: baseRadius,
-                             params: params, palette: palette, rng: &rng2,
-                             layerCount: layerCount, symmetry: symmetry,
-                             rippleAmount: Float(params.ripple), weightMul: 1.4)
-
-        var crispImage = crispBuffer.toCGImage()
-        crispImage = applyGlow(image: crispImage, intensity: min(1.0, params.glowIntensity * 1.1))
-
-        // ── COMPOSITE: screen-blend crisp on top of painted base ──
-        var result = screenComposite(base: baseImage, overlay: crispImage)
-
-        // ── COLOUR GRADE: saturation + brightness ──
         result = applyColourGrade(image: result,
                                   saturation: params.saturation,
                                   brightness: params.brightness)
-
-        // ── FINAL: downscale ──
         result = downscaleLanczos(image: result, targetSize: params.outputSize)
         let size = NSSize(width: params.outputSize, height: params.outputSize)
         return NSImage(cgImage: result, size: size)
     }
 
-    // MARK: - Structural dispatch (shared between both layers)
+    // MARK: - Structural dispatch — collect tasks, then draw in parallel
 
     private static func drawStructuralLayers(buffer: PixelBuffer, cx: Float, cy: Float,
                                              baseRadius: Double, params: MandalaParameters,
                                              palette: ColorPalette, rng: inout SeededRNG,
                                              layerCount: Int, symmetry: Int,
                                              rippleAmount: Float, weightMul: Float) {
+        var tasks: [CurveDrawTask] = []
+        tasks.reserveCapacity(layerCount * symmetry * 2)
+
         switch params.style {
         case .spirograph:
-            drawSpirographLayers(buffer: buffer, cx: cx, cy: cy, radius: baseRadius,
-                                 params: params, palette: palette, rng: &rng,
-                                 layerCount: layerCount, symmetry: symmetry,
-                                 rippleAmount: rippleAmount, weightMul: weightMul)
+            collectSpirographTasks(into: &tasks, cx: cx, cy: cy, radius: baseRadius,
+                                   params: params, rng: &rng, layerCount: layerCount,
+                                   symmetry: symmetry, rippleAmount: rippleAmount, weightMul: weightMul)
         case .roseCurves:
-            drawRoseLayers(buffer: buffer, cx: cx, cy: cy, radius: baseRadius,
-                           params: params, palette: palette, rng: &rng,
-                           layerCount: layerCount, symmetry: symmetry,
-                           rippleAmount: rippleAmount, weightMul: weightMul)
+            collectRoseTasks(into: &tasks, cx: cx, cy: cy, radius: baseRadius,
+                             params: params, rng: &rng, layerCount: layerCount,
+                             symmetry: symmetry, rippleAmount: rippleAmount, weightMul: weightMul)
         case .stringArt:
             drawStringArtLayers(buffer: buffer, cx: cx, cy: cy, radius: baseRadius,
                                 params: params, palette: palette, rng: &rng,
                                 layerCount: layerCount, symmetry: symmetry)
+            return
         case .sunburst:
             drawSunburstLayers(buffer: buffer, cx: cx, cy: cy, radius: baseRadius,
                                params: params, palette: palette, rng: &rng,
                                layerCount: layerCount, symmetry: symmetry)
+            return
         case .epitrochoid:
-            drawEpitrochoidLayers(buffer: buffer, cx: cx, cy: cy, radius: baseRadius,
-                                  params: params, palette: palette, rng: &rng,
-                                  layerCount: layerCount, symmetry: symmetry,
-                                  rippleAmount: rippleAmount, weightMul: weightMul)
+            collectEpitrochoidTasks(into: &tasks, cx: cx, cy: cy, radius: baseRadius,
+                                    params: params, rng: &rng, layerCount: layerCount,
+                                    symmetry: symmetry, rippleAmount: rippleAmount, weightMul: weightMul)
+        case .floral:
+            collectFloralTasks(into: &tasks, cx: cx, cy: cy, radius: baseRadius,
+                               params: params, rng: &rng, symmetry: symmetry,
+                               rippleAmount: rippleAmount, weightMul: weightMul)
         case .mixed:
             let sub = layerCount / 5 + 1
-            drawSpirographLayers(buffer: buffer, cx: cx, cy: cy, radius: baseRadius,
-                                 params: params, palette: palette, rng: &rng,
-                                 layerCount: sub, symmetry: symmetry,
-                                 rippleAmount: rippleAmount, weightMul: weightMul)
-            drawRoseLayers(buffer: buffer, cx: cx, cy: cy, radius: baseRadius * 0.9,
-                           params: params, palette: palette, rng: &rng,
-                           layerCount: sub, symmetry: symmetry,
-                           rippleAmount: rippleAmount, weightMul: weightMul)
+            collectSpirographTasks(into: &tasks, cx: cx, cy: cy, radius: baseRadius,
+                                   params: params, rng: &rng, layerCount: sub,
+                                   symmetry: symmetry, rippleAmount: rippleAmount, weightMul: weightMul)
+            collectRoseTasks(into: &tasks, cx: cx, cy: cy, radius: baseRadius * 0.9,
+                             params: params, rng: &rng, layerCount: sub,
+                             symmetry: symmetry, rippleAmount: rippleAmount, weightMul: weightMul)
             drawStringArtLayers(buffer: buffer, cx: cx, cy: cy, radius: baseRadius * 0.8,
                                 params: params, palette: palette, rng: &rng,
                                 layerCount: sub, symmetry: symmetry)
             drawSunburstLayers(buffer: buffer, cx: cx, cy: cy, radius: baseRadius * 0.7,
                                params: params, palette: palette, rng: &rng,
                                layerCount: sub, symmetry: symmetry)
-            drawEpitrochoidLayers(buffer: buffer, cx: cx, cy: cy, radius: baseRadius * 0.6,
-                                  params: params, palette: palette, rng: &rng,
-                                  layerCount: sub, symmetry: symmetry,
-                                  rippleAmount: rippleAmount, weightMul: weightMul)
+            collectEpitrochoidTasks(into: &tasks, cx: cx, cy: cy, radius: baseRadius * 0.6,
+                                    params: params, rng: &rng, layerCount: sub,
+                                    symmetry: symmetry, rippleAmount: rippleAmount, weightMul: weightMul)
         }
+
+        executeTasksParallel(tasks, buffer: buffer, palette: palette, colorDrift: params.colorDrift)
     }
 
-    // MARK: - Background
+    /// Draw all CurveDrawTasks in parallel using per-thread sub-buffers, then merge.
+    private static func executeTasksParallel(_ tasks: [CurveDrawTask],
+                                             buffer: PixelBuffer,
+                                             palette: ColorPalette,
+                                             colorDrift: Double) {
+        guard !tasks.isEmpty else { return }
+        let nThreads = max(1, min(tasks.count, ProcessInfo.processInfo.activeProcessorCount))
+        let chunk = max(1, tasks.count / nThreads)
+        let subBuffers = (0..<nThreads).map { _ in
+            PixelBuffer(width: buffer.width, height: buffer.height)
+        }
+        DispatchQueue.concurrentPerform(iterations: nThreads) { tid in
+            let start = tid * chunk
+            let end   = min(start + chunk, tasks.count)
+            guard start < end else { return }
+            let sub = subBuffers[tid]
+            for i in start..<end {
+                let t = tasks[i]
+                drawCurve(buffer: sub, cx: 0, cy: 0, xs: t.xs, ys: t.ys,
+                          palette: palette, tOffset: t.tOffset,
+                          drift: t.drift, weight: t.weight, thickness: t.thickness)
+            }
+        }
+        for sub in subBuffers { buffer.mergeAdding(sub) }
+    }
+
+    // MARK: - Background (GPU via CIFilter — much faster than per-pixel Swift loop)
 
     private static func drawBackground(buffer: PixelBuffer, palette: ColorPalette, seed: UInt64) {
         let w = buffer.width
         let h = buffer.height
-        let cx = Double(w) * 0.5
-        let cy = Double(h) * 0.5
-        let maxR = sqrt(cx * cx + cy * cy)
-        let s = Int(seed & 0x7FFFFFFF)
+        let col0 = palette.color(at: 0.0)
+        let col1 = palette.color(at: 0.5)
 
-        for y in 0..<h {
-            for x in 0..<w {
-                let dx = Double(x) - cx
-                let dy = Double(y) - cy
-                let r = sqrt(dx * dx + dy * dy) / maxR
-                // Radial gradient darkness
-                let radial = 1.0 - r * 0.7
-                // Noise texture
-                let nx = Double(x) / Double(w) * 4.0
-                let ny = Double(y) / Double(h) * 4.0
-                let noise = NoiseUtils.fbm2D(nx, ny, octaves: 3, seed: s) * 0.08
+        // Radial gradient tinted with palette, plus subtle random noise grain
+        let ctx = CIContext()
+        let extent = CGRect(x: 0, y: 0, width: w, height: h)
 
-                let t = r * 0.5 + noise
-                let col = palette.color(at: t)
-                let brightness = Float(radial * 0.06 + noise * 0.5)
+        // Dark tinted radial gradient
+        let center = CIVector(x: CGFloat(w)/2, y: CGFloat(h)/2)
+        var bg: CIImage? = nil
+        if let grad = CIFilter(name: "CIRadialGradient") {
+            grad.setValue(center, forKey: "inputCenter")
+            grad.setValue(CGFloat(w) * 0.55, forKey: "inputRadius0")
+            grad.setValue(CGFloat(w) * 0.85, forKey: "inputRadius1")
+            let inner = CIColor(red: CGFloat(col0.redComponent)   * 0.12,
+                                green: CGFloat(col0.greenComponent) * 0.12,
+                                blue:  CGFloat(col0.blueComponent)  * 0.12)
+            let outer = CIColor(red: 0.0, green: 0.0, blue: 0.0)
+            grad.setValue(inner, forKey: "inputColor0")
+            grad.setValue(outer, forKey: "inputColor1")
+            bg = grad.outputImage?.cropped(to: extent)
+        }
 
-                let base = (y * w + x) * 3
-                buffer.data[base]     = Float(col.redComponent)   * brightness
-                buffer.data[base + 1] = Float(col.greenComponent) * brightness
-                buffer.data[base + 2] = Float(col.blueComponent)  * brightness
+        // Subtle colour wash overlay using second palette stop
+        if let wash = CIFilter(name: "CIConstantColorGenerator") {
+            let tint = CIColor(red: CGFloat(col1.redComponent)   * 0.06,
+                               green: CGFloat(col1.greenComponent) * 0.06,
+                               blue:  CGFloat(col1.blueComponent)  * 0.06)
+            wash.setValue(tint, forKey: kCIInputColorKey)
+            if let washImg = wash.outputImage?.cropped(to: extent),
+               let add = CIFilter(name: "CIAdditionCompositing") {
+                add.setValue(bg ?? washImg, forKey: kCIInputBackgroundImageKey)
+                add.setValue(washImg,       forKey: kCIInputImageKey)
+                bg = add.outputImage?.cropped(to: extent)
             }
+        }
+
+        guard let finalCI = bg,
+              let cgImg = ctx.createCGImage(finalCI, from: extent) else { return }
+
+        // Copy CGImage pixels into buffer
+        let bytesPerRow = w * 4
+        var bytes = [UInt8](repeating: 0, count: h * bytesPerRow)
+        let space = CGColorSpaceCreateDeviceRGB()
+        guard let drawCtx = CGContext(data: &bytes, width: w, height: h,
+                                      bitsPerComponent: 8, bytesPerRow: bytesPerRow,
+                                      space: space,
+                                      bitmapInfo: CGImageAlphaInfo.noneSkipLast.rawValue) else { return }
+        drawCtx.draw(cgImg, in: extent)
+        let inv = Float(1.0 / 255.0)
+        for i in 0..<(w * h) {
+            let src = i * 4
+            let dst = i * 3
+            buffer.data[dst]     = Float(bytes[src])     * inv
+            buffer.data[dst + 1] = Float(bytes[src + 1]) * inv
+            buffer.data[dst + 2] = Float(bytes[src + 2]) * inv
         }
     }
 
-    // MARK: - Grass Fibers
+    // MARK: - Grass Fibers (parallel)
 
     private static func drawGrassFibers(buffer: PixelBuffer, params: MandalaParameters,
                                         palette: ColorPalette, rng: inout SeededRNG) {
         let w = Float(buffer.width)
-        let h = Float(buffer.height)
         let cx = w * 0.5
-        let cy = h * 0.5
+        let cy = cx
         let maxRadius = w * 0.46
-
         let nLines = Int(Double(15000) * params.density + 500)
         let symmetry = max(1, min(8, params.symmetry))
+        let nThreads = max(1, ProcessInfo.processInfo.activeProcessorCount)
+        let chunk = max(1, nLines / nThreads)
 
-        for _ in 0..<nLines {
-            let angle = rng.nextDouble() * Double.pi * 2.0
-            let radiusFrac = rng.nextDouble()
-            let startRadius = Float(radiusFrac) * maxRadius * 0.95
-            let length = Float(rng.nextDouble(in: 3...18)) * (1.0 + Float(params.complexity) * 1.5)
-            let wobble = Float(rng.nextDouble(in: -0.15...0.15))
-            let t = rng.nextDouble()
-            let col = palette.color(at: t)
-            let weight = Float(rng.nextDouble(in: 0.03...0.25)) * Float(params.density)
+        // One sub-buffer per thread to avoid data races
+        let subBuffers = (0..<nThreads).map { _ in
+            PixelBuffer(width: buffer.width, height: buffer.height)
+        }
 
-            for sym in 0..<symmetry {
-                let symAngle = angle + Double(sym) * Double.pi * 2.0 / Double(symmetry)
-                let x0 = cx + cos(Float(symAngle)) * startRadius
-                let y0 = cy + sin(Float(symAngle)) * startRadius
-                let endAngle = Float(symAngle) + wobble
-                let x1 = x0 + cos(endAngle) * length
-                let y1 = y0 + sin(endAngle) * length
-
+        DispatchQueue.concurrentPerform(iterations: nThreads) { tid in
+            let start = tid * chunk
+            let end = min(start + chunk, nLines)
+            guard start < end else { return }
+            var local = SeededRNG(seed: params.seed &+ UInt64(tid) &* 6364136223846793005 &+ 1)
+            let sub = subBuffers[tid]
+            for _ in start..<end {
+                let angle      = local.nextDouble() * .pi * 2.0
+                let startR     = Float(local.nextDouble()) * maxRadius * 0.95
+                let length     = Float(local.nextDouble(in: 3...18)) * (1.0 + Float(params.complexity) * 1.5)
+                let wobble     = Float(local.nextDouble(in: -0.15...0.15))
+                let t          = local.nextDouble()
+                let col        = palette.color(at: t)
+                let weight     = Float(local.nextDouble(in: 0.03...0.25)) * Float(params.density)
                 let c = (r: Float(col.redComponent), g: Float(col.greenComponent), b: Float(col.blueComponent))
-                buffer.addLine(x0: x0, y0: y0, x1: x1, y1: y1, color: c, weight: weight)
+                for sym in 0..<symmetry {
+                    let sa = Float(angle + Double(sym) * .pi * 2.0 / Double(symmetry))
+                    let x0 = cx + cos(sa) * startR
+                    let y0 = cy + sin(sa) * startR
+                    let ea = sa + wobble
+                    sub.addLine(x0: x0, y0: y0,
+                                x1: x0 + cos(ea) * length,
+                                y1: y0 + sin(ea) * length,
+                                color: c, weight: weight)
+                }
             }
         }
+        for sub in subBuffers { buffer.mergeAdding(sub) }
     }
 
     // MARK: - Spirograph Layers
 
-    private static func drawSpirographLayers(buffer: PixelBuffer, cx: Float, cy: Float,
-                                             radius: Double, params: MandalaParameters,
-                                             palette: ColorPalette, rng: inout SeededRNG,
-                                             layerCount: Int, symmetry: Int,
-                                             rippleAmount: Float = 0, weightMul: Float = 1) {
-        let ratios: [(Double, Double)] = [(7, 3), (5, 2), (8, 5), (9, 4), (11, 6), (7, 4), (13, 5), (6, 5)]
+    private static func collectSpirographTasks(into tasks: inout [CurveDrawTask],
+                                               cx: Float, cy: Float, radius: Double,
+                                               params: MandalaParameters, rng: inout SeededRNG,
+                                               layerCount: Int, symmetry: Int,
+                                               rippleAmount: Float, weightMul: Float) {
+        let ratios: [(Double, Double)] = [(7,3),(5,2),(8,5),(9,4),(11,6),(7,4),(13,5),(6,5)]
         for i in 0..<layerCount {
             let idx = i % ratios.count
             let R = radius * (0.5 + rng.nextDouble() * 0.5)
             let r = R * ratios[idx].1 / ratios[idx].0
             let d = r * (0.4 + rng.nextDouble() * 0.7)
             let (xs, ys) = spiroPoints(R: R, r: r, d: d, steps: 3000)
-            let tOffset = rng.nextDouble()
-            let weight = Float(rng.nextDouble(in: 0.4...1.2)) * Float(params.complexity) * weightMul
+            let tOffset   = rng.nextDouble()
+            let weight    = Float(rng.nextDouble(in: 0.4...1.2)) * Float(params.complexity) * weightMul
             let thickness = Int(rng.nextDouble(in: 1...3))
-            let rippleSeed = params.seed &+ UInt64(i * 31 + 1)
-
+            let ripSeed   = params.seed &+ UInt64(i * 31 + 1)
             for sym in 0..<symmetry {
-                let angle = Double(sym) * Double.pi * 2.0 / Double(symmetry)
-                let cosA = Float(cos(angle))
-                let sinA = Float(sin(angle))
+                let angle = Double(sym) * .pi * 2.0 / Double(symmetry)
+                let cosA = Float(cos(angle)), sinA = Float(sin(angle))
                 var rxs = [Float](repeating: 0, count: xs.count)
                 var rys = [Float](repeating: 0, count: ys.count)
                 for j in 0..<xs.count {
@@ -260,37 +314,36 @@ struct MandalaRenderer {
                 }
                 if rippleAmount > 0 {
                     applyRippleToPoints(xs: &rxs, ys: &rys, amount: rippleAmount,
-                                        seed: rippleSeed &+ UInt64(sym))
+                                        seed: ripSeed &+ UInt64(sym))
                 }
-                drawCurve(buffer: buffer, cx: 0, cy: 0, xs: rxs, ys: rys,
-                          palette: palette, tOffset: tOffset + Double(sym) * 0.1,
-                          drift: params.colorDrift, weight: weight, thickness: thickness)
+                tasks.append(CurveDrawTask(xs: rxs, ys: rys,
+                                           tOffset: tOffset + Double(sym) * 0.1,
+                                           drift: params.colorDrift,
+                                           weight: weight, thickness: thickness))
             }
         }
     }
 
     // MARK: - Rose Curve Layers
 
-    private static func drawRoseLayers(buffer: PixelBuffer, cx: Float, cy: Float,
-                                       radius: Double, params: MandalaParameters,
-                                       palette: ColorPalette, rng: inout SeededRNG,
-                                       layerCount: Int, symmetry: Int,
-                                       rippleAmount: Float = 0, weightMul: Float = 1) {
-        let kValues = [3, 4, 5, 6, 7, 8, 9, 2]
+    private static func collectRoseTasks(into tasks: inout [CurveDrawTask],
+                                         cx: Float, cy: Float, radius: Double,
+                                         params: MandalaParameters, rng: inout SeededRNG,
+                                         layerCount: Int, symmetry: Int,
+                                         rippleAmount: Float, weightMul: Float) {
+        let kValues = [3,4,5,6,7,8,9,2]
         for i in 0..<layerCount {
             let k = kValues[i % kValues.count]
             let r = radius * (0.5 + rng.nextDouble() * 0.5)
             let (xs, ys) = rosePoints(k: k, radius: r, steps: 2000)
-            let tOffset = rng.nextDouble()
-            let weight = Float(rng.nextDouble(in: 0.5...1.4)) * Float(params.complexity) * weightMul
+            let tOffset   = rng.nextDouble()
+            let weight    = Float(rng.nextDouble(in: 0.5...1.4)) * Float(params.complexity) * weightMul
             let thickness = Int(rng.nextDouble(in: 1...2))
-            let rotOffset = rng.nextDouble() * Double.pi * 2.0
-            let rippleSeed = params.seed &+ UInt64(i * 47 + 7)
-
+            let rotOffset = rng.nextDouble() * .pi * 2.0
+            let ripSeed   = params.seed &+ UInt64(i * 47 + 7)
             for sym in 0..<symmetry {
-                let angle = Double(sym) * Double.pi * 2.0 / Double(symmetry) + rotOffset
-                let cosA = Float(cos(angle))
-                let sinA = Float(sin(angle))
+                let angle = Double(sym) * .pi * 2.0 / Double(symmetry) + rotOffset
+                let cosA = Float(cos(angle)), sinA = Float(sin(angle))
                 var rxs = [Float](repeating: 0, count: xs.count)
                 var rys = [Float](repeating: 0, count: ys.count)
                 for j in 0..<xs.count {
@@ -299,11 +352,12 @@ struct MandalaRenderer {
                 }
                 if rippleAmount > 0 {
                     applyRippleToPoints(xs: &rxs, ys: &rys, amount: rippleAmount,
-                                        seed: rippleSeed &+ UInt64(sym))
+                                        seed: ripSeed &+ UInt64(sym))
                 }
-                drawCurve(buffer: buffer, cx: 0, cy: 0, xs: rxs, ys: rys,
-                          palette: palette, tOffset: tOffset + Double(sym) * 0.07,
-                          drift: params.colorDrift, weight: weight, thickness: thickness)
+                tasks.append(CurveDrawTask(xs: rxs, ys: rys,
+                                           tOffset: tOffset + Double(sym) * 0.07,
+                                           drift: params.colorDrift,
+                                           weight: weight, thickness: thickness))
             }
         }
     }
@@ -391,29 +445,150 @@ struct MandalaRenderer {
         }
     }
 
+    // MARK: - Floral Layers
+
+    /// Generates a composition matching the reference image:
+    /// outer looping ring + radial teardrop petals with hatch fill + swirl connectors + central rosette.
+    private static func collectFloralTasks(into tasks: inout [CurveDrawTask],
+                                           cx: Float, cy: Float, radius: Double,
+                                           params: MandalaParameters, rng: inout SeededRNG,
+                                           symmetry: Int, rippleAmount: Float, weightMul: Float) {
+        let R = Float(radius)
+        let nPetals = max(5, symmetry * 2 + 3)
+
+        // ── 1. OUTER LOOPING RING ──────────────────────────────────────────────
+        // Formula: x = outerR*cos(t) + loopR*cos(k*t),  y = outerR*sin(t) + loopR*sin(k*t)
+        let outerR      = R * 0.46
+        let loopR       = R * Float(0.04 + params.density * 0.05)
+        let nLoops      = nPetals * 3
+        let outerSteps  = nLoops * 50
+        var oxs = [Float](); oxs.reserveCapacity(outerSteps + 1)
+        var oys = [Float](); oys.reserveCapacity(outerSteps + 1)
+        for i in 0...outerSteps {
+            let t = Float(i) / Float(outerSteps) * .pi * 2
+            oxs.append(cx + outerR * cos(t) + loopR * cos(Float(nLoops) * t))
+            oys.append(cy + outerR * sin(t) + loopR * sin(Float(nLoops) * t))
+        }
+        tasks.append(CurveDrawTask(xs: oxs, ys: oys,
+                                   tOffset: 0.72, drift: params.colorDrift * 0.4,
+                                   weight: 0.8 * weightMul, thickness: 1))
+
+        // ── 2. TEARDROP PETALS ────────────────────────────────────────────────
+        let petalDist  = R * 0.30
+        let petalLen   = R * 0.26
+        let petalW     = R * 0.10
+        let pinwheel   = Float(0.28 + params.complexity * 0.18)   // lean angle
+        let nHatch     = max(25, Int(params.density * 70))
+
+        for i in 0..<nPetals {
+            let baseAngle = Float(i) * .pi * 2 / Float(nPetals)
+            let axisAngle = baseAngle + pinwheel        // petal points in this direction
+            let pcx = cx + cos(baseAngle) * petalDist
+            let pcy = cy + sin(baseAngle) * petalDist
+            let petalT = Double(i) / Double(nPetals) * 0.35   // colour position (blue band)
+
+            // Hatch fill — dense parallel lines across the petal width
+            for h in 0..<nHatch {
+                let t      = Float(h) / Float(nHatch - 1)      // 0 = tip, 1 = base
+                let halfW  = petalW * 0.5 * sin(.pi * t)
+                let along  = (t - 0.5) * petalLen
+                let midX   = pcx + cos(axisAngle) * along
+                let midY   = pcy + sin(axisAngle) * along
+                let perpA  = axisAngle + .pi * 0.5
+                let x0 = midX + cos(perpA) * halfW
+                let y0 = midY + sin(perpA) * halfW
+                let x1 = midX - cos(perpA) * halfW
+                let y1 = midY - sin(perpA) * halfW
+                let jitter = Float(rng.nextDouble(in: -0.5...0.5))
+                tasks.append(CurveDrawTask(
+                    xs: [x0, x1], ys: [y0, y1],
+                    tOffset: petalT + Double(t) * 0.08 + Double(jitter) * 0.01,
+                    drift: 0.04,
+                    weight: Float(rng.nextDouble(in: 0.25...0.55)) * weightMul,
+                    thickness: 1))
+            }
+
+            // Teardrop outline
+            let nOut = 80
+            var pxs = [Float](); pxs.reserveCapacity(nOut + 1)
+            var pys = [Float](); pys.reserveCapacity(nOut + 1)
+            for j in 0...nOut {
+                let a        = Float(j) / Float(nOut) * .pi * 2
+                let along    = petalLen * 0.5 * (1 - cos(a)) * 0.5 - petalLen * 0.25
+                let perp     = petalW * 0.5 * sin(a)
+                pxs.append(pcx + cos(axisAngle) * along + cos(axisAngle + .pi/2) * perp)
+                pys.append(pcy + sin(axisAngle) * along + sin(axisAngle + .pi/2) * perp)
+            }
+            tasks.append(CurveDrawTask(xs: pxs, ys: pys,
+                                       tOffset: 0.50 + Double(i) / Double(nPetals) * 0.25,
+                                       drift: params.colorDrift * 0.15,
+                                       weight: 0.9 * weightMul, thickness: 1))
+        }
+
+        // ── 3. SPIRAL CONNECTORS ──────────────────────────────────────────────
+        let nSpirals = max(2, nPetals / 3)
+        for s in 0..<nSpirals {
+            let startA  = Float(s) * .pi * 2 / Float(nSpirals)
+            let turns   = Float(nPetals) / Float(nSpirals)
+            let spSteps = 280
+            var sxs = [Float](); sxs.reserveCapacity(spSteps + 1)
+            var sys = [Float](); sys.reserveCapacity(spSteps + 1)
+            for i in 0...spSteps {
+                let t     = Float(i) / Float(spSteps)
+                let angle = startA + t * .pi * 2 * turns
+                let r     = R * 0.04 + t * petalDist * 1.05
+                let wave  = R * 0.018 * sin(Float(nPetals) * angle)
+                sxs.append(cx + cos(angle) * (r + wave))
+                sys.append(cy + sin(angle) * (r + wave))
+            }
+            let ripSeed = params.seed &+ UInt64(s) &* 997
+            if rippleAmount > 0 {
+                applyRippleToPoints(xs: &sxs, ys: &sys, amount: rippleAmount, seed: ripSeed)
+            }
+            tasks.append(CurveDrawTask(xs: sxs, ys: sys,
+                                       tOffset: 0.48 + Double(s) / Double(nSpirals) * 0.12,
+                                       drift: params.colorDrift * 0.5,
+                                       weight: 0.55 * weightMul, thickness: 1))
+        }
+
+        // ── 4. CENTRAL ROSETTE ────────────────────────────────────────────────
+        let flowerK  = nPetals / 2 + 1
+        let flowerR2 = R * Float(0.06 + params.complexity * 0.03)
+        let flSteps  = max(360, flowerK * 80)
+        var fxs = [Float](); fxs.reserveCapacity(flSteps + 1)
+        var fys = [Float](); fys.reserveCapacity(flSteps + 1)
+        for i in 0...flSteps {
+            let t = Float(i) / Float(flSteps) * .pi * 2
+            let r = flowerR2 * abs(cos(Float(flowerK) * t))
+            fxs.append(cx + r * cos(t))
+            fys.append(cy + r * sin(t))
+        }
+        tasks.append(CurveDrawTask(xs: fxs, ys: fys,
+                                   tOffset: 0.52, drift: 0.08,
+                                   weight: 1.3 * weightMul, thickness: 1))
+    }
+
     // MARK: - Epitrochoid Layers
 
-    private static func drawEpitrochoidLayers(buffer: PixelBuffer, cx: Float, cy: Float,
-                                              radius: Double, params: MandalaParameters,
-                                              palette: ColorPalette, rng: inout SeededRNG,
-                                              layerCount: Int, symmetry: Int,
-                                              rippleAmount: Float = 0, weightMul: Float = 1) {
-        let denominators = [3, 4, 5, 6, 7, 8, 9, 10]
+    private static func collectEpitrochoidTasks(into tasks: inout [CurveDrawTask],
+                                                cx: Float, cy: Float, radius: Double,
+                                                params: MandalaParameters, rng: inout SeededRNG,
+                                                layerCount: Int, symmetry: Int,
+                                                rippleAmount: Float, weightMul: Float) {
+        let denominators = [3,4,5,6,7,8,9,10]
         for i in 0..<layerCount {
             let denom = Double(denominators[i % denominators.count])
             let R = radius * (0.4 + rng.nextDouble() * 0.45)
             let r = R / denom
             let d = r * (0.5 + rng.nextDouble() * 0.8)
             let (xs, ys) = epitrochoidPoints(R: R, r: r, d: d, steps: 2500)
-            let tOffset = rng.nextDouble()
-            let weight = Float(rng.nextDouble(in: 0.4...1.2)) * Float(params.complexity) * weightMul
+            let tOffset   = rng.nextDouble()
+            let weight    = Float(rng.nextDouble(in: 0.4...1.2)) * Float(params.complexity) * weightMul
             let thickness = Int(rng.nextDouble(in: 1...2))
-            let rippleSeed = params.seed &+ UInt64(i * 61 + 13)
-
+            let ripSeed   = params.seed &+ UInt64(i * 61 + 13)
             for sym in 0..<symmetry {
-                let angle = Double(sym) * Double.pi * 2.0 / Double(symmetry)
-                let cosA = Float(cos(angle))
-                let sinA = Float(sin(angle))
+                let angle = Double(sym) * .pi * 2.0 / Double(symmetry)
+                let cosA = Float(cos(angle)), sinA = Float(sin(angle))
                 var rxs = [Float](repeating: 0, count: xs.count)
                 var rys = [Float](repeating: 0, count: ys.count)
                 for j in 0..<xs.count {
@@ -422,11 +597,12 @@ struct MandalaRenderer {
                 }
                 if rippleAmount > 0 {
                     applyRippleToPoints(xs: &rxs, ys: &rys, amount: rippleAmount,
-                                        seed: rippleSeed &+ UInt64(sym))
+                                        seed: ripSeed &+ UInt64(sym))
                 }
-                drawCurve(buffer: buffer, cx: 0, cy: 0, xs: rxs, ys: rys,
-                          palette: palette, tOffset: tOffset + Double(sym) * 0.08,
-                          drift: params.colorDrift, weight: weight, thickness: thickness)
+                tasks.append(CurveDrawTask(xs: rxs, ys: rys,
+                                           tOffset: tOffset + Double(sym) * 0.08,
+                                           drift: params.colorDrift,
+                                           weight: weight, thickness: thickness))
             }
         }
     }
@@ -565,45 +741,58 @@ struct MandalaRenderer {
         let ext = ci.extent
         var result = ci
 
-        // Pass 1: soft blur mixed back → colour spread
-        let blurR1 = amount * 12.0
-        if let f = CIFilter(name: "CIGaussianBlur") {
-            f.setValue(ci, forKey: kCIInputImageKey)
-            f.setValue(blurR1, forKey: kCIInputRadiusKey)
-            if let blurred = f.outputImage?.cropped(to: ext) {
-                // Screen-blend the soft blur: bleed without destroying crisp parts
-                if let screen = CIFilter(name: "CIScreenBlendMode") {
-                    screen.setValue(result, forKey: kCIInputBackgroundImageKey)
-                    screen.setValue(blurred, forKey: kCIInputImageKey)
-                    if let out = screen.outputImage?.cropped(to: ext) { result = out }
-                }
-            }
+        // Multiple blur passes at different radii — soft, overlapping, no hard edges.
+        // Each pass is dissolved back at low opacity so gradients stay smooth.
+        let passes: [(radius: Double, opacity: Double)] = [
+            (amount * 4,  0.25),
+            (amount * 12, 0.20),
+            (amount * 28, 0.15),
+            (amount * 55, 0.10),
+        ]
+        for (radius, opacity) in passes {
+            guard let blur = CIFilter(name: "CIGaussianBlur") else { continue }
+            blur.setValue(ci, forKey: kCIInputImageKey)   // always blur the original
+            blur.setValue(radius, forKey: kCIInputRadiusKey)
+            guard let blurred = blur.outputImage?.cropped(to: ext) else { continue }
+            // Scale blurred layer to `opacity` before screen-compositing
+            guard let cm = CIFilter(name: "CIColorMatrix") else { continue }
+            let s = Float(opacity)
+            cm.setValue(blurred, forKey: kCIInputImageKey)
+            cm.setValue(CIVector(x: CGFloat(s),y:0,z:0,w:0), forKey: "inputRVector")
+            cm.setValue(CIVector(x: 0,y: CGFloat(s),z:0,w:0), forKey: "inputGVector")
+            cm.setValue(CIVector(x: 0,y:0,z: CGFloat(s),w:0), forKey: "inputBVector")
+            cm.setValue(CIVector(x: 0,y:0,z:0,w:1),           forKey: "inputAVector")
+            guard let scaled = cm.outputImage?.cropped(to: ext) else { continue }
+            // Addition compositing — purely additive, no clamping artefacts at edges
+            guard let add = CIFilter(name: "CIAdditionCompositing") else { continue }
+            add.setValue(result, forKey: kCIInputBackgroundImageKey)
+            add.setValue(scaled,  forKey: kCIInputImageKey)
+            if let out = add.outputImage?.cropped(to: ext) { result = out }
         }
 
-        // Pass 2: over-saturated heavy blur → chromatic bleed
-        if amount > 0.2, let sat = CIFilter(name: "CIColorControls") {
-            sat.setValue(result, forKey: kCIInputImageKey)
-            sat.setValue(1.5 + amount * 2.5, forKey: kCIInputSaturationKey)
-            sat.setValue(0.05, forKey: kCIInputBrightnessKey)
-            if let saturated = sat.outputImage,
-               let f2 = CIFilter(name: "CIGaussianBlur") {
-                f2.setValue(saturated, forKey: kCIInputImageKey)
-                f2.setValue(amount * 28.0, forKey: kCIInputRadiusKey)
-                if let blurredSat = f2.outputImage?.cropped(to: ext) {
-                    // Scale down before screen so it tints without blowing out
-                    if let cm = CIFilter(name: "CIColorMatrix") {
-                        let s = Float(amount * 0.45)
-                        cm.setValue(blurredSat, forKey: kCIInputImageKey)
-                        cm.setValue(CIVector(x: CGFloat(s), y:0,z:0,w:0), forKey: "inputRVector")
-                        cm.setValue(CIVector(x: 0,y: CGFloat(s),z:0,w:0), forKey: "inputGVector")
-                        cm.setValue(CIVector(x: 0,y:0,z: CGFloat(s),w:0), forKey: "inputBVector")
-                        cm.setValue(CIVector(x: 0,y:0,z:0,w:1),           forKey: "inputAVector")
-                        if let tinted = cm.outputImage?.cropped(to: ext),
-                           let screen = CIFilter(name: "CIScreenBlendMode") {
-                            screen.setValue(result, forKey: kCIInputBackgroundImageKey)
-                            screen.setValue(tinted,  forKey: kCIInputImageKey)
-                            if let out = screen.outputImage?.cropped(to: ext) { result = out }
-                        }
+        // Chromatic bleed: blur a saturated copy and add softly — avoids banding
+        // by blurring the saturated image very heavily (no hard gradient boundaries)
+        if amount > 0.15, let sat = CIFilter(name: "CIColorControls"),
+           let blur2 = CIFilter(name: "CIGaussianBlur"),
+           let cm2 = CIFilter(name: "CIColorMatrix"),
+           let add2 = CIFilter(name: "CIAdditionCompositing") {
+            sat.setValue(ci, forKey: kCIInputImageKey)
+            sat.setValue(min(4.0, 1.0 + amount * 3.0), forKey: kCIInputSaturationKey)
+            sat.setValue(0.0, forKey: kCIInputBrightnessKey)
+            if let saturated = sat.outputImage {
+                blur2.setValue(saturated, forKey: kCIInputImageKey)
+                blur2.setValue(amount * 45.0, forKey: kCIInputRadiusKey)
+                if let blurredSat = blur2.outputImage?.cropped(to: ext) {
+                    let s2 = Float(amount * 0.25)
+                    cm2.setValue(blurredSat, forKey: kCIInputImageKey)
+                    cm2.setValue(CIVector(x: CGFloat(s2),y:0,z:0,w:0), forKey: "inputRVector")
+                    cm2.setValue(CIVector(x: 0,y: CGFloat(s2),z:0,w:0), forKey: "inputGVector")
+                    cm2.setValue(CIVector(x: 0,y:0,z: CGFloat(s2),w:0), forKey: "inputBVector")
+                    cm2.setValue(CIVector(x: 0,y:0,z:0,w:1),            forKey: "inputAVector")
+                    if let tinted = cm2.outputImage?.cropped(to: ext) {
+                        add2.setValue(result, forKey: kCIInputBackgroundImageKey)
+                        add2.setValue(tinted,  forKey: kCIInputImageKey)
+                        if let out = add2.outputImage?.cropped(to: ext) { result = out }
                     }
                 }
             }

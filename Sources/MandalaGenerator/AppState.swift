@@ -12,6 +12,7 @@ class AppState: ObservableObject {
 
     private var debounceTask: Task<Void, Never>? = nil
     private var parameterCancellable: AnyCancellable?
+    private var lastRenderedParams: MandalaParameters? = nil
 
     init() {
         // Debounced auto-generate when parameters change
@@ -30,8 +31,12 @@ class AppState: ObservableObject {
 
     func generate() async {
         guard !isGenerating else { return }
+        guard parameters != lastRenderedParams else { return }
+        debounceTask?.cancel()
+        debounceTask = nil
         isGenerating = true
         let params = parameters
+        lastRenderedParams = params
         let start = Date()
         let image = await Task.detached(priority: .userInitiated) {
             MandalaRenderer.render(params: params)
@@ -69,14 +74,24 @@ class AppState: ObservableObject {
             Task { [weak self] in
                 guard let self else { return }
                 let baseParams = self.parameters
-                for i in 0..<count {
+                // Build all param variants up-front
+                let variants: [(Int, MandalaParameters)] = (0..<count).map { i in
                     var p = baseParams
                     p.seed = UInt64.random(in: 1...UInt64.max)
-                    let image = await Task.detached(priority: .userInitiated) {
-                        MandalaRenderer.render(params: p)
-                    }.value
-                    let fileURL = url.appendingPathComponent("mandala-\(i+1)-\(p.seed).png")
-                    self.writeImage(image, to: fileURL)
+                    return (i, p)
+                }
+                // Render all in parallel via TaskGroup
+                await withTaskGroup(of: (Int, NSImage, UInt64).self) { group in
+                    for (i, p) in variants {
+                        group.addTask(priority: .userInitiated) {
+                            let img = MandalaRenderer.render(params: p)
+                            return (i, img, p.seed)
+                        }
+                    }
+                    for await (i, image, seed) in group {
+                        let fileURL = url.appendingPathComponent("mandala-\(i+1)-\(seed).png")
+                        self.writeImage(image, to: fileURL)
+                    }
                 }
             }
         }
