@@ -59,6 +59,7 @@ struct MandalaParameters: Equatable {
     var seed: UInt64 = 42   // used for background/grass; each layer also has its own seed
     var outputSize: Int = 800
     var outputFormat: String = "png"
+    var outputShape: String = "square"  // "square", "circle", "squircle"
 
     // Internal working fields used by renderer function signatures — overwritten per layer in render loop. Do NOT expose in UI.
     var symmetry: Int = 6

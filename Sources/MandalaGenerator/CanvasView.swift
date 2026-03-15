@@ -98,6 +98,17 @@ struct CanvasView: View {
             .fixedSize()
             .help("Output format")
 
+            Picker("Shape", selection: $appState.parameters.outputShape) {
+                Text("Square").tag("square")
+                Text("Circle").tag("circle")
+                Text("Squircle").tag("squircle")
+                Text("Rounded").tag("rounded")
+            }
+            .pickerStyle(.menu)
+            .fixedSize()
+            .disabled(appState.parameters.outputFormat != "png")
+            .help("Crop shape — PNG only (uses transparency)")
+
             Spacer()
 
             if zoomScale != 1.0 || panOffset != .zero {
@@ -132,6 +143,7 @@ struct CanvasView: View {
                 .interpolation(.high)
                 .aspectRatio(contentMode: .fit)
                 .frame(width: availableSize, height: availableSize)
+                .mask(MandalaOutputShape(name: appState.parameters.outputShape))
                 .scaleEffect(zoomScale)
                 .offset(panOffset)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -236,5 +248,43 @@ struct ScrollWheelView: NSViewRepresentable {
 extension View {
     func onScrollWheel(_ handler: @escaping (Double) -> Void) -> some View {
         modifier(ScrollWheelModifier(handler: handler))
+    }
+}
+
+// MARK: - Output shape mask (shared between preview and export)
+
+struct MandalaOutputShape: Shape {
+    let name: String
+
+    func path(in rect: CGRect) -> Path {
+        switch name {
+        case "circle":
+            return Path(ellipseIn: rect)
+        case "squircle":
+            return squirclePath(in: rect, exponent: 4.0)
+        case "rounded":
+            let r = min(rect.width, rect.height) * 0.08
+            return Path(roundedRect: rect, cornerRadius: r)
+        default:
+            return Path(rect)
+        }
+    }
+
+    private func squirclePath(in rect: CGRect, exponent: CGFloat) -> Path {
+        var path = Path()
+        let cx = rect.midX, cy = rect.midY
+        let rx = rect.width * 0.5, ry = rect.height * 0.5
+        let inv = 2.0 / exponent
+        let steps = 512
+        for i in 0...steps {
+            let t = CGFloat(i) / CGFloat(steps) * 2 * .pi
+            let cosT = cos(t), sinT = sin(t)
+            let x = cx + rx * (cosT < 0 ? -1 : 1) * pow(abs(cosT), inv)
+            let y = cy + ry * (sinT < 0 ? -1 : 1) * pow(abs(sinT), inv)
+            if i == 0 { path.move(to: CGPoint(x: x, y: y)) }
+            else       { path.addLine(to: CGPoint(x: x, y: y)) }
+        }
+        path.closeSubpath()
+        return path
     }
 }

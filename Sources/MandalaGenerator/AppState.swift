@@ -168,16 +168,83 @@ class AppState: ObservableObject {
     }
 
     private func writeImage(_ image: NSImage, to url: URL) {
-        guard let tiffData = image.tiffRepresentation,
+        let ext = url.pathExtension.lowercased()
+        let isPNG = ext != "jpg" && ext != "jpeg"
+
+        // Apply shape mask for PNG exports
+        let finalImage = isPNG && parameters.outputShape != "square"
+            ? maskedImage(image, shape: parameters.outputShape) ?? image
+            : image
+
+        guard let tiffData = finalImage.tiffRepresentation,
               let bitmap = NSBitmapImageRep(data: tiffData) else { return }
 
-        let ext = url.pathExtension.lowercased()
         let data: Data?
-        if ext == "jpg" || ext == "jpeg" {
+        if !isPNG {
             data = bitmap.representation(using: .jpeg, properties: [.compressionFactor: 0.92])
         } else {
             data = bitmap.representation(using: .png, properties: [:])
         }
         try? data?.write(to: url)
+    }
+
+    /// Returns a copy of `image` clipped to a circle or squircle, with alpha transparency.
+    private func maskedImage(_ image: NSImage, shape: String) -> NSImage? {
+        let size = image.size
+        let w = Int(size.width), h = Int(size.height)
+        guard w > 0, h > 0 else { return nil }
+
+        let colorSpace = CGColorSpaceCreateDeviceRGB()
+        guard let ctx = CGContext(
+            data: nil, width: w, height: h,
+            bitsPerComponent: 8, bytesPerRow: w * 4,
+            space: colorSpace,
+            bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
+        ) else { return nil }
+
+        let rect = CGRect(x: 0, y: 0, width: w, height: h)
+
+        // Build clip path
+        let path: CGPath
+        switch shape {
+        case "circle":
+            path = CGPath(ellipseIn: rect, transform: nil)
+        case "squircle":
+            path = squirclePath(in: rect, exponent: 4.0)
+        case "rounded":
+            let r = min(rect.width, rect.height) * 0.08
+            path = CGPath(roundedRect: rect, cornerWidth: r, cornerHeight: r, transform: nil)
+        default:
+            return image
+        }
+
+        ctx.addPath(path)
+        ctx.clip()
+
+        // Draw image into clipped context
+        guard let cgImage = image.cgImage(forProposedRect: nil, context: nil, hints: nil) else { return nil }
+        ctx.draw(cgImage, in: rect)
+
+        guard let masked = ctx.makeImage() else { return nil }
+        return NSImage(cgImage: masked, size: size)
+    }
+
+    /// Superellipse path: |x/rx|^n + |y/ry|^n = 1, approximated with line segments.
+    private func squirclePath(in rect: CGRect, exponent: CGFloat) -> CGPath {
+        let path = CGMutablePath()
+        let cx = rect.midX, cy = rect.midY
+        let rx = rect.width * 0.5, ry = rect.height * 0.5
+        let steps = 512
+        let inv = 2.0 / exponent
+        for i in 0...steps {
+            let t = CGFloat(i) / CGFloat(steps) * 2 * .pi
+            let cosT = cos(t), sinT = sin(t)
+            let x = cx + rx * (cosT < 0 ? -1 : 1) * pow(abs(cosT), inv)
+            let y = cy + ry * (sinT < 0 ? -1 : 1) * pow(abs(sinT), inv)
+            if i == 0 { path.move(to: CGPoint(x: x, y: y)) }
+            else       { path.addLine(to: CGPoint(x: x, y: y)) }
+        }
+        path.closeSubpath()
+        return path
     }
 }
