@@ -2,7 +2,7 @@
 
 A native macOS app for generating neon light-painting mandala images. Every parameter is controllable in real time, with instant auto-generation on change.
 
-![Mandala Generator](icon_1024.png)
+![Mandala Generator](sample-image.jpg)
 
 ## Features
 
