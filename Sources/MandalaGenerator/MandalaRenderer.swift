@@ -1576,6 +1576,7 @@ struct MandalaRenderer {
         return ctx.createCGImage(result, from: ext) ?? image
     }
 
+
     // MARK: - Screen composite (painted base + crisp overlay)
 
     private static func screenComposite(base: CGImage, overlay: CGImage) -> CGImage {
