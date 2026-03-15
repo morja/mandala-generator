@@ -32,9 +32,9 @@ jobs:
 
       - name: Package app bundle
         # ditto preserves macOS metadata and resource forks correctly
-        run: ditto -c -k --sequesterRsrc --keepParent \
-               "Mandala Generator.app" \
-               "Mandala-Generator.zip"
+        run: |
+          APP="Mandala Generator.app"
+          ditto -c -k --sequesterRsrc --keepParent "$APP" "Mandala-Generator.zip"
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
