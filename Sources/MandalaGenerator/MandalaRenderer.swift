@@ -80,6 +80,7 @@ struct MandalaRenderer {
 
         // ── PER-LAYER RENDER ──
         for (li, layer) in params.layers.enumerated() {
+            guard layer.isEnabled else { continue }
             let layerSymmetry = max(1, min(8, layer.symmetry))
             let layerRadius = baseRadius * max(0.1, min(1.0, layer.scale))
             let layerCount  = max(2, Int(layer.complexity * 8) + 1)
@@ -1624,15 +1625,31 @@ struct MandalaRenderer {
         let ci  = CIImage(cgImage: image)
         let ctx = CIContext(options: [.workingColorSpace: CGColorSpace(name: CGColorSpace.displayP3) as Any])
         let ext = ci.extent
-        guard let f = CIFilter(name: "CIColorControls") else { return image }
-        // saturation: slider 0→1 maps to CIColorControls 0→3 (0=grey, 1=normal, 3=vivid)
-        f.setValue(ci, forKey: kCIInputImageKey)
-        f.setValue(saturation * 3.0, forKey: kCIInputSaturationKey)
-        // brightness: slider 0→1 maps to -0.4 → +0.4 (0.5 = neutral)
-        f.setValue((brightness - 0.5) * 0.8, forKey: kCIInputBrightnessKey)
-        // slight contrast lift when brightness is high to keep punch
-        f.setValue(0.9 + brightness * 0.3, forKey: kCIInputContrastKey)
-        guard let out = f.outputImage?.cropped(to: ext) else { return image }
+
+        // Saturation + contrast via CIColorControls — NO additive brightness offset,
+        // so black pixels (background areas) stay exactly at zero and don't bleed
+        // into the base layer when screen-composited.
+        guard let sat = CIFilter(name: "CIColorControls") else { return image }
+        sat.setValue(ci, forKey: kCIInputImageKey)
+        sat.setValue(saturation * 3.0, forKey: kCIInputSaturationKey)   // 0=grey, 1=normal, 3=vivid
+        sat.setValue(0.0, forKey: kCIInputBrightnessKey)                 // no additive lift
+        sat.setValue(0.9 + brightness * 0.3, forKey: kCIInputContrastKey)
+        guard let satImg = sat.outputImage?.cropped(to: ext) else { return image }
+
+        // Brightness as a pure multiplier: 0→0×, 0.5→1×, 1→2×.
+        // Multiplying keeps black at black — it never creates a gray wash.
+        let bMul = CGFloat(brightness * 2.0)
+        guard let bm = CIFilter(name: "CIColorMatrix") else {
+            return ctx.createCGImage(satImg, from: ext) ?? image
+        }
+        bm.setValue(satImg, forKey: kCIInputImageKey)
+        bm.setValue(CIVector(x: bMul, y: 0,    z: 0,    w: 0), forKey: "inputRVector")
+        bm.setValue(CIVector(x: 0,    y: bMul, z: 0,    w: 0), forKey: "inputGVector")
+        bm.setValue(CIVector(x: 0,    y: 0,    z: bMul, w: 0), forKey: "inputBVector")
+        bm.setValue(CIVector(x: 0,    y: 0,    z: 0,    w: 1), forKey: "inputAVector")
+        guard let out = bm.outputImage?.cropped(to: ext) else {
+            return ctx.createCGImage(satImg, from: ext) ?? image
+        }
         return ctx.createCGImage(out, from: ext) ?? image
     }
 

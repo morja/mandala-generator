@@ -76,9 +76,12 @@ private struct LayerCard: View {
         VStack(spacing: 0) {
             // ── Header ──────────────────────────────────────────────
             HStack(spacing: 8) {
+                Toggle("", isOn: $layer.isEnabled)
+                    .toggleStyle(.switch).scaleEffect(0.7).labelsHidden()
+
                 Image(systemName: layer.style.sfSymbol)
                     .font(.system(size: 12))
-                    .foregroundColor(.white.opacity(0.8))
+                    .foregroundColor(layer.isEnabled ? .white.opacity(0.8) : .secondary.opacity(0.4))
                     .frame(width: 16)
 
                 // Colour strip preview
@@ -89,10 +92,11 @@ private struct LayerCard: View {
                     startPoint: .leading, endPoint: .trailing
                 )
                 .frame(height: 5).cornerRadius(2.5)
+                .opacity(layer.isEnabled ? 1 : 0.3)
 
                 Text(layer.style.displayName)
                     .font(.caption.weight(.medium))
-                    .foregroundColor(.primary)
+                    .foregroundColor(layer.isEnabled ? .primary : .secondary)
                     .lineLimit(1)
 
                 Spacer()
@@ -199,7 +203,8 @@ private struct LayerCard: View {
             }
         }
         .clipShape(RoundedRectangle(cornerRadius: 8))
-        .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.white.opacity(0.08), lineWidth: 1))
+        .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.white.opacity(layer.isEnabled ? 0.08 : 0.03), lineWidth: 1))
+        .opacity(layer.isEnabled ? 1 : 0.55)
     }
 }
 

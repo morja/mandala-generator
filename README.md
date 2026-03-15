@@ -4,6 +4,11 @@ A native macOS app for generating neon light-painting mandala images. Every para
 
 ![Mandala Generator](sample-image.jpg)
 
+
+![Mandala Generator](sample-image-2.jpg)
+![Mandala Generator](sample-image-3.jpg)
+![Mandala Generator](sample-image-4.jpg)
+
 ## Features
 
 - **10 drawing styles** — Spirograph, Rose Curves, String Art, Sunburst, Epitrochoid, Floral, Lissajous, Butterfly, Geometric, Mixed

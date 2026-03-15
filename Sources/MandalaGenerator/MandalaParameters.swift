@@ -107,6 +107,7 @@ enum MandalaStyle: String, CaseIterable, Identifiable {
 
 /// All settings for one rendered layer.
 struct StyleLayer: Equatable {
+    var isEnabled: Bool = true
     var style: MandalaStyle = .mixed
     var scale: Double = 1.0
     var paletteIndex: Int = 0
