@@ -184,12 +184,59 @@ struct MandalaRenderer {
             collectFractalTasks(into: &tasks, cx: cx, cy: cy, radius: baseRadius,
                                 params: params, rng: &rng, layerCount: layerCount,
                                 symmetry: symmetry, rippleAmount: rippleAmount, weightMul: weightMul)
+        case .phyllotaxis:
+            collectPhyllotaxisTasks(into: &tasks, cx: cx, cy: cy, radius: baseRadius,
+                                    params: params, rng: &rng, layerCount: layerCount,
+                                    symmetry: symmetry, rippleAmount: rippleAmount, weightMul: weightMul)
+        case .hypocycloid:
+            collectHypocycloidTasks(into: &tasks, cx: cx, cy: cy, radius: baseRadius,
+                                    params: params, rng: &rng, layerCount: layerCount,
+                                    symmetry: symmetry, rippleAmount: rippleAmount, weightMul: weightMul)
+        case .waveInterference:
+            collectWaveInterferenceTasks(into: &tasks, cx: cx, cy: cy, radius: baseRadius,
+                                         params: params, rng: &rng, layerCount: layerCount,
+                                         symmetry: symmetry, rippleAmount: rippleAmount, weightMul: weightMul)
+        case .spiderWeb:
+            collectSpiderWebTasks(into: &tasks, cx: cx, cy: cy, radius: baseRadius,
+                                  params: params, rng: &rng, layerCount: layerCount,
+                                  symmetry: symmetry, rippleAmount: rippleAmount, weightMul: weightMul)
+        case .weave:
+            collectWeaveTasks(into: &tasks, cx: cx, cy: cy, radius: baseRadius,
+                              params: params, rng: &rng, layerCount: layerCount,
+                              symmetry: symmetry, rippleAmount: rippleAmount, weightMul: weightMul)
+        case .sacredGeometry:
+            collectSacredGeometryTasks(into: &tasks, cx: cx, cy: cy, radius: baseRadius,
+                                       params: params, rng: &rng, layerCount: layerCount,
+                                       symmetry: symmetry, rippleAmount: rippleAmount, weightMul: weightMul)
+        case .radialMesh:
+            collectRadialMeshTasks(into: &tasks, cx: cx, cy: cy, radius: baseRadius,
+                                   params: params, rng: &rng, layerCount: layerCount,
+                                   symmetry: symmetry, rippleAmount: rippleAmount, weightMul: weightMul)
+        case .flowField:
+            collectFlowFieldTasks(into: &tasks, cx: cx, cy: cy, radius: baseRadius,
+                                  params: params, rng: &rng, layerCount: layerCount,
+                                  symmetry: symmetry, rippleAmount: rippleAmount, weightMul: weightMul)
+        case .tendril:
+            collectTendrilTasks(into: &tasks, cx: cx, cy: cy, radius: baseRadius,
+                                params: params, rng: &rng, layerCount: layerCount,
+                                symmetry: symmetry, rippleAmount: rippleAmount, weightMul: weightMul)
+        case .moire:
+            collectMoireTasks(into: &tasks, cx: cx, cy: cy, radius: baseRadius,
+                              params: params, rng: &rng, layerCount: layerCount,
+                              symmetry: symmetry, rippleAmount: rippleAmount, weightMul: weightMul)
+        case .voronoi:
+            collectVoronoiTasks(into: &tasks, cx: cx, cy: cy, radius: baseRadius,
+                                params: params, rng: &rng, layerCount: layerCount,
+                                symmetry: symmetry, rippleAmount: rippleAmount, weightMul: weightMul)
         case .mixed:
             // Seed-driven random zone selection — different every render
             var zoneRng = SeededRNG(seed: params.seed &+ 0xbeef1234)
             // Pick 3 distinct zone radii and assign a randomly chosen style to each
             let zoneStyles: [MandalaStyle] = [.spirograph, .roseCurves, .epitrochoid, .lissajous,
-                                              .butterfly, .floral, .stringArt, .sunburst, .geometric, .fractal]
+                                              .butterfly, .floral, .stringArt, .sunburst, .geometric, .fractal,
+                                              .phyllotaxis, .hypocycloid, .waveInterference, .spiderWeb,
+                                              .weave, .sacredGeometry, .radialMesh, .flowField, .tendril,
+                                              .moire, .voronoi]
             let radii: [Double] = [1.0, 0.72, 0.45]
             let sub = max(2, layerCount / 3)
             for (zi, zRadius) in radii.enumerated() {
@@ -235,6 +282,50 @@ struct MandalaRenderer {
                                        layerCount: sub, symmetry: symmetry)
                 case .fractal:
                     collectFractalTasks(into: &tasks, cx: cx, cy: cy, radius: scaled,
+                                        params: params, rng: &rng, layerCount: sub,
+                                        symmetry: symmetry, rippleAmount: rippleAmount, weightMul: wmul)
+                case .phyllotaxis:
+                    collectPhyllotaxisTasks(into: &tasks, cx: cx, cy: cy, radius: scaled,
+                                            params: params, rng: &rng, layerCount: sub,
+                                            symmetry: symmetry, rippleAmount: rippleAmount, weightMul: wmul)
+                case .hypocycloid:
+                    collectHypocycloidTasks(into: &tasks, cx: cx, cy: cy, radius: scaled,
+                                            params: params, rng: &rng, layerCount: sub,
+                                            symmetry: symmetry, rippleAmount: rippleAmount, weightMul: wmul)
+                case .waveInterference:
+                    collectWaveInterferenceTasks(into: &tasks, cx: cx, cy: cy, radius: scaled,
+                                                 params: params, rng: &rng, layerCount: sub,
+                                                 symmetry: symmetry, rippleAmount: rippleAmount, weightMul: wmul)
+                case .spiderWeb:
+                    collectSpiderWebTasks(into: &tasks, cx: cx, cy: cy, radius: scaled,
+                                          params: params, rng: &rng, layerCount: sub,
+                                          symmetry: symmetry, rippleAmount: rippleAmount, weightMul: wmul)
+                case .weave:
+                    collectWeaveTasks(into: &tasks, cx: cx, cy: cy, radius: scaled,
+                                      params: params, rng: &rng, layerCount: sub,
+                                      symmetry: symmetry, rippleAmount: rippleAmount, weightMul: wmul)
+                case .sacredGeometry:
+                    collectSacredGeometryTasks(into: &tasks, cx: cx, cy: cy, radius: scaled,
+                                               params: params, rng: &rng, layerCount: sub,
+                                               symmetry: symmetry, rippleAmount: rippleAmount, weightMul: wmul)
+                case .radialMesh:
+                    collectRadialMeshTasks(into: &tasks, cx: cx, cy: cy, radius: scaled,
+                                           params: params, rng: &rng, layerCount: sub,
+                                           symmetry: symmetry, rippleAmount: rippleAmount, weightMul: wmul)
+                case .flowField:
+                    collectFlowFieldTasks(into: &tasks, cx: cx, cy: cy, radius: scaled,
+                                          params: params, rng: &rng, layerCount: sub,
+                                          symmetry: symmetry, rippleAmount: rippleAmount, weightMul: wmul)
+                case .tendril:
+                    collectTendrilTasks(into: &tasks, cx: cx, cy: cy, radius: scaled,
+                                        params: params, rng: &rng, layerCount: sub,
+                                        symmetry: symmetry, rippleAmount: rippleAmount, weightMul: wmul)
+                case .moire:
+                    collectMoireTasks(into: &tasks, cx: cx, cy: cy, radius: scaled,
+                                      params: params, rng: &rng, layerCount: sub,
+                                      symmetry: symmetry, rippleAmount: rippleAmount, weightMul: wmul)
+                case .voronoi:
+                    collectVoronoiTasks(into: &tasks, cx: cx, cy: cy, radius: scaled,
                                         params: params, rng: &rng, layerCount: sub,
                                         symmetry: symmetry, rippleAmount: rippleAmount, weightMul: wmul)
                 case .mixed:
@@ -1405,6 +1496,730 @@ struct MandalaRenderer {
                 tasks.append(CurveDrawTask(xs: rxs, ys: rys,
                                            tOffset: tOffset, drift: params.colorDrift,
                                            weight: weight, thickness: 1))
+            }
+        }
+    }
+
+    // MARK: - Phyllotaxis (golden angle spiral of petals)
+
+    private static func collectPhyllotaxisTasks(into tasks: inout [CurveDrawTask],
+                                                cx: Float, cy: Float, radius: Double,
+                                                params: MandalaParameters, rng: inout SeededRNG,
+                                                layerCount: Int, symmetry: Int,
+                                                rippleAmount: Float, weightMul: Float) {
+        let goldenAngle = Float(2.39996323)
+        let N = Int(80 + params.density * 220)
+        let R = Float(radius)
+        let petalR = R * Float(0.025 + params.complexity * 0.045)
+        let tOffset = rng.nextDouble()
+        let weight = Float(rng.nextDouble(in: 0.4...1.1)) * weightMul
+        let ripSeed = params.seed &+ 0xABCDEF01
+
+        for i in 0..<N {
+            let fi = Float(i)
+            let r = sqrt(fi / Float(N)) * R * 0.95
+            let theta = fi * goldenAngle
+            let px = cos(theta) * r
+            let py = sin(theta) * r
+
+            let petalSteps = 14
+            var xs = [Float]()
+            var ys = [Float]()
+            xs.reserveCapacity(petalSteps + 1)
+            ys.reserveCapacity(petalSteps + 1)
+            let rotA = theta + Float.pi * 0.5
+            let cosRot = cos(rotA), sinRot = sin(rotA)
+            let pr = petalR * (0.4 + 0.6 * sqrt(r / max(R, 1)))
+            for k in 0...petalSteps {
+                let a = Float(k) / Float(petalSteps) * Float.pi * 2
+                let lx = cos(a) * pr
+                let ly = sin(a) * pr * 1.5
+                xs.append(lx * cosRot - ly * sinRot + px)
+                ys.append(lx * sinRot + ly * cosRot + py)
+            }
+
+            for sym in 0..<symmetry {
+                let angle = Double(sym) * .pi * 2 / Double(symmetry)
+                let cosA = Float(cos(angle)), sinA = Float(sin(angle))
+                var rxs = [Float](repeating: 0, count: xs.count)
+                var rys = [Float](repeating: 0, count: ys.count)
+                for j in 0..<xs.count {
+                    rxs[j] = cx + xs[j] * cosA - ys[j] * sinA
+                    rys[j] = cy + xs[j] * sinA + ys[j] * cosA
+                }
+                if rippleAmount > 0 {
+                    applyRippleToPoints(xs: &rxs, ys: &rys, amount: rippleAmount,
+                                        seed: ripSeed &+ UInt64(i * 13) &+ UInt64(sym))
+                }
+                tasks.append(CurveDrawTask(xs: rxs, ys: rys,
+                                           tOffset: tOffset + Double(fi) / Double(N) * 0.8,
+                                           drift: params.colorDrift,
+                                           weight: weight * (0.3 + 0.7 * sqrt(r / max(R, 1))),
+                                           thickness: 1))
+            }
+        }
+    }
+
+    // MARK: - Hypocycloid (inner rolling circles — star/astroid shapes)
+
+    private static func collectHypocycloidTasks(into tasks: inout [CurveDrawTask],
+                                                cx: Float, cy: Float, radius: Double,
+                                                params: MandalaParameters, rng: inout SeededRNG,
+                                                layerCount: Int, symmetry: Int,
+                                                rippleAmount: Float, weightMul: Float) {
+        let configs: [(Double, Double)] = [
+            (1.0/3.0, 1.0/3.0), (1.0/4.0, 1.0/4.0), (2.0/5.0, 2.0/5.0),
+            (3.0/7.0, 3.0/7.0), (1.0/3.0, 2.0/3.0), (2.0/7.0, 0.5),
+            (1.0/5.0, 4.0/5.0), (3.0/8.0, 3.0/8.0),
+        ]
+        for i in 0..<layerCount {
+            let cfg = configs[i % configs.count]
+            let R = radius * (0.5 + rng.nextDouble() * 0.5)
+            let r = R * cfg.0
+            let d = R * cfg.1 * (0.7 + rng.nextDouble() * 0.4)
+            let (xs, ys) = hypoPoints(R: R, r: r, d: d, steps: 3000)
+            let tOffset = rng.nextDouble()
+            let weight = Float(rng.nextDouble(in: 0.5...1.3)) * Float(params.complexity) * weightMul
+            let ripSeed = params.seed &+ UInt64(i * 41 + 7)
+            for sym in 0..<symmetry {
+                let angle = Double(sym) * .pi * 2 / Double(symmetry)
+                let cosA = Float(cos(angle)), sinA = Float(sin(angle))
+                var rxs = [Float](repeating: 0, count: xs.count)
+                var rys = [Float](repeating: 0, count: ys.count)
+                for j in 0..<xs.count {
+                    rxs[j] = cx + xs[j] * cosA - ys[j] * sinA
+                    rys[j] = cy + xs[j] * sinA + ys[j] * cosA
+                }
+                if rippleAmount > 0 {
+                    applyRippleToPoints(xs: &rxs, ys: &rys, amount: rippleAmount,
+                                        seed: ripSeed &+ UInt64(sym))
+                }
+                tasks.append(CurveDrawTask(xs: rxs, ys: rys,
+                                           tOffset: tOffset + Double(sym) * 0.09,
+                                           drift: params.colorDrift, weight: weight, thickness: 1))
+            }
+        }
+    }
+
+    private static func hypoPoints(R: Double, r: Double, d: Double, steps: Int) -> ([Float], [Float]) {
+        var xs = [Float](); var ys = [Float]()
+        xs.reserveCapacity(steps + 1); ys.reserveCapacity(steps + 1)
+        let diff = R - r
+        let ratio = r == 0 ? 0.0 : diff / r
+        let period = lcmPeriod(R: R, r: r)
+        let tMax = period * 2.0 * Double.pi
+        let dt = tMax / Double(steps)
+        for i in 0...steps {
+            let t = Double(i) * dt
+            xs.append(Float(diff * cos(t) + d * cos(ratio * t)))
+            ys.append(Float(diff * sin(t) - d * sin(ratio * t)))
+        }
+        return (xs, ys)
+    }
+
+    // MARK: - Wave Interference (overlapping concentric ring systems)
+
+    private static func collectWaveInterferenceTasks(into tasks: inout [CurveDrawTask],
+                                                     cx: Float, cy: Float, radius: Double,
+                                                     params: MandalaParameters, rng: inout SeededRNG,
+                                                     layerCount: Int, symmetry: Int,
+                                                     rippleAmount: Float, weightMul: Float) {
+        let nSources = 2 + Int(params.density * 3)
+        let nRings   = Int(8 + params.complexity * 24)
+        let R = Float(radius)
+
+        for s in 0..<nSources {
+            let srcAngle = Float(s) / Float(nSources) * Float.pi * 2 + Float(rng.nextDouble()) * 0.5
+            let srcR     = R * Float(0.05 + rng.nextDouble() * 0.38)
+            let srcX     = cos(srcAngle) * srcR
+            let srcY     = sin(srcAngle) * srcR
+            let tOffset  = rng.nextDouble()
+            let weight   = Float(rng.nextDouble(in: 0.3...0.8)) * weightMul
+            let ripSeed  = params.seed &+ UInt64(s * 77 + 13)
+
+            for ring in 0..<nRings {
+                let ringR = R * Float(ring + 1) / Float(nRings)
+                let steps = max(80, Int(ringR * 2))
+                var xs = [Float](); var ys = [Float]()
+                xs.reserveCapacity(steps + 1); ys.reserveCapacity(steps + 1)
+                for k in 0...steps {
+                    let a = Float(k) / Float(steps) * Float.pi * 2
+                    xs.append(srcX + cos(a) * ringR)
+                    ys.append(srcY + sin(a) * ringR)
+                }
+                for sym in 0..<symmetry {
+                    let angle = Double(sym) * .pi * 2 / Double(symmetry)
+                    let cosA = Float(cos(angle)), sinA = Float(sin(angle))
+                    var rxs = [Float](repeating: 0, count: xs.count)
+                    var rys = [Float](repeating: 0, count: ys.count)
+                    for j in 0..<xs.count {
+                        rxs[j] = cx + xs[j] * cosA - ys[j] * sinA
+                        rys[j] = cy + xs[j] * sinA + ys[j] * cosA
+                    }
+                    if rippleAmount > 0 {
+                        applyRippleToPoints(xs: &rxs, ys: &rys, amount: rippleAmount,
+                                            seed: ripSeed &+ UInt64(ring * 7) &+ UInt64(sym))
+                    }
+                    tasks.append(CurveDrawTask(xs: rxs, ys: rys,
+                                               tOffset: tOffset + Double(ring) / Double(nRings) * params.colorDrift,
+                                               drift: params.colorDrift * 0.3,
+                                               weight: weight * (1.0 - Float(ring) / Float(nRings) * 0.5),
+                                               thickness: 1))
+                }
+            }
+        }
+    }
+
+    // MARK: - Spider Web (radial spokes + concentric polygon rings)
+
+    private static func collectSpiderWebTasks(into tasks: inout [CurveDrawTask],
+                                              cx: Float, cy: Float, radius: Double,
+                                              params: MandalaParameters, rng: inout SeededRNG,
+                                              layerCount: Int, symmetry: Int,
+                                              rippleAmount: Float, weightMul: Float) {
+        let R       = Float(radius)
+        let nSpokes = max(6, symmetry * (2 + Int(params.density * 4)))
+        let nRings  = Int(4 + params.complexity * 14)
+        let tOffset = rng.nextDouble()
+        let weight  = Float(rng.nextDouble(in: 0.4...1.0)) * weightMul
+        let ripSeed = params.seed &+ 0xABCD1234
+
+        // Radial spokes
+        for spoke in 0..<nSpokes {
+            let a    = Float(spoke) / Float(nSpokes) * Float.pi * 2
+            let xs: [Float] = [0, cos(a) * R]
+            let ys: [Float] = [0, sin(a) * R]
+            for sym in 0..<symmetry {
+                let angle = Double(sym) * .pi * 2 / Double(symmetry)
+                let cosA = Float(cos(angle)), sinA = Float(sin(angle))
+                var rxs = [Float](repeating: 0, count: 2)
+                var rys = [Float](repeating: 0, count: 2)
+                for j in 0..<2 {
+                    rxs[j] = cx + xs[j] * cosA - ys[j] * sinA
+                    rys[j] = cy + xs[j] * sinA + ys[j] * cosA
+                }
+                tasks.append(CurveDrawTask(xs: rxs, ys: rys,
+                                           tOffset: tOffset + Double(spoke) / Double(nSpokes),
+                                           drift: params.colorDrift, weight: weight * 0.6, thickness: 1))
+            }
+        }
+
+        // Concentric polygon rings
+        for ring in 0..<nRings {
+            let ringR = R * Float(ring + 1) / Float(nRings + 1)
+            var xs = [Float](); var ys = [Float]()
+            xs.reserveCapacity(nSpokes + 1); ys.reserveCapacity(nSpokes + 1)
+            for spoke in 0...nSpokes {
+                let a = Float(spoke % nSpokes) / Float(nSpokes) * Float.pi * 2
+                xs.append(cos(a) * ringR)
+                ys.append(sin(a) * ringR)
+            }
+            for sym in 0..<symmetry {
+                let angle = Double(sym) * .pi * 2 / Double(symmetry)
+                let cosA = Float(cos(angle)), sinA = Float(sin(angle))
+                var rxs = [Float](repeating: 0, count: xs.count)
+                var rys = [Float](repeating: 0, count: ys.count)
+                for j in 0..<xs.count {
+                    rxs[j] = cx + xs[j] * cosA - ys[j] * sinA
+                    rys[j] = cy + xs[j] * sinA + ys[j] * cosA
+                }
+                if rippleAmount > 0 {
+                    applyRippleToPoints(xs: &rxs, ys: &rys, amount: rippleAmount,
+                                        seed: ripSeed &+ UInt64(ring * 11) &+ UInt64(sym))
+                }
+                tasks.append(CurveDrawTask(xs: rxs, ys: rys,
+                                           tOffset: tOffset + Double(ring) / Double(nRings),
+                                           drift: params.colorDrift, weight: weight, thickness: 1))
+            }
+        }
+    }
+
+    // MARK: - Weave (interlocking sinusoidal circular strands)
+
+    private static func collectWeaveTasks(into tasks: inout [CurveDrawTask],
+                                          cx: Float, cy: Float, radius: Double,
+                                          params: MandalaParameters, rng: inout SeededRNG,
+                                          layerCount: Int, symmetry: Int,
+                                          rippleAmount: Float, weightMul: Float) {
+        let R        = Float(radius)
+        let nStrands = 3 + Int(params.density * 8)
+        let freq     = Float(nStrands)
+        let steps    = 400
+        let tOffset  = rng.nextDouble()
+        let weight   = Float(rng.nextDouble(in: 0.5...1.2)) * Float(params.complexity) * weightMul
+        let ripSeed  = params.seed &+ 0xDEAD1234
+
+        for i in 0..<nStrands {
+            let baseR       = R * Float(0.2 + 0.7 * Double(i + 1) / Double(nStrands + 1))
+            let amplitude   = baseR * 0.12
+            let phaseOffset = Float(i) / Float(nStrands) * Float.pi * 2
+
+            for direction in 0..<2 {
+                let dir: Float = direction == 0 ? 1 : -1
+                var xs = [Float](); var ys = [Float]()
+                xs.reserveCapacity(steps + 1); ys.reserveCapacity(steps + 1)
+                for k in 0...steps {
+                    let a = Float(k) / Float(steps) * Float.pi * 2 * dir
+                    let r = baseR + amplitude * sin(freq * a + phaseOffset + dir * Float.pi * 0.25)
+                    xs.append(cos(a) * r)
+                    ys.append(sin(a) * r)
+                }
+                for sym in 0..<symmetry {
+                    let angle = Double(sym) * .pi * 2 / Double(symmetry)
+                    let cosA = Float(cos(angle)), sinA = Float(sin(angle))
+                    var rxs = [Float](repeating: 0, count: xs.count)
+                    var rys = [Float](repeating: 0, count: ys.count)
+                    for j in 0..<xs.count {
+                        rxs[j] = cx + xs[j] * cosA - ys[j] * sinA
+                        rys[j] = cy + xs[j] * sinA + ys[j] * cosA
+                    }
+                    if rippleAmount > 0 {
+                        applyRippleToPoints(xs: &rxs, ys: &rys, amount: rippleAmount,
+                                            seed: ripSeed &+ UInt64(i * 23 + direction * 100 + sym))
+                    }
+                    tasks.append(CurveDrawTask(xs: rxs, ys: rys,
+                                               tOffset: tOffset + Double(i) / Double(nStrands) * 0.5 + Double(direction) * 0.3,
+                                               drift: params.colorDrift, weight: weight, thickness: 1))
+                }
+            }
+        }
+    }
+
+    // MARK: - Sacred Geometry (Flower of Life + nested polygons + Metatron lines)
+
+    private static func collectSacredGeometryTasks(into tasks: inout [CurveDrawTask],
+                                                   cx: Float, cy: Float, radius: Double,
+                                                   params: MandalaParameters, rng: inout SeededRNG,
+                                                   layerCount: Int, symmetry: Int,
+                                                   rippleAmount: Float, weightMul: Float) {
+        let R        = Float(radius)
+        let circleR  = R * Float(0.15 + params.density * 0.20)
+        let tOffset  = rng.nextDouble()
+        let weight   = Float(rng.nextDouble(in: 0.5...1.0)) * weightMul
+        let circStep = 48
+
+        // Central circle
+        do {
+            var xs = [Float](); var ys = [Float]()
+            for k in 0...circStep {
+                let a = Float(k) / Float(circStep) * Float.pi * 2
+                xs.append(cos(a) * circleR); ys.append(sin(a) * circleR)
+            }
+            for sym in 0..<symmetry {
+                let angle = Double(sym) * .pi * 2 / Double(symmetry)
+                let cosA = Float(cos(angle)), sinA = Float(sin(angle))
+                var rxs = [Float](repeating: 0, count: xs.count)
+                var rys = [Float](repeating: 0, count: ys.count)
+                for j in 0..<xs.count {
+                    rxs[j] = cx + xs[j] * cosA - ys[j] * sinA
+                    rys[j] = cy + xs[j] * sinA + ys[j] * cosA
+                }
+                tasks.append(CurveDrawTask(xs: rxs, ys: rys, tOffset: tOffset,
+                                           drift: params.colorDrift, weight: weight, thickness: 1))
+            }
+        }
+
+        // 6 petal circles
+        var centers: [(Float, Float)] = [(0, 0)]
+        for i in 0..<6 {
+            let a = Float(i) / 6 * Float.pi * 2
+            let px = cos(a) * circleR, py = sin(a) * circleR
+            centers.append((px, py))
+            var xs = [Float](); var ys = [Float]()
+            for k in 0...circStep {
+                let ca = Float(k) / Float(circStep) * Float.pi * 2
+                xs.append(px + cos(ca) * circleR); ys.append(py + sin(ca) * circleR)
+            }
+            let petalTOffset = tOffset + Double(i) / 6.0 * 0.4
+            for sym in 0..<symmetry {
+                let angle = Double(sym) * .pi * 2 / Double(symmetry)
+                let cosA = Float(cos(angle)), sinA = Float(sin(angle))
+                var rxs = [Float](repeating: 0, count: xs.count)
+                var rys = [Float](repeating: 0, count: ys.count)
+                for j in 0..<xs.count {
+                    rxs[j] = cx + xs[j] * cosA - ys[j] * sinA
+                    rys[j] = cy + xs[j] * sinA + ys[j] * cosA
+                }
+                tasks.append(CurveDrawTask(xs: rxs, ys: rys, tOffset: petalTOffset,
+                                           drift: params.colorDrift, weight: weight, thickness: 1))
+            }
+        }
+
+        // Second ring of 6 circles
+        if params.density > 0.35 {
+            for i in 0..<6 {
+                let a = Float(i) / 6 * Float.pi * 2 + Float.pi / 6
+                let px = cos(a) * circleR * 2, py = sin(a) * circleR * 2
+                centers.append((px, py))
+                var xs = [Float](); var ys = [Float]()
+                for k in 0...circStep {
+                    let ca = Float(k) / Float(circStep) * Float.pi * 2
+                    xs.append(px + cos(ca) * circleR); ys.append(py + sin(ca) * circleR)
+                }
+                let ring2TOffset = tOffset + 0.5 + Double(i) / 6.0 * 0.3
+                let ring2Weight = weight * 0.8
+                for sym in 0..<symmetry {
+                    let angle = Double(sym) * .pi * 2 / Double(symmetry)
+                    let cosA = Float(cos(angle)), sinA = Float(sin(angle))
+                    var rxs = [Float](repeating: 0, count: xs.count)
+                    var rys = [Float](repeating: 0, count: ys.count)
+                    for j in 0..<xs.count {
+                        rxs[j] = cx + xs[j] * cosA - ys[j] * sinA
+                        rys[j] = cy + xs[j] * sinA + ys[j] * cosA
+                    }
+                    tasks.append(CurveDrawTask(xs: rxs, ys: rys, tOffset: ring2TOffset,
+                                               drift: params.colorDrift, weight: ring2Weight, thickness: 1))
+                }
+            }
+        }
+
+        // Nested polygons at increasing radii
+        let maxSides = 3 + Int(params.complexity * 6)
+        for sides in 3...maxSides {
+            let polyR = R * Float(0.08 + Double(sides - 3) / Double(maxSides - 2) * 0.88)
+            var xs = [Float](); var ys = [Float]()
+            for k in 0...sides {
+                let a = Float(k % sides) / Float(sides) * Float.pi * 2
+                xs.append(cos(a) * polyR); ys.append(sin(a) * polyR)
+            }
+            let polyTOffset = tOffset + Double(sides) * 0.1
+            let polyWeight = weight * 0.7
+            for sym in 0..<symmetry {
+                let angle = Double(sym) * .pi * 2 / Double(symmetry)
+                let cosA = Float(cos(angle)), sinA = Float(sin(angle))
+                var rxs = [Float](repeating: 0, count: xs.count)
+                var rys = [Float](repeating: 0, count: ys.count)
+                for j in 0..<xs.count {
+                    rxs[j] = cx + xs[j] * cosA - ys[j] * sinA
+                    rys[j] = cy + xs[j] * sinA + ys[j] * cosA
+                }
+                tasks.append(CurveDrawTask(xs: rxs, ys: rys, tOffset: polyTOffset,
+                                           drift: params.colorDrift, weight: polyWeight, thickness: 1))
+            }
+        }
+
+        // Metatron lines: connect all FOL centers
+        if params.complexity > 0.45 {
+            for ai in 0..<centers.count {
+                for bi in (ai + 1)..<centers.count {
+                    let lxs: [Float] = [centers[ai].0, centers[bi].0]
+                    let lys: [Float] = [centers[ai].1, centers[bi].1]
+                    let metaTOffset = tOffset + Double(ai * 7 + bi) * 0.02
+                    let metaWeight = weight * 0.45
+                    for sym in 0..<symmetry {
+                        let angle = Double(sym) * .pi * 2 / Double(symmetry)
+                        let cosA = Float(cos(angle)), sinA = Float(sin(angle))
+                        var rxs = [Float](repeating: 0, count: lxs.count)
+                        var rys = [Float](repeating: 0, count: lys.count)
+                        for j in 0..<lxs.count {
+                            rxs[j] = cx + lxs[j] * cosA - lys[j] * sinA
+                            rys[j] = cy + lxs[j] * sinA + lys[j] * cosA
+                        }
+                        tasks.append(CurveDrawTask(xs: rxs, ys: rys, tOffset: metaTOffset,
+                                                   drift: params.colorDrift, weight: metaWeight, thickness: 1))
+                    }
+                }
+            }
+        }
+    }
+
+    // MARK: - Radial Mesh (polar grid, optionally distorted)
+
+    private static func collectRadialMeshTasks(into tasks: inout [CurveDrawTask],
+                                               cx: Float, cy: Float, radius: Double,
+                                               params: MandalaParameters, rng: inout SeededRNG,
+                                               layerCount: Int, symmetry: Int,
+                                               rippleAmount: Float, weightMul: Float) {
+        let R        = Float(radius)
+        let nRings   = Int(3 + params.complexity * 15)
+        let nSpokes  = max(8, symmetry * (2 + Int(params.density * 4)))
+        let tOffset  = rng.nextDouble()
+        let weight   = Float(rng.nextDouble(in: 0.3...0.9)) * weightMul
+        let ripSeed  = params.seed &+ 0xB00B5678
+        let distort  = Float(params.ripple * 0.5)
+
+        // Concentric circles (with optional sine distortion)
+        for ring in 0..<nRings {
+            let baseR = R * Float(ring + 1) / Float(nRings + 1)
+            let steps = max(60, nSpokes * 3)
+            var xs = [Float](); var ys = [Float]()
+            xs.reserveCapacity(steps + 1); ys.reserveCapacity(steps + 1)
+            for k in 0...steps {
+                let a = Float(k) / Float(steps) * Float.pi * 2
+                let dist = distort > 0 ? sin(Float(nSpokes / 2) * a + Float(ring)) * distort * baseR * 0.2 : 0
+                let r = baseR + dist
+                xs.append(cos(a) * r); ys.append(sin(a) * r)
+            }
+            for sym in 0..<symmetry {
+                let angle = Double(sym) * .pi * 2 / Double(symmetry)
+                let cosA = Float(cos(angle)), sinA = Float(sin(angle))
+                var rxs = [Float](repeating: 0, count: xs.count)
+                var rys = [Float](repeating: 0, count: ys.count)
+                for j in 0..<xs.count {
+                    rxs[j] = cx + xs[j] * cosA - ys[j] * sinA
+                    rys[j] = cy + xs[j] * sinA + ys[j] * cosA
+                }
+                if rippleAmount > 0 {
+                    applyRippleToPoints(xs: &rxs, ys: &rys, amount: rippleAmount,
+                                        seed: ripSeed &+ UInt64(ring * 13) &+ UInt64(sym))
+                }
+                tasks.append(CurveDrawTask(xs: rxs, ys: rys,
+                                           tOffset: tOffset + Double(ring) / Double(nRings),
+                                           drift: params.colorDrift, weight: weight, thickness: 1))
+            }
+        }
+
+        // Radial spokes
+        for spoke in 0..<nSpokes {
+            let a = Float(spoke) / Float(nSpokes) * Float.pi * 2
+            let xs: [Float] = [0, cos(a) * R]; let ys: [Float] = [0, sin(a) * R]
+            for sym in 0..<symmetry {
+                let angle = Double(sym) * .pi * 2 / Double(symmetry)
+                let cosA = Float(cos(angle)), sinA = Float(sin(angle))
+                var rxs = [Float](repeating: 0, count: 2)
+                var rys = [Float](repeating: 0, count: 2)
+                for j in 0..<2 {
+                    rxs[j] = cx + xs[j] * cosA - ys[j] * sinA
+                    rys[j] = cy + xs[j] * sinA + ys[j] * cosA
+                }
+                tasks.append(CurveDrawTask(xs: rxs, ys: rys,
+                                           tOffset: tOffset + Double(spoke) / Double(nSpokes) * params.colorDrift,
+                                           drift: params.colorDrift, weight: weight * 0.5, thickness: 1))
+            }
+        }
+    }
+
+    // MARK: - Flow Field (particle traces through sine/cosine vector field)
+
+    private static func collectFlowFieldTasks(into tasks: inout [CurveDrawTask],
+                                              cx: Float, cy: Float, radius: Double,
+                                              params: MandalaParameters, rng: inout SeededRNG,
+                                              layerCount: Int, symmetry: Int,
+                                              rippleAmount: Float, weightMul: Float) {
+        let R          = Float(radius)
+        let nParticles = Int(20 + params.density * 80)
+        let traceSteps = Int(100 + params.complexity * 300)
+        let stepSize   = R / Float(traceSteps) * 3.5
+        let scale1     = Float(2.0 + rng.nextDouble() * 2.0) / R
+        let scale2     = scale1 * Float(1.5 + rng.nextDouble())
+        let phase1     = Float(rng.nextDouble()) * Float.pi * 2
+        let phase2     = Float(rng.nextDouble()) * Float.pi * 2
+        let tOffset    = rng.nextDouble()
+        let weight     = Float(rng.nextDouble(in: 0.4...1.1)) * Float(params.complexity) * weightMul
+        let ripSeed    = params.seed &+ 0xF10F1234
+
+        for p in 0..<nParticles {
+            let startAngle = Float(rng.nextDouble()) * Float.pi * 2
+            let startR     = R * Float(rng.nextDouble() * 0.8 + 0.1)
+            var x = cos(startAngle) * startR
+            var y = sin(startAngle) * startR
+            var xs = [x], ys = [y]
+
+            for _ in 0..<traceSteps {
+                let fieldAngle = sin(x * scale1 + phase1) * cos(y * scale1) * Float.pi
+                              + sin(x * scale2 + phase2) * Float.pi * 0.5
+                x += cos(fieldAngle) * stepSize
+                y += sin(fieldAngle) * stepSize
+                if x * x + y * y > R * R { break }
+                xs.append(x); ys.append(y)
+            }
+            guard xs.count >= 2 else { continue }
+
+            for sym in 0..<symmetry {
+                let angle = Double(sym) * .pi * 2 / Double(symmetry)
+                let cosA = Float(cos(angle)), sinA = Float(sin(angle))
+                var rxs = [Float](repeating: 0, count: xs.count)
+                var rys = [Float](repeating: 0, count: ys.count)
+                for j in 0..<xs.count {
+                    rxs[j] = cx + xs[j] * cosA - ys[j] * sinA
+                    rys[j] = cy + xs[j] * sinA + ys[j] * cosA
+                }
+                if rippleAmount > 0 {
+                    applyRippleToPoints(xs: &rxs, ys: &rys, amount: rippleAmount,
+                                        seed: ripSeed &+ UInt64(p * 17) &+ UInt64(sym))
+                }
+                tasks.append(CurveDrawTask(xs: rxs, ys: rys,
+                                           tOffset: tOffset + Double(p) / Double(nParticles),
+                                           drift: params.colorDrift, weight: weight, thickness: 1))
+            }
+        }
+    }
+
+    // MARK: - Tendril (recursive branching curves)
+
+    private static func collectTendrilTasks(into tasks: inout [CurveDrawTask],
+                                            cx: Float, cy: Float, radius: Double,
+                                            params: MandalaParameters, rng: inout SeededRNG,
+                                            layerCount: Int, symmetry: Int,
+                                            rippleAmount: Float, weightMul: Float) {
+        struct Branch { var x, y, angle, length: Float; var depth: Int }
+        let R        = Float(radius)
+        let maxDepth = 2 + Int(params.complexity * 3)
+        let nTrunks  = 1 + Int(params.density * 5)
+        let tOffset  = rng.nextDouble()
+        let weight   = Float(rng.nextDouble(in: 0.5...1.2)) * weightMul
+        let ripSeed  = params.seed &+ 0xBEEF4321
+        var stack    = [Branch]()
+
+        for trunk in 0..<nTrunks {
+            let trunkAngle = Float(trunk) / Float(nTrunks) * Float.pi * 2 + Float(rng.nextDouble()) * 0.5
+            stack.append(Branch(x: 0, y: 0, angle: trunkAngle,
+                                length: R * Float(0.4 + rng.nextDouble() * 0.5), depth: 0))
+        }
+
+        while let branch = stack.popLast() {
+            guard branch.depth <= maxDepth else { continue }
+            let curvature = Float(rng.nextDouble() - 0.5) * 0.8
+            let segSteps  = 20
+            var xs = [branch.x]; var ys = [branch.y]
+            var curAngle = branch.angle
+            var curX = branch.x; var curY = branch.y
+            let seg = branch.length / Float(segSteps)
+            for _ in 0..<segSteps {
+                curAngle += curvature * 0.06
+                curX += cos(curAngle) * seg; curY += sin(curAngle) * seg
+                xs.append(curX); ys.append(curY)
+            }
+
+            let branchTOffset = tOffset + Double(branch.depth) * 0.2
+            for sym in 0..<symmetry {
+                let angle = Double(sym) * .pi * 2 / Double(symmetry)
+                let cosA = Float(cos(angle)), sinA = Float(sin(angle))
+                var rxs = [Float](repeating: 0, count: xs.count)
+                var rys = [Float](repeating: 0, count: ys.count)
+                for j in 0..<xs.count {
+                    rxs[j] = cx + xs[j] * cosA - ys[j] * sinA
+                    rys[j] = cy + xs[j] * sinA + ys[j] * cosA
+                }
+                if rippleAmount > 0 {
+                    applyRippleToPoints(xs: &rxs, ys: &rys, amount: rippleAmount,
+                                        seed: ripSeed &+ UInt64(sym))
+                }
+                let w = weight * pow(0.65, Float(branch.depth))
+                tasks.append(CurveDrawTask(xs: rxs, ys: rys, tOffset: branchTOffset,
+                                           drift: params.colorDrift, weight: w, thickness: 1))
+            }
+
+            if branch.depth < maxDepth {
+                let spread = Float.pi * Float(0.3 + rng.nextDouble() * 0.4)
+                let childL = branch.length * Float(0.5 + rng.nextDouble() * 0.2)
+                for b in 0..<2 {
+                    let childAngle = curAngle + (b == 0 ? spread : -spread) * Float(0.5 + rng.nextDouble() * 0.5)
+                    stack.append(Branch(x: curX, y: curY, angle: childAngle, length: childL, depth: branch.depth + 1))
+                }
+            }
+        }
+    }
+
+    // MARK: - Moiré (two offset concentric ring systems)
+
+    private static func collectMoireTasks(into tasks: inout [CurveDrawTask],
+                                          cx: Float, cy: Float, radius: Double,
+                                          params: MandalaParameters, rng: inout SeededRNG,
+                                          layerCount: Int, symmetry: Int,
+                                          rippleAmount: Float, weightMul: Float) {
+        let R       = Float(radius)
+        let nRings  = Int(10 + params.complexity * 30)
+        let offset  = R * Float(0.05 + params.density * 0.25)
+        let tOffset = rng.nextDouble()
+        let weight  = Float(rng.nextDouble(in: 0.3...0.8)) * weightMul * 0.6
+        let ripSeed = params.seed &+ 0xC0C0C0C0
+        let centers: [(Float, Float)] = [(offset, 0), (-offset, 0)]
+
+        for (cIdx, (ocx, ocy)) in centers.enumerated() {
+            for ring in 0..<nRings {
+                let ringR = R * Float(ring) / Float(nRings - 1)
+                guard ringR > 1 else { continue }
+                let steps = max(60, Int(ringR * 1.5))
+                var xs = [Float](); var ys = [Float]()
+                xs.reserveCapacity(steps + 1); ys.reserveCapacity(steps + 1)
+                for k in 0...steps {
+                    let a = Float(k) / Float(steps) * Float.pi * 2
+                    xs.append(ocx + cos(a) * ringR); ys.append(ocy + sin(a) * ringR)
+                }
+                for sym in 0..<symmetry {
+                    let angle = Double(sym) * .pi * 2 / Double(symmetry)
+                    let cosA = Float(cos(angle)), sinA = Float(sin(angle))
+                    var rxs = [Float](repeating: 0, count: xs.count)
+                    var rys = [Float](repeating: 0, count: ys.count)
+                    for j in 0..<xs.count {
+                        rxs[j] = cx + xs[j] * cosA - ys[j] * sinA
+                        rys[j] = cy + xs[j] * sinA + ys[j] * cosA
+                    }
+                    if rippleAmount > 0 {
+                        applyRippleToPoints(xs: &rxs, ys: &rys, amount: rippleAmount,
+                                            seed: ripSeed &+ UInt64(ring * 19 + cIdx * 1000 + sym))
+                    }
+                    tasks.append(CurveDrawTask(xs: rxs, ys: rys,
+                                               tOffset: tOffset + Double(cIdx) * 0.5 + Double(ring) / Double(nRings) * params.colorDrift * 0.5,
+                                               drift: params.colorDrift * 0.2, weight: weight, thickness: 1))
+                }
+            }
+        }
+    }
+
+    // MARK: - Voronoi (perpendicular bisectors between symmetric seed points)
+
+    private static func collectVoronoiTasks(into tasks: inout [CurveDrawTask],
+                                            cx: Float, cy: Float, radius: Double,
+                                            params: MandalaParameters, rng: inout SeededRNG,
+                                            layerCount: Int, symmetry: Int,
+                                            rippleAmount: Float, weightMul: Float) {
+        let R       = Float(radius)
+        let nSeeds  = 4 + Int(params.density * 12)
+        let tOffset = rng.nextDouble()
+        let weight  = Float(rng.nextDouble(in: 0.4...1.0)) * weightMul
+        let ripSeed = params.seed &+ 0xF0F12345
+        var seedX   = [Float](); var seedY = [Float]()
+
+        for _ in 0..<nSeeds {
+            let r = Float(rng.nextDouble()) * R * 0.85
+            let a = Float(rng.nextDouble()) * Float.pi * 2
+            seedX.append(cos(a) * r); seedY.append(sin(a) * r)
+        }
+
+        for ai in 0..<nSeeds {
+            for bi in (ai + 1)..<nSeeds {
+                let ax = seedX[ai], ay = seedY[ai]
+                let bx = seedX[bi], by = seedY[bi]
+                let mx = (ax + bx) * 0.5, my = (ay + by) * 0.5
+                let dx = bx - ax, dy = by - ay
+                let len = sqrt(dx * dx + dy * dy)
+                guard len > 2 else { continue }
+                let nx = -dy / len, ny = dx / len  // bisector direction
+                let ext = R * 1.5
+                let p0x = mx - nx * ext, p0y = my - ny * ext
+                let p1x = mx + nx * ext, p1y = my + ny * ext
+                // Clip line segment to circle of radius R
+                let ldx = p1x - p0x, ldy = p1y - p0y
+                let la = ldx * ldx + ldy * ldy
+                let lb = 2 * (p0x * ldx + p0y * ldy)
+                let lc = p0x * p0x + p0y * p0y - R * R
+                let disc = lb * lb - 4 * la * lc
+                guard disc >= 0 else { continue }
+                let sqrtD = sqrt(disc)
+                let t0 = max(0, min(1, (-lb - sqrtD) / (2 * la)))
+                let t1 = max(0, min(1, (-lb + sqrtD) / (2 * la)))
+                guard t1 > t0 else { continue }
+                let xs: [Float] = [p0x + t0 * ldx, p0x + t1 * ldx]
+                let ys: [Float] = [p0y + t0 * ldy, p0y + t1 * ldy]
+                let tOff = tOffset + Double(ai * nSeeds + bi) / Double(nSeeds * nSeeds) * params.colorDrift
+                for sym in 0..<symmetry {
+                    let angle = Double(sym) * .pi * 2 / Double(symmetry)
+                    let cosA = Float(cos(angle)), sinA = Float(sin(angle))
+                    var rxs = [Float](repeating: 0, count: 2)
+                    var rys = [Float](repeating: 0, count: 2)
+                    for j in 0..<2 {
+                        rxs[j] = cx + xs[j] * cosA - ys[j] * sinA
+                        rys[j] = cy + xs[j] * sinA + ys[j] * cosA
+                    }
+                    if rippleAmount > 0 {
+                        applyRippleToPoints(xs: &rxs, ys: &rys, amount: rippleAmount,
+                                            seed: ripSeed &+ UInt64(ai * 37 + bi * 7) &+ UInt64(sym))
+                    }
+                    tasks.append(CurveDrawTask(xs: rxs, ys: rys, tOffset: tOff,
+                                               drift: params.colorDrift, weight: weight, thickness: 1))
+                }
             }
         }
     }

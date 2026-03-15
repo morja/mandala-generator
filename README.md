@@ -14,12 +14,14 @@ A native macOS app for generating neon light-painting mandala images. Every para
 
 ## Features
 
-- **10 drawing styles** — Spirograph, Rose Curves, String Art, Sunburst, Epitrochoid, Floral, Lissajous, Butterfly, Geometric, Mixed
+- **22 drawing styles** — Spirograph, Rose Curves, String Art, Sunburst, Epitrochoid, Floral, Lissajous, Butterfly, Geometric, Fractal, Phyllotaxis, Hypocycloid, Wave Interference, Spider Web, Weave, Sacred Geometry, Radial Mesh, Flow Field, Tendril, Moiré, Voronoi, Mixed
 - **Multi-layer compositing** — stack up to 5 independent layers, each with its own style, palette, and settings
 - **Per-layer controls** — symmetry, seed, scale, complexity, density, glow, colour drift, ripple, wash, abstract level, saturation, brightness
+- **Background layer** — solid colour, gradient (radial or linear), pattern (checkerboard, stripes, diagonal, crosshatch), grain, or image
+- **Effects layer** — vignette, chromatic aberration, dimming, erasure, highlights, and star sparkles — each with independent seed dice buttons
 - **18 colour palettes** — Aurora, Nebula, Neon City, Sunset, Prism, Bioluminescence, Dragon, Synthwave, Lava, and more
 - **Randomize All** — generates a completely new random mandala in one click
-- **Export** — PNG or JPG at 512 / 800 / 1024 / 1400 / 2048 px
+- **Export** — PNG or JPG at 512 / 800 / 1024 / 1400 / 2048 px, with circle / squircle / rounded output shapes
 - **Batch export** — render many variations to a folder in parallel
 - **Pan & zoom** — scroll to zoom, drag to pan the canvas preview
 
@@ -36,19 +38,20 @@ open "Mandala Generator.app"
 ## Interface
 
 ```
-┌─────────────────────────────────────────────────┐
-│  Generate   Randomize All   Save   800 px   PNG  │  ← toolbar
-├──────────────────────────┬──────────────────────┤
-│                          │  LAYERS              │
-│                          │  ┌────────────────┐  │
-│       Canvas             │  │ Layer 1        │  │
-│   (pan + zoom)           │  │  symmetry/seed │  │
-│                          │  │  sliders…      │  │
-│                          │  └────────────────┘  │
-│                          │  ┌────────────────┐  │
-│                          │  │ Layer 2        │  │
-│                          │  └────────────────┘  │
-└──────────────────────────┴──────────────────────┘
+┌──────────────────────────────────────────────────────────────────┐
+│  Generate   Randomize All   Save   800 px   PNG   ◯ ▣ ⬜         │  ← toolbar
+├────────────────┬─────────────────────────┬───────────────────────┤
+│  BACKGROUND    │                         │  LAYERS               │
+│  ┌──────────┐  │                         │  ┌─────────────────┐  │
+│  │ Base     │  │       Canvas            │  │ Layer 1         │  │
+│  │ Layer    │  │   (pan + zoom)          │  │  style/palette  │  │
+│  └──────────┘  │                         │  │  sliders…       │  │
+│  EFFECTS       │                         │  └─────────────────┘  │
+│  ┌──────────┐  │                         │  ┌─────────────────┐  │
+│  │ Effects  │  │                         │  │ Layer 2         │  │
+│  │ Layer    │  │                         │  └─────────────────┘  │
+│  └──────────┘  │                         │                       │
+└────────────────┴─────────────────────────┴───────────────────────┘
 ```
 
 ### Toolbar
@@ -61,12 +64,40 @@ open "Mandala Generator.app"
 | **Size picker** | Output resolution (512–2048 px) |
 | **Format picker** | PNG or JPG |
 
-### Layer Card
+### Background Panel (left)
 
-Each layer is an independent drawing pass composited on top of the previous layers using screen blending.
+Controls a dedicated background layer rendered before the mandala layers.
+
+| Setting | Description |
+|---|---|
+| **Type** | Solid colour, gradient, pattern, grain, or image |
+| **Primary / Secondary** | HSB colour pickers for each type |
+| **Gradient style** | Radial or linear (with angle control) |
+| **Pattern type** | Checkerboard, stripes, diagonal, or crosshatch |
+| **Opacity** | Overall background opacity |
+
+### Effects Panel (left, below Background)
+
+Post-processing applied to the final composite.
+
+| Effect | Description |
+|---|---|
+| **Vignette** | Darkens the edges |
+| **Chromatic** | RGB channel separation (chromatic aberration) |
+| **Dimming** | Random dark blotches (multiply blend) |
+| **Erasure** | Burn-through holes in the image |
+| **Highlights** | Additive glowing radial spots |
+| **Stars** | Sharp cross-flare sparkle points |
+
+Each spatially-random effect has a dice button to reshuffle its position independently.
+
+### Layer Card (right)
+
+Each layer is an independent drawing pass composited on top of previous layers using screen blending.
 
 | Parameter | Effect |
 |---|---|
+| **Style** | One of 22 drawing algorithms |
 | **Symmetry** | Rotational repeat count (1–8) |
 | **Seed** | RNG seed — change for a different curve arrangement |
 | **Scale** | Radius of the pattern (0.1–1.0) |
@@ -84,20 +115,21 @@ Each layer is an independent drawing pass composited on top of the previous laye
 
 | File | Purpose |
 |---|---|
-| `MandalaParameters.swift` | `StyleLayer` and `MandalaParameters` model structs |
-| `MandalaRenderer.swift` | Core renderer — curve generation, per-layer compositing, CIFilter post-processing |
+| `MandalaParameters.swift` | `StyleLayer`, `BaseLayerSettings`, `EffectsLayerSettings`, `MandalaParameters` model structs |
+| `MandalaRenderer.swift` | Core renderer — 22 curve styles, base/effects layers, CIFilter post-processing |
 | `PixelBuffer.swift` | Float32 additive pixel buffer with Wu anti-aliased line drawing |
 | `ColorPalettes.swift` | 18 named colour palettes |
 | `AppState.swift` | `@MainActor ObservableObject` — debounced auto-generate, save, batch export |
-| `ContentView.swift` | Root layout (HSplitView: canvas + layers panel) |
+| `ContentView.swift` | Root layout (3-column HSplitView: scene panel + canvas + layers panel) |
 | `CanvasView.swift` | Canvas with pan/zoom, toolbar, context menu |
-| `PalettePanel.swift` | Layers panel — expandable `LayerCard` views |
-| `ParameterPanel.swift` | Shared UI components (`PaletteSwatch`, `SectionCard`, etc.) |
+| `ScenePanel.swift` | Left panel — Background and Effects layer cards |
+| `PalettePanel.swift` | Right panel — expandable `LayerCard` views |
+| `ParameterPanel.swift` | Shared UI components (`PaletteSwatch`, etc.) |
 
 ### Rendering pipeline
 
-1. **Background** — radial gradient tinted with the first layer's palette
-2. **Grass fibers** — fine ambient lines from the first layer's seed
-3. **Per layer** — curves collected into `CurveDrawTask` structs, drawn in parallel via `DispatchQueue.concurrentPerform` into per-thread sub-buffers, merged with `vDSP_vadd`, then glow → wash → abstract → colour grade applied
-4. **Screen composite** — each layer blended onto the running composite
+1. **Base layer** — solid colour / gradient / pattern / grain / image (or default gradient + grass fibers)
+2. **Per mandala layer** — curves collected into `CurveDrawTask` structs, drawn in parallel via `DispatchQueue.concurrentPerform` into per-thread sub-buffers, merged with `vDSP_vadd`, then glow → wash → abstract → colour grade applied
+3. **Screen composite** — each layer blended onto the running composite using `CIScreenBlendMode`
+4. **Effects layer** — vignette, chromatic aberration, dimming, erasure, highlights, stars applied as CIFilter passes
 5. **Downscale** — Lanczos downscale from 2× render buffer to output size
