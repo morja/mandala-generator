@@ -73,7 +73,7 @@ struct EffectsLayerSettings: Equatable {
 // MARK: - Mandala Style
 
 enum MandalaStyle: String, CaseIterable, Identifiable {
-    case spirograph, roseCurves, stringArt, sunburst, epitrochoid, floral, lissajous, butterfly, geometric, mixed
+    case spirograph, roseCurves, stringArt, sunburst, epitrochoid, floral, lissajous, butterfly, geometric, fractal, mixed
     var id: String { rawValue }
     var displayName: String {
         switch self {
@@ -86,6 +86,7 @@ enum MandalaStyle: String, CaseIterable, Identifiable {
         case .lissajous:   return "Lissajous"
         case .butterfly:   return "Butterfly"
         case .geometric:   return "Geometric"
+        case .fractal:     return "Fractal"
         case .mixed:       return "Mixed"
         }
     }
@@ -100,6 +101,7 @@ enum MandalaStyle: String, CaseIterable, Identifiable {
         case .lissajous:   return "waveform.path"
         case .butterfly:   return "wind"
         case .geometric:   return "seal"
+        case .fractal:     return "snowflake"
         case .mixed:       return "sparkles"
         }
     }

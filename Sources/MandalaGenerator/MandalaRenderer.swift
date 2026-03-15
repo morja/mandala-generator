@@ -180,12 +180,16 @@ struct MandalaRenderer {
             collectGeometricTasks(into: &tasks, cx: cx, cy: cy, radius: baseRadius,
                                   params: params, rng: &rng, layerCount: layerCount,
                                   symmetry: symmetry, rippleAmount: rippleAmount, weightMul: weightMul)
+        case .fractal:
+            collectFractalTasks(into: &tasks, cx: cx, cy: cy, radius: baseRadius,
+                                params: params, rng: &rng, layerCount: layerCount,
+                                symmetry: symmetry, rippleAmount: rippleAmount, weightMul: weightMul)
         case .mixed:
             // Seed-driven random zone selection — different every render
             var zoneRng = SeededRNG(seed: params.seed &+ 0xbeef1234)
             // Pick 3 distinct zone radii and assign a randomly chosen style to each
             let zoneStyles: [MandalaStyle] = [.spirograph, .roseCurves, .epitrochoid, .lissajous,
-                                              .butterfly, .floral, .stringArt, .sunburst, .geometric]
+                                              .butterfly, .floral, .stringArt, .sunburst, .geometric, .fractal]
             let radii: [Double] = [1.0, 0.72, 0.45]
             let sub = max(2, layerCount / 3)
             for (zi, zRadius) in radii.enumerated() {
@@ -229,6 +233,10 @@ struct MandalaRenderer {
                     drawSunburstLayers(buffer: buffer, cx: cx, cy: cy, radius: scaled,
                                        params: params, palette: palette, rng: &rng,
                                        layerCount: sub, symmetry: symmetry)
+                case .fractal:
+                    collectFractalTasks(into: &tasks, cx: cx, cy: cy, radius: scaled,
+                                        params: params, rng: &rng, layerCount: sub,
+                                        symmetry: symmetry, rippleAmount: rippleAmount, weightMul: wmul)
                 case .mixed:
                     collectSpirographTasks(into: &tasks, cx: cx, cy: cy, radius: scaled,
                                            params: params, rng: &rng, layerCount: sub,
@@ -1267,6 +1275,136 @@ struct MandalaRenderer {
             } else {
                 buffer.addLine(x0: ax0, y0: ay0, x1: ax1, y1: ay1,
                                color: c, weight: weight)
+            }
+        }
+    }
+
+    // MARK: - Fractal (L-system)
+
+    private static func collectFractalTasks(into tasks: inout [CurveDrawTask],
+                                            cx: Float, cy: Float, radius: Double,
+                                            params: MandalaParameters, rng: inout SeededRNG,
+                                            layerCount: Int, symmetry: Int,
+                                            rippleAmount: Float, weightMul: Float) {
+
+        struct LSystem {
+            let axiom: String
+            let rules: [Character: String]
+            let angleDeg: Double
+            let maxIter: Int
+        }
+
+        // Six L-systems — density slider 0→1 scrolls through them
+        let systems: [LSystem] = [
+            // Koch snowflake — dense 6-pointed star
+            LSystem(axiom: "F--F--F",
+                    rules: ["F": "F+F--F+F"],
+                    angleDeg: 60, maxIter: 5),
+            // Gosper curve — hexagonal space-filling ribbon
+            LSystem(axiom: "F",
+                    rules: ["F": "F+G++G-F--FF-G+",
+                            "G": "-F+GG++G+F--F-G"],
+                    angleDeg: 60, maxIter: 4),
+            // Dragon curve — folded ribbon spiral
+            LSystem(axiom: "FX",
+                    rules: ["X": "X+YF+",
+                            "Y": "-FX-Y"],
+                    angleDeg: 90, maxIter: 14),
+            // Sierpinski arrowhead — triangular space-fill
+            LSystem(axiom: "F",
+                    rules: ["F": "G-F-G",
+                            "G": "F+G+F"],
+                    angleDeg: 60, maxIter: 8),
+            // Hilbert curve — square space-filling
+            LSystem(axiom: "A",
+                    rules: ["A": "+BF-AFA-FB+",
+                            "B": "-AF+BFB+FA-"],
+                    angleDeg: 90, maxIter: 6),
+            // Quadratic Koch island — spiky square snowflake
+            LSystem(axiom: "F+F+F+F",
+                    rules: ["F": "F+F-F-FF+F+F-F"],
+                    angleDeg: 90, maxIter: 3),
+        ]
+
+        let sysIdx  = min(systems.count - 1, Int(params.density * Double(systems.count)))
+        let ls      = systems[sysIdx]
+        // complexity 0→1 maps to 1→maxIter iterations
+        let iters   = max(1, Int(params.complexity * Double(ls.maxIter) + 0.5))
+        let turnRad = ls.angleDeg * .pi / 180.0
+
+        // ── Expand L-system string ────────────────────────────────────────
+        var str = ls.axiom
+        for _ in 0..<iters {
+            var buf = ""; buf.reserveCapacity(min(str.count * 8, 1_000_000))
+            for ch in str { buf += ls.rules[ch] ?? String(ch) }
+            str = buf
+            if str.count > 800_000 { break }
+        }
+
+        // ── Turtle-graphics walk → polyline paths ─────────────────────────
+        var tx = 0.0, ty = 0.0, tdir = 0.0
+        var stk: [(x: Double, y: Double, dir: Double)] = []
+        var curXs: [Float] = [0], curYs: [Float] = [0]
+        var paths: [([Float], [Float])] = []
+        var allX: [Double] = [0], allY: [Double] = [0]
+
+        for ch in str {
+            switch ch {
+            case "F", "G":
+                tx += cos(tdir); ty += sin(tdir)
+                curXs.append(Float(tx)); curYs.append(Float(ty))
+                allX.append(tx); allY.append(ty)
+            case "+": tdir += turnRad
+            case "-": tdir -= turnRad
+            case "[":
+                if curXs.count >= 2 { paths.append((curXs, curYs)) }
+                stk.append((tx, ty, tdir))
+                curXs = [Float(tx)]; curYs = [Float(ty)]
+            case "]":
+                if curXs.count >= 2 { paths.append((curXs, curYs)) }
+                if let s = stk.popLast() { tx = s.x; ty = s.y; tdir = s.dir }
+                curXs = [Float(tx)]; curYs = [Float(ty)]
+            default: break  // structural symbols (X, Y, A, B) — no draw or turn
+            }
+        }
+        if curXs.count >= 2 { paths.append((curXs, curYs)) }
+
+        guard !paths.isEmpty,
+              let mnX = allX.min(), let mxX = allX.max(),
+              let mnY = allY.min(), let mxY = allY.max() else { return }
+
+        // ── Scale to fit within radius ────────────────────────────────────
+        let range   = max(mxX - mnX, mxY - mnY, 1e-6)
+        let fscale  = Float(radius * 1.8 / range)
+        let offX    = Float(-(mnX + mxX) * 0.5) * fscale
+        let offY    = Float(-(mnY + mxY) * 0.5) * fscale
+        let nPaths  = max(1, paths.count)
+        let weight  = max(0.2, Float(0.8 - params.density * 0.3)) * weightMul
+
+        // ── Build tasks with symmetry copies ─────────────────────────────
+        for (pi, (xs, ys)) in paths.enumerated() {
+            let tOffset = params.colorDrift * Double(pi) / Double(nPaths)
+
+            // Centre-relative scaled coordinates
+            var sxs = xs.map { $0 * fscale + offX }
+            var sysArr = ys.map { $0 * fscale + offY }
+
+            if rippleAmount > 0 {
+                applyRippleToPoints(xs: &sxs, ys: &sysArr, amount: rippleAmount, seed: rng.next())
+            }
+
+            for s in 0..<symmetry {
+                let ang  = Float(s) * .pi * 2.0 / Float(symmetry)
+                let cosA = cos(ang), sinA = sin(ang)
+                var rxs = [Float](); rxs.reserveCapacity(sxs.count)
+                var rys = [Float](); rys.reserveCapacity(sxs.count)
+                for i in 0..<sxs.count {
+                    rxs.append(cosA * sxs[i] - sinA * sysArr[i] + cx)
+                    rys.append(sinA * sxs[i] + cosA * sysArr[i] + cy)
+                }
+                tasks.append(CurveDrawTask(xs: rxs, ys: rys,
+                                           tOffset: tOffset, drift: params.colorDrift,
+                                           weight: weight, thickness: 1))
             }
         }
     }
