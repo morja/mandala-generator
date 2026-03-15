@@ -216,10 +216,15 @@ struct EffectsLayerCard: View {
                     .font(.caption.weight(.medium))
                     .foregroundColor(settings.isEnabled ? .primary : .secondary)
                 Spacer()
-                Button(action: { settings.seed = UInt64.random(in: 1...UInt64.max) }) {
+                Button(action: {
+                    settings.dimmingSeed    = UInt64.random(in: 1...UInt64.max)
+                    settings.erasureSeed    = UInt64.random(in: 1...UInt64.max)
+                    settings.highlightsSeed = UInt64.random(in: 1...UInt64.max)
+                    settings.starsSeed      = UInt64.random(in: 1...UInt64.max)
+                }) {
                     Image(systemName: "dice").font(.system(size: 10)).foregroundColor(.blue)
                 }
-                .buttonStyle(.plain).help("Randomize effect positions")
+                .buttonStyle(.plain).help("Randomize all effect positions")
                 Button(action: { withAnimation(.easeInOut(duration: 0.18)) { isExpanded.toggle() } }) {
                     Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
                         .font(.system(size: 9)).foregroundColor(.secondary)
@@ -234,14 +239,13 @@ struct EffectsLayerCard: View {
             if isExpanded {
                 VStack(spacing: 8) {
                     SceneSlider(label: "Vignette",   value: $settings.vignette,   color: .gray)
-                    Divider()
-                    SceneSlider(label: "Dimming",    value: $settings.dimming,    color: .indigo)
-                    SceneSlider(label: "Erasure",    value: $settings.erasure,    color: .red)
-                    Divider()
-                    SceneSlider(label: "Highlights", value: $settings.highlights, color: .orange)
-                    SceneSlider(label: "Stars",      value: $settings.stars,      color: .yellow)
-                    Divider()
                     SceneSlider(label: "Chromatic",  value: $settings.chromatic,  color: .cyan)
+                    Divider()
+                    EffectRow(label: "Dimming",    value: $settings.dimming,    seed: $settings.dimmingSeed,    color: .indigo)
+                    EffectRow(label: "Erasure",    value: $settings.erasure,    seed: $settings.erasureSeed,    color: .red)
+                    Divider()
+                    EffectRow(label: "Highlights", value: $settings.highlights, seed: $settings.highlightsSeed, color: .orange)
+                    EffectRow(label: "Stars",      value: $settings.stars,      seed: $settings.starsSeed,      color: .yellow)
                 }
                 .padding(10)
                 .background(Color(NSColor.controlBackgroundColor).opacity(0.7))
@@ -251,6 +255,34 @@ struct EffectsLayerCard: View {
         .clipShape(RoundedRectangle(cornerRadius: 8))
         .overlay(RoundedRectangle(cornerRadius: 8)
             .stroke(Color.accentColor.opacity(settings.isEnabled ? 0.35 : 0.08), lineWidth: 1))
+    }
+}
+
+// MARK: - Effect row: slider + per-effect dice button
+
+private struct EffectRow: View {
+    let label: String
+    @Binding var value: Double
+    @Binding var seed: UInt64
+    var color: Color = .blue
+
+    var body: some View {
+        HStack(spacing: 4) {
+            Text(label)
+                .font(.system(size: 10)).foregroundColor(.secondary)
+                .frame(width: 52, alignment: .leading)
+            Slider(value: $value, in: 0...1).accentColor(color)
+            Text(String(format: "%.2f", value))
+                .font(.system(size: 9)).foregroundColor(.secondary).monospacedDigit()
+                .frame(width: 28, alignment: .trailing)
+            Button(action: { seed = UInt64.random(in: 1...UInt64.max) }) {
+                Image(systemName: "dice")
+                    .font(.system(size: 9))
+                    .foregroundColor(value > 0 ? color : .secondary.opacity(0.4))
+            }
+            .buttonStyle(.plain)
+            .help("Randomize \(label.lowercased()) positions")
+        }
     }
 }
 

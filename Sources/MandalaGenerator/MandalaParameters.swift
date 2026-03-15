@@ -63,7 +63,11 @@ struct EffectsLayerSettings: Equatable {
     var stars: Double       = 0.0   // sharp bright sparkle points
     var vignette: Double    = 0.3   // edge darkening
     var chromatic: Double   = 0.0   // chromatic aberration RGB shift
-    var seed: UInt64        = 99
+    // Per-effect seeds — each can be randomized independently
+    var dimmingSeed: UInt64    = 11
+    var erasureSeed: UInt64    = 22
+    var highlightsSeed: UInt64 = 33
+    var starsSeed: UInt64      = 44
 }
 
 // MARK: - Mandala Style

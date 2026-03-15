@@ -494,7 +494,7 @@ struct MandalaRenderer {
 
         // ── Dimming — random soft dark radial blotches (multiply blend) ──
         if settings.dimming > 0 {
-            var rng = SeededRNG(seed: settings.seed &+ 111)
+            var rng = SeededRNG(seed: settings.dimmingSeed)
             let nSpots = Int(settings.dimming * 10) + 3
             for _ in 0..<nSpots {
                 let cx = CGFloat(rng.nextDouble()) * CGFloat(bufferSize)
@@ -519,7 +519,7 @@ struct MandalaRenderer {
 
         // ── Erasure — deep burn-through holes ──
         if settings.erasure > 0 {
-            var rng = SeededRNG(seed: settings.seed &+ 222)
+            var rng = SeededRNG(seed: settings.erasureSeed)
             let nHoles = Int(settings.erasure * 6) + 1
             for _ in 0..<nHoles {
                 let cx = CGFloat(rng.nextDouble()) * CGFloat(bufferSize)
@@ -544,7 +544,7 @@ struct MandalaRenderer {
 
         // ── Highlights — additive glowing bright spots ──
         if settings.highlights > 0 {
-            var rng = SeededRNG(seed: settings.seed &+ 333)
+            var rng = SeededRNG(seed: settings.highlightsSeed)
             let nSpots = Int(settings.highlights * 8) + 2
             for _ in 0..<nSpots {
                 let cx = CGFloat(rng.nextDouble()) * CGFloat(bufferSize)
@@ -610,7 +610,7 @@ struct MandalaRenderer {
         // ── Stars — sharp bright sparkle points with cross flares ──
         if settings.stars > 0 {
             let starBuffer = PixelBuffer(width: bufferSize, height: bufferSize)
-            var rng = SeededRNG(seed: settings.seed &+ 444)
+            var rng = SeededRNG(seed: settings.starsSeed)
             let nStars = Int(settings.stars * 600) + 15
             let wf = Float(bufferSize)
             for _ in 0..<nStars {
