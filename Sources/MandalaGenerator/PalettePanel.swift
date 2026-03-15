@@ -1,81 +1,240 @@
 import SwiftUI
 
+// MARK: - Layers Panel (right side)
+
 struct PalettePanel: View {
     @EnvironmentObject private var appState: AppState
 
     var body: some View {
         ScrollView(.vertical, showsIndicators: true) {
-            VStack(spacing: 14) {
-
-                // PRIMARY
-                paletteGrid(
-                    title: "Primary",
-                    selectedIndex: appState.parameters.paletteIndex,
-                    isBlendStyle: false
-                ) { index in
-                    appState.parameters.paletteIndex = index
-                }
-
-                // MIX SLIDER
-                VStack(alignment: .leading, spacing: 4) {
-                    HStack {
-                        Text("MIX")
-                            .font(.system(size: 10, weight: .semibold))
-                            .foregroundColor(.secondary)
-                            .kerning(1.2)
-                        Spacer()
-                        Text(String(format: "%.0f%%", appState.parameters.paletteBlend * 100))
-                            .font(.caption).foregroundColor(.secondary).monospacedDigit()
+            VStack(spacing: 8) {
+                // Header label
+                HStack {
+                    Text("LAYERS")
+                        .font(.system(size: 10, weight: .semibold))
+                        .foregroundColor(.secondary).kerning(1.2)
+                    Spacer()
+                    Button(action: addLayer) {
+                        Image(systemName: "plus.circle.fill")
+                            .foregroundColor(.accentColor)
                     }
-                    Slider(value: $appState.parameters.paletteBlend, in: 0...1)
-                        .accentColor(.orange)
-                    Text("Blend primary with a second palette")
-                        .font(.system(size: 9)).foregroundColor(.secondary)
+                    .buttonStyle(.plain)
+                    .disabled(appState.parameters.layers.count >= 5)
+                    .help("Add layer")
                 }
                 .padding(.horizontal, 12)
+                .padding(.top, 12)
 
-                // BLEND TARGET (visible only when mix > 0)
-                if appState.parameters.paletteBlend > 0.01 {
-                    paletteGrid(
-                        title: "Blend With",
-                        selectedIndex: appState.parameters.blendPaletteIndex,
-                        isBlendStyle: true
-                    ) { index in
-                        appState.parameters.blendPaletteIndex = index
-                    }
-                    .transition(.opacity.combined(with: .move(edge: .top)))
+                ForEach(appState.parameters.layers.indices, id: \.self) { i in
+                    LayerCard(
+                        layer: $appState.parameters.layers[i],
+                        index: i,
+                        canDelete: appState.parameters.layers.count > 1,
+                        onDelete: { appState.parameters.layers.remove(at: i) }
+                    )
+                    .padding(.horizontal, 8)
                 }
+
+                Spacer(minLength: 20)
             }
-            .padding(.vertical, 12)
-            .animation(.easeInOut(duration: 0.2), value: appState.parameters.paletteBlend > 0.01)
         }
         .background(Color(NSColor.controlBackgroundColor))
     }
 
-    @ViewBuilder
-    private func paletteGrid(title: String, selectedIndex: Int, isBlendStyle: Bool,
-                              onSelect: @escaping (Int) -> Void) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text(title.uppercased())
-                .font(.system(size: 10, weight: .semibold))
-                .foregroundColor(isBlendStyle ? .orange : .secondary)
-                .kerning(1.2)
-                .padding(.horizontal, 16)
+    private func addLayer() {
+        let allStyles = MandalaStyle.allCases
+        let nextStyle = allStyles[appState.parameters.layers.count % allStyles.count]
+        let nextPalette = (appState.parameters.layers.last.map { ($0.paletteIndex + 3) % ColorPalettes.all.count }) ?? 0
+        appState.parameters.layers.append(StyleLayer(
+            style: nextStyle,
+            scale: 0.65,
+            paletteIndex: nextPalette,
+            colorOffset: Double(appState.parameters.layers.count) * 0.25,
+            complexity: 0.6,
+            density: 0.5,
+            glowIntensity: 0.5,
+            colorDrift: 0.4,
+            ripple: 0.0,
+            wash: 0.0
+        ))
+    }
+}
 
-            VStack(alignment: .leading, spacing: 0) {
-                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 6) {
-                    ForEach(Array(ColorPalettes.all.enumerated()), id: \.offset) { index, palette in
-                        PaletteSwatch(palette: palette,
-                                      isSelected: selectedIndex == index,
-                                      isBlend: isBlendStyle)
-                            .onTapGesture { onSelect(index) }
+// MARK: - Layer Card
+
+private struct LayerCard: View {
+    @Binding var layer: StyleLayer
+    let index: Int
+    let canDelete: Bool
+    let onDelete: () -> Void
+    @State private var isExpanded = true
+
+    private var palette: ColorPalette {
+        ColorPalettes.all[max(0, min(ColorPalettes.all.count - 1, layer.paletteIndex))]
+    }
+
+    var body: some View {
+        VStack(spacing: 0) {
+            // ── Header ──────────────────────────────────────────────
+            HStack(spacing: 8) {
+                Image(systemName: layer.style.sfSymbol)
+                    .font(.system(size: 12))
+                    .foregroundColor(.white.opacity(0.8))
+                    .frame(width: 16)
+
+                // Colour strip preview
+                LinearGradient(
+                    gradient: Gradient(stops: palette.stops.map {
+                        Gradient.Stop(color: Color(nsColor: $0.1), location: $0.0)
+                    }),
+                    startPoint: .leading, endPoint: .trailing
+                )
+                .frame(height: 5).cornerRadius(2.5)
+
+                Text(layer.style.displayName)
+                    .font(.caption.weight(.medium))
+                    .foregroundColor(.primary)
+                    .lineLimit(1)
+
+                Spacer()
+
+                Button(action: { withAnimation(.easeInOut(duration: 0.18)) { isExpanded.toggle() } }) {
+                    Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
+                        .font(.system(size: 9))
+                        .foregroundColor(.secondary)
+                }
+                .buttonStyle(.plain)
+
+                if canDelete {
+                    Button(action: onDelete) {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 9))
+                            .foregroundColor(.secondary.opacity(0.6))
                     }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding(.horizontal, 10)
+            .padding(.vertical, 8)
+            .background(Color(NSColor.windowBackgroundColor))
+            .cornerRadius(isExpanded ? 0 : 8)
+            .cornerRadius(8, corners: [.topLeft, .topRight])
+
+            // ── Body (expanded) ──────────────────────────────────────
+            if isExpanded {
+                VStack(spacing: 8) {
+                    // Style picker
+                    Picker("", selection: $layer.style) {
+                        ForEach(MandalaStyle.allCases) { s in
+                            Label(s.displayName, systemImage: s.sfSymbol).tag(s)
+                        }
+                    }
+                    .pickerStyle(.menu).labelsHidden()
+                    .frame(maxWidth: .infinity)
+
+                    Divider()
+
+                    // Palette — 3-column compact grid
+                    Text("PALETTE")
+                        .font(.system(size: 9, weight: .semibold))
+                        .foregroundColor(.secondary).kerning(1.0)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+
+                    LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 3), spacing: 4) {
+                        ForEach(Array(ColorPalettes.all.enumerated()), id: \.offset) { idx, pal in
+                            PaletteSwatch(palette: pal, isSelected: layer.paletteIndex == idx)
+                                .onTapGesture { layer.paletteIndex = idx }
+                        }
+                    }
+
+                    Divider()
+
+                    // Sliders
+                    CardSlider(label: "Scale",       value: $layer.scale,        range: 0.1...1.0, color: .blue)
+                    CardSlider(label: "Complexity",  value: $layer.complexity,   range: 0...1,     color: .indigo)
+                    CardSlider(label: "Density",     value: $layer.density,      range: 0...1,     color: .blue)
+                    CardSlider(label: "Glow",        value: $layer.glowIntensity,range: 0...1,     color: .yellow)
+                    CardSlider(label: "Color Drift", value: $layer.colorDrift,   range: 0...1,     color: .purple)
+                    CardSlider(label: "Ripple",      value: $layer.ripple,       range: 0...1,     color: .cyan)
+                    CardSlider(label: "Wash",        value: $layer.wash,         range: 0...1,     color: .teal)
+
+                    Divider()
+
+                    CardSlider(label: "Abstract",    value: $layer.abstractLevel,range: 0...1,     color: .purple)
+                    CardSlider(label: "Saturation",  value: $layer.saturation,   range: 0...1,     color: .pink)
+                    CardSlider(label: "Brightness",  value: $layer.brightness,   range: 0...1,     color: .yellow)
                 }
                 .padding(10)
+                .background(Color(NSColor.controlBackgroundColor).opacity(0.7))
+                .cornerRadius(8, corners: [.bottomLeft, .bottomRight])
             }
-            .background(Color(NSColor.windowBackgroundColor).opacity(0.5))
-            .cornerRadius(8)
-            .padding(.horizontal, 12)
         }
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.white.opacity(0.08), lineWidth: 1))
+    }
+}
+
+// MARK: - Compact slider for layer cards
+
+private struct CardSlider: View {
+    let label: String
+    @Binding var value: Double
+    var range: ClosedRange<Double> = 0...1
+    var color: Color = .blue
+
+    var body: some View {
+        HStack(spacing: 6) {
+            Text(label)
+                .font(.system(size: 10))
+                .foregroundColor(.secondary)
+                .frame(width: 70, alignment: .leading)
+            Slider(value: $value, in: range)
+                .accentColor(color)
+            Text(String(format: "%.2f", value))
+                .font(.system(size: 9)).foregroundColor(.secondary).monospacedDigit()
+                .frame(width: 28, alignment: .trailing)
+        }
+    }
+}
+
+// MARK: - Rounded corners helper
+
+extension View {
+    func cornerRadius(_ radius: CGFloat, corners: RectCorner) -> some View {
+        clipShape(PartialRoundedRect(radius: radius, corners: corners))
+    }
+}
+
+struct RectCorner: OptionSet {
+    let rawValue: Int
+    static let topLeft     = RectCorner(rawValue: 1 << 0)
+    static let topRight    = RectCorner(rawValue: 1 << 1)
+    static let bottomLeft  = RectCorner(rawValue: 1 << 2)
+    static let bottomRight = RectCorner(rawValue: 1 << 3)
+    static let all: RectCorner = [.topLeft, .topRight, .bottomLeft, .bottomRight]
+}
+
+struct PartialRoundedRect: Shape {
+    var radius: CGFloat
+    var corners: RectCorner
+
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        let tl = corners.contains(.topLeft)     ? radius : 0
+        let tr = corners.contains(.topRight)    ? radius : 0
+        let bl = corners.contains(.bottomLeft)  ? radius : 0
+        let br = corners.contains(.bottomRight) ? radius : 0
+
+        path.move(to: CGPoint(x: rect.minX + tl, y: rect.minY))
+        path.addLine(to: CGPoint(x: rect.maxX - tr, y: rect.minY))
+        if tr > 0 { path.addArc(center: CGPoint(x: rect.maxX - tr, y: rect.minY + tr), radius: tr, startAngle: .degrees(-90), endAngle: .degrees(0), clockwise: false) }
+        path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY - br))
+        if br > 0 { path.addArc(center: CGPoint(x: rect.maxX - br, y: rect.maxY - br), radius: br, startAngle: .degrees(0), endAngle: .degrees(90), clockwise: false) }
+        path.addLine(to: CGPoint(x: rect.minX + bl, y: rect.maxY))
+        if bl > 0 { path.addArc(center: CGPoint(x: rect.minX + bl, y: rect.maxY - bl), radius: bl, startAngle: .degrees(90), endAngle: .degrees(180), clockwise: false) }
+        path.addLine(to: CGPoint(x: rect.minX, y: rect.minY + tl))
+        if tl > 0 { path.addArc(center: CGPoint(x: rect.minX + tl, y: rect.minY + tl), radius: tl, startAngle: .degrees(180), endAngle: .degrees(270), clockwise: false) }
+        path.closeSubpath()
+        return path
     }
 }

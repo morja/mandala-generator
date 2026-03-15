@@ -6,125 +6,19 @@ struct ParameterPanel: View {
     var body: some View {
         ScrollView(.vertical, showsIndicators: true) {
             VStack(spacing: 16) {
-                // LAYERS Section
-                SectionCard(title: "Layers") {
-                    VStack(spacing: 8) {
-                        ForEach(appState.parameters.layers.indices, id: \.self) { i in
-                            LayerRow(layer: $appState.parameters.layers[i],
-                                     canDelete: appState.parameters.layers.count > 1) {
-                                appState.parameters.layers.remove(at: i)
-                            }
-                        }
-                        Button(action: {
-                            let styles = MandalaStyle.allCases
-                            let next = styles[appState.parameters.layers.count % styles.count]
-                            let offset = Double(appState.parameters.layers.count) * 0.33
-                            appState.parameters.layers.append(
-                                StyleLayer(style: next, scale: 0.6, colorOffset: offset.truncatingRemainder(dividingBy: 1.0))
-                            )
-                        }) {
-                            Label("Add Layer", systemImage: "plus.circle")
-                                .font(.caption)
-                                .frame(maxWidth: .infinity)
-                        }
-                        .buttonStyle(.plain)
-                        .foregroundColor(.accentColor)
-                        .disabled(appState.parameters.layers.count >= 4)
-                    }
-                }
 
-                // ABSTRACT Section
-                SectionCard(title: "Abstract") {
-                    VStack(alignment: .leading, spacing: 4) {
-                        HStack {
-                            Text("Crisp")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                            Spacer()
-                            Text("Painted")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
-                        Slider(value: $appState.parameters.abstractLevel, in: 0...1)
-                            .accentColor(.purple)
-                        Text(String(format: "%.2f", appState.parameters.abstractLevel))
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                            .frame(maxWidth: .infinity, alignment: .trailing)
-                    }
-                }
-
-                // FORM Section
-                SectionCard(title: "Form") {
-                    VStack(spacing: 10) {
-                        LabeledSlider(label: "Complexity", value: $appState.parameters.complexity)
-                        LabeledSlider(label: "Density",    value: $appState.parameters.density)
-                        LabeledSlider(label: "Glow",       value: $appState.parameters.glowIntensity)
-                        LabeledSlider(label: "Color Drift",value: $appState.parameters.colorDrift)
-                    }
-                }
-
-                // COLOUR Section
-                SectionCard(title: "Colour") {
-                    VStack(spacing: 10) {
-                        LabeledSlider(label: "Saturation", value: $appState.parameters.saturation, color: .pink)
-                        LabeledSlider(label: "Brightness", value: $appState.parameters.brightness, color: .yellow)
-                    }
-                }
-
-                // DISTORTION Section
-                SectionCard(title: "Distortion") {
-                    VStack(spacing: 10) {
-                        VStack(alignment: .leading, spacing: 2) {
-                            HStack {
-                                Text("Ripple")
-                                    .font(.subheadline)
-                                    .foregroundColor(.secondary)
-                                Spacer()
-                                Text(String(format: "%.2f", appState.parameters.ripple))
-                                    .font(.caption).foregroundColor(.secondary).monospacedDigit()
-                            }
-                            Slider(value: $appState.parameters.ripple, in: 0...1)
-                                .accentColor(.cyan)
-                            Text("Sine-wave distortion on curve points")
-                                .font(.system(size: 9)).foregroundColor(.secondary)
-                        }
-                        Divider()
-                        VStack(alignment: .leading, spacing: 2) {
-                            HStack {
-                                Text("Wash")
-                                    .font(.subheadline)
-                                    .foregroundColor(.secondary)
-                                Spacer()
-                                Text(String(format: "%.2f", appState.parameters.wash))
-                                    .font(.caption).foregroundColor(.secondary).monospacedDigit()
-                            }
-                            Slider(value: $appState.parameters.wash, in: 0...1)
-                                .accentColor(.teal)
-                            Text("Watercolour colour bleed on base layer")
-                                .font(.system(size: 9)).foregroundColor(.secondary)
-                        }
-                    }
-                }
-
-                // STRUCTURE Section
+                // STRUCTURE
                 SectionCard(title: "Structure") {
                     VStack(spacing: 10) {
                         HStack {
-                            Text("Symmetry")
-                                .font(.subheadline)
-                                .foregroundColor(.secondary)
+                            Text("Symmetry").font(.subheadline).foregroundColor(.secondary)
                             Spacer()
                             Stepper("\(appState.parameters.symmetry)×",
-                                    value: $appState.parameters.symmetry,
-                                    in: 1...8)
+                                    value: $appState.parameters.symmetry, in: 1...8)
                             .fixedSize()
                         }
-
                         HStack {
-                            Text("Output Size")
-                                .font(.subheadline)
-                                .foregroundColor(.secondary)
+                            Text("Output Size").font(.subheadline).foregroundColor(.secondary)
                             Spacer()
                             Picker("", selection: $appState.parameters.outputSize) {
                                 Text("512").tag(512)
@@ -132,22 +26,19 @@ struct ParameterPanel: View {
                                 Text("1024").tag(1024)
                                 Text("2048").tag(2048)
                             }
-                            .pickerStyle(.menu)
-                            .fixedSize()
+                            .pickerStyle(.menu).fixedSize()
                         }
                     }
                 }
 
-                // SEED Section
+                // SEED
                 SectionCard(title: "Seed") {
                     HStack {
                         TextField("Seed", value: $appState.parameters.seed, format: .number)
                             .textFieldStyle(.roundedBorder)
                             .font(.system(.body, design: .monospaced))
-
                         Button(action: { appState.randomizeSeed() }) {
-                            Image(systemName: "dice")
-                                .foregroundColor(.blue)
+                            Image(systemName: "dice").foregroundColor(.blue)
                         }
                         .buttonStyle(.plain)
                         .help("Randomize seed")
@@ -156,60 +47,19 @@ struct ParameterPanel: View {
 
                 Divider().padding(.horizontal)
 
-                // Generate button
-                Button(action: {
-                    Task { await appState.generate() }
-                }) {
+                Button(action: { Task { await appState.generate() } }) {
                     Label("Generate", systemImage: "sparkles")
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 6)
+                        .frame(maxWidth: .infinity).padding(.vertical, 6)
                 }
-                .buttonStyle(.borderedProminent)
-                .tint(.blue)
-                .disabled(appState.isGenerating)
-                .padding(.horizontal)
+                .buttonStyle(.borderedProminent).tint(.blue)
+                .disabled(appState.isGenerating).padding(.horizontal)
 
-                // Randomize All button
-                Button(action: {
-                    appState.randomizeSeed()
-                    appState.parameters.paletteIndex      = Int.random(in: 0..<ColorPalettes.all.count)
-                    appState.parameters.blendPaletteIndex = Int.random(in: 0..<ColorPalettes.all.count)
-                    appState.parameters.paletteBlend      = Double.random(in: 0.0...0.7)
-                    appState.parameters.complexity    = Double.random(in: 0.2...1.0)
-                    appState.parameters.density       = Double.random(in: 0.2...1.0)
-                    appState.parameters.colorDrift    = Double.random(in: 0.1...0.9)
-                    appState.parameters.symmetry      = Int.random(in: 1...8)
-                    appState.parameters.ripple        = Double.random(in: 0.0...0.7)
-                    appState.parameters.wash          = Double.random(in: 0.0...0.6)
-                    appState.parameters.abstractLevel = Double.random(in: 0.1...0.8)
-                    appState.parameters.saturation    = Double.random(in: 0.3...1.0)
-                    appState.parameters.brightness    = Double.random(in: 0.3...0.7)
-                    // Randomize 1–3 layers
-                    let allStyles = MandalaStyle.allCases
-                    let nLayers = Int.random(in: 1...3)
-                    var usedStyles = Set<String>()
-                    var newLayers: [StyleLayer] = []
-                    for li in 0..<nLayers {
-                        var s = allStyles.randomElement() ?? .mixed
-                        while usedStyles.contains(s.rawValue) && usedStyles.count < allStyles.count {
-                            s = allStyles.randomElement() ?? .mixed
-                        }
-                        usedStyles.insert(s.rawValue)
-                        let scale = li == 0 ? Double.random(in: 0.7...1.0) : Double.random(in: 0.3...0.75)
-                        let coff  = Double.random(in: 0.0...1.0)
-                        newLayers.append(StyleLayer(style: s, scale: scale, colorOffset: coff))
-                    }
-                    appState.parameters.layers = newLayers
-                    Task { await appState.generate() }
-                }) {
+                Button(action: { appState.randomizeAll() }) {
                     Label("Randomize All", systemImage: "shuffle")
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 4)
+                        .frame(maxWidth: .infinity).padding(.vertical, 4)
                 }
                 .buttonStyle(.bordered)
-                .disabled(appState.isGenerating)
-                .padding(.horizontal)
-                .padding(.bottom, 16)
+                .disabled(appState.isGenerating).padding(.horizontal).padding(.bottom, 16)
             }
             .padding(.vertical, 12)
         }
@@ -217,32 +67,28 @@ struct ParameterPanel: View {
     }
 }
 
-// MARK: - Sub-components
+// MARK: - Sub-components (shared)
 
-private struct SectionCard<Content: View>: View {
+struct SectionCard<Content: View>: View {
     let title: String
     @ViewBuilder let content: () -> Content
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(title.uppercased())
-                .font(.system(size: 10, weight: .semibold, design: .default))
-                .foregroundColor(.secondary)
-                .kerning(1.2)
+                .font(.system(size: 10, weight: .semibold))
+                .foregroundColor(.secondary).kerning(1.2)
                 .padding(.horizontal, 16)
-
             VStack(alignment: .leading, spacing: 0) {
-                content()
-                    .padding(12)
+                content().padding(12)
             }
             .background(Color(NSColor.windowBackgroundColor).opacity(0.5))
-            .cornerRadius(8)
-            .padding(.horizontal, 12)
+            .cornerRadius(8).padding(.horizontal, 12)
         }
     }
 }
 
-private struct LabeledSlider: View {
+struct LabeledSlider: View {
     let label: String
     @Binding var value: Double
     var color: Color = .blue
@@ -250,69 +96,12 @@ private struct LabeledSlider: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
             HStack {
-                Text(label)
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
+                Text(label).font(.subheadline).foregroundColor(.secondary)
                 Spacer()
-                Text(String(format: "%.2f", value))
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                    .monospacedDigit()
+                Text(String(format: "%.2f", value)).font(.caption).foregroundColor(.secondary).monospacedDigit()
             }
-            Slider(value: $value, in: 0...1)
-                .accentColor(color)
+            Slider(value: $value, in: 0...1).accentColor(color)
         }
-    }
-}
-
-private struct LayerRow: View {
-    @Binding var layer: StyleLayer
-    let canDelete: Bool
-    let onDelete: () -> Void
-
-    var body: some View {
-        VStack(spacing: 4) {
-            HStack(spacing: 6) {
-                Picker("", selection: $layer.style) {
-                    ForEach(MandalaStyle.allCases) { style in
-                        Label(style.displayName, systemImage: style.sfSymbol).tag(style)
-                    }
-                }
-                .pickerStyle(.menu)
-                .labelsHidden()
-                .frame(maxWidth: .infinity)
-
-                if canDelete {
-                    Button(action: onDelete) {
-                        Image(systemName: "minus.circle.fill")
-                            .foregroundColor(.red.opacity(0.7))
-                    }
-                    .buttonStyle(.plain)
-                }
-            }
-            HStack(spacing: 8) {
-                Text("Scale")
-                    .font(.caption2).foregroundColor(.secondary)
-                Slider(value: $layer.scale, in: 0.1...1.0)
-                    .accentColor(.blue)
-                Text(String(format: "%.2f", layer.scale))
-                    .font(.caption2).foregroundColor(.secondary).monospacedDigit()
-                    .frame(width: 30)
-            }
-            HStack(spacing: 8) {
-                Text("Colour")
-                    .font(.caption2).foregroundColor(.secondary)
-                Slider(value: $layer.colorOffset, in: 0.0...1.0)
-                    .accentColor(.purple)
-                Text(String(format: "%.2f", layer.colorOffset))
-                    .font(.caption2).foregroundColor(.secondary).monospacedDigit()
-                    .frame(width: 30)
-            }
-        }
-        .padding(.vertical, 4)
-        .padding(.horizontal, 2)
-        .background(Color(NSColor.windowBackgroundColor).opacity(0.3))
-        .cornerRadius(6)
     }
 }
 
@@ -322,29 +111,26 @@ struct PaletteSwatch: View {
     var isBlend: Bool = false
 
     var body: some View {
-        VStack(spacing: 3) {
+        VStack(spacing: 2) {
             LinearGradient(
                 gradient: Gradient(stops: palette.stops.map {
                     Gradient.Stop(color: Color(nsColor: $0.1), location: $0.0)
                 }),
                 startPoint: .leading, endPoint: .trailing
             )
-            .frame(height: 22)
-            .cornerRadius(4)
-            .overlay(
-                RoundedRectangle(cornerRadius: 4)
-                    .stroke(isSelected ? Color.white : isBlend ? Color.orange : Color.clear,
-                            lineWidth: 2)
-            )
+            .frame(height: 18)
+            .cornerRadius(3)
+            .overlay(RoundedRectangle(cornerRadius: 3)
+                .stroke(isSelected ? Color.white : isBlend ? Color.orange : Color.clear, lineWidth: 2))
 
             Text(palette.name)
-                .font(.system(size: 9))
+                .font(.system(size: 8))
                 .foregroundColor(isSelected || isBlend ? .primary : .secondary)
                 .lineLimit(1)
         }
-        .padding(3)
+        .padding(2)
         .background(isSelected ? Color.blue.opacity(0.2) : isBlend ? Color.orange.opacity(0.15) : Color.clear)
-        .cornerRadius(6)
+        .cornerRadius(5)
         .contentShape(Rectangle())
     }
 }

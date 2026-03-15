@@ -52,50 +52,69 @@ struct MandalaRenderer {
     static func render(params: MandalaParameters) -> NSImage {
         let bufferSize = params.outputSize * 2
         let palettes   = ColorPalettes.all
-        let p1 = palettes[max(0, min(palettes.count - 1, params.paletteIndex))]
-        let palette: ColorPalette
-        if params.paletteBlend > 0.01 {
-            let p2 = palettes[max(0, min(palettes.count - 1, params.blendPaletteIndex))]
-            palette = p1.blended(with: p2, mix: params.paletteBlend)
-        } else {
-            palette = p1
-        }
 
         let cx = Float(bufferSize) * 0.5
         let cy = Float(bufferSize) * 0.5
-        let baseRadius = Double(bufferSize) * 0.48
-        let layerCount = max(2, Int(params.complexity * 8) + 1)
+        let baseRadius = Double(bufferSize) * 0.72
         let symmetry   = max(1, min(8, params.symmetry))
 
-        // ── SINGLE PASS: background + fibers + all style layers ──
-        let buffer = PixelBuffer(width: bufferSize, height: bufferSize)
-        var rng = SeededRNG(seed: params.seed)
-        drawBackground(buffer: buffer, palette: palette, seed: params.seed)
-        drawGrassFibers(buffer: buffer, params: params, palette: palette, rng: &rng)
+        // ── BACKGROUND (uses first layer's palette) ──
+        let bgBuffer = PixelBuffer(width: bufferSize, height: bufferSize)
+        let bgPaletteIdx = params.layers.first.map { max(0, min(palettes.count-1, $0.paletteIndex)) } ?? 0
+        let bgPalette = palettes[bgPaletteIdx]
+        drawBackground(buffer: bgBuffer, palette: bgPalette, seed: params.seed)
 
+        // Grass fibers from first layer
+        if let firstLayer = params.layers.first {
+            var lp = params
+            lp.density = firstLayer.density
+            lp.complexity = firstLayer.complexity
+            lp.paletteIndex = firstLayer.paletteIndex
+            var rng = SeededRNG(seed: params.seed)
+            drawGrassFibers(buffer: bgBuffer, params: lp, palette: palettes[bgPaletteIdx], rng: &rng)
+        }
+
+        guard var compositeImage = bgBuffer.toCGImage() else { return NSImage() }
+
+        // ── PER-LAYER RENDER ──
         for (li, layer) in params.layers.enumerated() {
             let layerRadius = baseRadius * max(0.1, min(1.0, layer.scale))
+            let layerCount  = max(2, Int(layer.complexity * 8) + 1)
+            let palette     = palettes[max(0, min(palettes.count-1, layer.paletteIndex))]
+
+            // Build a params copy with this layer's values for renderer internals
+            var lp = params
+            lp.complexity    = layer.complexity
+            lp.density       = layer.density
+            lp.glowIntensity = layer.glowIntensity
+            lp.colorDrift    = layer.colorDrift
+            lp.ripple        = layer.ripple
+            lp.wash          = layer.wash
+            lp.paletteIndex  = layer.paletteIndex
+
+            let buffer = PixelBuffer(width: bufferSize, height: bufferSize)
             var layerRng = SeededRNG(seed: params.seed &+ UInt64(li + 1) &* 0x9e3779b97f4a7c15)
+
             drawStructuralLayers(buffer: buffer, cx: cx, cy: cy, baseRadius: layerRadius,
-                                 params: params, style: layer.style, colorOffset: layer.colorOffset,
+                                 params: lp, style: layer.style, colorOffset: layer.colorOffset,
                                  palette: palette, rng: &layerRng,
                                  layerCount: layerCount, symmetry: symmetry,
-                                 rippleAmount: Float(params.ripple), weightMul: 1.0)
+                                 rippleAmount: Float(layer.ripple), weightMul: 1.0)
+
+            guard var layerImage = buffer.toCGImage() else { continue }
+            layerImage = applyGlow(image: layerImage, intensity: layer.glowIntensity)
+            if layer.wash > 0 {
+                layerImage = applyWash(image: layerImage, amount: layer.wash)
+            }
+            if layer.abstractLevel > 0.25 {
+                layerImage = applyPaintedEffect(image: layerImage, abstractLevel: layer.abstractLevel)
+            }
+            layerImage = applyColourGrade(image: layerImage, saturation: layer.saturation, brightness: layer.brightness)
+            compositeImage = screenComposite(base: compositeImage, overlay: layerImage)
         }
 
-        guard var result = buffer.toCGImage() else { return NSImage() }
-
-        // ── POST-PROCESS ──
-        result = applyGlow(image: result, intensity: params.glowIntensity)
-        if params.wash > 0 {
-            result = applyWash(image: result, amount: params.wash)
-        }
-        if params.abstractLevel > 0.25 {
-            result = applyPaintedEffect(image: result, abstractLevel: params.abstractLevel)
-        }
-        result = applyColourGrade(image: result,
-                                  saturation: params.saturation,
-                                  brightness: params.brightness)
+        // ── GLOBAL POST-PROCESS ──
+        var result = compositeImage
         result = downscaleLanczos(image: result, targetSize: params.outputSize)
         let size = NSSize(width: params.outputSize, height: params.outputSize)
         return NSImage(cgImage: result, size: size)
