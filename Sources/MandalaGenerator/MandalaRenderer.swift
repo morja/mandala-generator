@@ -1004,14 +1004,14 @@ struct MandalaRenderer {
         let ctx = CIContext(options: [.workingColorSpace: CGColorSpace(name: CGColorSpace.displayP3) as Any])
         let ext = ci.extent
         var result = ci
+        let scale = Double(image.width) / 1600.0
 
-        // Multiple blur passes at different radii — soft, overlapping, no hard edges.
-        // Each pass is dissolved back at low opacity so gradients stay smooth.
+        // Multiple blur passes — radii scaled to buffer size so effect is resolution-independent
         let passes: [(radius: Double, opacity: Double)] = [
-            (amount * 4,  0.25),
-            (amount * 12, 0.20),
-            (amount * 28, 0.15),
-            (amount * 55, 0.10),
+            (amount *  4 * scale, 0.25),
+            (amount * 12 * scale, 0.20),
+            (amount * 28 * scale, 0.15),
+            (amount * 55 * scale, 0.10),
         ]
         for (radius, opacity) in passes {
             guard let blur = CIFilter(name: "CIGaussianBlur") else { continue }
@@ -1045,7 +1045,7 @@ struct MandalaRenderer {
             sat.setValue(0.0, forKey: kCIInputBrightnessKey)
             if let saturated = sat.outputImage {
                 blur2.setValue(saturated, forKey: kCIInputImageKey)
-                blur2.setValue(amount * 45.0, forKey: kCIInputRadiusKey)
+                blur2.setValue(amount * 45.0 * scale, forKey: kCIInputRadiusKey)
                 if let blurredSat = blur2.outputImage?.cropped(to: ext) {
                     let s2 = Float(amount * 0.25)
                     cm2.setValue(blurredSat, forKey: kCIInputImageKey)
@@ -1085,9 +1085,10 @@ struct MandalaRenderer {
         guard intensity > 0 else { return image }
         let ciImage = CIImage(cgImage: image)
         let context = CIContext(options: [.workingColorSpace: CGColorSpace(name: CGColorSpace.displayP3) as Any])
+        let scale = Double(image.width) / 1600.0
 
-        // Multiple blur radii for bloom
-        let blurRadii: [Double] = [2.0, 8.0, 20.0]
+        // Multiple blur radii for bloom — scaled to buffer size
+        let blurRadii: [Double] = [2.0 * scale, 8.0 * scale, 20.0 * scale]
         let strengths: [Double] = [1.0, 0.4, 0.15]
 
         var result = ciImage
@@ -1148,9 +1149,10 @@ struct MandalaRenderer {
         let extent = ciImage.extent
 
         var result = ciImage
+        let scale = Double(image.width) / 1600.0
 
-        // Displacement distortion using turbulence — all amounts scale linearly
-        let displacementAmount = abstractLevel * 30.0
+        // Displacement distortion using turbulence — all amounts scaled to buffer size
+        let displacementAmount = abstractLevel * 30.0 * scale
         if let turbulenceFilter = CIFilter(name: "CITurbulence") {
             turbulenceFilter.setValue(CIVector(x: 0, y: 0), forKey: kCIInputCenterKey)
             turbulenceFilter.setValue(Double(image.width) * (0.1 + abstractLevel * 0.45), forKey: "inputSize")
@@ -1169,7 +1171,7 @@ struct MandalaRenderer {
         }
 
         // Additional blur pass
-        let blurRadius = abstractLevel * 3.0
+        let blurRadius = abstractLevel * 3.0 * scale
         if let blurFilter = CIFilter(name: "CIGaussianBlur") {
             blurFilter.setValue(result, forKey: kCIInputImageKey)
             blurFilter.setValue(blurRadius, forKey: kCIInputRadiusKey)
@@ -1180,7 +1182,7 @@ struct MandalaRenderer {
 
         // Heavy paint path — smooth ramp starting from abstractLevel=0.3, full at 1.0
         let heavyFactor = max(0.0, (abstractLevel - 0.3) / 0.7)
-        let heavyBlur = heavyFactor * abstractLevel * 8.0
+        let heavyBlur = heavyFactor * abstractLevel * 8.0 * scale
         if heavyBlur > 0.5 {
             if let blurFilter = CIFilter(name: "CIGaussianBlur") {
                 blurFilter.setValue(result, forKey: kCIInputImageKey)
