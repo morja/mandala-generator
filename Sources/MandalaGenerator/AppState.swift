@@ -71,9 +71,41 @@ class AppState: ObservableObject {
             mix(UInt64(layer.symmetry))
             mix(layer.seed)
             mix(UInt64(layer.paletteIndex))
+            mix(layer.isEnabled ? 1 : 0)
         }
+        // Background layer
+        let bg = parameters.baseLayer
+        if bg.isEnabled {
+            mix(UInt64(bitPattern: Int64(bg.type.rawValue.hashValue)))
+            mix(UInt64(Int(bg.hue        * 1000)))
+            mix(UInt64(Int(bg.saturation * 1000)))
+            mix(UInt64(Int(bg.brightness * 1000)))
+            mix(UInt64(Int(bg.hue2       * 1000)))
+            mix(UInt64(Int(bg.patternType)))
+            mix(UInt64(Int(bg.patternScale   * 1000)))
+            mix(UInt64(Int(bg.grainAmount    * 1000)))
+            mix(UInt64(Int(bg.opacity        * 1000)))
+            mix(bg.isRadial ? 1 : 0)
+        }
+        // Effects layer
+        let fx = parameters.effectsLayer
+        if fx.isEnabled {
+            mix(UInt64(Int(fx.dimming    * 1000)))
+            mix(UInt64(Int(fx.erasure    * 1000)))
+            mix(UInt64(Int(fx.highlights * 1000)))
+            mix(UInt64(Int(fx.stars      * 1000)))
+            mix(UInt64(Int(fx.vignette   * 1000)))
+            mix(UInt64(Int(fx.chromatic  * 1000)))
+            mix(fx.dimmingSeed)
+            mix(fx.erasureSeed)
+            mix(fx.highlightsSeed)
+            mix(fx.starsSeed)
+        }
+        let bgTag = bg.isEnabled  ? "bg-\(String(bg.type.rawValue.prefix(3)))" : ""
+        let fxTag = fx.isEnabled  ? "fx" : ""
         let hash = String(format: "%08x", h & 0xFFFFFFFF)
-        return (["mandala", styleAbbr, pal, sym, hash].filter { !$0.isEmpty }.joined(separator: "-"))
+        return (["mandala", styleAbbr, pal, sym, bgTag, fxTag, hash]
+            .filter { !$0.isEmpty }.joined(separator: "-"))
     }
 
     func randomizeAll() {
