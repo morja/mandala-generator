@@ -52,10 +52,9 @@ class AppState: ObservableObject {
             .map { String($0.style.displayName.prefix(4)).lowercased() }
             .joined(separator: "+")
         let pal = "p\(parameters.layers.first?.paletteIndex ?? 0)"
-        let sym = parameters.symmetry > 1 ? "x\(parameters.symmetry)" : ""
+        let sym = (parameters.layers.first?.symmetry ?? 1) > 1 ? "x\(parameters.layers.first!.symmetry)" : ""
         var h = parameters.seed
         let mix: (UInt64) -> Void = { v in h = h &* 6364136223846793005 &+ v &+ 1 }
-        mix(UInt64(parameters.symmetry))
         mix(UInt64(parameters.outputSize))
         for layer in parameters.layers {
             mix(UInt64(bitPattern: Int64(layer.style.rawValue.hashValue)))
@@ -69,6 +68,8 @@ class AppState: ObservableObject {
             mix(UInt64(Int(layer.abstractLevel * 1000)))
             mix(UInt64(Int(layer.saturation    * 1000)))
             mix(UInt64(Int(layer.brightness    * 1000)))
+            mix(UInt64(layer.symmetry))
+            mix(layer.seed)
             mix(UInt64(layer.paletteIndex))
         }
         let hash = String(format: "%08x", h & 0xFFFFFFFF)
@@ -77,10 +78,10 @@ class AppState: ObservableObject {
 
     func randomizeAll() {
         randomizeSeed()
-        parameters.symmetry = Int.random(in: 1...8)
 
         let allStyles = MandalaStyle.allCases
         let nLayers = Int.random(in: 1...3)
+        let sharedSymmetry = Int.random(in: 1...8)
         var newLayers: [StyleLayer] = []
         var usedStyles = Set<String>()
         for li in 0..<nLayers {
@@ -104,7 +105,9 @@ class AppState: ObservableObject {
                 wash: Double.random(in: 0.0...0.5),
                 abstractLevel: Double.random(in: 0.1...0.8),
                 saturation: Double.random(in: 0.3...1.0),
-                brightness: Double.random(in: 0.3...0.7)
+                brightness: Double.random(in: 0.3...0.7),
+                symmetry: sharedSymmetry,
+                seed: UInt64.random(in: 1...UInt64.max)
             ))
         }
         parameters.layers = newLayers
@@ -113,14 +116,17 @@ class AppState: ObservableObject {
 
     func randomizeSeed() {
         parameters.seed = UInt64.random(in: 1...UInt64.max)
+        for i in parameters.layers.indices {
+            parameters.layers[i].seed = UInt64.random(in: 1...UInt64.max)
+        }
     }
 
     func saveImage() {
         guard let image = currentImage else { return }
         let panel = NSSavePanel()
         panel.title = "Save Mandala"
-        panel.allowedContentTypes = [.png, .jpeg]
-        panel.nameFieldStringValue = suggestedFilename()
+        panel.allowedContentTypes = parameters.outputFormat == "jpg" ? [.jpeg] : [.png]
+        panel.nameFieldStringValue = suggestedFilename() + "." + parameters.outputFormat
         panel.begin { [weak self] response in
             guard response == .OK, let url = panel.url else { return }
             self?.writeImage(image, to: url)

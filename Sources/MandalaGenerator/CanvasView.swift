@@ -65,8 +65,8 @@ struct CanvasView: View {
             .disabled(appState.isGenerating)
             .keyboardShortcut("r", modifiers: .command)
 
-            Button(action: { appState.randomizeSeed() }) {
-                Label("Randomize", systemImage: "dice")
+            Button(action: { appState.randomizeAll() }) {
+                Label("Randomize All", systemImage: "shuffle")
             }
             .buttonStyle(.bordered)
             .disabled(appState.isGenerating)
@@ -76,6 +76,27 @@ struct CanvasView: View {
             }
             .buttonStyle(.bordered)
             .disabled(appState.currentImage == nil || appState.isGenerating)
+
+            Divider().frame(height: 20)
+
+            Picker("", selection: $appState.parameters.outputSize) {
+                Text("512").tag(512)
+                Text("800").tag(800)
+                Text("1024").tag(1024)
+                Text("1400").tag(1400)
+                Text("2048").tag(2048)
+            }
+            .pickerStyle(.menu)
+            .frame(width: 70)
+            .help("Output size")
+
+            Picker("", selection: $appState.parameters.outputFormat) {
+                Text("PNG").tag("png")
+                Text("JPG").tag("jpg")
+            }
+            .pickerStyle(.menu)
+            .frame(width: 65)
+            .help("Output format")
 
             Spacer()
 

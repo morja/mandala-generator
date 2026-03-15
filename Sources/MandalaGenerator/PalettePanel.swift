@@ -149,6 +149,36 @@ private struct LayerCard: View {
 
                     Divider()
 
+                    // Symmetry + Seed row
+                    HStack(spacing: 6) {
+                        Text("Symmetry")
+                            .font(.system(size: 10))
+                            .foregroundColor(.secondary)
+                            .frame(width: 70, alignment: .leading)
+                        Spacer()
+                        Stepper("\(layer.symmetry)×", value: $layer.symmetry, in: 1...8)
+                            .font(.system(size: 10))
+                            .fixedSize()
+                    }
+
+                    HStack(spacing: 6) {
+                        Text("Seed")
+                            .font(.system(size: 10))
+                            .foregroundColor(.secondary)
+                            .frame(width: 70, alignment: .leading)
+                        TextField("", value: $layer.seed, format: .number)
+                            .textFieldStyle(.roundedBorder)
+                            .font(.system(size: 10, design: .monospaced))
+                        Button(action: { layer.seed = UInt64.random(in: 1...UInt64.max) }) {
+                            Image(systemName: "dice")
+                                .font(.system(size: 10))
+                                .foregroundColor(.blue)
+                        }
+                        .buttonStyle(.plain)
+                    }
+
+                    Divider()
+
                     // Sliders
                     CardSlider(label: "Scale",       value: $layer.scale,        range: 0.1...1.0, color: .blue)
                     CardSlider(label: "Complexity",  value: $layer.complexity,   range: 0...1,     color: .indigo)

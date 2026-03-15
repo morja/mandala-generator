@@ -48,17 +48,20 @@ struct StyleLayer: Equatable {
     var abstractLevel: Double = 0.3
     var saturation: Double = 0.7
     var brightness: Double = 0.5
+    var symmetry: Int = 6
+    var seed: UInt64 = 42
 }
 
 struct MandalaParameters: Equatable {
     var layers: [StyleLayer] = [StyleLayer()]
 
     // Truly global — render setup
-    var symmetry: Int = 1
-    var seed: UInt64 = 42
+    var seed: UInt64 = 42   // used for background/grass; each layer also has its own seed
     var outputSize: Int = 800
+    var outputFormat: String = "png"
 
     // Internal working fields used by renderer function signatures — overwritten per layer in render loop. Do NOT expose in UI.
+    var symmetry: Int = 6
     var complexity: Double = 0.6
     var density: Double = 0.5
     var glowIntensity: Double = 0.6

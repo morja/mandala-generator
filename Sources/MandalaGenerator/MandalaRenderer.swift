@@ -56,7 +56,6 @@ struct MandalaRenderer {
         let cx = Float(bufferSize) * 0.5
         let cy = Float(bufferSize) * 0.5
         let baseRadius = Double(bufferSize) * 0.72
-        let symmetry   = max(1, min(8, params.symmetry))
 
         // ── BACKGROUND (uses first layer's palette) ──
         let bgBuffer = PixelBuffer(width: bufferSize, height: bufferSize)
@@ -70,6 +69,7 @@ struct MandalaRenderer {
             lp.density = firstLayer.density
             lp.complexity = firstLayer.complexity
             lp.paletteIndex = firstLayer.paletteIndex
+            lp.symmetry = max(1, min(8, firstLayer.symmetry))
             var rng = SeededRNG(seed: params.seed)
             drawGrassFibers(buffer: bgBuffer, params: lp, palette: palettes[bgPaletteIdx], rng: &rng)
         }
@@ -78,12 +78,14 @@ struct MandalaRenderer {
 
         // ── PER-LAYER RENDER ──
         for (li, layer) in params.layers.enumerated() {
+            let layerSymmetry = max(1, min(8, layer.symmetry))
             let layerRadius = baseRadius * max(0.1, min(1.0, layer.scale))
             let layerCount  = max(2, Int(layer.complexity * 8) + 1)
             let palette     = palettes[max(0, min(palettes.count-1, layer.paletteIndex))]
 
             // Build a params copy with this layer's values for renderer internals
             var lp = params
+            lp.symmetry      = layerSymmetry
             lp.complexity    = layer.complexity
             lp.density       = layer.density
             lp.glowIntensity = layer.glowIntensity
@@ -93,12 +95,12 @@ struct MandalaRenderer {
             lp.paletteIndex  = layer.paletteIndex
 
             let buffer = PixelBuffer(width: bufferSize, height: bufferSize)
-            var layerRng = SeededRNG(seed: params.seed &+ UInt64(li + 1) &* 0x9e3779b97f4a7c15)
+            var layerRng = SeededRNG(seed: layer.seed == 0 ? params.seed &+ UInt64(li + 1) &* 0x9e3779b97f4a7c15 : layer.seed)
 
             drawStructuralLayers(buffer: buffer, cx: cx, cy: cy, baseRadius: layerRadius,
                                  params: lp, style: layer.style, colorOffset: layer.colorOffset,
                                  palette: palette, rng: &layerRng,
-                                 layerCount: layerCount, symmetry: symmetry,
+                                 layerCount: layerCount, symmetry: layerSymmetry,
                                  rippleAmount: Float(layer.ripple), weightMul: 1.0)
 
             guard var layerImage = buffer.toCGImage() else { continue }
@@ -106,7 +108,7 @@ struct MandalaRenderer {
             if layer.wash > 0 {
                 layerImage = applyWash(image: layerImage, amount: layer.wash)
             }
-            if layer.abstractLevel > 0.25 {
+            if layer.abstractLevel > 0.01 {
                 layerImage = applyPaintedEffect(image: layerImage, abstractLevel: layer.abstractLevel)
             }
             layerImage = applyColourGrade(image: layerImage, saturation: layer.saturation, brightness: layer.brightness)
@@ -1147,11 +1149,11 @@ struct MandalaRenderer {
 
         var result = ciImage
 
-        // Displacement distortion using turbulence
+        // Displacement distortion using turbulence — all amounts scale linearly
         let displacementAmount = abstractLevel * 30.0
         if let turbulenceFilter = CIFilter(name: "CITurbulence") {
             turbulenceFilter.setValue(CIVector(x: 0, y: 0), forKey: kCIInputCenterKey)
-            turbulenceFilter.setValue(Double(image.width) * 0.5, forKey: "inputSize")
+            turbulenceFilter.setValue(Double(image.width) * (0.1 + abstractLevel * 0.45), forKey: "inputSize")
             turbulenceFilter.setValue(abstractLevel * 3.0, forKey: "inputAmount")
             turbulenceFilter.setValue(3, forKey: "inputOctaves")
             if let turbulence = turbulenceFilter.outputImage?.cropped(to: extent) {
@@ -1176,9 +1178,10 @@ struct MandalaRenderer {
             }
         }
 
-        // Heavy paint path for high abstractLevel
-        if abstractLevel > 0.6 {
-            let heavyBlur = abstractLevel * 8.0
+        // Heavy paint path — smooth ramp starting from abstractLevel=0.3, full at 1.0
+        let heavyFactor = max(0.0, (abstractLevel - 0.3) / 0.7)
+        let heavyBlur = heavyFactor * abstractLevel * 8.0
+        if heavyBlur > 0.5 {
             if let blurFilter = CIFilter(name: "CIGaussianBlur") {
                 blurFilter.setValue(result, forKey: kCIInputImageKey)
                 blurFilter.setValue(heavyBlur, forKey: kCIInputRadiusKey)
@@ -1187,11 +1190,11 @@ struct MandalaRenderer {
                 }
             }
 
-            // Color bleeding: blur a high-saturation version
+            // Color bleeding: blur a high-saturation version, blended proportionally
             if let satFilter = CIFilter(name: "CIColorControls") {
                 satFilter.setValue(result, forKey: kCIInputImageKey)
-                satFilter.setValue(2.0, forKey: kCIInputSaturationKey)
-                satFilter.setValue(0.1, forKey: kCIInputBrightnessKey)
+                satFilter.setValue(1.0 + heavyFactor, forKey: kCIInputSaturationKey)
+                satFilter.setValue(0.1 * heavyFactor, forKey: kCIInputBrightnessKey)
                 satFilter.setValue(1.0, forKey: kCIInputContrastKey)
                 if let saturated = satFilter.outputImage {
                     if let blurFilter2 = CIFilter(name: "CIGaussianBlur") {
@@ -1210,10 +1213,10 @@ struct MandalaRenderer {
                 }
             }
 
-            // Grain overlay
+            // Grain overlay — smoothly ramps with heavyFactor
             if let randomFilter = CIFilter(name: "CIRandomGenerator"),
                let randomImg = randomFilter.outputImage {
-                let grainStrength = (abstractLevel - 0.6) * 0.15
+                let grainStrength = heavyFactor * abstractLevel * 0.12
                 if let grainMatrix = CIFilter(name: "CIColorMatrix") {
                     let gs = Float(grainStrength)
                     grainMatrix.setValue(randomImg.cropped(to: extent), forKey: kCIInputImageKey)
