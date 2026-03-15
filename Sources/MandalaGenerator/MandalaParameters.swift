@@ -125,7 +125,7 @@ enum MandalaStyle: String, CaseIterable, Identifiable {
         case .flowField:       return "tornado"
         case .tendril:         return "arrow.triangle.branch"
         case .moire:           return "circle.grid.2x1"
-        case .voronoi:         return "square.grid.3x3.middlefill"
+        case .voronoi:         return "rectangle.split.3x3"
         }
     }
 }
