@@ -57,21 +57,23 @@ struct MandalaRenderer {
         let cy = Float(bufferSize) * 0.5
         let baseRadius = Double(bufferSize) * 0.72
 
-        // ── BACKGROUND (uses first layer's palette) ──
+        // ── BACKGROUND ──
         let bgBuffer = PixelBuffer(width: bufferSize, height: bufferSize)
-        let bgPaletteIdx = params.layers.first.map { max(0, min(palettes.count-1, $0.paletteIndex)) } ?? 0
-        let bgPalette = palettes[bgPaletteIdx]
-        drawBackground(buffer: bgBuffer, palette: bgPalette, seed: params.seed)
-
-        // Grass fibers from first layer
-        if let firstLayer = params.layers.first {
-            var lp = params
-            lp.density = firstLayer.density
-            lp.complexity = firstLayer.complexity
-            lp.paletteIndex = firstLayer.paletteIndex
-            lp.symmetry = max(1, min(8, firstLayer.symmetry))
-            var rng = SeededRNG(seed: params.seed)
-            drawGrassFibers(buffer: bgBuffer, params: lp, palette: palettes[bgPaletteIdx], rng: &rng)
+        if params.baseLayer.isEnabled {
+            drawBaseLayer(buffer: bgBuffer, settings: params.baseLayer, bufferSize: bufferSize)
+        } else {
+            let bgPaletteIdx = params.layers.first.map { max(0, min(palettes.count-1, $0.paletteIndex)) } ?? 0
+            let bgPalette = palettes[bgPaletteIdx]
+            drawBackground(buffer: bgBuffer, palette: bgPalette, seed: params.seed)
+            if let firstLayer = params.layers.first {
+                var lp = params
+                lp.density = firstLayer.density
+                lp.complexity = firstLayer.complexity
+                lp.paletteIndex = firstLayer.paletteIndex
+                lp.symmetry = max(1, min(8, firstLayer.symmetry))
+                var rng = SeededRNG(seed: params.seed)
+                drawGrassFibers(buffer: bgBuffer, params: lp, palette: palettes[bgPaletteIdx], rng: &rng)
+            }
         }
 
         guard var compositeImage = bgBuffer.toCGImage() else { return NSImage() }
@@ -115,8 +117,13 @@ struct MandalaRenderer {
             compositeImage = screenComposite(base: compositeImage, overlay: layerImage)
         }
 
-        // ── GLOBAL POST-PROCESS ──
+        // ── EFFECTS LAYER ──
         var result = compositeImage
+        if params.effectsLayer.isEnabled {
+            result = applyEffectsLayer(image: result, settings: params.effectsLayer, bufferSize: bufferSize)
+        }
+
+        // ── GLOBAL POST-PROCESS ──
         result = downscaleLanczos(image: result, targetSize: params.outputSize)
         let size = NSSize(width: params.outputSize, height: params.outputSize)
         return NSImage(cgImage: result, size: size)
@@ -259,6 +266,371 @@ struct MandalaRenderer {
             }
         }
         for sub in subBuffers { buffer.mergeAdding(sub) }
+    }
+
+    // MARK: - HSB → RGB (pure Swift, thread-safe)
+
+    private static func hsbToRGB(h: Double, s: Double, b: Double) -> (r: Float, g: Float, b: Float) {
+        guard s > 0 else { let v = Float(b); return (v, v, v) }
+        let h6 = h * 6.0
+        let i  = Int(h6) % 6
+        let f  = h6 - Double(Int(h6))
+        let p  = b * (1 - s)
+        let q  = b * (1 - s * f)
+        let t  = b * (1 - s * (1 - f))
+        switch i {
+        case 0:  return (Float(b), Float(t), Float(p))
+        case 1:  return (Float(q), Float(b), Float(p))
+        case 2:  return (Float(p), Float(b), Float(t))
+        case 3:  return (Float(p), Float(q), Float(b))
+        case 4:  return (Float(t), Float(p), Float(b))
+        default: return (Float(b), Float(p), Float(q))
+        }
+    }
+
+    // MARK: - Copy CIImage pixels into PixelBuffer
+
+    private static func copyCI(_ ci: CIImage, to buffer: PixelBuffer, extent: CGRect, opacity: Float) {
+        let w = buffer.width
+        let h = buffer.height
+        let ciCtx = CIContext()
+        guard let cgImg = ciCtx.createCGImage(ci, from: extent) else { return }
+        let bytesPerRow = w * 4
+        var bytes = [UInt8](repeating: 0, count: h * bytesPerRow)
+        let space = CGColorSpaceCreateDeviceRGB()
+        guard let drawCtx = CGContext(data: &bytes, width: w, height: h,
+                                      bitsPerComponent: 8, bytesPerRow: bytesPerRow,
+                                      space: space,
+                                      bitmapInfo: CGImageAlphaInfo.noneSkipLast.rawValue) else { return }
+        drawCtx.draw(cgImg, in: extent)
+        let inv = Float(1.0 / 255.0)
+        for i in 0..<(w * h) {
+            let src = i * 4
+            let dst = i * 3
+            buffer.data[dst]     = Float(bytes[src])     * inv * opacity
+            buffer.data[dst + 1] = Float(bytes[src + 1]) * inv * opacity
+            buffer.data[dst + 2] = Float(bytes[src + 2]) * inv * opacity
+        }
+    }
+
+    // MARK: - Base Layer
+
+    private static func drawBaseLayer(buffer: PixelBuffer, settings: BaseLayerSettings, bufferSize: Int) {
+        let w   = bufferSize
+        let h   = bufferSize
+        let ext = CGRect(x: 0, y: 0, width: w, height: h)
+        let opacity = Float(settings.opacity)
+
+        let c1 = hsbToRGB(h: settings.hue,  s: settings.saturation,  b: settings.brightness)
+        let c2 = hsbToRGB(h: settings.hue2, s: settings.saturation2, b: settings.brightness2)
+        let ci1 = CIColor(red: CGFloat(c1.r), green: CGFloat(c1.g), blue: CGFloat(c1.b))
+        let ci2 = CIColor(red: CGFloat(c2.r), green: CGFloat(c2.g), blue: CGFloat(c2.b))
+
+        switch settings.type {
+
+        case .color:
+            for i in 0..<(w * h) {
+                let dst = i * 3
+                buffer.data[dst]     = c1.r * opacity
+                buffer.data[dst + 1] = c1.g * opacity
+                buffer.data[dst + 2] = c1.b * opacity
+            }
+
+        case .gradient:
+            var gradImg: CIImage?
+            if settings.isRadial {
+                if let grad = CIFilter(name: "CIRadialGradient") {
+                    grad.setValue(CIVector(x: CGFloat(w)/2, y: CGFloat(h)/2), forKey: "inputCenter")
+                    grad.setValue(0 as CGFloat,                               forKey: "inputRadius0")
+                    grad.setValue(CGFloat(w) * 0.72,                          forKey: "inputRadius1")
+                    grad.setValue(ci1, forKey: "inputColor0")
+                    grad.setValue(ci2, forKey: "inputColor1")
+                    gradImg = grad.outputImage?.cropped(to: ext)
+                }
+            } else {
+                if let grad = CIFilter(name: "CISmoothLinearGradient") {
+                    let angle = settings.gradientAngle * .pi * 2
+                    let dx = CGFloat(cos(angle)) * CGFloat(w) * 0.5
+                    let dy = CGFloat(sin(angle)) * CGFloat(h) * 0.5
+                    let cx = CGFloat(w) / 2, cy = CGFloat(h) / 2
+                    grad.setValue(CIVector(x: cx - dx, y: cy - dy), forKey: "inputPoint0")
+                    grad.setValue(CIVector(x: cx + dx, y: cy + dy), forKey: "inputPoint1")
+                    grad.setValue(ci1, forKey: "inputColor0")
+                    grad.setValue(ci2, forKey: "inputColor1")
+                    gradImg = grad.outputImage?.cropped(to: ext)
+                }
+            }
+            if let img = gradImg { copyCI(img, to: buffer, extent: ext, opacity: opacity) }
+
+        case .pattern:
+            let tileSize = CGFloat(w) * CGFloat(0.02 + settings.patternScale * 0.18)
+            let sharp    = Float(settings.patternSharpness)
+            var patternImg: CIImage?
+            switch settings.patternType {
+            case 0: // Checkerboard
+                if let f = CIFilter(name: "CICheckerboardGenerator") {
+                    f.setValue(CIVector(x: CGFloat(w)/2, y: CGFloat(h)/2), forKey: "inputCenter")
+                    f.setValue(ci1,   forKey: "inputColor0")
+                    f.setValue(ci2,   forKey: "inputColor1")
+                    f.setValue(tileSize, forKey: "inputWidth")
+                    f.setValue(sharp, forKey: "inputSharpness")
+                    patternImg = f.outputImage?.cropped(to: ext)
+                }
+            case 1: // Horizontal stripes
+                if let f = CIFilter(name: "CIStripesGenerator") {
+                    f.setValue(CIVector(x: CGFloat(w)/2, y: CGFloat(h)/2), forKey: "inputCenter")
+                    f.setValue(ci1,      forKey: "inputColor0")
+                    f.setValue(ci2,      forKey: "inputColor1")
+                    f.setValue(tileSize, forKey: "inputWidth")
+                    f.setValue(sharp,    forKey: "inputSharpness")
+                    patternImg = f.outputImage?.cropped(to: ext)
+                }
+            case 2: // Diagonal stripes
+                if let f = CIFilter(name: "CIStripesGenerator") {
+                    f.setValue(CIVector(x: 0, y: 0), forKey: "inputCenter")
+                    f.setValue(ci1,      forKey: "inputColor0")
+                    f.setValue(ci2,      forKey: "inputColor1")
+                    f.setValue(tileSize, forKey: "inputWidth")
+                    f.setValue(sharp,    forKey: "inputSharpness")
+                    if let stripes = f.outputImage {
+                        patternImg = stripes
+                            .transformed(by: CGAffineTransform(rotationAngle: .pi / 4))
+                            .cropped(to: ext)
+                    }
+                }
+            default: // Crosshatch
+                if let f1 = CIFilter(name: "CIStripesGenerator"),
+                   let f2 = CIFilter(name: "CIStripesGenerator") {
+                    let black = CIColor(red: 0, green: 0, blue: 0)
+                    for (f, col) in [(f1, ci1), (f2, ci2)] {
+                        f.setValue(CIVector(x: 0, y: 0), forKey: "inputCenter")
+                        f.setValue(black,          forKey: "inputColor0")
+                        f.setValue(col,            forKey: "inputColor1")
+                        f.setValue(tileSize * 0.6, forKey: "inputWidth")
+                        f.setValue(sharp,          forKey: "inputSharpness")
+                    }
+                    if let s1 = f1.outputImage, let s2 = f2.outputImage {
+                        let r1 = s1.transformed(by: CGAffineTransform(rotationAngle:  .pi/4)).cropped(to: ext)
+                        let r2 = s2.transformed(by: CGAffineTransform(rotationAngle: -.pi/4)).cropped(to: ext)
+                        if let add = CIFilter(name: "CIAdditionCompositing") {
+                            add.setValue(r1, forKey: kCIInputBackgroundImageKey)
+                            add.setValue(r2, forKey: kCIInputImageKey)
+                            patternImg = add.outputImage?.cropped(to: ext)
+                        }
+                    }
+                }
+            }
+            if let img = patternImg { copyCI(img, to: buffer, extent: ext, opacity: opacity) }
+
+        case .grain:
+            if let rngFilter = CIFilter(name: "CIRandomGenerator"),
+               let noiseImg  = rngFilter.outputImage,
+               let cm        = CIFilter(name: "CIColorMatrix") {
+                let ga = Float(settings.grainAmount)
+                let bd = Float(settings.brightness * 0.6)
+                let (r, g, b) = settings.grainColored ? (c1.r, c1.g, c1.b) : (1.0 as Float, 1.0 as Float, 1.0 as Float)
+                cm.setValue(noiseImg.cropped(to: ext), forKey: kCIInputImageKey)
+                cm.setValue(CIVector(x: CGFloat(r * ga), y: 0,            z: 0,            w: 0), forKey: "inputRVector")
+                cm.setValue(CIVector(x: 0,            y: CGFloat(g * ga), z: 0,            w: 0), forKey: "inputGVector")
+                cm.setValue(CIVector(x: 0,            y: 0,            z: CGFloat(b * ga), w: 0), forKey: "inputBVector")
+                cm.setValue(CIVector(x: 0,            y: 0,            z: 0,            w: 1),    forKey: "inputAVector")
+                cm.setValue(CIVector(x: CGFloat(c1.r * bd), y: CGFloat(c1.g * bd), z: CGFloat(c1.b * bd), w: 0),
+                            forKey: "inputBiasVector")
+                if let tinted = cm.outputImage?.cropped(to: ext) {
+                    copyCI(tinted, to: buffer, extent: ext, opacity: opacity)
+                }
+            }
+
+        case .image:
+            guard let url   = settings.imageURL,
+                  let src   = CGImageSourceCreateWithURL(url as CFURL, nil),
+                  let cgImg = CGImageSourceCreateImageAtIndex(src, 0, nil) else {
+                // Fallback: solid color
+                let imgOpacity = Float(settings.imageBlend) * opacity
+                for i in 0..<(w * h) {
+                    let dst = i * 3
+                    buffer.data[dst]     = c1.r * imgOpacity
+                    buffer.data[dst + 1] = c1.g * imgOpacity
+                    buffer.data[dst + 2] = c1.b * imgOpacity
+                }
+                return
+            }
+            let bytesPerRow = w * 4
+            var bytes = [UInt8](repeating: 0, count: h * bytesPerRow)
+            let space = CGColorSpaceCreateDeviceRGB()
+            guard let drawCtx = CGContext(data: &bytes, width: w, height: h,
+                                          bitsPerComponent: 8, bytesPerRow: bytesPerRow,
+                                          space: space,
+                                          bitmapInfo: CGImageAlphaInfo.noneSkipLast.rawValue) else { return }
+            drawCtx.interpolationQuality = .high
+            drawCtx.draw(cgImg, in: ext)
+            let inv = Float(1.0 / 255.0)
+            let imgOpacity = Float(settings.imageBlend) * opacity
+            for i in 0..<(w * h) {
+                let src4 = i * 4
+                let dst  = i * 3
+                buffer.data[dst]     = Float(bytes[src4])     * inv * imgOpacity
+                buffer.data[dst + 1] = Float(bytes[src4 + 1]) * inv * imgOpacity
+                buffer.data[dst + 2] = Float(bytes[src4 + 2]) * inv * imgOpacity
+            }
+        }
+    }
+
+    // MARK: - Effects Layer
+
+    private static func applyEffectsLayer(image: CGImage, settings: EffectsLayerSettings, bufferSize: Int) -> CGImage {
+        let ciCtx = CIContext(options: [.workingColorSpace: CGColorSpace(name: CGColorSpace.displayP3) as Any])
+        let ext = CGRect(x: 0, y: 0, width: bufferSize, height: bufferSize)
+        var ci  = CIImage(cgImage: image)
+
+        // ── Vignette ──
+        if settings.vignette > 0,
+           let vig = CIFilter(name: "CIVignette") {
+            vig.setValue(ci, forKey: kCIInputImageKey)
+            vig.setValue(settings.vignette * 2.5, forKey: kCIInputIntensityKey)
+            vig.setValue(0.4 + settings.vignette * 0.6, forKey: kCIInputRadiusKey)
+            if let out = vig.outputImage?.cropped(to: ext) { ci = out }
+        }
+
+        // ── Dimming — random soft dark radial blotches (multiply blend) ──
+        if settings.dimming > 0 {
+            var rng = SeededRNG(seed: settings.seed &+ 111)
+            let nSpots = Int(settings.dimming * 10) + 3
+            for _ in 0..<nSpots {
+                let cx = CGFloat(rng.nextDouble()) * CGFloat(bufferSize)
+                let cy = CGFloat(rng.nextDouble()) * CGFloat(bufferSize)
+                let r1 = CGFloat(bufferSize) * CGFloat(rng.nextDouble() * 0.3 + 0.08)
+                let dark = CGFloat(settings.dimming) * CGFloat(rng.nextDouble() * 0.5 + 0.3)
+                if let grad = CIFilter(name: "CIRadialGradient") {
+                    grad.setValue(CIVector(x: cx, y: cy), forKey: "inputCenter")
+                    grad.setValue(0 as CGFloat, forKey: "inputRadius0")
+                    grad.setValue(r1,           forKey: "inputRadius1")
+                    grad.setValue(CIColor(red: 1-dark, green: 1-dark, blue: 1-dark), forKey: "inputColor0")
+                    grad.setValue(CIColor(red: 1,      green: 1,      blue: 1),      forKey: "inputColor1")
+                    if let gradImg = grad.outputImage?.cropped(to: ext),
+                       let mult   = CIFilter(name: "CIMultiplyCompositing") {
+                        mult.setValue(ci,      forKey: kCIInputBackgroundImageKey)
+                        mult.setValue(gradImg, forKey: kCIInputImageKey)
+                        if let out = mult.outputImage?.cropped(to: ext) { ci = out }
+                    }
+                }
+            }
+        }
+
+        // ── Erasure — deep burn-through holes ──
+        if settings.erasure > 0 {
+            var rng = SeededRNG(seed: settings.seed &+ 222)
+            let nHoles = Int(settings.erasure * 6) + 1
+            for _ in 0..<nHoles {
+                let cx = CGFloat(rng.nextDouble()) * CGFloat(bufferSize)
+                let cy = CGFloat(rng.nextDouble()) * CGFloat(bufferSize)
+                let r1 = CGFloat(bufferSize) * CGFloat(rng.nextDouble() * 0.15 + 0.04)
+                let dark = min(1.0, CGFloat(settings.erasure) * CGFloat(rng.nextDouble() * 0.4 + 0.6))
+                if let grad = CIFilter(name: "CIRadialGradient") {
+                    grad.setValue(CIVector(x: cx, y: cy), forKey: "inputCenter")
+                    grad.setValue(0 as CGFloat, forKey: "inputRadius0")
+                    grad.setValue(r1,           forKey: "inputRadius1")
+                    grad.setValue(CIColor(red: 1-dark, green: 1-dark, blue: 1-dark), forKey: "inputColor0")
+                    grad.setValue(CIColor(red: 1, green: 1, blue: 1),                forKey: "inputColor1")
+                    if let gradImg = grad.outputImage?.cropped(to: ext),
+                       let mult   = CIFilter(name: "CIMultiplyCompositing") {
+                        mult.setValue(ci,      forKey: kCIInputBackgroundImageKey)
+                        mult.setValue(gradImg, forKey: kCIInputImageKey)
+                        if let out = mult.outputImage?.cropped(to: ext) { ci = out }
+                    }
+                }
+            }
+        }
+
+        // ── Highlights — additive glowing bright spots ──
+        if settings.highlights > 0 {
+            var rng = SeededRNG(seed: settings.seed &+ 333)
+            let nSpots = Int(settings.highlights * 8) + 2
+            for _ in 0..<nSpots {
+                let cx = CGFloat(rng.nextDouble()) * CGFloat(bufferSize)
+                let cy = CGFloat(rng.nextDouble()) * CGFloat(bufferSize)
+                let r1 = CGFloat(bufferSize) * CGFloat(rng.nextDouble() * 0.12 + 0.02)
+                let br = CGFloat(settings.highlights) * CGFloat(rng.nextDouble() * 0.4 + 0.2)
+                if let grad  = CIFilter(name: "CIRadialGradient"),
+                   let screen = CIFilter(name: "CIScreenBlendMode") {
+                    grad.setValue(CIVector(x: cx, y: cy), forKey: "inputCenter")
+                    grad.setValue(0 as CGFloat, forKey: "inputRadius0")
+                    grad.setValue(r1,           forKey: "inputRadius1")
+                    grad.setValue(CIColor(red: br, green: br * 0.9, blue: br * 0.8), forKey: "inputColor0")
+                    grad.setValue(CIColor(red: 0, green: 0, blue: 0),                forKey: "inputColor1")
+                    if let gradImg = grad.outputImage?.cropped(to: ext) {
+                        screen.setValue(ci,      forKey: kCIInputBackgroundImageKey)
+                        screen.setValue(gradImg, forKey: kCIInputImageKey)
+                        if let out = screen.outputImage?.cropped(to: ext) { ci = out }
+                    }
+                }
+            }
+        }
+
+        // ── Chromatic aberration — shift R left, B right ──
+        if settings.chromatic > 0 {
+            let shift = CGFloat(bufferSize) * CGFloat(settings.chromatic) * 0.012
+            if let rMask = CIFilter(name: "CIColorMatrix"),
+               let gMask = CIFilter(name: "CIColorMatrix"),
+               let bMask = CIFilter(name: "CIColorMatrix") {
+                let zero = CIVector(x: 0, y: 0, z: 0, w: 0)
+                rMask.setValue(ci, forKey: kCIInputImageKey)
+                rMask.setValue(CIVector(x: 1, y: 0, z: 0, w: 0), forKey: "inputRVector")
+                rMask.setValue(zero, forKey: "inputGVector"); rMask.setValue(zero, forKey: "inputBVector")
+                rMask.setValue(CIVector(x: 0, y: 0, z: 0, w: 1), forKey: "inputAVector")
+                gMask.setValue(ci, forKey: kCIInputImageKey)
+                gMask.setValue(zero, forKey: "inputRVector")
+                gMask.setValue(CIVector(x: 0, y: 1, z: 0, w: 0), forKey: "inputGVector")
+                gMask.setValue(zero, forKey: "inputBVector")
+                gMask.setValue(CIVector(x: 0, y: 0, z: 0, w: 1), forKey: "inputAVector")
+                bMask.setValue(ci, forKey: kCIInputImageKey)
+                bMask.setValue(zero, forKey: "inputRVector"); bMask.setValue(zero, forKey: "inputGVector")
+                bMask.setValue(CIVector(x: 0, y: 0, z: 1, w: 0), forKey: "inputBVector")
+                bMask.setValue(CIVector(x: 0, y: 0, z: 0, w: 1), forKey: "inputAVector")
+                if let rImg = rMask.outputImage, let gImg = gMask.outputImage, let bImg = bMask.outputImage,
+                   let add1 = CIFilter(name: "CIAdditionCompositing"),
+                   let add2 = CIFilter(name: "CIAdditionCompositing") {
+                    let rShifted = rImg.transformed(by: CGAffineTransform(translationX: -shift, y: 0)).cropped(to: ext)
+                    let bShifted = bImg.transformed(by: CGAffineTransform(translationX:  shift, y: 0)).cropped(to: ext)
+                    add1.setValue(rShifted, forKey: kCIInputBackgroundImageKey)
+                    add1.setValue(gImg,     forKey: kCIInputImageKey)
+                    if let rg = add1.outputImage?.cropped(to: ext) {
+                        add2.setValue(rg,       forKey: kCIInputBackgroundImageKey)
+                        add2.setValue(bShifted, forKey: kCIInputImageKey)
+                        if let rgb = add2.outputImage?.cropped(to: ext) { ci = rgb }
+                    }
+                }
+            }
+        }
+
+        // Flush CIFilter pipeline → CGImage
+        guard let flushed = ciCtx.createCGImage(ci, from: ext) else { return image }
+        var result = flushed
+
+        // ── Stars — sharp bright sparkle points with cross flares ──
+        if settings.stars > 0 {
+            let starBuffer = PixelBuffer(width: bufferSize, height: bufferSize)
+            var rng = SeededRNG(seed: settings.seed &+ 444)
+            let nStars = Int(settings.stars * 600) + 15
+            let wf = Float(bufferSize)
+            for _ in 0..<nStars {
+                let x = rng.nextFloat() * wf
+                let y = rng.nextFloat() * wf
+                let b = Float(settings.stars) * (rng.nextFloat() * 0.7 + 0.3)
+                let flare = rng.nextFloat() * wf * 0.018 + 2.0
+                let col: (r: Float, g: Float, b: Float) = (b, b * 0.95, b * 0.88)
+                let fCol: (r: Float, g: Float, b: Float) = (b * 0.25, b * 0.22, b * 0.2)
+                starBuffer.addLine(x0: x, y0: y, x1: x + 0.01, y1: y, color: col, weight: b * 1.2)
+                starBuffer.addLine(x0: x - flare, y0: y, x1: x + flare, y1: y, color: fCol, weight: b * 0.12)
+                starBuffer.addLine(x0: x, y0: y - flare, x1: x, y1: y + flare, color: fCol, weight: b * 0.12)
+            }
+            if let starCG = starBuffer.toCGImage() {
+                let starGlowed = applyGlow(image: starCG, intensity: 0.4)
+                result = screenComposite(base: result, overlay: starGlowed)
+            }
+        }
+
+        return result
     }
 
     // MARK: - Background (GPU via CIFilter — much faster than per-pixel Swift loop)

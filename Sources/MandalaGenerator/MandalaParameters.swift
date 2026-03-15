@@ -1,5 +1,73 @@
 import Foundation
 
+// MARK: - Base Layer
+
+enum BaseLayerType: String, CaseIterable, Identifiable {
+    case color, gradient, pattern, grain, image
+    var id: String { rawValue }
+    var displayName: String {
+        switch self {
+        case .color:    return "Color"
+        case .gradient: return "Gradient"
+        case .pattern:  return "Pattern"
+        case .grain:    return "Grain"
+        case .image:    return "Image"
+        }
+    }
+    var sfSymbol: String {
+        switch self {
+        case .color:    return "square.fill"
+        case .gradient: return "circle.lefthalf.filled"
+        case .pattern:  return "squareshape.split.2x2"
+        case .grain:    return "film.stack"
+        case .image:    return "photo"
+        }
+    }
+}
+
+struct BaseLayerSettings: Equatable {
+    var isEnabled: Bool = false
+    var type: BaseLayerType = .gradient
+    // Primary color (HSB 0-1)
+    var hue: Double        = 0.75
+    var saturation: Double = 0.8
+    var brightness: Double = 0.18
+    // Secondary color (HSB 0-1) — gradients and patterns
+    var hue2: Double        = 0.88
+    var saturation2: Double = 0.9
+    var brightness2: Double = 0.04
+    // Gradient
+    var isRadial: Bool      = true
+    var gradientAngle: Double = 0.0   // 0-1 → 0-360°, for linear mode
+    // Pattern (0=Checkerboard, 1=Stripes, 2=Diagonal, 3=Crosshatch)
+    var patternType: Int    = 0
+    var patternScale: Double = 0.3    // 0-1
+    var patternSharpness: Double = 0.7 // 0-1
+    // Grain
+    var grainAmount: Double = 0.4     // 0-1
+    var grainColored: Bool  = true
+    // Image
+    var imageURL: URL?      = nil
+    var imageBlend: Double  = 1.0     // 0-1 opacity
+    // Overall
+    var opacity: Double     = 1.0
+}
+
+// MARK: - Effects Layer
+
+struct EffectsLayerSettings: Equatable {
+    var isEnabled: Bool     = false
+    var dimming: Double     = 0.0   // random dark blotches (multiply)
+    var erasure: Double     = 0.0   // burn-through holes
+    var highlights: Double  = 0.0   // additive bright glowing spots
+    var stars: Double       = 0.0   // sharp bright sparkle points
+    var vignette: Double    = 0.3   // edge darkening
+    var chromatic: Double   = 0.0   // chromatic aberration RGB shift
+    var seed: UInt64        = 99
+}
+
+// MARK: - Mandala Style
+
 enum MandalaStyle: String, CaseIterable, Identifiable {
     case spirograph, roseCurves, stringArt, sunburst, epitrochoid, floral, lissajous, butterfly, geometric, mixed
     var id: String { rawValue }
@@ -54,6 +122,8 @@ struct StyleLayer: Equatable {
 
 struct MandalaParameters: Equatable {
     var layers: [StyleLayer] = [StyleLayer()]
+    var baseLayer: BaseLayerSettings = BaseLayerSettings()
+    var effectsLayer: EffectsLayerSettings = EffectsLayerSettings()
 
     // Truly global — render setup
     var seed: UInt64 = 42   // used for background/grass; each layer also has its own seed
