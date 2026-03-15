@@ -1,0 +1,276 @@
+import SwiftUI
+import UniformTypeIdentifiers
+
+// MARK: - Scene Panel (left side) — Background & Effects
+
+struct ScenePanel: View {
+    @EnvironmentObject private var appState: AppState
+
+    var body: some View {
+        ScrollView(.vertical, showsIndicators: true) {
+            VStack(spacing: 8) {
+                // ── Background ─────────────────────────────────────────
+                Text("BACKGROUND")
+                    .font(.system(size: 10, weight: .semibold))
+                    .foregroundColor(.secondary).kerning(1.2)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 12)
+                    .padding(.top, 12)
+
+                BaseLayerCard(settings: $appState.parameters.baseLayer)
+                    .padding(.horizontal, 8)
+
+                // ── Effects ────────────────────────────────────────────
+                Text("EFFECTS")
+                    .font(.system(size: 10, weight: .semibold))
+                    .foregroundColor(.secondary).kerning(1.2)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 12)
+
+                EffectsLayerCard(settings: $appState.parameters.effectsLayer)
+                    .padding(.horizontal, 8)
+
+                Spacer(minLength: 20)
+            }
+        }
+        .background(Color(NSColor.controlBackgroundColor))
+    }
+}
+
+// MARK: - Base Layer Card
+
+struct BaseLayerCard: View {
+    @Binding var settings: BaseLayerSettings
+    @State private var isExpanded = true
+
+    var body: some View {
+        VStack(spacing: 0) {
+            // Header
+            HStack(spacing: 8) {
+                Image(systemName: settings.isEnabled ? "square.stack.fill" : "square.stack")
+                    .font(.system(size: 12))
+                    .foregroundColor(settings.isEnabled ? .accentColor : .secondary)
+                    .frame(width: 16)
+                Toggle("", isOn: $settings.isEnabled)
+                    .toggleStyle(.switch).scaleEffect(0.7).labelsHidden()
+                Text("Background")
+                    .font(.caption.weight(.medium))
+                    .foregroundColor(settings.isEnabled ? .primary : .secondary)
+                Spacer()
+                Button(action: { withAnimation(.easeInOut(duration: 0.18)) { isExpanded.toggle() } }) {
+                    Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
+                        .font(.system(size: 9)).foregroundColor(.secondary)
+                }
+                .buttonStyle(.plain)
+            }
+            .padding(.horizontal, 10).padding(.vertical, 8)
+            .background(Color(NSColor.windowBackgroundColor))
+            .cornerRadius(isExpanded ? 0 : 8)
+            .cornerRadius(8, corners: [.topLeft, .topRight])
+
+            if isExpanded {
+                VStack(spacing: 8) {
+                    // Type picker
+                    Picker("", selection: $settings.type) {
+                        ForEach(BaseLayerType.allCases) { t in
+                            Label(t.displayName, systemImage: t.sfSymbol).tag(t)
+                        }
+                    }
+                    .pickerStyle(.menu).labelsHidden().frame(maxWidth: .infinity)
+
+                    Divider()
+
+                    // Primary color
+                    Text("PRIMARY")
+                        .font(.system(size: 9, weight: .semibold)).foregroundColor(.secondary).kerning(1.0)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    SceneSlider(label: "Hue",   value: $settings.hue,        color: .purple)
+                    SceneSlider(label: "Sat",   value: $settings.saturation, color: .pink)
+                    SceneSlider(label: "Bri",   value: $settings.brightness, color: .yellow)
+
+                    // Secondary color
+                    if settings.type == .gradient || settings.type == .pattern {
+                        Divider()
+                        Text("SECONDARY")
+                            .font(.system(size: 9, weight: .semibold)).foregroundColor(.secondary).kerning(1.0)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        SceneSlider(label: "Hue", value: $settings.hue2,        color: .purple)
+                        SceneSlider(label: "Sat", value: $settings.saturation2, color: .pink)
+                        SceneSlider(label: "Bri", value: $settings.brightness2, color: .yellow)
+                    }
+
+                    // Gradient controls
+                    if settings.type == .gradient {
+                        Divider()
+                        HStack(spacing: 6) {
+                            Text("Style")
+                                .font(.system(size: 10)).foregroundColor(.secondary)
+                                .frame(width: 52, alignment: .leading)
+                            Picker("", selection: $settings.isRadial) {
+                                Text("Radial").tag(true)
+                                Text("Linear").tag(false)
+                            }
+                            .pickerStyle(.segmented).labelsHidden()
+                        }
+                        if !settings.isRadial {
+                            SceneSlider(label: "Angle", value: $settings.gradientAngle, color: .blue)
+                        }
+                    }
+
+                    // Pattern controls
+                    if settings.type == .pattern {
+                        Divider()
+                        HStack(spacing: 6) {
+                            Text("Type")
+                                .font(.system(size: 10)).foregroundColor(.secondary)
+                                .frame(width: 52, alignment: .leading)
+                            Picker("", selection: $settings.patternType) {
+                                Text("⊞").tag(0)
+                                Text("≡").tag(1)
+                                Text("⟋").tag(2)
+                                Text("#").tag(3)
+                            }
+                            .pickerStyle(.segmented).labelsHidden()
+                        }
+                        SceneSlider(label: "Scale",  value: $settings.patternScale,     color: .blue)
+                        SceneSlider(label: "Sharp",  value: $settings.patternSharpness, color: .cyan)
+                    }
+
+                    // Grain controls
+                    if settings.type == .grain {
+                        Divider()
+                        SceneSlider(label: "Amount", value: $settings.grainAmount, color: .orange)
+                        HStack(spacing: 6) {
+                            Text("Colored")
+                                .font(.system(size: 10)).foregroundColor(.secondary)
+                                .frame(width: 52, alignment: .leading)
+                            Toggle("", isOn: $settings.grainColored).labelsHidden()
+                            Spacer()
+                        }
+                    }
+
+                    // Image controls
+                    if settings.type == .image {
+                        Divider()
+                        HStack {
+                            Button(action: pickImage) {
+                                Label(settings.imageURL != nil ? "Change…" : "Open Image…",
+                                      systemImage: "photo.badge.plus")
+                                    .font(.system(size: 10))
+                            }
+                            .buttonStyle(.bordered)
+                            Spacer()
+                        }
+                        if let url = settings.imageURL {
+                            HStack(spacing: 4) {
+                                Image(systemName: "checkmark.circle.fill")
+                                    .foregroundColor(.green).font(.caption)
+                                Text(url.lastPathComponent)
+                                    .font(.system(size: 9)).foregroundColor(.secondary).lineLimit(1)
+                            }
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                        SceneSlider(label: "Blend", value: $settings.imageBlend, color: .blue)
+                    }
+
+                    Divider()
+                    SceneSlider(label: "Opacity", value: $settings.opacity, color: .white)
+                }
+                .padding(10)
+                .background(Color(NSColor.controlBackgroundColor).opacity(0.7))
+                .cornerRadius(8, corners: [.bottomLeft, .bottomRight])
+            }
+        }
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .overlay(RoundedRectangle(cornerRadius: 8)
+            .stroke(Color.accentColor.opacity(settings.isEnabled ? 0.35 : 0.08), lineWidth: 1))
+    }
+
+    private func pickImage() {
+        let panel = NSOpenPanel()
+        panel.title = "Choose Background Image"
+        panel.allowedContentTypes = [.png, .jpeg, .tiff, .heic, .bmp]
+        panel.canChooseFiles = true
+        panel.canChooseDirectories = false
+        if panel.runModal() == .OK { settings.imageURL = panel.url }
+    }
+}
+
+// MARK: - Effects Layer Card
+
+struct EffectsLayerCard: View {
+    @Binding var settings: EffectsLayerSettings
+    @State private var isExpanded = true
+
+    var body: some View {
+        VStack(spacing: 0) {
+            // Header
+            HStack(spacing: 8) {
+                Image(systemName: settings.isEnabled ? "sparkles" : "sparkle")
+                    .font(.system(size: 12))
+                    .foregroundColor(settings.isEnabled ? .accentColor : .secondary)
+                    .frame(width: 16)
+                Toggle("", isOn: $settings.isEnabled)
+                    .toggleStyle(.switch).scaleEffect(0.7).labelsHidden()
+                Text("Effects")
+                    .font(.caption.weight(.medium))
+                    .foregroundColor(settings.isEnabled ? .primary : .secondary)
+                Spacer()
+                Button(action: { settings.seed = UInt64.random(in: 1...UInt64.max) }) {
+                    Image(systemName: "dice").font(.system(size: 10)).foregroundColor(.blue)
+                }
+                .buttonStyle(.plain).help("Randomize effect positions")
+                Button(action: { withAnimation(.easeInOut(duration: 0.18)) { isExpanded.toggle() } }) {
+                    Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
+                        .font(.system(size: 9)).foregroundColor(.secondary)
+                }
+                .buttonStyle(.plain)
+            }
+            .padding(.horizontal, 10).padding(.vertical, 8)
+            .background(Color(NSColor.windowBackgroundColor))
+            .cornerRadius(isExpanded ? 0 : 8)
+            .cornerRadius(8, corners: [.topLeft, .topRight])
+
+            if isExpanded {
+                VStack(spacing: 8) {
+                    SceneSlider(label: "Vignette",   value: $settings.vignette,   color: .gray)
+                    Divider()
+                    SceneSlider(label: "Dimming",    value: $settings.dimming,    color: .indigo)
+                    SceneSlider(label: "Erasure",    value: $settings.erasure,    color: .red)
+                    Divider()
+                    SceneSlider(label: "Highlights", value: $settings.highlights, color: .orange)
+                    SceneSlider(label: "Stars",      value: $settings.stars,      color: .yellow)
+                    Divider()
+                    SceneSlider(label: "Chromatic",  value: $settings.chromatic,  color: .cyan)
+                }
+                .padding(10)
+                .background(Color(NSColor.controlBackgroundColor).opacity(0.7))
+                .cornerRadius(8, corners: [.bottomLeft, .bottomRight])
+            }
+        }
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .overlay(RoundedRectangle(cornerRadius: 8)
+            .stroke(Color.accentColor.opacity(settings.isEnabled ? 0.35 : 0.08), lineWidth: 1))
+    }
+}
+
+// MARK: - Compact slider for scene panel
+
+private struct SceneSlider: View {
+    let label: String
+    @Binding var value: Double
+    var range: ClosedRange<Double> = 0...1
+    var color: Color = .blue
+
+    var body: some View {
+        HStack(spacing: 6) {
+            Text(label)
+                .font(.system(size: 10)).foregroundColor(.secondary)
+                .frame(width: 52, alignment: .leading)
+            Slider(value: $value, in: range).accentColor(color)
+            Text(String(format: "%.2f", value))
+                .font(.system(size: 9)).foregroundColor(.secondary).monospacedDigit()
+                .frame(width: 28, alignment: .trailing)
+        }
+    }
+}
