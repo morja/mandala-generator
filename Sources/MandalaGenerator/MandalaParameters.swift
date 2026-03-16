@@ -74,6 +74,25 @@ struct EffectsLayerSettings: Equatable, Codable {
     var starsSeed: UInt64      = 44
 }
 
+// MARK: - Drawing Layer
+
+struct DrawStroke: Equatable, Codable {
+    var xs: [Double]   // normalized 0–1, 0.5 = horizontal center
+    var ys: [Double]   // normalized 0–1, 0.5 = vertical center
+}
+
+struct DrawingLayerSettings: Equatable, Codable {
+    var isEnabled: Bool    = true
+    var strokes: [DrawStroke] = []
+    var symmetry: Int      = 6
+    var paletteIndex: Int  = 0
+    var glowIntensity: Double = 0.5
+    var strokeWeight: Double  = 0.4   // 0–1
+    var colorDrift: Double    = 0.4   // palette traversal across strokes
+    var saturation: Double    = 1.0
+    var brightness: Double    = 0.7
+}
+
 // MARK: - Layer Blend Mode
 
 enum LayerBlendMode: String, CaseIterable, Identifiable, Codable {
@@ -183,6 +202,7 @@ struct MandalaParameters: Equatable, Codable {
     var layers: [StyleLayer] = [StyleLayer()]
     var baseLayer: BaseLayerSettings = BaseLayerSettings()
     var effectsLayer: EffectsLayerSettings = EffectsLayerSettings()
+    var drawingLayer: DrawingLayerSettings = DrawingLayerSettings()
 
     // Truly global — render setup
     var seed: UInt64 = 42   // used for background/grass; each layer also has its own seed

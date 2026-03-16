@@ -145,9 +145,9 @@ class PixelBuffer {
             let b3 = i * 3
             let r  = data[b3];     let g = data[b3 + 1]; let b = data[b3 + 2]
             let b4 = i * 4
-            bytes[b4]     = toU8(r / (r + 1.0) * inv255)
-            bytes[b4 + 1] = toU8(g / (g + 1.0) * inv255)
-            bytes[b4 + 2] = toU8(b / (b + 1.0) * inv255)
+            bytes[b4]     = toU8(r / (r + 0.55) * inv255)
+            bytes[b4 + 1] = toU8(g / (g + 0.55) * inv255)
+            bytes[b4 + 2] = toU8(b / (b + 0.55) * inv255)
             bytes[b4 + 3] = 255
         }
         guard let cfData   = CFDataCreate(nil, bytes, bytes.count),

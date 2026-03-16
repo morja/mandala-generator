@@ -1,5 +1,7 @@
 import AppKit
+import AVFoundation
 import Combine
+import CoreVideo
 import Foundation
 import SwiftUI
 import UniformTypeIdentifiers
@@ -13,6 +15,7 @@ class AppState: ObservableObject {
     @Published var canGoBack: Bool = false
     @Published var canGoForward: Bool = false
     @Published var copiedLayer: StyleLayer? = nil
+    @Published var isDrawingMode: Bool = false
 
     private var debounceTask: Task<Void, Never>? = nil
     private var parameterCancellable: AnyCancellable?
@@ -242,7 +245,6 @@ class AppState: ObservableObject {
               parameters.layers.count < 5 else { return }
         var copy = parameters.layers[index]
         copy.seed = UInt64.random(in: 1...UInt64.max)
-        copy.scale = max(0.1, copy.scale * 0.85)
         parameters.layers.insert(copy, at: index + 1)
     }
 
@@ -354,6 +356,111 @@ class AppState: ObservableObject {
                 }
             }
         }
+    }
+
+    func exportAnimation(frameCount: Int = 48, fps: Int = 24) {
+        let panel = NSSavePanel()
+        panel.title = "Export Animation"
+        panel.allowedContentTypes = [.quickTimeMovie]
+        panel.nameFieldStringValue = suggestedFilename() + ".mov"
+        panel.begin { [weak self] response in
+            guard response == .OK, let url = panel.url, let self else { return }
+            Task { await self.renderAnimation(to: url, frameCount: frameCount, fps: fps) }
+        }
+    }
+
+    private func renderAnimation(to url: URL, frameCount: Int, fps: Int) async {
+        let baseParams = parameters
+        let outputSize = baseParams.outputSize == 0
+            ? max(64, baseParams.outputSizeCustom) : baseParams.outputSize
+
+        // Build frame variants — layers rotate at alternating speeds
+        let variants: [(Int, MandalaParameters)] = (0..<frameCount).map { f in
+            var p = baseParams
+            let t = Double(f) / Double(frameCount)
+            for li in p.layers.indices {
+                let speed = li % 2 == 0 ? 1.0 : -0.6
+                var r = (baseParams.layers[li].rotation + t * speed)
+                    .truncatingRemainder(dividingBy: 1.0)
+                if r < 0 { r += 1.0 }
+                p.layers[li].rotation = r
+            }
+            return (f, p)
+        }
+
+        // Render all frames in parallel
+        var frames = [Int: CGImage]()
+        await withTaskGroup(of: (Int, CGImage?).self) { group in
+            for (i, p) in variants {
+                group.addTask(priority: .userInitiated) {
+                    let img = MandalaRenderer.render(params: p)
+                    return (i, img.cgImage(forProposedRect: nil, context: nil, hints: nil))
+                }
+            }
+            for await (i, cg) in group {
+                frames[i] = cg
+            }
+        }
+
+        // Write MOV via AVFoundation
+        try? FileManager.default.removeItem(at: url)
+        guard let writer = try? AVAssetWriter(outputURL: url, fileType: .quickTimeMovie) else { return }
+
+        let videoSettings: [String: Any] = [
+            AVVideoCodecKey: AVVideoCodecType.hevc,
+            AVVideoWidthKey: outputSize,
+            AVVideoHeightKey: outputSize,
+            AVVideoCompressionPropertiesKey: [AVVideoQualityKey: 0.9]
+        ]
+        let writerInput = AVAssetWriterInput(mediaType: .video, outputSettings: videoSettings)
+        writerInput.expectsMediaDataInRealTime = false
+        let sourceAttr: [String: Any] = [
+            kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32ARGB,
+            kCVPixelBufferWidthKey as String: outputSize,
+            kCVPixelBufferHeightKey as String: outputSize
+        ]
+        let adaptor = AVAssetWriterInputPixelBufferAdaptor(
+            assetWriterInput: writerInput,
+            sourcePixelBufferAttributes: sourceAttr
+        )
+        writer.add(writerInput)
+        writer.startWriting()
+        writer.startSession(atSourceTime: .zero)
+
+        let frameDuration = CMTime(value: 1, timescale: CMTimeScale(fps))
+        for i in 0..<frameCount {
+            while !writerInput.isReadyForMoreMediaData {
+                try? await Task.sleep(nanoseconds: 1_000_000)
+            }
+            if let cg = frames[i],
+               let buffer = cgImageToPixelBuffer(cg, size: CGSize(width: outputSize, height: outputSize)) {
+                adaptor.append(buffer, withPresentationTime: CMTimeMultiply(frameDuration, multiplier: Int32(i)))
+            }
+        }
+        writerInput.markAsFinished()
+        await writer.finishWriting()
+    }
+
+    private func cgImageToPixelBuffer(_ image: CGImage, size: CGSize) -> CVPixelBuffer? {
+        var buffer: CVPixelBuffer?
+        let attrs: [String: Any] = [
+            kCVPixelBufferCGImageCompatibilityKey as String: true,
+            kCVPixelBufferCGBitmapContextCompatibilityKey as String: true
+        ]
+        CVPixelBufferCreate(kCFAllocatorDefault, Int(size.width), Int(size.height),
+                            kCVPixelFormatType_32ARGB, attrs as CFDictionary, &buffer)
+        guard let pb = buffer else { return nil }
+        CVPixelBufferLockBaseAddress(pb, [])
+        defer { CVPixelBufferUnlockBaseAddress(pb, []) }
+        guard let ctx = CGContext(
+            data: CVPixelBufferGetBaseAddress(pb),
+            width: Int(size.width), height: Int(size.height),
+            bitsPerComponent: 8, bytesPerRow: CVPixelBufferGetBytesPerRow(pb),
+            space: CGColorSpaceCreateDeviceRGB(),
+            bitmapInfo: CGBitmapInfo.byteOrder32Big.rawValue | CGImageAlphaInfo.premultipliedFirst.rawValue
+        ) else { return nil }
+        ctx.draw(image, in: CGRect(origin: .zero, size: size))
+        return pb
     }
 
     private func writeImage(_ image: NSImage, to url: URL) {

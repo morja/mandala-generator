@@ -132,6 +132,56 @@ struct MandalaRenderer {
             }
         }
 
+        // ── DRAWING LAYER ──
+        let dl = params.drawingLayer
+        if dl.isEnabled && !dl.strokes.isEmpty {
+            let palette = palettes[max(0, min(palettes.count - 1, dl.paletteIndex))]
+            let drawBuffer = PixelBuffer(width: bufferSize, height: bufferSize)
+            let sym = max(1, dl.symmetry)
+            let baseWeight = max(0.8, Float(dl.strokeWeight) * Float(bufferSize) * 0.008 + 1.0)
+
+            for (si, stroke) in dl.strokes.enumerated() {
+                guard stroke.xs.count >= 2, stroke.xs.count == stroke.ys.count else { continue }
+                let t: Double
+                if dl.strokes.count > 1 {
+                    t = (Double(si) / Double(dl.strokes.count - 1) * dl.colorDrift)
+                        .truncatingRemainder(dividingBy: 1.0)
+                } else { t = 0.0 }
+                let nsColor = palette.color(at: t)
+                let col = (r: Float(nsColor.redComponent),
+                           g: Float(nsColor.greenComponent),
+                           b: Float(nsColor.blueComponent))
+                let pts: [(Float, Float)] = zip(stroke.xs, stroke.ys).map {
+                    (Float($0) * Float(bufferSize), Float($1) * Float(bufferSize))
+                }
+                for s in 0..<sym {
+                    let angle = Float(s) * .pi * 2.0 / Float(sym)
+                    let ca = cos(angle), sa = sin(angle)
+                    for i in 1..<pts.count {
+                        let (x0, y0) = pts[i - 1]
+                        let (x1, y1) = pts[i]
+                        let dx0 = x0 - cx, dy0 = y0 - cy
+                        let rx0 = cx + dx0 * ca - dy0 * sa
+                        let ry0 = cy + dx0 * sa + dy0 * ca
+                        let dx1 = x1 - cx, dy1 = y1 - cy
+                        let rx1 = cx + dx1 * ca - dy1 * sa
+                        let ry1 = cy + dx1 * sa + dy1 * ca
+                        drawBuffer.addLine(x0: rx0, y0: ry0, x1: rx1, y1: ry1,
+                                           color: col, weight: baseWeight)
+                    }
+                }
+            }
+
+            if var drawImage = drawBuffer.toCGImage() {
+                drawImage = applyGlow(image: drawImage, intensity: dl.glowIntensity)
+                drawImage = applyColourGrade(image: drawImage,
+                                              saturation: dl.saturation,
+                                              brightness: dl.brightness)
+                compositeImage = blendComposite(base: compositeImage, overlay: drawImage,
+                                                mode: "CIScreenBlendMode")
+            }
+        }
+
         // ── EFFECTS LAYER ──
         var result = compositeImage
         if params.effectsLayer.isEnabled {
@@ -3136,7 +3186,7 @@ struct MandalaRenderer {
 
         // Brightness as a pure multiplier: 0→0×, 0.5→1×, 1→2×.
         // Multiplying keeps black at black — it never creates a gray wash.
-        let bMul = CGFloat(brightness * 2.0)
+        let bMul = CGFloat(brightness * 3.0)
         guard let bm = CIFilter(name: "CIColorMatrix") else {
             return ctx.createCGImage(satImg, from: ext) ?? image
         }

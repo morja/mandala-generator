@@ -56,6 +56,23 @@ struct PalettePanel: View {
                     ))
                 }
 
+                // ── Drawing ──────────────────────────────────────────────
+                Divider().padding(.horizontal, 8)
+
+                HStack {
+                    Text("DRAWING")
+                        .font(.system(size: 10, weight: .semibold))
+                        .foregroundColor(.secondary).kerning(1.2)
+                    Spacer()
+                }
+                .padding(.horizontal, 12)
+
+                DrawingCard(
+                    settings: $appState.parameters.drawingLayer,
+                    isDrawingMode: $appState.isDrawingMode
+                )
+                .padding(.horizontal, 8)
+
                 Spacer(minLength: 20)
             }
         }
@@ -272,6 +289,115 @@ private struct LayerCard: View {
         .clipShape(RoundedRectangle(cornerRadius: 8))
         .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.white.opacity(layer.isEnabled ? 0.08 : 0.03), lineWidth: 1))
         .opacity(layer.isEnabled ? 1 : 0.55)
+    }
+}
+
+// MARK: - Drawing Card
+
+private struct DrawingCard: View {
+    @Binding var settings: DrawingLayerSettings
+    @Binding var isDrawingMode: Bool
+    @State private var isExpanded = true
+
+    var body: some View {
+        VStack(spacing: 0) {
+            // Header
+            HStack(spacing: 8) {
+                Image(systemName: settings.isEnabled ? "pencil.tip.crop.circle.fill" : "pencil.tip.crop.circle")
+                    .font(.system(size: 12))
+                    .foregroundColor(settings.isEnabled ? .accentColor : .secondary)
+                    .frame(width: 16)
+                Toggle("", isOn: $settings.isEnabled)
+                    .toggleStyle(.switch).scaleEffect(0.7).labelsHidden()
+                Text("Drawing")
+                    .font(.caption.weight(.medium))
+                    .foregroundColor(settings.isEnabled ? .primary : .secondary)
+                Spacer()
+                if !settings.strokes.isEmpty {
+                    Button(action: { settings.strokes.removeLast() }) {
+                        Image(systemName: "arrow.uturn.backward")
+                            .font(.system(size: 9)).foregroundColor(.orange)
+                    }
+                    .buttonStyle(.plain).help("Undo last stroke")
+                    Button(action: { settings.strokes.removeAll() }) {
+                        Image(systemName: "trash")
+                            .font(.system(size: 9)).foregroundColor(.red.opacity(0.7))
+                    }
+                    .buttonStyle(.plain).help("Clear all strokes")
+                }
+                Button(action: { withAnimation(.easeInOut(duration: 0.18)) { isExpanded.toggle() } }) {
+                    Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
+                        .font(.system(size: 9)).foregroundColor(.secondary)
+                }
+                .buttonStyle(.plain)
+            }
+            .padding(.horizontal, 10).padding(.vertical, 8)
+            .background(Color(NSColor.windowBackgroundColor))
+            .cornerRadius(isExpanded ? 0 : 8)
+            .cornerRadius(8, corners: [.topLeft, .topRight])
+
+            if isExpanded {
+                VStack(spacing: 8) {
+                    // Symmetry
+                    HStack(spacing: 6) {
+                        Text("Symmetry")
+                            .font(.system(size: 10)).foregroundColor(.secondary)
+                            .frame(width: 70, alignment: .leading)
+                        Spacer()
+                        Stepper("\(settings.symmetry)×", value: $settings.symmetry, in: 1...16)
+                            .font(.system(size: 10)).fixedSize()
+                    }
+
+                    Divider()
+
+                    // Palette
+                    Text("PALETTE")
+                        .font(.system(size: 9, weight: .semibold))
+                        .foregroundColor(.secondary).kerning(1.0)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 3), spacing: 4) {
+                        ForEach(Array(ColorPalettes.all.enumerated()), id: \.offset) { idx, pal in
+                            PaletteSwatch(palette: pal, isSelected: settings.paletteIndex == idx)
+                                .onTapGesture { settings.paletteIndex = idx }
+                        }
+                    }
+
+                    Divider()
+
+                    CardSlider(label: "Weight",      value: $settings.strokeWeight,  range: 0...1, color: .white)
+                    CardSlider(label: "Glow",        value: $settings.glowIntensity, range: 0...1, color: .yellow)
+                    CardSlider(label: "Color Drift", value: $settings.colorDrift,    range: 0...1, color: .purple)
+                    CardSlider(label: "Saturation",  value: $settings.saturation,    range: 0...1, color: .pink)
+                    CardSlider(label: "Brightness",  value: $settings.brightness,    range: 0...1, color: .yellow)
+
+                    Divider()
+
+                    // Draw mode toggle button
+                    Button(action: { isDrawingMode.toggle() }) {
+                        Label(isDrawingMode ? "Exit Draw Mode" : "Draw on Canvas",
+                              systemImage: isDrawingMode ? "checkmark.circle.fill" : "pencil.and.outline")
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.bordered)
+                    .tint(isDrawingMode ? .green : .accentColor)
+
+                    // Stroke count
+                    if !settings.strokes.isEmpty {
+                        Text("\(settings.strokes.count) stroke\(settings.strokes.count == 1 ? "" : "s")")
+                            .font(.system(size: 9)).foregroundColor(.secondary)
+                    }
+                }
+                .padding(10)
+                .background(Color(NSColor.controlBackgroundColor).opacity(0.7))
+                .cornerRadius(8, corners: [.bottomLeft, .bottomRight])
+            }
+        }
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .overlay(
+            RoundedRectangle(cornerRadius: 8)
+                .stroke(isDrawingMode ? Color.green.opacity(0.5) : Color.accentColor.opacity(settings.isEnabled ? 0.35 : 0.08),
+                        lineWidth: isDrawingMode ? 1.5 : 1)
+        )
     }
 }
 

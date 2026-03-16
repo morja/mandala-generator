@@ -55,6 +55,30 @@ struct CanvasView: View {
 
     private var toolbar: some View {
         HStack(spacing: 12) {
+            if appState.isDrawingMode {
+                Button(action: {
+                    appState.isDrawingMode = false
+                    Task { await appState.generate() }
+                }) {
+                    Label("Done Drawing", systemImage: "checkmark.circle.fill")
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(.green)
+
+                Button(action: {
+                    if !appState.parameters.drawingLayer.strokes.isEmpty {
+                        appState.parameters.drawingLayer.strokes.removeLast()
+                    }
+                }) {
+                    Image(systemName: "arrow.uturn.backward")
+                }
+                .buttonStyle(.bordered)
+                .disabled(appState.parameters.drawingLayer.strokes.isEmpty)
+                .help("Undo last stroke")
+
+                Divider().frame(height: 20)
+            }
+
             Button(action: {
                 Task { await appState.generate() }
             }) {
@@ -139,22 +163,32 @@ struct CanvasView: View {
                 .aspectRatio(contentMode: .fit)
                 .frame(width: availableSize, height: availableSize)
                 .mask(MandalaOutputShape(name: appState.parameters.outputShape))
-                .scaleEffect(zoomScale)
-                .offset(panOffset)
+                .overlay(
+                    Group {
+                        if appState.isDrawingMode {
+                            DrawingOverlay(settings: $appState.parameters.drawingLayer)
+                        }
+                    }
+                )
+                .scaleEffect(appState.isDrawingMode ? 1.0 : zoomScale)
+                .offset(appState.isDrawingMode ? .zero : panOffset)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .gesture(
                     DragGesture()
                         .onChanged { value in
+                            guard !appState.isDrawingMode else { return }
                             panOffset = CGSize(
                                 width: lastPanOffset.width + value.translation.width,
                                 height: lastPanOffset.height + value.translation.height
                             )
                         }
                         .onEnded { _ in
+                            guard !appState.isDrawingMode else { return }
                             lastPanOffset = panOffset
                         }
                 )
                 .onScrollWheel { delta in
+                    guard !appState.isDrawingMode else { return }
                     let factor = 1.0 + delta * 0.1
                     withAnimation(.interactiveSpring()) {
                         zoomScale = max(0.1, min(10.0, zoomScale * CGFloat(factor)))
@@ -202,6 +236,111 @@ struct CanvasView: View {
     private func copyImageToClipboard(_ image: NSImage) {
         NSPasteboard.general.clearContents()
         NSPasteboard.general.writeObjects([image])
+    }
+}
+
+// MARK: - Drawing overlay
+
+struct DrawingOverlay: View {
+    @Binding var settings: DrawingLayerSettings
+    @State private var currentXs: [Double] = []
+    @State private var currentYs: [Double] = []
+
+    var body: some View {
+        GeometryReader { geo in
+            let size = geo.size
+            Canvas { ctx, sz in
+                drawGuides(ctx: ctx, size: sz)
+                drawStoredStrokes(ctx: ctx, size: sz)
+                drawCurrentStroke(ctx: ctx, size: sz)
+            }
+            .contentShape(Rectangle())
+            .gesture(
+                DragGesture(minimumDistance: 0)
+                    .onChanged { v in
+                        currentXs.append(max(0, min(1, Double(v.location.x / size.width))))
+                        currentYs.append(max(0, min(1, Double(v.location.y / size.height))))
+                    }
+                    .onEnded { _ in
+                        if currentXs.count >= 2 {
+                            settings.strokes.append(DrawStroke(xs: currentXs, ys: currentYs))
+                        }
+                        currentXs = []
+                        currentYs = []
+                    }
+            )
+            .onHover { hovering in
+                if hovering { NSCursor.crosshair.set() } else { NSCursor.arrow.set() }
+            }
+        }
+    }
+
+    private func symPoints(xs: [Double], ys: [Double], s: Int, sym: Int, size: CGSize) -> [CGPoint] {
+        let cx = size.width * 0.5, cy = size.height * 0.5
+        let angle = Double(s) * .pi * 2.0 / Double(sym)
+        let ca = cos(angle), sa = sin(angle)
+        return zip(xs, ys).map { (nx, ny) in
+            let dx = nx * Double(size.width) - Double(cx)
+            let dy = ny * Double(size.height) - Double(cy)
+            return CGPoint(x: cx + dx * ca - dy * sa,
+                           y: cy + dx * sa + dy * ca)
+        }
+    }
+
+    private func makePath(points: [CGPoint]) -> Path {
+        var path = Path()
+        for (i, p) in points.enumerated() {
+            if i == 0 { path.move(to: p) } else { path.addLine(to: p) }
+        }
+        return path
+    }
+
+    private func drawGuides(ctx: GraphicsContext, size: CGSize) {
+        let cx = size.width * 0.5, cy = size.height * 0.5
+        let radius = max(size.width, size.height)
+        let sym = settings.symmetry
+        for s in 0..<sym {
+            let angle = Double(s) * .pi * 2.0 / Double(sym)
+            var path = Path()
+            path.move(to: CGPoint(x: cx, y: cy))
+            path.addLine(to: CGPoint(x: cx + CGFloat(cos(angle)) * radius,
+                                     y: cy + CGFloat(sin(angle)) * radius))
+            ctx.stroke(path, with: .color(.white.opacity(0.12)),
+                       style: StrokeStyle(lineWidth: 0.5, dash: [4, 4]))
+        }
+        // Center dot
+        ctx.fill(Path(ellipseIn: CGRect(x: cx - 3, y: cy - 3, width: 6, height: 6)),
+                 with: .color(.white.opacity(0.25)))
+    }
+
+    private func drawStoredStrokes(ctx: GraphicsContext, size: CGSize) {
+        let palette = ColorPalettes.all[max(0, min(ColorPalettes.all.count - 1, settings.paletteIndex))]
+        let sym = settings.symmetry
+        let lw = max(1.0, CGFloat(settings.strokeWeight) * size.width * 0.012 + 1.0)
+        let style = StrokeStyle(lineWidth: lw, lineCap: .round, lineJoin: .round)
+        for (si, stroke) in settings.strokes.enumerated() {
+            guard stroke.xs.count >= 2 else { continue }
+            let t: Double = settings.strokes.count > 1
+                ? (Double(si) / Double(settings.strokes.count - 1) * settings.colorDrift)
+                    .truncatingRemainder(dividingBy: 1.0)
+                : 0.0
+            let swColor = Color(nsColor: palette.color(at: t)).opacity(0.85)
+            for s in 0..<sym {
+                let pts = symPoints(xs: stroke.xs, ys: stroke.ys, s: s, sym: sym, size: size)
+                ctx.stroke(makePath(points: pts), with: .color(swColor), style: style)
+            }
+        }
+    }
+
+    private func drawCurrentStroke(ctx: GraphicsContext, size: CGSize) {
+        guard currentXs.count >= 2 else { return }
+        let sym = settings.symmetry
+        let lw = max(1.0, CGFloat(settings.strokeWeight) * size.width * 0.012 + 1.0)
+        let style = StrokeStyle(lineWidth: lw, lineCap: .round, lineJoin: .round)
+        for s in 0..<sym {
+            let pts = symPoints(xs: currentXs, ys: currentYs, s: s, sym: sym, size: size)
+            ctx.stroke(makePath(points: pts), with: .color(.white.opacity(0.9)), style: style)
+        }
     }
 }
 
