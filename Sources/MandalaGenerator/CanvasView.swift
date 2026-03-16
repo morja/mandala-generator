@@ -79,6 +79,24 @@ struct CanvasView: View {
 
             Divider().frame(height: 20)
 
+            Button(action: { appState.goBack() }) {
+                Image(systemName: "chevron.left")
+            }
+            .buttonStyle(.bordered)
+            .disabled(!appState.canGoBack || appState.isGenerating)
+            .help("Go back (⌘[)")
+            .keyboardShortcut("[", modifiers: .command)
+
+            Button(action: { appState.goForward() }) {
+                Image(systemName: "chevron.right")
+            }
+            .buttonStyle(.bordered)
+            .disabled(!appState.canGoForward || appState.isGenerating)
+            .help("Go forward (⌘])")
+            .keyboardShortcut("]", modifiers: .command)
+
+            Divider().frame(height: 20)
+
             Picker("Size", selection: $appState.parameters.outputSize) {
                 Text("512 px").tag(512)
                 Text("800 px").tag(800)

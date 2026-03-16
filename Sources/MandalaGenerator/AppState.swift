@@ -9,17 +9,22 @@ class AppState: ObservableObject {
     @Published var currentImage: NSImage? = nil
     @Published var isGenerating = false
     @Published var lastGenerationTime: Double = 0
+    @Published var canGoBack: Bool = false
+    @Published var canGoForward: Bool = false
 
     private var debounceTask: Task<Void, Never>? = nil
     private var parameterCancellable: AnyCancellable?
     private var lastRenderedParams: MandalaParameters? = nil
+    private var history: [MandalaParameters] = []
+    private var historyIndex: Int = -1
+    private var isNavigatingHistory: Bool = false
 
     init() {
         // Debounced auto-generate when parameters change
         parameterCancellable = $parameters
             .dropFirst()
             .sink { [weak self] _ in
-                guard let self else { return }
+                guard let self, !self.isNavigatingHistory else { return }
                 self.debounceTask?.cancel()
                 self.debounceTask = Task {
                     try? await Task.sleep(nanoseconds: 400_000_000)
@@ -28,11 +33,19 @@ class AppState: ObservableObject {
                 }
             }
 
-        // Start with a random mandala
-        randomizeAll()
+        // Start with a random mandala or restore history
+        let hasHistory = loadHistory()
+        if hasHistory {
+            isNavigatingHistory = true
+            Task { await generate() }
+        } else {
+            randomizeAll()
+        }
     }
 
     func generate() async {
+        let navigating = isNavigatingHistory
+        defer { isNavigatingHistory = false }
         guard !isGenerating else { return }
         guard parameters != lastRenderedParams else { return }
         debounceTask?.cancel()
@@ -48,6 +61,9 @@ class AppState: ObservableObject {
         currentImage = image
         lastGenerationTime = elapsed
         isGenerating = false
+        if !navigating {
+            pushHistory()
+        }
     }
 
     private func suggestedFilename() -> String {
@@ -147,6 +163,64 @@ class AppState: ObservableObject {
         }
         parameters.layers = newLayers
         Task { await generate() }
+    }
+
+    func goBack() {
+        guard historyIndex > 0 else { return }
+        historyIndex -= 1
+        isNavigatingHistory = true
+        parameters = history[historyIndex]
+        updateHistoryState()
+        Task { await generate() }
+    }
+
+    func goForward() {
+        guard historyIndex < history.count - 1 else { return }
+        historyIndex += 1
+        isNavigatingHistory = true
+        parameters = history[historyIndex]
+        updateHistoryState()
+        Task { await generate() }
+    }
+
+    private func pushHistory() {
+        if historyIndex < history.count - 1 {
+            history = Array(history.prefix(historyIndex + 1))
+        }
+        history.append(parameters)
+        if history.count > 50 { history.removeFirst() }
+        historyIndex = history.count - 1
+        updateHistoryState()
+        saveHistory()
+    }
+
+    private func updateHistoryState() {
+        canGoBack = historyIndex > 0
+        canGoForward = historyIndex < history.count - 1
+    }
+
+    private var historyFileURL: URL {
+        let dir = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+            .appendingPathComponent("MandalaGenerator", isDirectory: true)
+        try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        return dir.appendingPathComponent("history.json")
+    }
+
+    private func saveHistory() {
+        guard let data = try? JSONEncoder().encode(history) else { return }
+        try? data.write(to: historyFileURL)
+    }
+
+    @discardableResult
+    private func loadHistory() -> Bool {
+        guard let data = try? Data(contentsOf: historyFileURL),
+              let loaded = try? JSONDecoder().decode([MandalaParameters].self, from: data),
+              !loaded.isEmpty else { return false }
+        history = loaded
+        historyIndex = history.count - 1
+        parameters = history[historyIndex]
+        updateHistoryState()
+        return true
     }
 
     func randomizeSeed() {

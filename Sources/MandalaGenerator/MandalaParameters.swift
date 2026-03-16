@@ -2,7 +2,7 @@ import Foundation
 
 // MARK: - Base Layer
 
-enum BaseLayerType: String, CaseIterable, Identifiable {
+enum BaseLayerType: String, CaseIterable, Identifiable, Codable {
     case color, gradient, pattern, grain, image
     var id: String { rawValue }
     var displayName: String {
@@ -25,7 +25,7 @@ enum BaseLayerType: String, CaseIterable, Identifiable {
     }
 }
 
-struct BaseLayerSettings: Equatable {
+struct BaseLayerSettings: Equatable, Codable {
     var isEnabled: Bool = false
     var type: BaseLayerType = .gradient
     // Primary color (HSB 0-1)
@@ -55,7 +55,7 @@ struct BaseLayerSettings: Equatable {
 
 // MARK: - Effects Layer
 
-struct EffectsLayerSettings: Equatable {
+struct EffectsLayerSettings: Equatable, Codable {
     var isEnabled: Bool     = false
     var dimming: Double     = 0.0   // random dark blotches (multiply)
     var erasure: Double     = 0.0   // burn-through holes
@@ -72,7 +72,7 @@ struct EffectsLayerSettings: Equatable {
 
 // MARK: - Layer Blend Mode
 
-enum LayerBlendMode: String, CaseIterable, Identifiable {
+enum LayerBlendMode: String, CaseIterable, Identifiable, Codable {
     case screen, add, normal, multiply
     var id: String { rawValue }
     var displayName: String {
@@ -87,7 +87,7 @@ enum LayerBlendMode: String, CaseIterable, Identifiable {
 
 // MARK: - Mandala Style
 
-enum MandalaStyle: String, CaseIterable, Identifiable {
+enum MandalaStyle: String, CaseIterable, Identifiable, Codable {
     case spirograph, roseCurves, stringArt, sunburst, epitrochoid, floral, lissajous, butterfly, geometric, fractal, mixed
     case phyllotaxis, hypocycloid, waveInterference, spiderWeb, weave, sacredGeometry, radialMesh, flowField, tendril, moire, voronoi
     var id: String { rawValue }
@@ -146,7 +146,7 @@ enum MandalaStyle: String, CaseIterable, Identifiable {
 }
 
 /// All settings for one rendered layer.
-struct StyleLayer: Equatable {
+struct StyleLayer: Equatable, Codable {
     var isEnabled: Bool = true
     var style: MandalaStyle = .mixed
     var scale: Double = 1.0
@@ -167,7 +167,7 @@ struct StyleLayer: Equatable {
     var seed: UInt64 = 42
 }
 
-struct MandalaParameters: Equatable {
+struct MandalaParameters: Equatable, Codable {
     var layers: [StyleLayer] = [StyleLayer()]
     var baseLayer: BaseLayerSettings = BaseLayerSettings()
     var effectsLayer: EffectsLayerSettings = EffectsLayerSettings()
