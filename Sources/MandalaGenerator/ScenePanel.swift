@@ -114,7 +114,7 @@ struct BaseLayerCard: View {
                     }
 
                     // Secondary color
-                    if settings.type == .gradient || settings.type == .pattern {
+                    if settings.type == .gradient || settings.type == .sunburst {
                         Divider()
                         Text("SECONDARY")
                             .font(.system(size: 9, weight: .semibold)).foregroundColor(.secondary).kerning(1.0)
@@ -142,23 +142,11 @@ struct BaseLayerCard: View {
                         }
                     }
 
-                    // Pattern controls
-                    if settings.type == .pattern {
+                    // Sunburst controls
+                    if settings.type == .sunburst {
                         Divider()
-                        HStack(spacing: 6) {
-                            Text("Type")
-                                .font(.system(size: 10)).foregroundColor(.secondary)
-                                .frame(width: 52, alignment: .leading)
-                            Picker("", selection: $settings.patternType) {
-                                Text("⊞").tag(0)
-                                Text("≡").tag(1)
-                                Text("⟋").tag(2)
-                                Text("#").tag(3)
-                            }
-                            .pickerStyle(.segmented).labelsHidden()
-                        }
-                        SceneSlider(label: "Scale",  value: $settings.patternScale,     color: .blue)
-                        SceneSlider(label: "Sharp",  value: $settings.patternSharpness, color: .cyan)
+                        SceneSlider(label: "Rays",  value: $settings.patternScale,     color: .orange)
+                        SceneSlider(label: "Sharp", value: $settings.patternSharpness, color: .cyan)
                     }
 
                     // Grain controls

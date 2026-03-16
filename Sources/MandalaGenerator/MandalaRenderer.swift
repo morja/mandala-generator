@@ -363,6 +363,10 @@ struct MandalaRenderer {
             collectTesseractTasks(into: &tasks, cx: cx, cy: cy, radius: baseRadius,
                                   params: params, rng: &rng, layerCount: layerCount,
                                   symmetry: symmetry, rippleAmount: rippleAmount, weightMul: weightMul)
+        case .starBurst:
+            drawStarBurstLayers(buffer: buffer, cx: cx, cy: cy, radius: baseRadius,
+                                params: params, palette: palette, rng: &rng)
+            return
         case .mixed:
             // Seed-driven random zone selection — different every render
             var zoneRng = SeededRNG(seed: params.seed &+ 0xbeef1234)
@@ -371,7 +375,7 @@ struct MandalaRenderer {
                                               .butterfly, .floral, .stringArt, .sunburst, .geometric, .fractal,
                                               .phyllotaxis, .hypocycloid, .waveInterference, .spiderWeb,
                                               .weave, .sacredGeometry, .radialMesh, .flowField, .tendril,
-                                              .moire, .voronoi, .torusKnot, .sphereGrid, .tesseract]
+                                              .moire, .voronoi, .torusKnot, .sphereGrid, .tesseract, .starBurst]
             let radii: [Double] = [1.0, 0.72, 0.45]
             let sub = max(2, layerCount / 3)
             for (zi, zRadius) in radii.enumerated() {
@@ -475,6 +479,9 @@ struct MandalaRenderer {
                     collectTesseractTasks(into: &tasks, cx: cx, cy: cy, radius: scaled,
                                           params: params, rng: &rng, layerCount: sub,
                                           symmetry: symmetry, rippleAmount: rippleAmount, weightMul: wmul)
+                case .starBurst:
+                    drawStarBurstLayers(buffer: buffer, cx: cx, cy: cy, radius: scaled,
+                                       params: params, palette: palette, rng: &rng)
                 case .mixed:
                     collectSpirographTasks(into: &tasks, cx: cx, cy: cy, radius: scaled,
                                            params: params, rng: &rng, layerCount: sub,
@@ -609,65 +616,36 @@ struct MandalaRenderer {
             }
             if let img = gradImg { copyCI(img, to: buffer, extent: ext, opacity: opacity) }
 
-        case .pattern:
-            let tileSize = CGFloat(w) * CGFloat(0.02 + settings.patternScale * 0.18)
-            let sharp    = Float(settings.patternSharpness)
-            var patternImg: CIImage?
-            switch settings.patternType {
-            case 0: // Checkerboard
-                if let f = CIFilter(name: "CICheckerboardGenerator") {
-                    f.setValue(CIVector(x: CGFloat(w)/2, y: CGFloat(h)/2), forKey: "inputCenter")
-                    f.setValue(ci1,   forKey: "inputColor0")
-                    f.setValue(ci2,   forKey: "inputColor1")
-                    f.setValue(tileSize, forKey: "inputWidth")
-                    f.setValue(sharp, forKey: "inputSharpness")
-                    patternImg = f.outputImage?.cropped(to: ext)
-                }
-            case 1: // Horizontal stripes
-                if let f = CIFilter(name: "CIStripesGenerator") {
-                    f.setValue(CIVector(x: CGFloat(w)/2, y: CGFloat(h)/2), forKey: "inputCenter")
-                    f.setValue(ci1,      forKey: "inputColor0")
-                    f.setValue(ci2,      forKey: "inputColor1")
-                    f.setValue(tileSize, forKey: "inputWidth")
-                    f.setValue(sharp,    forKey: "inputSharpness")
-                    patternImg = f.outputImage?.cropped(to: ext)
-                }
-            case 2: // Diagonal stripes
-                if let f = CIFilter(name: "CIStripesGenerator") {
-                    f.setValue(CIVector(x: 0, y: 0), forKey: "inputCenter")
-                    f.setValue(ci1,      forKey: "inputColor0")
-                    f.setValue(ci2,      forKey: "inputColor1")
-                    f.setValue(tileSize, forKey: "inputWidth")
-                    f.setValue(sharp,    forKey: "inputSharpness")
-                    if let stripes = f.outputImage {
-                        patternImg = stripes
-                            .transformed(by: CGAffineTransform(rotationAngle: .pi / 4))
-                            .cropped(to: ext)
-                    }
-                }
-            default: // Crosshatch
-                if let f1 = CIFilter(name: "CIStripesGenerator"),
-                   let f2 = CIFilter(name: "CIStripesGenerator") {
-                    let black = CIColor(red: 0, green: 0, blue: 0)
-                    for (f, col) in [(f1, ci1), (f2, ci2)] {
-                        f.setValue(CIVector(x: 0, y: 0), forKey: "inputCenter")
-                        f.setValue(black,          forKey: "inputColor0")
-                        f.setValue(col,            forKey: "inputColor1")
-                        f.setValue(tileSize * 0.6, forKey: "inputWidth")
-                        f.setValue(sharp,          forKey: "inputSharpness")
-                    }
-                    if let s1 = f1.outputImage, let s2 = f2.outputImage {
-                        let r1 = s1.transformed(by: CGAffineTransform(rotationAngle:  .pi/4)).cropped(to: ext)
-                        let r2 = s2.transformed(by: CGAffineTransform(rotationAngle: -.pi/4)).cropped(to: ext)
-                        if let add = CIFilter(name: "CIAdditionCompositing") {
-                            add.setValue(r1, forKey: kCIInputBackgroundImageKey)
-                            add.setValue(r2, forKey: kCIInputImageKey)
-                            patternImg = add.outputImage?.cropped(to: ext)
-                        }
-                    }
+        case .sunburst:
+            let cx = Float(w) / 2
+            let cy = Float(h) / 2
+            // 3–17 alternating ray-pairs controlled by patternScale
+            let numRays = Float(settings.patternScale * 14.0 + 3.0)
+            // Edge transition width: wide (soft) when sharpness=0, narrow (hard) when sharpness=1
+            let edgeWidth = max(0.015, 0.48 * (1.0 - Float(settings.patternSharpness) * 0.93))
+            let invHalfW = 1.0 / (Float(w) * 0.5)
+            for y in 0..<h {
+                for x in 0..<w {
+                    let dx = Float(x) - cx
+                    let dy = Float(y) - cy
+                    let angle = atan2f(dy, dx)
+                    let dist  = sqrtf(dx * dx + dy * dy) * invHalfW
+                    // Sine-wave ray pattern → sharpened linear ramp into [0,1]
+                    let raw = (sinf(angle * numRays) + 1.0) * 0.5
+                    var t   = (raw - (0.5 - edgeWidth)) / (2.0 * edgeWidth)
+                    t = max(0.0, min(1.0, t))
+                    // Subtle radial falloff: rays fade toward a neutral midpoint at the edges
+                    let radial = max(0.0, 1.0 - dist * dist * 0.45)
+                    t = t * radial + 0.5 * (1.0 - radial)
+                    let r  = c1.r * (1.0 - t) + c2.r * t
+                    let g  = c1.g * (1.0 - t) + c2.g * t
+                    let bv = c1.b * (1.0 - t) + c2.b * t
+                    let dst = (y * w + x) * 3
+                    buffer.data[dst]     = r  * opacity
+                    buffer.data[dst + 1] = g  * opacity
+                    buffer.data[dst + 2] = bv * opacity
                 }
             }
-            if let img = patternImg { copyCI(img, to: buffer, extent: ext, opacity: opacity) }
 
         case .grain:
             if let rngFilter = CIFilter(name: "CIRandomGenerator"),
@@ -1214,6 +1192,43 @@ struct MandalaRenderer {
                     buffer.addLine(x0: x0, y0: y0, x1: x1, y1: y1, color: c, weight: weight)
                 }
             }
+        }
+    }
+
+    // MARK: - Star Burst Layers
+
+    /// Dense field of short radial dashes starting at random distances from the center.
+    /// Complexity → dash length, Density → dash count, ColorDrift → palette spread.
+    private static func drawStarBurstLayers(buffer: PixelBuffer, cx: Float, cy: Float,
+                                             radius: Double, params: MandalaParameters,
+                                             palette: ColorPalette, rng: inout SeededRNG) {
+        let R         = Float(radius)
+        let numDashes = Int(params.density * 5000 + 1200)            // 1200–6200
+        let dashLen   = R * Float(0.05 + params.complexity * 0.50)   // 5–55 % of radius
+        let jitterAmt = Float(0.04)                                   // slight organic scatter
+        let weight    = Float(0.26 + params.density * 0.14)
+        let tBase     = rng.nextDouble()
+
+        for i in 0..<numDashes {
+            let angle  = rng.nextFloat() * .pi * 2
+            let innerR = rng.nextFloat() * R                          // start anywhere in radius
+            let outerR = min(innerR + dashLen, R * 1.05)
+            let jitter = (rng.nextFloat() - 0.5) * jitterAmt
+
+            let x0 = cx + cosf(angle + jitter) * innerR
+            let y0 = cy + sinf(angle + jitter) * innerR
+            let x1 = cx + cosf(angle + jitter) * outerR
+            let y1 = cy + sinf(angle + jitter) * outerR
+
+            // Color: drifts across palette with radial position
+            let t = (tBase + Double(innerR / R) * params.colorDrift
+                           + Double(i) / Double(numDashes) * params.colorDrift * 0.08)
+                        .truncatingRemainder(dividingBy: 1.0)
+            let col = palette.color(at: t)
+            let c   = (r: Float(col.redComponent),
+                       g: Float(col.greenComponent),
+                       b: Float(col.blueComponent))
+            buffer.addLine(x0: x0, y0: y0, x1: x1, y1: y1, color: c, weight: weight)
         }
     }
 

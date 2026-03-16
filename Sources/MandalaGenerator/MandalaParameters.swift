@@ -3,7 +3,7 @@ import Foundation
 // MARK: - Base Layer
 
 enum BaseLayerType: String, CaseIterable, Identifiable, Codable {
-    case auto, color, gradient, pattern, grain, image
+    case auto, color, gradient, sunburst, grain, image
     var id: String { rawValue }
 
     init(from decoder: Decoder) throws {
@@ -16,7 +16,7 @@ enum BaseLayerType: String, CaseIterable, Identifiable, Codable {
         case .auto:     return "Auto"
         case .color:    return "Color"
         case .gradient: return "Gradient"
-        case .pattern:  return "Pattern"
+        case .sunburst: return "Sunburst"
         case .grain:    return "Grain"
         case .image:    return "Image"
         }
@@ -26,7 +26,7 @@ enum BaseLayerType: String, CaseIterable, Identifiable, Codable {
         case .auto:     return "wand.and.stars"
         case .color:    return "square.fill"
         case .gradient: return "circle.lefthalf.filled"
-        case .pattern:  return "squareshape.split.2x2"
+        case .sunburst: return "rays"
         case .grain:    return "film.stack"
         case .image:    return "photo"
         }
@@ -221,7 +221,7 @@ enum LayerBlendMode: String, CaseIterable, Identifiable, Codable {
 // MARK: - Mandala Style
 
 enum MandalaStyle: String, CaseIterable, Identifiable, Codable {
-    case spirograph, roseCurves, stringArt, sunburst, epitrochoid, floral, lissajous, butterfly, geometric, fractal, mixed
+    case spirograph, roseCurves, stringArt, sunburst, epitrochoid, floral, lissajous, butterfly, geometric, fractal, starBurst, mixed
 
     init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
@@ -243,6 +243,7 @@ enum MandalaStyle: String, CaseIterable, Identifiable, Codable {
         case .butterfly:       return "Butterfly"
         case .geometric:       return "Geometric"
         case .fractal:         return "Fractal"
+        case .starBurst:       return "Star Burst"
         case .mixed:           return "Mixed"
         case .phyllotaxis:     return "Phyllotaxis"
         case .hypocycloid:     return "Hypocycloid"
@@ -272,6 +273,7 @@ enum MandalaStyle: String, CaseIterable, Identifiable, Codable {
         case .butterfly:       return "wind"
         case .geometric:       return "seal"
         case .fractal:         return "snowflake"
+        case .starBurst:       return "rays"
         case .mixed:           return "sparkles"
         case .phyllotaxis:     return "circle.grid.3x3"
         case .hypocycloid:     return "star.circle"
