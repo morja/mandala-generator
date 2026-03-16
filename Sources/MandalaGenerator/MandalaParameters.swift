@@ -3,10 +3,11 @@ import Foundation
 // MARK: - Base Layer
 
 enum BaseLayerType: String, CaseIterable, Identifiable, Codable {
-    case color, gradient, pattern, grain, image
+    case auto, color, gradient, pattern, grain, image
     var id: String { rawValue }
     var displayName: String {
         switch self {
+        case .auto:     return "Auto"
         case .color:    return "Color"
         case .gradient: return "Gradient"
         case .pattern:  return "Pattern"
@@ -16,6 +17,7 @@ enum BaseLayerType: String, CaseIterable, Identifiable, Codable {
     }
     var sfSymbol: String {
         switch self {
+        case .auto:     return "wand.and.stars"
         case .color:    return "square.fill"
         case .gradient: return "circle.lefthalf.filled"
         case .pattern:  return "squareshape.split.2x2"
@@ -91,6 +93,8 @@ struct DrawingLayerSettings: Equatable, Codable {
     var colorDrift: Double    = 0.4   // palette traversal across strokes
     var saturation: Double    = 1.0
     var brightness: Double    = 0.7
+    var blendMode: LayerBlendMode = .screen
+    var opacity: Double    = 1.0
 }
 
 // MARK: - Layer Blend Mode

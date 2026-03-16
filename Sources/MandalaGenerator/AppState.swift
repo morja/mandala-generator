@@ -16,6 +16,7 @@ class AppState: ObservableObject {
     @Published var canGoForward: Bool = false
     @Published var copiedLayer: StyleLayer? = nil
     @Published var isDrawingMode: Bool = false
+    @Published var showDrawingPanel: Bool = false
 
     private var debounceTask: Task<Void, Never>? = nil
     private var parameterCancellable: AnyCancellable?
@@ -404,7 +405,7 @@ class AppState: ObservableObject {
 
         // Write MOV via AVFoundation
         try? FileManager.default.removeItem(at: url)
-        guard let writer = try? AVAssetWriter(outputURL: url, fileType: .quickTimeMovie) else { return }
+        guard let writer = try? AVAssetWriter(outputURL: url, fileType: AVFileType.mov) else { return }
 
         let videoSettings: [String: Any] = [
             AVVideoCodecKey: AVVideoCodecType.hevc,
@@ -425,7 +426,7 @@ class AppState: ObservableObject {
         )
         writer.add(writerInput)
         writer.startWriting()
-        writer.startSession(atSourceTime: .zero)
+        writer.startSession(atSourceTime: CMTime.zero)
 
         let frameDuration = CMTime(value: 1, timescale: CMTimeScale(fps))
         for i in 0..<frameCount {

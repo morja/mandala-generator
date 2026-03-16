@@ -90,6 +90,11 @@ struct BaseLayerCard: View {
 
                     Divider()
 
+                    if settings.type == .auto {
+                        Text("Uses the active layer's palette to generate a dark ambient background automatically.")
+                            .font(.system(size: 9)).foregroundColor(.secondary)
+                            .multilineTextAlignment(.leading)
+                    } else {
                     // Primary color
                     Text("PRIMARY")
                         .font(.system(size: 9, weight: .semibold)).foregroundColor(.secondary).kerning(1.0)
@@ -97,6 +102,7 @@ struct BaseLayerCard: View {
                     SceneSlider(label: "Hue",   value: $settings.hue,        color: .purple)
                     SceneSlider(label: "Sat",   value: $settings.saturation, color: .pink)
                     SceneSlider(label: "Bri",   value: $settings.brightness, color: .yellow)
+                    }
 
                     // Secondary color
                     if settings.type == .gradient || settings.type == .pattern {
@@ -183,8 +189,10 @@ struct BaseLayerCard: View {
                         SceneSlider(label: "Blend", value: $settings.imageBlend, color: .blue)
                     }
 
-                    Divider()
-                    SceneSlider(label: "Opacity", value: $settings.opacity, color: .white)
+                    if settings.type != .auto {
+                        Divider()
+                        SceneSlider(label: "Opacity", value: $settings.opacity, color: .white)
+                    }
                 }
                 .padding(10)
                 .background(Color(NSColor.controlBackgroundColor).opacity(0.7))
@@ -387,6 +395,14 @@ struct ExportCard: View {
             .buttonStyle(.bordered)
             .disabled(appState.currentImage == nil || appState.isGenerating)
             .keyboardShortcut("s", modifiers: [.command, .shift])
+
+            Button(action: { appState.exportAnimation() }) {
+                Label("Export Animation…", systemImage: "film.stack")
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.bordered)
+            .disabled(appState.currentImage == nil || appState.isGenerating)
+            .help("Export a looping MOV animation with rotating layers (⌘⌥E)")
         }
         .padding(10)
         .background(Color(NSColor.controlBackgroundColor).opacity(0.7))

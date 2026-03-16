@@ -56,22 +56,26 @@ struct PalettePanel: View {
                     ))
                 }
 
-                // ── Drawing ──────────────────────────────────────────────
-                Divider().padding(.horizontal, 8)
+                // ── Drawing (experimental) ───────────────────────────────
+                if appState.showDrawingPanel {
+                    Divider().padding(.horizontal, 8)
 
-                HStack {
-                    Text("DRAWING")
-                        .font(.system(size: 10, weight: .semibold))
-                        .foregroundColor(.secondary).kerning(1.2)
-                    Spacer()
+                    HStack {
+                        Text("DRAWING")
+                            .font(.system(size: 10, weight: .semibold))
+                            .foregroundColor(.secondary).kerning(1.2)
+                        Text("experimental")
+                            .font(.system(size: 8)).foregroundColor(.orange.opacity(0.7))
+                        Spacer()
+                    }
+                    .padding(.horizontal, 12)
+
+                    DrawingCard(
+                        settings: $appState.parameters.drawingLayer,
+                        isDrawingMode: $appState.isDrawingMode
+                    )
+                    .padding(.horizontal, 8)
                 }
-                .padding(.horizontal, 12)
-
-                DrawingCard(
-                    settings: $appState.parameters.drawingLayer,
-                    isDrawingMode: $appState.isDrawingMode
-                )
-                .padding(.horizontal, 8)
 
                 Spacer(minLength: 20)
             }
@@ -361,6 +365,22 @@ private struct DrawingCard: View {
                                 .onTapGesture { settings.paletteIndex = idx }
                         }
                     }
+
+                    Divider()
+
+                    // Blend mode + opacity
+                    HStack(spacing: 6) {
+                        Picker("", selection: $settings.blendMode) {
+                            ForEach(LayerBlendMode.allCases) { m in
+                                Text(m.displayName).tag(m)
+                            }
+                        }
+                        .pickerStyle(.menu).labelsHidden()
+                        .frame(width: 90)
+                        Spacer()
+                    }
+
+                    CardSlider(label: "Opacity",     value: $settings.opacity,       range: 0...1, color: .white)
 
                     Divider()
 

@@ -63,21 +63,25 @@ struct MandalaRenderer {
         // ── BACKGROUND ──
         let bgBuffer = PixelBuffer(width: bufferSize, height: bufferSize)
         if params.baseLayer.isEnabled {
-            drawBaseLayer(buffer: bgBuffer, settings: params.baseLayer, bufferSize: bufferSize)
-        } else {
-            let bgPaletteIdx = params.layers.first.map { max(0, min(palettes.count-1, $0.paletteIndex)) } ?? 0
-            let bgPalette = palettes[bgPaletteIdx]
-            drawBackground(buffer: bgBuffer, palette: bgPalette, seed: params.seed)
-            if let firstLayer = params.layers.first {
-                var lp = params
-                lp.density = firstLayer.density
-                lp.complexity = firstLayer.complexity
-                lp.paletteIndex = firstLayer.paletteIndex
-                lp.symmetry = max(1, min(8, firstLayer.symmetry))
-                var rng = SeededRNG(seed: params.seed)
-                drawGrassFibers(buffer: bgBuffer, params: lp, palette: palettes[bgPaletteIdx], rng: &rng)
+            if params.baseLayer.type == .auto {
+                // Auto: palette-derived dark gradient + grass fibers
+                let bgPaletteIdx = params.layers.first.map { max(0, min(palettes.count-1, $0.paletteIndex)) } ?? 0
+                let bgPalette = palettes[bgPaletteIdx]
+                drawBackground(buffer: bgBuffer, palette: bgPalette, seed: params.seed)
+                if let firstLayer = params.layers.first {
+                    var lp = params
+                    lp.density = firstLayer.density
+                    lp.complexity = firstLayer.complexity
+                    lp.paletteIndex = firstLayer.paletteIndex
+                    lp.symmetry = max(1, min(8, firstLayer.symmetry))
+                    var rng = SeededRNG(seed: params.seed)
+                    drawGrassFibers(buffer: bgBuffer, params: lp, palette: bgPalette, rng: &rng)
+                }
+            } else {
+                drawBaseLayer(buffer: bgBuffer, settings: params.baseLayer, bufferSize: bufferSize)
             }
         }
+        // isEnabled == false → buffer stays black (all zeros)
 
         guard var compositeImage = bgBuffer.toCGImage() else { return NSImage() }
 
@@ -177,8 +181,18 @@ struct MandalaRenderer {
                 drawImage = applyColourGrade(image: drawImage,
                                               saturation: dl.saturation,
                                               brightness: dl.brightness)
+                if dl.opacity < 0.999 {
+                    drawImage = applyLayerOpacity(image: drawImage, opacity: dl.opacity)
+                }
+                let blendFilter: String
+                switch dl.blendMode {
+                case .screen:   blendFilter = "CIScreenBlendMode"
+                case .add:      blendFilter = "CIAdditionCompositing"
+                case .normal:   blendFilter = "CILightenBlendMode"
+                case .multiply: blendFilter = "CIMultiplyBlendMode"
+                }
                 compositeImage = blendComposite(base: compositeImage, overlay: drawImage,
-                                                mode: "CIScreenBlendMode")
+                                                mode: blendFilter)
             }
         }
 
@@ -661,6 +675,9 @@ struct MandalaRenderer {
                 buffer.data[dst + 1] = Float(bytes[src4 + 1]) * inv * imgOpacity
                 buffer.data[dst + 2] = Float(bytes[src4 + 2]) * inv * imgOpacity
             }
+
+        case .auto:
+            break   // handled in the render() call-site, not here
         }
     }
 
