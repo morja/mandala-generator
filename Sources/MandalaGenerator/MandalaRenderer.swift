@@ -50,7 +50,10 @@ private struct CurveDrawTask {
 struct MandalaRenderer {
 
     static func render(params: MandalaParameters) -> NSImage {
-        let bufferSize = params.outputSize * 2
+        let resolvedSize = params.outputSize == 0
+            ? max(64, min(8192, params.outputSizeCustom))
+            : params.outputSize
+        let bufferSize = resolvedSize * 2
         let palettes   = ColorPalettes.all
 
         let cx = Float(bufferSize) * 0.5
@@ -118,6 +121,9 @@ struct MandalaRenderer {
             if layer.rotation > 0.001 || layer.rotation < -0.001 {
                 layerImage = rotateImage(layerImage, angle: layer.rotation * .pi * 2)
             }
+            if layer.opacity < 0.999 {
+                layerImage = applyLayerOpacity(image: layerImage, opacity: layer.opacity)
+            }
             switch layer.blendMode {
             case .screen:   compositeImage = blendComposite(base: compositeImage, overlay: layerImage, mode: "CIScreenBlendMode")
             case .add:      compositeImage = blendComposite(base: compositeImage, overlay: layerImage, mode: "CIAdditionCompositing")
@@ -133,8 +139,8 @@ struct MandalaRenderer {
         }
 
         // ── GLOBAL POST-PROCESS ──
-        result = downscaleLanczos(image: result, targetSize: params.outputSize)
-        let size = NSSize(width: params.outputSize, height: params.outputSize)
+        result = downscaleLanczos(image: result, targetSize: resolvedSize)
+        let size = NSSize(width: resolvedSize, height: resolvedSize)
         return NSImage(cgImage: result, size: size)
     }
 
@@ -2905,6 +2911,24 @@ struct MandalaRenderer {
                     .translatedBy(x: -cx, y: -cy)
         let rotated = ci.transformed(by: t).cropped(to: ext)
         return ctx.createCGImage(rotated, from: ext) ?? image
+    }
+
+    // MARK: - Layer opacity
+
+    private static func applyLayerOpacity(image: CGImage, opacity: Double) -> CGImage {
+        let ci = CIImage(cgImage: image)
+        let ctx = CIContext(options: [.workingColorSpace: CGColorSpace(name: CGColorSpace.displayP3) as Any])
+        let ext = ci.extent
+        let s = CGFloat(opacity)
+        guard let filter = CIFilter(name: "CIColorMatrix") else { return image }
+        filter.setValue(ci, forKey: kCIInputImageKey)
+        filter.setValue(CIVector(x: s, y: 0, z: 0, w: 0), forKey: "inputRVector")
+        filter.setValue(CIVector(x: 0, y: s, z: 0, w: 0), forKey: "inputGVector")
+        filter.setValue(CIVector(x: 0, y: 0, z: s, w: 0), forKey: "inputBVector")
+        filter.setValue(CIVector(x: 0, y: 0, z: 0, w: 1), forKey: "inputAVector")
+        filter.setValue(CIVector(x: 0, y: 0, z: 0, w: 0), forKey: "inputBiasVector")
+        guard let out = filter.outputImage?.cropped(to: ext) else { return image }
+        return ctx.createCGImage(out, from: ext) ?? image
     }
 
     // MARK: - Blend composite

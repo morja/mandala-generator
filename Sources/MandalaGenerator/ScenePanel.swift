@@ -311,6 +311,7 @@ private struct EffectRow: View {
 
 struct ExportCard: View {
     @ObservedObject var appState: AppState
+    @State private var customSizeText: String = "2048"
 
     var body: some View {
         VStack(spacing: 8) {
@@ -325,9 +326,25 @@ struct ExportCard: View {
                     Text("1024 px").tag(1024)
                     Text("1400 px").tag(1400)
                     Text("2048 px").tag(2048)
+                    Text("Custom…").tag(0)
                 }
                 .pickerStyle(.menu).labelsHidden().fixedSize()
                 Spacer()
+            }
+            if appState.parameters.outputSize == 0 {
+                HStack(spacing: 6) {
+                    Text("")
+                        .frame(width: 52, alignment: .leading)
+                    TextField("px", text: $customSizeText)
+                        .textFieldStyle(.roundedBorder)
+                        .font(.system(size: 10, design: .monospaced))
+                        .frame(width: 70)
+                        .onSubmit { applyCustomSize() }
+                        .onChange(of: customSizeText) { applyCustomSize() }
+                    Text("px")
+                        .font(.system(size: 10)).foregroundColor(.secondary)
+                    Spacer()
+                }
             }
 
             // Format
@@ -375,6 +392,11 @@ struct ExportCard: View {
         .background(Color(NSColor.controlBackgroundColor).opacity(0.7))
         .clipShape(RoundedRectangle(cornerRadius: 8))
         .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.white.opacity(0.08), lineWidth: 1))
+    }
+
+    private func applyCustomSize() {
+        let clamped = max(64, min(8192, Int(customSizeText) ?? appState.parameters.outputSizeCustom))
+        appState.parameters.outputSizeCustom = clamped
     }
 }
 

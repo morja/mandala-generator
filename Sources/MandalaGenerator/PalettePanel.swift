@@ -30,7 +30,18 @@ struct PalettePanel: View {
                         layer: $appState.parameters.layers[i],
                         index: i,
                         canDelete: appState.parameters.layers.count > 1,
-                        onDelete: { appState.parameters.layers.remove(at: i) }
+                        canDuplicate: appState.parameters.layers.count < 5,
+                        onDelete: { appState.parameters.layers.remove(at: i) },
+                        onDuplicate: { appState.duplicateLayer(at: i) },
+                        onRandomize: { appState.randomizeLayer(at: i) },
+                        onCopy: { appState.copiedLayer = appState.parameters.layers[i] },
+                        onPaste: {
+                            if var pasted = appState.copiedLayer {
+                                pasted.seed = UInt64.random(in: 1...UInt64.max)
+                                appState.parameters.layers[i] = pasted
+                            }
+                        },
+                        hasCopied: appState.copiedLayer != nil
                     )
                     .padding(.horizontal, 8)
                     .opacity(draggedIndex == i ? 0.4 : 1.0)
@@ -76,7 +87,13 @@ private struct LayerCard: View {
     @Binding var layer: StyleLayer
     let index: Int
     let canDelete: Bool
+    let canDuplicate: Bool
     let onDelete: () -> Void
+    let onDuplicate: () -> Void
+    let onRandomize: () -> Void
+    let onCopy: () -> Void
+    let onPaste: () -> Void
+    let hasCopied: Bool
     @State private var isExpanded = true
 
     private var palette: ColorPalette {
@@ -114,6 +131,24 @@ private struct LayerCard: View {
 
                 Spacer()
 
+                Button(action: onRandomize) {
+                    Image(systemName: "dice")
+                        .font(.system(size: 9))
+                        .foregroundColor(.blue)
+                }
+                .buttonStyle(.plain)
+                .help("Randomize this layer")
+
+                if canDuplicate {
+                    Button(action: onDuplicate) {
+                        Image(systemName: "plus.square.on.square")
+                            .font(.system(size: 9))
+                            .foregroundColor(.secondary)
+                    }
+                    .buttonStyle(.plain)
+                    .help("Duplicate layer")
+                }
+
                 Button(action: { withAnimation(.easeInOut(duration: 0.18)) { isExpanded.toggle() } }) {
                     Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
                         .font(.system(size: 9))
@@ -129,6 +164,14 @@ private struct LayerCard: View {
                     }
                     .buttonStyle(.plain)
                 }
+            }
+            .contextMenu {
+                Button(action: onCopy) { Label("Copy Layer", systemImage: "doc.on.doc") }
+                Button(action: onPaste) { Label("Paste Layer Settings", systemImage: "doc.on.clipboard") }
+                    .disabled(!hasCopied)
+                Divider()
+                Button(action: onDuplicate) { Label("Duplicate Layer", systemImage: "plus.square.on.square") }
+                    .disabled(!canDuplicate)
             }
             .padding(.horizontal, 10)
             .padding(.vertical, 8)
@@ -219,6 +262,7 @@ private struct LayerCard: View {
                     CardSlider(label: "Saturation",  value: $layer.saturation,   range: 0...1,     color: .pink)
                     CardSlider(label: "Brightness",  value: $layer.brightness,   range: 0...1,     color: .yellow)
                     CardSlider(label: "Rotation",    value: $layer.rotation,     range: 0...1,     color: .mint)
+                    CardSlider(label: "Opacity",     value: $layer.opacity,      range: 0...1,     color: .white)
                 }
                 .padding(10)
                 .background(Color(NSColor.controlBackgroundColor).opacity(0.7))

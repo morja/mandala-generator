@@ -173,6 +173,7 @@ struct StyleLayer: Equatable, Codable {
     var saturation: Double = 0.7
     var brightness: Double = 0.5
     var rotation: Double = 0.0   // 0–1 → 0–360°
+    var opacity: Double = 1.0    // 0–1 layer opacity
     var blendMode: LayerBlendMode = .screen
     var symmetry: Int = 6
     var seed: UInt64 = 42
@@ -185,7 +186,8 @@ struct MandalaParameters: Equatable, Codable {
 
     // Truly global — render setup
     var seed: UInt64 = 42   // used for background/grass; each layer also has its own seed
-    var outputSize: Int = 800
+    var outputSize: Int = 800           // 0 = custom
+    var outputSizeCustom: Int = 2048   // used when outputSize == 0
     var outputFormat: String = "png"
     var outputShape: String = "square"  // "square", "circle", "squircle"
 

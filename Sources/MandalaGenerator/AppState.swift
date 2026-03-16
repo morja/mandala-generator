@@ -12,6 +12,7 @@ class AppState: ObservableObject {
     @Published var lastGenerationTime: Double = 0
     @Published var canGoBack: Bool = false
     @Published var canGoForward: Bool = false
+    @Published var copiedLayer: StyleLayer? = nil
 
     private var debounceTask: Task<Void, Never>? = nil
     private var parameterCancellable: AnyCancellable?
@@ -140,6 +141,7 @@ class AppState: ObservableObject {
         let sharedSymmetry = Int.random(in: 1...8)
         var newLayers: [StyleLayer] = []
         var usedStyles = Set<String>()
+        var usedPalettes = Set<Int>()
         for li in 0..<nLayers {
             var s = allStyles.randomElement() ?? .mixed
             var tries = 0
@@ -148,10 +150,17 @@ class AppState: ObservableObject {
                 tries += 1
             }
             usedStyles.insert(s.rawValue)
+            var palIdx = Int.random(in: 0..<ColorPalettes.all.count)
+            tries = 0
+            while usedPalettes.contains(palIdx) && tries < 20 {
+                palIdx = Int.random(in: 0..<ColorPalettes.all.count)
+                tries += 1
+            }
+            usedPalettes.insert(palIdx)
             newLayers.append(StyleLayer(
                 style: s,
                 scale: li == 0 ? Double.random(in: 0.75...1.0) : Double.random(in: 0.3...0.75),
-                paletteIndex: Int.random(in: 0..<ColorPalettes.all.count),
+                paletteIndex: palIdx,
                 colorOffset: Double.random(in: 0...1),
                 complexity: Double.random(in: 0.2...1.0),
                 density: Double.random(in: 0.2...1.0),
@@ -228,6 +237,33 @@ class AppState: ObservableObject {
         return true
     }
 
+    func duplicateLayer(at index: Int) {
+        guard index < parameters.layers.count,
+              parameters.layers.count < 5 else { return }
+        var copy = parameters.layers[index]
+        copy.seed = UInt64.random(in: 1...UInt64.max)
+        copy.scale = max(0.1, copy.scale * 0.85)
+        parameters.layers.insert(copy, at: index + 1)
+    }
+
+    func randomizeLayer(at index: Int) {
+        guard index < parameters.layers.count else { return }
+        let allStyles = MandalaStyle.allCases
+        parameters.layers[index].style          = allStyles.randomElement() ?? .mixed
+        parameters.layers[index].seed           = UInt64.random(in: 1...UInt64.max)
+        parameters.layers[index].paletteIndex   = Int.random(in: 0..<ColorPalettes.all.count)
+        parameters.layers[index].scale          = index == 0 ? Double.random(in: 0.75...1.0) : Double.random(in: 0.3...0.75)
+        parameters.layers[index].complexity     = Double.random(in: 0.2...1.0)
+        parameters.layers[index].density        = Double.random(in: 0.2...1.0)
+        parameters.layers[index].glowIntensity  = Double.random(in: 0.2...0.9)
+        parameters.layers[index].colorDrift     = Double.random(in: 0.1...0.9)
+        parameters.layers[index].ripple         = Double.random(in: 0.0...0.6)
+        parameters.layers[index].wash           = Double.random(in: 0.0...0.5)
+        parameters.layers[index].abstractLevel  = Double.random(in: 0.1...0.8)
+        parameters.layers[index].saturation     = Double.random(in: 0.3...1.0)
+        parameters.layers[index].brightness     = Double.random(in: 0.3...0.7)
+    }
+
     func randomizeSeed() {
         parameters.seed = UInt64.random(in: 1...UInt64.max)
         for i in parameters.layers.indices {
@@ -288,10 +324,19 @@ class AppState: ObservableObject {
             Task { [weak self] in
                 guard let self else { return }
                 let baseParams = self.parameters
-                // Build all param variants up-front
+                // Build all param variants up-front — vary seed, palettes, and occasionally style
+                let allStyles = MandalaStyle.allCases
+                let allPaletteCount = ColorPalettes.all.count
                 let variants: [(Int, MandalaParameters)] = (0..<count).map { i in
                     var p = baseParams
                     p.seed = UInt64.random(in: 1...UInt64.max)
+                    for li in p.layers.indices {
+                        p.layers[li].seed = UInt64.random(in: 1...UInt64.max)
+                        p.layers[li].paletteIndex = Int.random(in: 0..<allPaletteCount)
+                        if i % 3 == 0 {
+                            p.layers[li].style = allStyles.randomElement() ?? p.layers[li].style
+                        }
+                    }
                     return (i, p)
                 }
                 // Render all in parallel via TaskGroup

@@ -70,6 +70,7 @@ struct CanvasView: View {
             }
             .buttonStyle(.bordered)
             .disabled(appState.isGenerating)
+            .keyboardShortcut("r", modifiers: [.command, .shift])
 
             Button(action: { appState.saveSettings() }) {
                 Label("Save Settings", systemImage: "doc.badge.arrow.up")
