@@ -208,9 +208,54 @@ struct MandalaRenderer {
         return NSImage(cgImage: result, size: size)
     }
 
+    // MARK: - Layer preview thumbnail
+
+    static func renderLayerPreview(params: MandalaParameters, layerIndex: Int, size: Int = 128) -> NSImage {
+        guard layerIndex < params.layers.count else { return NSImage() }
+        let layer = params.layers[layerIndex]
+        guard layer.isEnabled else { return NSImage() }
+        let bufferSize = size * 2
+        let palettes   = ColorPalettes.all
+        let cx         = Float(bufferSize) * 0.5
+        let cy         = Float(bufferSize) * 0.5
+        let baseRadius = Double(bufferSize) * 0.72
+
+        let layerSymmetry = max(1, min(8, layer.symmetry))
+        let layerRadius   = baseRadius * max(0.1, min(1.0, layer.scale))
+        let layerCount    = max(2, Int(layer.complexity * 8) + 1)
+        let palette       = palettes[max(0, min(palettes.count - 1, layer.paletteIndex))]
+
+        var lp = params
+        lp.symmetry      = layerSymmetry
+        lp.complexity    = layer.complexity
+        lp.density       = layer.density
+        lp.glowIntensity = layer.glowIntensity
+        lp.colorDrift    = layer.colorDrift
+        lp.ripple        = layer.ripple
+        lp.wash          = layer.wash
+        lp.paletteIndex  = layer.paletteIndex
+
+        let buffer = PixelBuffer(width: bufferSize, height: bufferSize)
+        var rng = SeededRNG(seed: layer.seed == 0
+            ? params.seed &+ UInt64(layerIndex + 1) &* 0x9e3779b97f4a7c15
+            : layer.seed)
+
+        drawStructuralLayers(buffer: buffer, cx: cx, cy: cy, baseRadius: layerRadius,
+                             params: lp, style: layer.style, colorOffset: layer.colorOffset,
+                             palette: palette, rng: &rng,
+                             layerCount: layerCount, symmetry: layerSymmetry,
+                             rippleAmount: Float(layer.ripple), weightMul: 1.0)
+
+        guard var img = buffer.toCGImage() else { return NSImage() }
+        img = applyGlow(image: img, intensity: layer.glowIntensity)
+        img = applyColourGrade(image: img, saturation: layer.saturation, brightness: layer.brightness)
+        img = downscaleLanczos(image: img, targetSize: size)
+        return NSImage(cgImage: img, size: NSSize(width: size, height: size))
+    }
+
     // MARK: - Structural dispatch — collect tasks, then draw in parallel
 
-    private static func drawStructuralLayers(buffer: PixelBuffer, cx: Float, cy: Float,
+    fileprivate static func drawStructuralLayers(buffer: PixelBuffer, cx: Float, cy: Float,
                                              baseRadius: Double, params: MandalaParameters,
                                              style: MandalaStyle, colorOffset: Double,
                                              palette: ColorPalette, rng: inout SeededRNG,

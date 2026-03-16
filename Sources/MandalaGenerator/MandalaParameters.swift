@@ -5,6 +5,12 @@ import Foundation
 enum BaseLayerType: String, CaseIterable, Identifiable, Codable {
     case auto, color, gradient, pattern, grain, image
     var id: String { rawValue }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        let raw = (try? container.decode(String.self)) ?? ""
+        self = BaseLayerType(rawValue: raw) ?? .gradient
+    }
     var displayName: String {
         switch self {
         case .auto:     return "Auto"
@@ -53,6 +59,36 @@ struct BaseLayerSettings: Equatable, Codable {
     var imageBlend: Double  = 1.0     // 0-1 opacity
     // Overall
     var opacity: Double     = 1.0
+
+    enum CodingKeys: String, CodingKey {
+        case isEnabled, type, hue, saturation, brightness, hue2, saturation2, brightness2
+        case isRadial, gradientAngle, patternType, patternScale, patternSharpness
+        case grainAmount, grainColored, imageURL, imageBlend, opacity
+    }
+
+    init() {}
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        isEnabled        = c.decodeSafe(Bool.self,           forKey: .isEnabled,        default: false)
+        type             = c.decodeSafe(BaseLayerType.self,  forKey: .type,             default: .gradient)
+        hue              = c.decodeSafe(Double.self,         forKey: .hue,              default: 0.75)
+        saturation       = c.decodeSafe(Double.self,         forKey: .saturation,       default: 0.8)
+        brightness       = c.decodeSafe(Double.self,         forKey: .brightness,       default: 0.18)
+        hue2             = c.decodeSafe(Double.self,         forKey: .hue2,             default: 0.88)
+        saturation2      = c.decodeSafe(Double.self,         forKey: .saturation2,      default: 0.9)
+        brightness2      = c.decodeSafe(Double.self,         forKey: .brightness2,      default: 0.04)
+        isRadial         = c.decodeSafe(Bool.self,           forKey: .isRadial,         default: true)
+        gradientAngle    = c.decodeSafe(Double.self,         forKey: .gradientAngle,    default: 0.0)
+        patternType      = c.decodeSafe(Int.self,            forKey: .patternType,      default: 0)
+        patternScale     = c.decodeSafe(Double.self,         forKey: .patternScale,     default: 0.3)
+        patternSharpness = c.decodeSafe(Double.self,         forKey: .patternSharpness, default: 0.7)
+        grainAmount      = c.decodeSafe(Double.self,         forKey: .grainAmount,      default: 0.4)
+        grainColored     = c.decodeSafe(Bool.self,           forKey: .grainColored,     default: true)
+        imageURL         = c.decodeSafe(URL?.self,           forKey: .imageURL,         default: nil)
+        imageBlend       = c.decodeSafe(Double.self,         forKey: .imageBlend,       default: 1.0)
+        opacity          = c.decodeSafe(Double.self,         forKey: .opacity,          default: 1.0)
+    }
 }
 
 // MARK: - Effects Layer
@@ -74,6 +110,35 @@ struct EffectsLayerSettings: Equatable, Codable {
     var erasureSeed: UInt64    = 22
     var highlightsSeed: UInt64 = 33
     var starsSeed: UInt64      = 44
+
+    enum CodingKeys: String, CodingKey {
+        case isEnabled, dimming, erasure, highlights, stars, vignette, chromatic
+        case brightness, contrast, relief, reliefAngle
+        case dimmingSeed, erasureSeed, highlightsSeed, starsSeed
+    }
+
+    init(isEnabled: Bool = false) {
+        self.isEnabled = isEnabled
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        isEnabled      = c.decodeSafe(Bool.self,   forKey: .isEnabled,      default: false)
+        dimming        = c.decodeSafe(Double.self,  forKey: .dimming,        default: 0.0)
+        erasure        = c.decodeSafe(Double.self,  forKey: .erasure,        default: 0.0)
+        highlights     = c.decodeSafe(Double.self,  forKey: .highlights,     default: 0.0)
+        stars          = c.decodeSafe(Double.self,  forKey: .stars,          default: 0.0)
+        vignette       = c.decodeSafe(Double.self,  forKey: .vignette,       default: 0.3)
+        chromatic      = c.decodeSafe(Double.self,  forKey: .chromatic,      default: 0.0)
+        brightness     = c.decodeSafe(Double.self,  forKey: .brightness,     default: 0.5)
+        contrast       = c.decodeSafe(Double.self,  forKey: .contrast,       default: 0.5)
+        relief         = c.decodeSafe(Double.self,  forKey: .relief,         default: 0.0)
+        reliefAngle    = c.decodeSafe(Double.self,  forKey: .reliefAngle,    default: 0.125)
+        dimmingSeed    = c.decodeSafe(UInt64.self,  forKey: .dimmingSeed,    default: 11)
+        erasureSeed    = c.decodeSafe(UInt64.self,  forKey: .erasureSeed,    default: 22)
+        highlightsSeed = c.decodeSafe(UInt64.self,  forKey: .highlightsSeed, default: 33)
+        starsSeed      = c.decodeSafe(UInt64.self,  forKey: .starsSeed,      default: 44)
+    }
 }
 
 // MARK: - Drawing Layer
@@ -81,6 +146,19 @@ struct EffectsLayerSettings: Equatable, Codable {
 struct DrawStroke: Equatable, Codable {
     var xs: [Double]   // normalized 0–1, 0.5 = horizontal center
     var ys: [Double]   // normalized 0–1, 0.5 = vertical center
+
+    enum CodingKeys: String, CodingKey { case xs, ys }
+
+    init(xs: [Double], ys: [Double]) {
+        self.xs = xs
+        self.ys = ys
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        xs = c.decodeSafe([Double].self, forKey: .xs, default: [])
+        ys = c.decodeSafe([Double].self, forKey: .ys, default: [])
+    }
 }
 
 struct DrawingLayerSettings: Equatable, Codable {
@@ -95,6 +173,28 @@ struct DrawingLayerSettings: Equatable, Codable {
     var brightness: Double    = 0.7
     var blendMode: LayerBlendMode = .screen
     var opacity: Double    = 1.0
+
+    enum CodingKeys: String, CodingKey {
+        case isEnabled, strokes, symmetry, paletteIndex, glowIntensity
+        case strokeWeight, colorDrift, saturation, brightness, blendMode, opacity
+    }
+
+    init() {}
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        isEnabled     = c.decodeSafe(Bool.self,             forKey: .isEnabled,     default: true)
+        strokes       = c.decodeSafe([DrawStroke].self,     forKey: .strokes,       default: [])
+        symmetry      = c.decodeSafe(Int.self,              forKey: .symmetry,      default: 6)
+        paletteIndex  = c.decodeSafe(Int.self,              forKey: .paletteIndex,  default: 0)
+        glowIntensity = c.decodeSafe(Double.self,           forKey: .glowIntensity, default: 0.5)
+        strokeWeight  = c.decodeSafe(Double.self,           forKey: .strokeWeight,  default: 0.4)
+        colorDrift    = c.decodeSafe(Double.self,           forKey: .colorDrift,    default: 0.4)
+        saturation    = c.decodeSafe(Double.self,           forKey: .saturation,    default: 1.0)
+        brightness    = c.decodeSafe(Double.self,           forKey: .brightness,    default: 0.7)
+        blendMode     = c.decodeSafe(LayerBlendMode.self,   forKey: .blendMode,     default: .screen)
+        opacity       = c.decodeSafe(Double.self,           forKey: .opacity,       default: 1.0)
+    }
 }
 
 // MARK: - Layer Blend Mode
@@ -102,6 +202,12 @@ struct DrawingLayerSettings: Equatable, Codable {
 enum LayerBlendMode: String, CaseIterable, Identifiable, Codable {
     case screen, add, normal, multiply
     var id: String { rawValue }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        let raw = (try? container.decode(String.self)) ?? ""
+        self = LayerBlendMode(rawValue: raw) ?? .screen
+    }
     var displayName: String {
         switch self {
         case .screen:   return "Screen"
@@ -116,6 +222,12 @@ enum LayerBlendMode: String, CaseIterable, Identifiable, Codable {
 
 enum MandalaStyle: String, CaseIterable, Identifiable, Codable {
     case spirograph, roseCurves, stringArt, sunburst, epitrochoid, floral, lissajous, butterfly, geometric, fractal, mixed
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        let raw = (try? container.decode(String.self)) ?? ""
+        self = MandalaStyle(rawValue: raw) ?? .mixed
+    }
     case phyllotaxis, hypocycloid, waveInterference, spiderWeb, weave, sacredGeometry, radialMesh, flowField, tendril, moire, voronoi
     case torusKnot, sphereGrid, tesseract
     var id: String { rawValue }
@@ -200,6 +312,63 @@ struct StyleLayer: Equatable, Codable {
     var blendMode: LayerBlendMode = .screen
     var symmetry: Int = 6
     var seed: UInt64 = 42
+
+    enum CodingKeys: String, CodingKey {
+        case isEnabled, style, scale, paletteIndex, colorOffset, complexity, density
+        case glowIntensity, colorDrift, ripple, wash, abstractLevel
+        case saturation, brightness, rotation, opacity, blendMode, symmetry, seed
+    }
+
+    init(isEnabled: Bool = true, style: MandalaStyle = .mixed, scale: Double = 1.0,
+         paletteIndex: Int = 0, colorOffset: Double = 0.0, complexity: Double = 0.6,
+         density: Double = 0.5, glowIntensity: Double = 0.6, colorDrift: Double = 0.4,
+         ripple: Double = 0.0, wash: Double = 0.0, abstractLevel: Double = 0.3,
+         saturation: Double = 0.7, brightness: Double = 0.5, rotation: Double = 0.0,
+         opacity: Double = 1.0, blendMode: LayerBlendMode = .screen,
+         symmetry: Int = 6, seed: UInt64 = 42) {
+        self.isEnabled = isEnabled
+        self.style = style
+        self.scale = scale
+        self.paletteIndex = paletteIndex
+        self.colorOffset = colorOffset
+        self.complexity = complexity
+        self.density = density
+        self.glowIntensity = glowIntensity
+        self.colorDrift = colorDrift
+        self.ripple = ripple
+        self.wash = wash
+        self.abstractLevel = abstractLevel
+        self.saturation = saturation
+        self.brightness = brightness
+        self.rotation = rotation
+        self.opacity = opacity
+        self.blendMode = blendMode
+        self.symmetry = symmetry
+        self.seed = seed
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        isEnabled     = c.decodeSafe(Bool.self,           forKey: .isEnabled,     default: true)
+        style         = c.decodeSafe(MandalaStyle.self,   forKey: .style,         default: .mixed)
+        scale         = c.decodeSafe(Double.self,         forKey: .scale,         default: 1.0)
+        paletteIndex  = c.decodeSafe(Int.self,            forKey: .paletteIndex,  default: 0)
+        colorOffset   = c.decodeSafe(Double.self,         forKey: .colorOffset,   default: 0.0)
+        complexity    = c.decodeSafe(Double.self,         forKey: .complexity,    default: 0.6)
+        density       = c.decodeSafe(Double.self,         forKey: .density,       default: 0.5)
+        glowIntensity = c.decodeSafe(Double.self,         forKey: .glowIntensity, default: 0.6)
+        colorDrift    = c.decodeSafe(Double.self,         forKey: .colorDrift,    default: 0.4)
+        ripple        = c.decodeSafe(Double.self,         forKey: .ripple,        default: 0.0)
+        wash          = c.decodeSafe(Double.self,         forKey: .wash,          default: 0.0)
+        abstractLevel = c.decodeSafe(Double.self,         forKey: .abstractLevel, default: 0.3)
+        saturation    = c.decodeSafe(Double.self,         forKey: .saturation,    default: 0.7)
+        brightness    = c.decodeSafe(Double.self,         forKey: .brightness,    default: 0.5)
+        rotation      = c.decodeSafe(Double.self,         forKey: .rotation,      default: 0.0)
+        opacity       = c.decodeSafe(Double.self,         forKey: .opacity,       default: 1.0)
+        blendMode     = c.decodeSafe(LayerBlendMode.self, forKey: .blendMode,     default: .screen)
+        symmetry      = c.decodeSafe(Int.self,            forKey: .symmetry,      default: 6)
+        seed          = c.decodeSafe(UInt64.self,         forKey: .seed,          default: 42)
+    }
 }
 
 struct MandalaParameters: Equatable, Codable {
@@ -231,5 +400,42 @@ struct MandalaParameters: Equatable, Codable {
             if layers.isEmpty { layers = [StyleLayer(style: newValue)] }
             else { layers[0].style = newValue }
         }
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case layers, baseLayer, effectsLayer, drawingLayer
+        case seed, outputSize, outputSizeCustom, outputFormat, outputShape
+        case symmetry, complexity, density, glowIntensity, colorDrift, ripple, wash, paletteIndex
+    }
+
+    init() {}
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        layers          = c.decodeSafe([StyleLayer].self,          forKey: .layers,          default: [StyleLayer()])
+        baseLayer       = c.decodeSafe(BaseLayerSettings.self,     forKey: .baseLayer,       default: BaseLayerSettings())
+        effectsLayer    = c.decodeSafe(EffectsLayerSettings.self,  forKey: .effectsLayer,    default: EffectsLayerSettings())
+        drawingLayer    = c.decodeSafe(DrawingLayerSettings.self,  forKey: .drawingLayer,    default: DrawingLayerSettings())
+        seed            = c.decodeSafe(UInt64.self,                forKey: .seed,            default: 42)
+        outputSize      = c.decodeSafe(Int.self,                   forKey: .outputSize,      default: 800)
+        outputSizeCustom = c.decodeSafe(Int.self,                  forKey: .outputSizeCustom,default: 2048)
+        outputFormat    = c.decodeSafe(String.self,                forKey: .outputFormat,    default: "png")
+        outputShape     = c.decodeSafe(String.self,                forKey: .outputShape,     default: "square")
+        symmetry        = c.decodeSafe(Int.self,                   forKey: .symmetry,        default: 6)
+        complexity      = c.decodeSafe(Double.self,                forKey: .complexity,      default: 0.6)
+        density         = c.decodeSafe(Double.self,                forKey: .density,         default: 0.5)
+        glowIntensity   = c.decodeSafe(Double.self,                forKey: .glowIntensity,   default: 0.6)
+        colorDrift      = c.decodeSafe(Double.self,                forKey: .colorDrift,      default: 0.4)
+        ripple          = c.decodeSafe(Double.self,                forKey: .ripple,          default: 0.0)
+        wash            = c.decodeSafe(Double.self,                forKey: .wash,            default: 0.0)
+        paletteIndex    = c.decodeSafe(Int.self,                   forKey: .paletteIndex,    default: 0)
+    }
+}
+
+// MARK: - Safe decoding helper
+
+extension KeyedDecodingContainer {
+    func decodeSafe<T: Decodable>(_ type: T.Type, forKey key: Key, default def: T) -> T {
+        (try? decodeIfPresent(type, forKey: key)) ?? def
     }
 }

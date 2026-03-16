@@ -17,6 +17,12 @@ class AppState: ObservableObject {
     @Published var copiedLayer: StyleLayer? = nil
     @Published var isDrawingMode: Bool = false
     @Published var showDrawingPanel: Bool = false
+    @Published var layerPreviews: [Int: NSImage] = [:]
+    @Published var customPalettes: [CustomPalette] = []
+
+    var allPalettes: [ColorPalette] {
+        ColorPalettes.all + customPalettes.map { $0.colorPalette }
+    }
 
     private var debounceTask: Task<Void, Never>? = nil
     private var parameterCancellable: AnyCancellable?
@@ -41,6 +47,7 @@ class AppState: ObservableObject {
 
         // Start with a random mandala or restore history
         let hasHistory = loadHistory()
+        loadCustomPalettes()
         if hasHistory {
             isNavigatingHistory = true
             Task { await generate() }
@@ -69,6 +76,16 @@ class AppState: ObservableObject {
         isGenerating = false
         if !navigating {
             pushHistory()
+        }
+        Task(priority: .background) { [weak self] in
+            guard let self else { return }
+            let params = self.parameters
+            for i in params.layers.indices {
+                let preview = await Task.detached(priority: .background) {
+                    MandalaRenderer.renderLayerPreview(params: params, layerIndex: i)
+                }.value
+                await MainActor.run { self.layerPreviews[i] = preview }
+            }
         }
     }
 
@@ -222,6 +239,24 @@ class AppState: ObservableObject {
             .appendingPathComponent("MandalaGenerator", isDirectory: true)
         try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
         return dir.appendingPathComponent("history.json")
+    }
+
+    func saveCustomPalettes() {
+        guard let data = try? JSONEncoder().encode(customPalettes) else { return }
+        try? data.write(to: customPalettesFileURL)
+    }
+
+    private func loadCustomPalettes() {
+        guard let data = try? Data(contentsOf: customPalettesFileURL),
+              let loaded = try? JSONDecoder().decode([CustomPalette].self, from: data) else { return }
+        customPalettes = loaded
+    }
+
+    private var customPalettesFileURL: URL {
+        let dir = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+            .appendingPathComponent("MandalaGenerator", isDirectory: true)
+        try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        return dir.appendingPathComponent("palettes.json")
     }
 
     private func saveHistory() {

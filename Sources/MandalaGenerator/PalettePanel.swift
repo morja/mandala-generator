@@ -105,6 +105,7 @@ struct PalettePanel: View {
 // MARK: - Layer Card
 
 private struct LayerCard: View {
+    @EnvironmentObject private var appState: AppState
     @Binding var layer: StyleLayer
     let index: Int
     let canDelete: Bool
@@ -116,9 +117,12 @@ private struct LayerCard: View {
     let onPaste: () -> Void
     let hasCopied: Bool
     @State private var isExpanded = true
+    @State private var showPaletteEditor = false
+    @State private var editingPaletteId: String? = nil
 
     private var palette: ColorPalette {
-        ColorPalettes.all[max(0, min(ColorPalettes.all.count - 1, layer.paletteIndex))]
+        let all = appState.allPalettes
+        return all[max(0, min(all.count - 1, layer.paletteIndex))]
     }
 
     var body: some View {
@@ -135,7 +139,20 @@ private struct LayerCard: View {
                     .foregroundColor(layer.isEnabled ? .white.opacity(0.8) : .secondary.opacity(0.4))
                     .frame(width: 16)
 
-                // Colour strip preview
+                // Thumbnail preview
+                if let preview = appState.layerPreviews[index] {
+                    Image(nsImage: preview)
+                        .resizable().interpolation(.high)
+                        .frame(width: 28, height: 28)
+                        .cornerRadius(4)
+                        .opacity(layer.isEnabled ? 1 : 0.4)
+                } else {
+                    RoundedRectangle(cornerRadius: 4)
+                        .fill(Color.secondary.opacity(0.12))
+                        .frame(width: 28, height: 28)
+                }
+
+                // Colour strip (shorter)
                 LinearGradient(
                     gradient: Gradient(stops: palette.stops.map {
                         Gradient.Stop(color: Color(nsColor: $0.1), location: $0.0)
@@ -230,10 +247,50 @@ private struct LayerCard: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
 
                     LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 3), spacing: 4) {
-                        ForEach(Array(ColorPalettes.all.enumerated()), id: \.offset) { idx, pal in
+                        ForEach(Array(appState.allPalettes.enumerated()), id: \.offset) { idx, pal in
                             PaletteSwatch(palette: pal, isSelected: layer.paletteIndex == idx)
                                 .onTapGesture { layer.paletteIndex = idx }
+                                .overlay(
+                                    Group {
+                                        if idx >= ColorPalettes.all.count {
+                                            Image(systemName: "star.fill")
+                                                .font(.system(size: 6))
+                                                .foregroundColor(.white.opacity(0.7))
+                                                .offset(x: 6, y: -6)
+                                        }
+                                    },
+                                    alignment: .topTrailing
+                                )
                         }
+                    }
+
+                    HStack {
+                        Spacer()
+                        Button(action: { editingPaletteId = nil; showPaletteEditor = true }) {
+                            Label("New Palette", systemImage: "plus")
+                                .font(.system(size: 9))
+                        }
+                        .buttonStyle(.plain)
+                        .foregroundColor(.accentColor)
+
+                        if layer.paletteIndex >= ColorPalettes.all.count {
+                            let customIdx = layer.paletteIndex - ColorPalettes.all.count
+                            if customIdx < appState.customPalettes.count {
+                                Button(action: {
+                                    editingPaletteId = appState.customPalettes[customIdx].id
+                                    showPaletteEditor = true
+                                }) {
+                                    Label("Edit", systemImage: "pencil")
+                                        .font(.system(size: 9))
+                                }
+                                .buttonStyle(.plain)
+                                .foregroundColor(.secondary)
+                            }
+                        }
+                    }
+                    .sheet(isPresented: $showPaletteEditor) {
+                        PaletteEditorSheet(isPresented: $showPaletteEditor, editingId: editingPaletteId)
+                            .environmentObject(appState)
                     }
 
                     Divider()
