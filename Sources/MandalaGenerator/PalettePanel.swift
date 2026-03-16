@@ -128,16 +128,12 @@ private struct LayerCard: View {
     var body: some View {
         VStack(spacing: 0) {
             // ── Header ──────────────────────────────────────────────
-            HStack(spacing: 8) {
+            HStack(spacing: 6) {
                 DragHandle()
 
                 Toggle("", isOn: $layer.isEnabled)
                     .toggleStyle(.switch).scaleEffect(0.7).labelsHidden()
-
-                Image(systemName: layer.style.sfSymbol)
-                    .font(.system(size: 12))
-                    .foregroundColor(layer.isEnabled ? .white.opacity(0.8) : .secondary.opacity(0.4))
-                    .frame(width: 16)
+                    .frame(width: 32)
 
                 // Thumbnail preview
                 if let preview = appState.layerPreviews[index] {

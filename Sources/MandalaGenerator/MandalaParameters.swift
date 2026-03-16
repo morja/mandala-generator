@@ -384,6 +384,9 @@ struct MandalaParameters: Equatable, Codable {
     var outputFormat: String = "png"
     var outputShape: String = "square"  // "square", "circle", "squircle"
 
+    // Transient: populated by AppState before rendering; not persisted.
+    var resolvedPalettes: [ColorPalette] = []
+
     // Internal working fields used by renderer function signatures — overwritten per layer in render loop. Do NOT expose in UI.
     var symmetry: Int = 6
     var complexity: Double = 0.6
@@ -429,6 +432,29 @@ struct MandalaParameters: Equatable, Codable {
         ripple          = c.decodeSafe(Double.self,                forKey: .ripple,          default: 0.0)
         wash            = c.decodeSafe(Double.self,                forKey: .wash,            default: 0.0)
         paletteIndex    = c.decodeSafe(Int.self,                   forKey: .paletteIndex,    default: 0)
+    }
+}
+
+extension MandalaParameters {
+    static func == (lhs: MandalaParameters, rhs: MandalaParameters) -> Bool {
+        lhs.layers == rhs.layers &&
+        lhs.baseLayer == rhs.baseLayer &&
+        lhs.effectsLayer == rhs.effectsLayer &&
+        lhs.drawingLayer == rhs.drawingLayer &&
+        lhs.seed == rhs.seed &&
+        lhs.outputSize == rhs.outputSize &&
+        lhs.outputSizeCustom == rhs.outputSizeCustom &&
+        lhs.outputFormat == rhs.outputFormat &&
+        lhs.outputShape == rhs.outputShape &&
+        lhs.symmetry == rhs.symmetry &&
+        lhs.complexity == rhs.complexity &&
+        lhs.density == rhs.density &&
+        lhs.glowIntensity == rhs.glowIntensity &&
+        lhs.colorDrift == rhs.colorDrift &&
+        lhs.ripple == rhs.ripple &&
+        lhs.wash == rhs.wash &&
+        lhs.paletteIndex == rhs.paletteIndex
+        // resolvedPalettes is transient, excluded from equality
     }
 }
 

@@ -54,7 +54,7 @@ struct MandalaRenderer {
             ? max(64, min(8192, params.outputSizeCustom))
             : params.outputSize
         let bufferSize = resolvedSize * 2
-        let palettes   = ColorPalettes.all
+        let palettes   = params.resolvedPalettes.isEmpty ? ColorPalettes.all : params.resolvedPalettes
 
         let cx = Float(bufferSize) * 0.5
         let cy = Float(bufferSize) * 0.5
@@ -215,7 +215,7 @@ struct MandalaRenderer {
         let layer = params.layers[layerIndex]
         guard layer.isEnabled else { return NSImage() }
         let bufferSize = size * 2
-        let palettes   = ColorPalettes.all
+        let palettes   = params.resolvedPalettes.isEmpty ? ColorPalettes.all : params.resolvedPalettes
         let cx         = Float(bufferSize) * 0.5
         let cy         = Float(bufferSize) * 0.5
         let baseRadius = Double(bufferSize) * 0.72

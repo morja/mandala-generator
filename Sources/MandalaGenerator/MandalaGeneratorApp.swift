@@ -35,7 +35,7 @@ struct MandalaGeneratorApp: App {
                 .keyboardShortcut("e", modifiers: [.command, .shift])
 
                 Button("Export Animation…") {
-                    appState.exportAnimation()
+                    appState.showAnimationOptions = true
                 }
                 .keyboardShortcut("e", modifiers: [.command, .option])
             }

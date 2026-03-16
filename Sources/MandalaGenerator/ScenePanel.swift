@@ -9,6 +9,15 @@ struct ScenePanel: View {
     var body: some View {
         ScrollView(.vertical, showsIndicators: true) {
             VStack(spacing: 8) {
+            // invisible but necessary for sheet attachment
+            Color.clear.frame(height: 0)
+                .sheet(isPresented: Binding(
+                    get: { appState.showAnimationOptions },
+                    set: { appState.showAnimationOptions = $0 }
+                )) {
+                    AnimationOptionsSheet()
+                        .environmentObject(appState)
+                }
                 // ── Background ─────────────────────────────────────────
                 Text("BACKGROUND")
                     .font(.system(size: 10, weight: .semibold))
@@ -99,7 +108,7 @@ struct BaseLayerCard: View {
                     Text("PRIMARY")
                         .font(.system(size: 9, weight: .semibold)).foregroundColor(.secondary).kerning(1.0)
                         .frame(maxWidth: .infinity, alignment: .leading)
-                    SceneSlider(label: "Hue",   value: $settings.hue,        color: .purple)
+                    HueSlider(value: $settings.hue)
                     SceneSlider(label: "Sat",   value: $settings.saturation, color: .pink)
                     SceneSlider(label: "Bri",   value: $settings.brightness, color: .yellow)
                     }
@@ -110,7 +119,7 @@ struct BaseLayerCard: View {
                         Text("SECONDARY")
                             .font(.system(size: 9, weight: .semibold)).foregroundColor(.secondary).kerning(1.0)
                             .frame(maxWidth: .infinity, alignment: .leading)
-                        SceneSlider(label: "Hue", value: $settings.hue2,        color: .purple)
+                        HueSlider(value: $settings.hue2)
                         SceneSlider(label: "Sat", value: $settings.saturation2, color: .pink)
                         SceneSlider(label: "Bri", value: $settings.brightness2, color: .yellow)
                     }
@@ -396,13 +405,23 @@ struct ExportCard: View {
             .disabled(appState.currentImage == nil || appState.isGenerating)
             .keyboardShortcut("s", modifiers: [.command, .shift])
 
-            Button(action: { appState.exportAnimation() }) {
+            Button(action: { appState.showAnimationOptions = true }) {
                 Label("Export Animation…", systemImage: "film.stack")
                     .frame(maxWidth: .infinity)
             }
             .buttonStyle(.bordered)
-            .disabled(appState.currentImage == nil || appState.isGenerating)
-            .help("Export a looping MOV animation with rotating layers (⌘⌥E)")
+            .disabled(appState.currentImage == nil || appState.isGenerating || appState.animationExportProgress != nil)
+            .help("Export a looping animation with rotating layers (⌘⌥E)")
+
+            if let progress = appState.animationExportProgress {
+                VStack(spacing: 3) {
+                    ProgressView(value: progress)
+                        .progressViewStyle(.linear)
+                        .accentColor(.accentColor)
+                    Text(progress < 0.92 ? "Rendering frames… \(Int(progress * 100))%" : "Writing file…")
+                        .font(.system(size: 9)).foregroundColor(.secondary)
+                }
+            }
         }
         .padding(10)
         .background(Color(NSColor.controlBackgroundColor).opacity(0.7))
@@ -413,6 +432,103 @@ struct ExportCard: View {
     private func applyCustomSize() {
         let clamped = max(64, min(8192, Int(customSizeText) ?? appState.parameters.outputSizeCustom))
         appState.parameters.outputSizeCustom = clamped
+    }
+}
+
+// MARK: - Animation Export Options Sheet
+
+private struct AnimationOptionsSheet: View {
+    @EnvironmentObject private var appState: AppState
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        VStack(spacing: 20) {
+            Text("Export Animation")
+                .font(.headline)
+
+            Form {
+                Picker("Format", selection: $appState.animationOptions.format) {
+                    Text("QuickTime MOV").tag("mov")
+                    Text("Animated GIF").tag("gif")
+                }
+                .pickerStyle(.segmented)
+
+                Picker("Frames", selection: $appState.animationOptions.frameCount) {
+                    Text("24 frames").tag(24)
+                    Text("36 frames").tag(36)
+                    Text("48 frames").tag(48)
+                    Text("72 frames").tag(72)
+                    Text("90 frames").tag(90)
+                }
+
+                Picker("Speed", selection: $appState.animationOptions.fps) {
+                    Text("12 fps  (slow)").tag(12)
+                    Text("24 fps").tag(24)
+                    Text("30 fps  (smooth)").tag(30)
+                }
+
+                let duration = Double(appState.animationOptions.frameCount) / Double(appState.animationOptions.fps)
+                LabeledContent("Duration") {
+                    Text(String(format: "%.1f sec", duration))
+                        .foregroundColor(.secondary)
+                }
+            }
+            .formStyle(.grouped)
+
+            HStack(spacing: 12) {
+                Button("Cancel") { dismiss() }
+                    .keyboardShortcut(.cancelAction)
+                Button("Export…") {
+                    dismiss()
+                    appState.exportAnimation(options: appState.animationOptions)
+                }
+                .keyboardShortcut(.defaultAction)
+                .buttonStyle(.borderedProminent)
+            }
+        }
+        .padding(24)
+        .frame(width: 340)
+    }
+}
+
+// MARK: - Hue gradient slider
+
+private struct HueSlider: View {
+    @Binding var value: Double   // 0...1
+
+    private static let hueGradient = LinearGradient(
+        colors: (0...12).map { i in Color(hue: Double(i) / 12.0, saturation: 0.85, brightness: 0.9) },
+        startPoint: .leading, endPoint: .trailing
+    )
+
+    var body: some View {
+        HStack(spacing: 6) {
+            Text("Hue")
+                .font(.system(size: 10)).foregroundColor(.secondary)
+                .frame(width: 52, alignment: .leading)
+            GeometryReader { geo in
+                let thumbX = max(0, min(geo.size.width - 14, value * (geo.size.width - 14)))
+                ZStack(alignment: .leading) {
+                    Self.hueGradient
+                        .frame(height: 8).cornerRadius(4)
+                        .frame(maxHeight: .infinity)
+                    Circle()
+                        .fill(Color(hue: value, saturation: 0.85, brightness: 0.9))
+                        .frame(width: 14, height: 14)
+                        .overlay(Circle().stroke(Color.white, lineWidth: 1.5))
+                        .shadow(color: .black.opacity(0.25), radius: 1, x: 0, y: 1)
+                        .offset(x: thumbX)
+                }
+                .contentShape(Rectangle())
+                .gesture(DragGesture(minimumDistance: 0).onChanged { drag in
+                    value = max(0, min(1, drag.location.x / geo.size.width))
+                })
+            }
+            .frame(height: 14)
+            Text(String(format: "%.2f", value))
+                .font(.system(size: 9)).foregroundColor(.secondary).monospacedDigit()
+                .frame(width: 28, alignment: .trailing)
+        }
     }
 }
 
