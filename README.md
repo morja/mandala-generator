@@ -5,12 +5,15 @@ A native macOS app for generating neon light-painting mandala images. Every para
 ![Mandala Generator](sample-image.jpg)
 
 
-![Mandala Generator](sample-image-2.png)
-![Mandala Generator](sample-image-3.png)
-![Mandala Generator](sample-image-4.png)
-![Mandala Generator](sample-image-5.png)
-![Mandala Generator](sample-image-6.png)
-![Mandala Generator](sample-image-7.png)
+![Mandala Generator](samples/sample-image-2.png)
+![Mandala Generator](samples/sample-image-3.png)
+![Mandala Generator](samples/sample-image-4.png)
+![Mandala Generator](samples/sample-image-5.png)
+![Mandala Generator](samples/sample-image-6.png)
+![Mandala Generator](samples/sample-image-7.png)
+![Mandala Generator](samples/sample-image-8.png)
+![Mandala Generator](samples/sample-image-9.png)
+![Mandala Generator](samples/sample-image-10.png)
 
 ## Features
 
