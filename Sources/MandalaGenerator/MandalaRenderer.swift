@@ -711,12 +711,25 @@ struct MandalaRenderer {
             }
         }
 
-        // ── 3D Relief — directional emboss soft-light blended over image ──
+        // ── Brightness & Contrast ──
+        if settings.brightness != 0.5 || settings.contrast != 0.5 {
+            let b = CGFloat((settings.brightness - 0.5) * 0.6)   // −0.3 … +0.3
+            let c = CGFloat(0.5 + settings.contrast * 1.5)        //  0.5 … 2.0
+            if let cc = CIFilter(name: "CIColorControls") {
+                cc.setValue(ci, forKey: kCIInputImageKey)
+                cc.setValue(b,  forKey: kCIInputBrightnessKey)
+                cc.setValue(c,  forKey: kCIInputContrastKey)
+                if let out = cc.outputImage?.cropped(to: ext) { ci = out }
+            }
+        }
+
+        // ── 3D Relief — directional emboss via Hard Light blend ──
+        // Hard Light: emboss < 0.5 → multiply (shadow/darken), emboss > 0.5 → screen (highlight/brighten)
+        // Neutral gray (0.5) = identity → no global brightness shift
         if settings.relief > 0 {
-            let angle  = CGFloat(settings.reliefAngle * .pi * 2)
+            let angle = CGFloat(settings.reliefAngle * .pi * 2)
             let ca = cos(angle), sa = sin(angle)
-            let r  = CGFloat(settings.relief)
-            // Directional gradient kernel (emboss); scaled by relief so r=0 → neutral 0.5 gray → no-op
+            let r  = CGFloat(settings.relief * 2.0)   // amplify for visible ridging
             let w: [CGFloat] = [
                 (-ca - sa) * r, -sa * r, (ca - sa) * r,
                 -ca * r,         0,       ca * r,
@@ -724,11 +737,10 @@ struct MandalaRenderer {
             ]
             let emboss = ci.applyingFilter("CIConvolution3X3", parameters: [
                 "inputWeights": CIVector(values: w, count: 9),
-                "inputBias":    0.5 as CGFloat
-            ])
-            // Soft-light blend: emboss as overlay, original as base
-            // 0.5-gray is neutral in soft-light → effect scales naturally with kernel magnitude
-            ci = emboss.applyingFilter("CISoftLightBlendMode",
+                "inputBias":    CGFloat(0.5)
+            ]).cropped(to: ext)
+            // emboss is the hard-light overlay; ci is the base
+            ci = emboss.applyingFilter("CIHardLightBlendMode",
                                        parameters: [kCIInputBackgroundImageKey: ci])
                        .cropped(to: ext)
         }

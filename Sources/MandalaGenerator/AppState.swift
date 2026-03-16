@@ -109,12 +109,16 @@ class AppState: ObservableObject {
         // Effects layer
         let fx = parameters.effectsLayer
         if fx.isEnabled {
-            mix(UInt64(Int(fx.dimming    * 1000)))
-            mix(UInt64(Int(fx.erasure    * 1000)))
-            mix(UInt64(Int(fx.highlights * 1000)))
-            mix(UInt64(Int(fx.stars      * 1000)))
-            mix(UInt64(Int(fx.vignette   * 1000)))
-            mix(UInt64(Int(fx.chromatic  * 1000)))
+            mix(UInt64(Int(fx.dimming     * 1000)))
+            mix(UInt64(Int(fx.erasure     * 1000)))
+            mix(UInt64(Int(fx.highlights  * 1000)))
+            mix(UInt64(Int(fx.stars       * 1000)))
+            mix(UInt64(Int(fx.vignette    * 1000)))
+            mix(UInt64(Int(fx.chromatic   * 1000)))
+            mix(UInt64(Int(fx.brightness  * 1000)))
+            mix(UInt64(Int(fx.contrast    * 1000)))
+            mix(UInt64(Int(fx.relief      * 1000)))
+            mix(UInt64(Int(fx.reliefAngle * 1000)))
             mix(fx.dimmingSeed)
             mix(fx.erasureSeed)
             mix(fx.highlightsSeed)

@@ -51,7 +51,7 @@ struct ScenePanel: View {
 
 struct BaseLayerCard: View {
     @Binding var settings: BaseLayerSettings
-    @State private var isExpanded = true
+    @State private var isExpanded = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -226,6 +226,10 @@ struct EffectsLayerCard: View {
                     .font(.caption.weight(.medium))
                     .foregroundColor(settings.isEnabled ? .primary : .secondary)
                 Spacer()
+                Button(action: { settings = EffectsLayerSettings(isEnabled: settings.isEnabled) }) {
+                    Image(systemName: "arrow.counterclockwise").font(.system(size: 10)).foregroundColor(.secondary)
+                }
+                .buttonStyle(.plain).help("Reset all effects to defaults")
                 Button(action: {
                     settings.dimmingSeed    = UInt64.random(in: 1...UInt64.max)
                     settings.erasureSeed    = UInt64.random(in: 1...UInt64.max)
@@ -248,11 +252,14 @@ struct EffectsLayerCard: View {
 
             if isExpanded {
                 VStack(spacing: 8) {
-                    SceneSlider(label: "Vignette",   value: $settings.vignette,   color: .gray)
-                    SceneSlider(label: "Chromatic",  value: $settings.chromatic,  color: .cyan)
-                    SceneSlider(label: "Relief",     value: $settings.relief,     color: .orange)
+                    SceneSlider(label: "Brightness", value: $settings.brightness, color: .white)
+                    SceneSlider(label: "Contrast",  value: $settings.contrast,   color: .orange)
+                    Divider()
+                    SceneSlider(label: "Vignette",  value: $settings.vignette,   color: .gray)
+                    SceneSlider(label: "Chromatic", value: $settings.chromatic,  color: .cyan)
+                    SceneSlider(label: "Relief",    value: $settings.relief,     color: .mint)
                     if settings.relief > 0 {
-                        SceneSlider(label: "Light",  value: $settings.reliefAngle, color: .yellow)
+                        SceneSlider(label: "Light", value: $settings.reliefAngle, color: .yellow)
                     }
                     Divider()
                     EffectRow(label: "Dimming",    value: $settings.dimming,    seed: $settings.dimmingSeed,    color: .indigo)
