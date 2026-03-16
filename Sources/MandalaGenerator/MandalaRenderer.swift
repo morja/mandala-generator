@@ -236,6 +236,18 @@ struct MandalaRenderer {
             collectVoronoiTasks(into: &tasks, cx: cx, cy: cy, radius: baseRadius,
                                 params: params, rng: &rng, layerCount: layerCount,
                                 symmetry: symmetry, rippleAmount: rippleAmount, weightMul: weightMul)
+        case .torusKnot:
+            collectTorusKnotTasks(into: &tasks, cx: cx, cy: cy, radius: baseRadius,
+                                  params: params, rng: &rng, layerCount: layerCount,
+                                  symmetry: symmetry, rippleAmount: rippleAmount, weightMul: weightMul)
+        case .sphereGrid:
+            collectSphereGridTasks(into: &tasks, cx: cx, cy: cy, radius: baseRadius,
+                                   params: params, rng: &rng, layerCount: layerCount,
+                                   symmetry: symmetry, rippleAmount: rippleAmount, weightMul: weightMul)
+        case .tesseract:
+            collectTesseractTasks(into: &tasks, cx: cx, cy: cy, radius: baseRadius,
+                                  params: params, rng: &rng, layerCount: layerCount,
+                                  symmetry: symmetry, rippleAmount: rippleAmount, weightMul: weightMul)
         case .mixed:
             // Seed-driven random zone selection — different every render
             var zoneRng = SeededRNG(seed: params.seed &+ 0xbeef1234)
@@ -244,7 +256,7 @@ struct MandalaRenderer {
                                               .butterfly, .floral, .stringArt, .sunburst, .geometric, .fractal,
                                               .phyllotaxis, .hypocycloid, .waveInterference, .spiderWeb,
                                               .weave, .sacredGeometry, .radialMesh, .flowField, .tendril,
-                                              .moire, .voronoi]
+                                              .moire, .voronoi, .torusKnot, .sphereGrid, .tesseract]
             let radii: [Double] = [1.0, 0.72, 0.45]
             let sub = max(2, layerCount / 3)
             for (zi, zRadius) in radii.enumerated() {
@@ -336,6 +348,18 @@ struct MandalaRenderer {
                     collectVoronoiTasks(into: &tasks, cx: cx, cy: cy, radius: scaled,
                                         params: params, rng: &rng, layerCount: sub,
                                         symmetry: symmetry, rippleAmount: rippleAmount, weightMul: wmul)
+                case .torusKnot:
+                    collectTorusKnotTasks(into: &tasks, cx: cx, cy: cy, radius: scaled,
+                                          params: params, rng: &rng, layerCount: sub,
+                                          symmetry: symmetry, rippleAmount: rippleAmount, weightMul: wmul)
+                case .sphereGrid:
+                    collectSphereGridTasks(into: &tasks, cx: cx, cy: cy, radius: scaled,
+                                           params: params, rng: &rng, layerCount: sub,
+                                           symmetry: symmetry, rippleAmount: rippleAmount, weightMul: wmul)
+                case .tesseract:
+                    collectTesseractTasks(into: &tasks, cx: cx, cy: cy, radius: scaled,
+                                          params: params, rng: &rng, layerCount: sub,
+                                          symmetry: symmetry, rippleAmount: rippleAmount, weightMul: wmul)
                 case .mixed:
                     collectSpirographTasks(into: &tasks, cx: cx, cy: cy, radius: scaled,
                                            params: params, rng: &rng, layerCount: sub,
@@ -2289,6 +2313,413 @@ struct MandalaRenderer {
                     }
                     tasks.append(CurveDrawTask(xs: rxs, ys: rys, tOffset: tOff,
                                                drift: params.colorDrift, weight: weight, thickness: 1))
+                }
+            }
+        }
+    }
+
+    // MARK: - Torus Knot (3D) — full tube surface with symmetry + ripple
+
+    private static func collectTorusKnotTasks(into tasks: inout [CurveDrawTask],
+                                              cx: Float, cy: Float, radius: Double,
+                                              params: MandalaParameters, rng: inout SeededRNG,
+                                              layerCount: Int, symmetry: Int,
+                                              rippleAmount: Float, weightMul: Float) {
+        let R = Float(radius) * 0.50
+        let r = R * 0.32
+
+        let pqPairs: [(Int, Int)] = [(2,3),(2,5),(3,4),(3,5),(3,7),(4,5),(4,7),(5,6),(5,7),(7,9),(5,11),(4,9)]
+        let pairIdx = min(Int(params.complexity * Double(pqPairs.count - 1)), pqPairs.count - 1)
+        let (p, q) = pqPairs[pairIdx]
+
+        let nSpine  = 1800 + Int(params.complexity * 1200)   // spine sample count
+        let nTube   = max(3, 2 + Int(params.density * 10))   // cross-section rings
+        let tubeR   = r * Float(0.10 + params.density * 0.25) // tube render radius
+
+        let tiltX = Float(rng.nextDouble(in: 0.18...0.72))
+        let spinZ  = Float(rng.nextDouble() * .pi * 2)
+        let fov    = R * 3.4
+
+        // Build spine in 3D
+        var spine = [(x: Float, y: Float, z: Float)]()
+        spine.reserveCapacity(nSpine + 1)
+        for i in 0...nSpine {
+            let t  = Float(i) / Float(nSpine) * .pi * 2
+            var x  = (R + r * cos(Float(q) * t)) * cos(Float(p) * t)
+            var y  = (R + r * cos(Float(q) * t)) * sin(Float(p) * t)
+            var z  = r * sin(Float(q) * t)
+            let x1 = x * cos(spinZ) - y * sin(spinZ); let y1 = x * sin(spinZ) + y * cos(spinZ)
+            x = x1; y = y1
+            let y2 = y * cos(tiltX) - z * sin(tiltX); let z2 = y * sin(tiltX) + z * cos(tiltX)
+            y = y2; z = z2
+            spine.append((x, y, z))
+        }
+
+        let zMin = spine.map { $0.z }.min() ?? -R
+        let zRange = max(0.001, (spine.map { $0.z }.max() ?? R) - zMin)
+
+        // Project one 3D point to 2D, returning (px, py, depth 0-1)
+        func proj(_ pt: (x: Float, y: Float, z: Float)) -> (Float, Float, Float) {
+            let w = fov / (fov - pt.z)
+            let depth = (pt.z - zMin) / zRange
+            return (cx + pt.x * w, cy + pt.y * w, depth)
+        }
+
+        // Frenet frame at index i (tangent + arbitrary normal)
+        func frenet(_ i: Int) -> (tx: Float, ty: Float, tz: Float,
+                                   nx: Float, ny: Float, nz: Float,
+                                   bx: Float, by: Float, bz: Float) {
+            let prev = spine[max(0, i - 1)]; let next = spine[min(spine.count - 1, i + 1)]
+            var tx = next.x - prev.x; var ty = next.y - prev.y; var tz = next.z - prev.z
+            let tLen = max(0.0001, sqrt(tx*tx + ty*ty + tz*tz))
+            tx /= tLen; ty /= tLen; tz /= tLen
+            // Stable normal: pick least-parallel world axis
+            var nx: Float = 0; var ny: Float = 1; var nz: Float = 0
+            if abs(ty) > 0.9 { nx = 0; ny = 0; nz = 1 }
+            // Gram-Schmidt
+            let dot = nx*tx + ny*ty + nz*tz
+            nx -= dot*tx; ny -= dot*ty; nz -= dot*tz
+            let nLen = max(0.0001, sqrt(nx*nx + ny*ny + nz*nz))
+            nx /= nLen; ny /= nLen; nz /= nLen
+            // Binormal = T × N
+            let bx = ty*nz - tz*ny; let by = tz*nx - tx*nz; let bz = tx*ny - ty*nx
+            return (tx, ty, tz, nx, ny, nz, bx, by, bz)
+        }
+
+        let tOffBase = rng.nextDouble()
+        let baseWeight = Float(rng.nextDouble(in: 0.5...1.2)) * weightMul
+        let ripSeed = params.seed &+ 0xAB7C3D
+
+        // Draw nTube longitudinal strands along the tube surface
+        for ring in 0..<nTube {
+            let ringAngle = Float(ring) / Float(nTube) * .pi * 2
+            let tOff = tOffBase + Double(ring) / Double(nTube) * params.colorDrift
+            let segSize = 16
+
+            var segXs = [Float](); var segYs = [Float](); var segDepthSum: Float = 0
+
+            for i in 0..<nSpine {
+                let fr = frenet(i)
+                let sp = spine[i]
+                // Point on tube surface
+                let tx3 = sp.x + tubeR * (cos(ringAngle) * fr.nx + sin(ringAngle) * fr.bx)
+                let ty3 = sp.y + tubeR * (cos(ringAngle) * fr.ny + sin(ringAngle) * fr.by)
+                let tz3 = sp.z + tubeR * (cos(ringAngle) * fr.nz + sin(ringAngle) * fr.bz)
+                let (px, py, depth) = proj((tx3, ty3, tz3))
+                segXs.append(px); segYs.append(py); segDepthSum += depth
+
+                if segXs.count >= segSize + 1 {
+                    let avgDepth = segDepthSum / Float(segXs.count)
+                    let wt = baseWeight * (0.04 + avgDepth * 1.8)
+                    // Apply symmetry
+                    for sym in 0..<symmetry {
+                        let angle = Float(sym) * .pi * 2 / Float(symmetry)
+                        let cosA = cos(angle); let sinA = sin(angle)
+                        var rxs = [Float](); var rys = [Float]()
+                        for k in 0..<segXs.count {
+                            let dx = segXs[k] - cx; let dy = segYs[k] - cy
+                            rxs.append(cx + dx*cosA - dy*sinA)
+                            rys.append(cy + dx*sinA + dy*cosA)
+                        }
+                        if rippleAmount > 0 {
+                            applyRippleToPoints(xs: &rxs, ys: &rys, amount: rippleAmount,
+                                                seed: ripSeed &+ UInt64(ring * 97 + sym))
+                        }
+                        tasks.append(CurveDrawTask(xs: rxs, ys: rys, tOffset: tOff + Double(sym) * 0.1,
+                                                   drift: params.colorDrift, weight: wt, thickness: 1))
+                    }
+                    // Keep last point as start of next segment
+                    segXs = [segXs.last!]; segYs = [segYs.last!]; segDepthSum = depth
+                }
+            }
+        }
+
+        // Also draw nTube/2 cross-section rings for tube roundness
+        let nRings = max(4, Int(params.density * 20))
+        for ri in 0..<nRings {
+            let spineIdx = ri * (nSpine / nRings)
+            let fr = frenet(spineIdx)
+            let sp = spine[spineIdx]
+            let (_, _, depth) = proj(sp)
+            let wt = baseWeight * (0.04 + depth * 1.8) * 0.6
+            var rxs = [Float](); var rys = [Float]()
+            let nPts = nTube + 1
+            for k in 0..<nPts {
+                let a = Float(k % nTube) / Float(nTube) * .pi * 2
+                let tx3 = sp.x + tubeR * (cos(a) * fr.nx + sin(a) * fr.bx)
+                let ty3 = sp.y + tubeR * (cos(a) * fr.ny + sin(a) * fr.by)
+                let tz3 = sp.z + tubeR * (cos(a) * fr.nz + sin(a) * fr.bz)
+                let w = fov / (fov - tz3)
+                rxs.append(cx + tx3 * w); rys.append(cy + ty3 * w)
+            }
+            for sym in 0..<symmetry {
+                let angle = Float(sym) * .pi * 2 / Float(symmetry)
+                let cosA = cos(angle); let sinA = sin(angle)
+                var sxs = [Float](); var sys = [Float]()
+                for k in 0..<rxs.count {
+                    let dx = rxs[k] - cx; let dy = rys[k] - cy
+                    sxs.append(cx + dx*cosA - dy*sinA)
+                    sys.append(cy + dx*sinA + dy*cosA)
+                }
+                if rippleAmount > 0 {
+                    applyRippleToPoints(xs: &sxs, ys: &sys, amount: rippleAmount,
+                                        seed: ripSeed &+ UInt64(ri * 13 + sym + 500))
+                }
+                tasks.append(CurveDrawTask(xs: sxs, ys: sys,
+                                           tOffset: tOffBase + Double(ri) * 0.05 + Double(sym) * 0.1,
+                                           drift: params.colorDrift, weight: wt, thickness: 1))
+            }
+        }
+    }
+
+    // MARK: - Sphere Grid (3D) — tilted great circles + parametric sphere curves
+
+    private static func collectSphereGridTasks(into tasks: inout [CurveDrawTask],
+                                               cx: Float, cy: Float, radius: Double,
+                                               params: MandalaParameters, rng: inout SeededRNG,
+                                               layerCount: Int, symmetry: Int,
+                                               rippleAmount: Float, weightMul: Float) {
+        let R     = Float(radius) * 0.72
+        let tiltX = Float(rng.nextDouble(in: 0.08...0.85))
+        let spinZ = Float(rng.nextDouble() * .pi * 2)
+        let fov   = R * 3.8
+
+        func projectPt(_ x0: Float, _ y0: Float, _ z0: Float) -> (Float, Float, Float) {
+            let x1 = x0 * cos(spinZ) - y0 * sin(spinZ)
+            let y1 = x0 * sin(spinZ) + y0 * cos(spinZ)
+            let y2 = y1 * cos(tiltX) - z0 * sin(tiltX)
+            let z2 = y1 * sin(tiltX) + z0 * cos(tiltX)
+            let w  = fov / (fov - z2)
+            return (cx + x1 * w, cy + y2 * w, z2)
+        }
+
+        let zMin: Float = -R; let zRange: Float = 2 * R
+        let tOffBase   = rng.nextDouble()
+        let baseWeight = Float(rng.nextDouble(in: 0.5...1.1)) * weightMul
+        let ripSeed    = params.seed &+ 0xBEEF42
+
+        func emitCurve(_ pts3: [(Float, Float, Float)], tOff: Double) {
+            guard pts3.count > 1 else { return }
+            let avgZ = pts3.map { $0.2 }.reduce(0, +) / Float(pts3.count)
+            let depth = (avgZ - zMin) / zRange
+            let wt = baseWeight * (0.04 + depth * 1.8)
+            for sym in 0..<symmetry {
+                let angle = Float(sym) * .pi * 2 / Float(symmetry)
+                let cosA = cos(angle); let sinA = sin(angle)
+                var rxs = [Float](); var rys = [Float]()
+                for pt in pts3 {
+                    let dx = pt.0 - cx; let dy = pt.1 - cy
+                    rxs.append(cx + dx*cosA - dy*sinA)
+                    rys.append(cy + dx*sinA + dy*cosA)
+                }
+                if rippleAmount > 0 {
+                    applyRippleToPoints(xs: &rxs, ys: &rys, amount: rippleAmount,
+                                        seed: ripSeed &+ UInt64(sym))
+                }
+                tasks.append(CurveDrawTask(xs: rxs, ys: rys, tOffset: tOff + Double(sym) * 0.1,
+                                           drift: params.colorDrift, weight: wt, thickness: 1))
+            }
+        }
+
+        let steps = 180
+        let segSz = 24
+
+        // Tilted great circles — randomly oriented full circles on the sphere
+        let nGreat = 4 + Int(params.complexity * 18)
+        for gi in 0..<nGreat {
+            // Random axis perpendicular to the circle's plane
+            let axisTheta = Float(rng.nextDouble() * .pi * 2)
+            let axisPhi   = Float(rng.nextDouble() * .pi)
+            let ax = sin(axisPhi) * cos(axisTheta)
+            let ay = sin(axisPhi) * sin(axisTheta)
+            let az = cos(axisPhi)
+            // Build two orthogonal vectors in the circle plane
+            var ux: Float = -ay; var uy: Float = ax; var uz: Float = 0
+            let uLen = max(0.0001, sqrt(ux*ux + uy*uy + uz*uz))
+            ux /= uLen; uy /= uLen; uz /= uLen
+            let vx = ay*uz - az*uy; let vy = az*ux - ax*uz; let vz = ax*uy - ay*ux
+            let tOff = tOffBase + Double(gi) * (params.colorDrift / Double(max(1, nGreat)))
+
+            var seg = [(Float, Float, Float)]()
+            for i in 0...steps {
+                let t = Float(i) / Float(steps) * .pi * 2
+                let x3 = R * (cos(t) * ux + sin(t) * vx)
+                let y3 = R * (cos(t) * uy + sin(t) * vy)
+                let z3 = R * (cos(t) * uz + sin(t) * vz)
+                seg.append(projectPt(x3, y3, z3))
+                if seg.count >= segSz + 1 {
+                    emitCurve(seg, tOff: tOff)
+                    seg = [seg.last!]
+                }
+            }
+            if seg.count > 1 { emitCurve(seg, tOff: tOff) }
+        }
+
+        // Parametric sphere spirals — curves that wind pole to pole with increasing longitude
+        let nSpirals = 1 + Int(params.density * 5)
+        for si in 0..<nSpirals {
+            let winds = 2.0 + params.complexity * 8.0   // number of longitude wraps
+            let phaseOff = Float(si) / Float(nSpirals) * .pi * 2
+            let tOff = tOffBase + 0.5 + Double(si) * 0.15
+            let nPts = 400 + Int(params.complexity * 600)
+            var seg = [(Float, Float, Float)]()
+
+            for i in 0...nPts {
+                let t = Float(i) / Float(nPts)
+                let phi = t * .pi                         // 0 → π (south to north)
+                let theta = t * Float(winds) * .pi * 2 + phaseOff
+                let x3 = R * sin(phi) * cos(theta)
+                let y3 = R * sin(phi) * sin(theta)
+                let z3 = R * cos(phi)
+                seg.append(projectPt(x3, y3, z3))
+                if seg.count >= segSz + 1 {
+                    emitCurve(seg, tOff: tOff)
+                    seg = [seg.last!]
+                }
+            }
+            if seg.count > 1 { emitCurve(seg, tOff: tOff) }
+        }
+    }
+
+    // MARK: - Tesseract (4D hypercube projected to 2D) — nested shells + symmetry + ripple
+
+    private static func collectTesseractTasks(into tasks: inout [CurveDrawTask],
+                                              cx: Float, cy: Float, radius: Double,
+                                              params: MandalaParameters, rng: inout SeededRNG,
+                                              layerCount: Int, symmetry: Int,
+                                              rippleAmount: Float, weightMul: Float) {
+        let baseScale = Float(radius) * 0.38
+        // Number of nested tesseract shells driven by density
+        let nShells = 1 + Int(params.density * 4)
+
+        let angle1 = Float(rng.nextDouble() * .pi * 2)
+        let angle2 = Float(rng.nextDouble() * .pi * 2)
+        let angle3 = Float(rng.nextDouble(in: 0.15...1.4))
+        let angle4 = Float(rng.nextDouble() * .pi * 2)  // extra YW rotation
+        let tiltX  = Float(rng.nextDouble(in: 0.15...0.75))
+        let tOffBase   = rng.nextDouble()
+        let baseWeight = Float(rng.nextDouble(in: 0.8...1.8)) * weightMul
+        let ripSeed    = params.seed &+ 0xDEAD99
+
+        // 16 vertices of unit 4-cube
+        var verts4D = [(Float, Float, Float, Float)]()
+        for xi in [-1, 1] { for yi in [-1, 1] { for zi in [-1, 1] { for wi in [-1, 1] {
+            verts4D.append((Float(xi), Float(yi), Float(zi), Float(wi)))
+        }}}}
+
+        // 32 edges
+        var edges = [(Int, Int)]()
+        for i in 0..<16 {
+            for j in (i+1)..<16 {
+                let a = verts4D[i]; let b = verts4D[j]
+                let diff = (a.0 != b.0 ? 1 : 0) + (a.1 != b.1 ? 1 : 0) +
+                           (a.2 != b.2 ? 1 : 0) + (a.3 != b.3 ? 1 : 0)
+                if diff == 1 { edges.append((i, j)) }
+            }
+        }
+
+        for shell in 0..<nShells {
+            let shellScale = baseScale * (1.0 - Float(shell) * 0.18)
+            let fov3 = shellScale * 3.2
+            let fov4 = shellScale * 2.8
+            // Vary 4D rotation slightly per shell for complexity feel
+            let extraRot = Float(shell) * Float(params.complexity * 0.6)
+
+            func rot4(_ v: (Float,Float,Float,Float)) -> (Float,Float,Float,Float) {
+                var (x,y,z,w) = v
+                let x1 = x*cos(angle1+extraRot) - y*sin(angle1+extraRot)
+                let y1 = x*sin(angle1+extraRot) + y*cos(angle1+extraRot)
+                x = x1; y = y1
+                let z1 = z*cos(angle2+extraRot*0.7) - w*sin(angle2+extraRot*0.7)
+                let w1 = z*sin(angle2+extraRot*0.7) + w*cos(angle2+extraRot*0.7)
+                z = z1; w = w1
+                let x2 = x*cos(angle3) - w*sin(angle3)
+                let w2 = x*sin(angle3) + w*cos(angle3)
+                x = x2; w = w2
+                let y3 = y*cos(angle4) - w*sin(angle4)
+                let w3 = y*sin(angle4) + w*cos(angle4)
+                y = y3; w = w3
+                return (x*shellScale, y*shellScale, z*shellScale, w*shellScale)
+            }
+
+            func proj4to3(_ v: (Float,Float,Float,Float)) -> (Float,Float,Float) {
+                let d = fov4 / (fov4 - v.3)
+                return (v.0*d, v.1*d, v.2*d)
+            }
+
+            func proj3to2(_ p: (Float,Float,Float)) -> (Float,Float,Float) {
+                let y2 = p.1*cos(tiltX) - p.2*sin(tiltX)
+                let z2 = p.1*sin(tiltX) + p.2*cos(tiltX)
+                let d = fov3 / (fov3 - z2)
+                return (cx + p.0*d, cy + y2*d, z2)
+            }
+
+            let proj2 = verts4D.map { proj3to2(proj4to3(rot4($0))) }
+            let zMin2 = proj2.map { $0.2 }.min() ?? -shellScale
+            let zRange2 = max(0.001, (proj2.map { $0.2 }.max() ?? shellScale) - zMin2)
+
+            let nSubdiv = 18 + Int(params.complexity * 30)
+            let tOff = tOffBase + Double(shell) * 0.2
+
+            for (ei, ej) in edges {
+                let (px0, py0, pz0) = proj2[ei]
+                let (px1, py1, pz1) = proj2[ej]
+
+                var segXs = [Float](); var segYs = [Float](); var segZSum: Float = 0
+                let subSegSz = 6
+                for s in 0...nSubdiv {
+                    let t = Float(s) / Float(nSubdiv)
+                    segXs.append(px0 + (px1-px0)*t)
+                    segYs.append(py0 + (py1-py0)*t)
+                    segZSum += pz0 + (pz1-pz0)*t
+
+                    if segXs.count >= subSegSz + 1 {
+                        let avgZ  = segZSum / Float(segXs.count)
+                        let depth = (avgZ - zMin2) / zRange2
+                        let wt    = baseWeight * (0.04 + depth * 1.8) * (1.0 - Float(shell) * 0.15)
+                        for sym in 0..<symmetry {
+                            let angle = Float(sym) * .pi * 2 / Float(symmetry)
+                            let cosA = cos(angle); let sinA = sin(angle)
+                            var rxs = [Float](); var rys = [Float]()
+                            for k in 0..<segXs.count {
+                                let dx = segXs[k] - cx; let dy = segYs[k] - cy
+                                rxs.append(cx + dx*cosA - dy*sinA)
+                                rys.append(cy + dx*sinA + dy*cosA)
+                            }
+                            if rippleAmount > 0 {
+                                applyRippleToPoints(xs: &rxs, ys: &rys, amount: rippleAmount,
+                                                    seed: ripSeed &+ UInt64(ei*31+ej+sym*7+shell*100))
+                            }
+                            tasks.append(CurveDrawTask(xs: rxs, ys: rys,
+                                                       tOffset: tOff + Double(ei+ej)*0.012 + Double(sym)*0.1,
+                                                       drift: params.colorDrift * 0.6,
+                                                       weight: wt, thickness: 1))
+                        }
+                        segXs = [segXs.last!]; segYs = [segYs.last!]; segZSum = pz0 + (pz1-pz0)*Float(nSubdiv)/Float(nSubdiv)
+                    }
+                }
+                if segXs.count > 1 {
+                    let avgZ  = segZSum / Float(segXs.count)
+                    let depth = (avgZ - zMin2) / zRange2
+                    let wt    = baseWeight * (0.04 + depth * 1.8) * (1.0 - Float(shell) * 0.15)
+                    for sym in 0..<symmetry {
+                        let angle = Float(sym) * .pi * 2 / Float(symmetry)
+                        let cosA = cos(angle); let sinA = sin(angle)
+                        var rxs = [Float](); var rys = [Float]()
+                        for k in 0..<segXs.count {
+                            let dx = segXs[k] - cx; let dy = segYs[k] - cy
+                            rxs.append(cx + dx*cosA - dy*sinA)
+                            rys.append(cy + dx*sinA + dy*cosA)
+                        }
+                        if rippleAmount > 0 {
+                            applyRippleToPoints(xs: &rxs, ys: &rys, amount: rippleAmount,
+                                                seed: ripSeed &+ UInt64(ei*31+ej+sym*7+shell*100+999))
+                        }
+                        tasks.append(CurveDrawTask(xs: rxs, ys: rys,
+                                                   tOffset: tOff + Double(ei+ej)*0.012 + Double(sym)*0.1,
+                                                   drift: params.colorDrift * 0.6,
+                                                   weight: wt, thickness: 1))
+                    }
                 }
             }
         }

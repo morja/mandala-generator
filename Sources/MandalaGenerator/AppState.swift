@@ -2,6 +2,7 @@ import AppKit
 import Combine
 import Foundation
 import SwiftUI
+import UniformTypeIdentifiers
 
 @MainActor
 class AppState: ObservableObject {
@@ -266,7 +267,9 @@ class AppState: ObservableObject {
         guard let image = currentImage else { return }
         let panel = NSSavePanel()
         panel.title = "Save Mandala"
-        panel.allowedContentTypes = parameters.outputFormat == "jpg" ? [.jpeg] : [.png]
+        let webpType = UTType("org.webmproject.webp") ?? UTType(filenameExtension: "webp") ?? .data
+        panel.allowedContentTypes = parameters.outputFormat == "jpg" ? [.jpeg]
+            : parameters.outputFormat == "webp" ? [webpType] : [.png]
         panel.nameFieldStringValue = suggestedFilename() + "." + parameters.outputFormat
         panel.begin { [weak self] response in
             guard response == .OK, let url = panel.url else { return }
@@ -310,22 +313,32 @@ class AppState: ObservableObject {
 
     private func writeImage(_ image: NSImage, to url: URL) {
         let ext = url.pathExtension.lowercased()
-        let isPNG = ext != "jpg" && ext != "jpeg"
+        let isJPEG = ext == "jpg" || ext == "jpeg"
+        let isWebP = ext == "webp"
 
-        // Apply shape mask for PNG exports
-        let finalImage = isPNG && parameters.outputShape != "square"
+        // Apply shape mask for formats that support alpha (PNG, WebP)
+        let supportsAlpha = !isJPEG
+        let finalImage = supportsAlpha && parameters.outputShape != "square"
             ? maskedImage(image, shape: parameters.outputShape) ?? image
             : image
+
+        // WebP via CGImageDestination (Image I/O)
+        if isWebP {
+            guard let cgImage = finalImage.cgImage(forProposedRect: nil, context: nil, hints: nil),
+                  let dest = CGImageDestinationCreateWithURL(
+                      url as CFURL, "org.webmproject.webp" as CFString, 1, nil) else { return }
+            CGImageDestinationAddImage(dest, cgImage,
+                [kCGImageDestinationLossyCompressionQuality: 0.92] as CFDictionary)
+            CGImageDestinationFinalize(dest)
+            return
+        }
 
         guard let tiffData = finalImage.tiffRepresentation,
               let bitmap = NSBitmapImageRep(data: tiffData) else { return }
 
-        let data: Data?
-        if !isPNG {
-            data = bitmap.representation(using: .jpeg, properties: [.compressionFactor: 0.92])
-        } else {
-            data = bitmap.representation(using: .png, properties: [:])
-        }
+        let data: Data? = isJPEG
+            ? bitmap.representation(using: .jpeg, properties: [.compressionFactor: 0.92])
+            : bitmap.representation(using: .png,  properties: [:])
         try? data?.write(to: url)
     }
 

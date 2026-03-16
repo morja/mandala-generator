@@ -94,6 +94,7 @@ enum LayerBlendMode: String, CaseIterable, Identifiable, Codable {
 enum MandalaStyle: String, CaseIterable, Identifiable, Codable {
     case spirograph, roseCurves, stringArt, sunburst, epitrochoid, floral, lissajous, butterfly, geometric, fractal, mixed
     case phyllotaxis, hypocycloid, waveInterference, spiderWeb, weave, sacredGeometry, radialMesh, flowField, tendril, moire, voronoi
+    case torusKnot, sphereGrid, tesseract
     var id: String { rawValue }
     var displayName: String {
         switch self {
@@ -119,6 +120,9 @@ enum MandalaStyle: String, CaseIterable, Identifiable, Codable {
         case .tendril:         return "Tendril"
         case .moire:           return "Moiré"
         case .voronoi:         return "Voronoi"
+        case .torusKnot:       return "Torus Knot"
+        case .sphereGrid:      return "Sphere Grid"
+        case .tesseract:       return "Tesseract"
         }
     }
     var sfSymbol: String {
@@ -145,6 +149,9 @@ enum MandalaStyle: String, CaseIterable, Identifiable, Codable {
         case .tendril:         return "arrow.triangle.branch"
         case .moire:           return "circle.grid.2x1"
         case .voronoi:         return "rectangle.split.3x3"
+        case .torusKnot:       return "hurricane"
+        case .sphereGrid:      return "globe"
+        case .tesseract:       return "square.on.square"
         }
     }
 }

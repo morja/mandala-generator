@@ -338,6 +338,7 @@ struct ExportCard: View {
                 Picker("", selection: $appState.parameters.outputFormat) {
                     Text("PNG").tag("png")
                     Text("JPG").tag("jpg")
+                    Text("WebP").tag("webp")
                 }
                 .pickerStyle(.menu).labelsHidden().fixedSize()
                 Spacer()
@@ -355,7 +356,7 @@ struct ExportCard: View {
                     Text("Rounded").tag("rounded")
                 }
                 .pickerStyle(.menu).labelsHidden().fixedSize()
-                .disabled(appState.parameters.outputFormat != "png")
+                .disabled(appState.parameters.outputFormat == "jpg")
                 Spacer()
             }
 
