@@ -63,6 +63,8 @@ struct EffectsLayerSettings: Equatable, Codable {
     var stars: Double       = 0.0   // sharp bright sparkle points
     var vignette: Double    = 0.3   // edge darkening
     var chromatic: Double   = 0.0   // chromatic aberration RGB shift
+    var relief: Double      = 0.0   // 3D emboss/relief depth
+    var reliefAngle: Double = 0.125 // 0–1 → 0–360° light direction
     // Per-effect seeds — each can be randomized independently
     var dimmingSeed: UInt64    = 11
     var erasureSeed: UInt64    = 22

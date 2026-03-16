@@ -71,11 +71,19 @@ struct CanvasView: View {
             .buttonStyle(.bordered)
             .disabled(appState.isGenerating)
 
-            Button(action: { appState.saveImage() }) {
-                Label("Save", systemImage: "square.and.arrow.down")
+            Button(action: { appState.saveSettings() }) {
+                Label("Save Settings", systemImage: "doc.badge.arrow.up")
             }
             .buttonStyle(.bordered)
-            .disabled(appState.currentImage == nil || appState.isGenerating)
+            .help("Save settings (⌘S)")
+            .keyboardShortcut("s", modifiers: .command)
+
+            Button(action: { appState.loadSettings() }) {
+                Label("Load Settings", systemImage: "doc.badge.arrow.down")
+            }
+            .buttonStyle(.bordered)
+            .help("Load settings (⌘O)")
+            .keyboardShortcut("o", modifiers: .command)
 
             Divider().frame(height: 20)
 
@@ -94,38 +102,6 @@ struct CanvasView: View {
             .disabled(!appState.canGoForward || appState.isGenerating)
             .help("Go forward (⌘])")
             .keyboardShortcut("]", modifiers: .command)
-
-            Divider().frame(height: 20)
-
-            Picker("Size", selection: $appState.parameters.outputSize) {
-                Text("512 px").tag(512)
-                Text("800 px").tag(800)
-                Text("1024 px").tag(1024)
-                Text("1400 px").tag(1400)
-                Text("2048 px").tag(2048)
-            }
-            .pickerStyle(.menu)
-            .fixedSize()
-            .help("Output size")
-
-            Picker("Format", selection: $appState.parameters.outputFormat) {
-                Text("PNG").tag("png")
-                Text("JPG").tag("jpg")
-            }
-            .pickerStyle(.menu)
-            .fixedSize()
-            .help("Output format")
-
-            Picker("Shape", selection: $appState.parameters.outputShape) {
-                Text("Square").tag("square")
-                Text("Circle").tag("circle")
-                Text("Squircle").tag("squircle")
-                Text("Rounded").tag("rounded")
-            }
-            .pickerStyle(.menu)
-            .fixedSize()
-            .disabled(appState.parameters.outputFormat != "png")
-            .help("Crop shape — PNG only (uses transparency)")
 
             Spacer()
 

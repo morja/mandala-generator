@@ -12,10 +12,22 @@ struct MandalaGeneratorApp: App {
         }
         .commands {
             CommandGroup(replacing: .saveItem) {
-                Button("Save") {
-                    appState.saveImage()
+                Button("Save Settings…") {
+                    appState.saveSettings()
                 }
                 .keyboardShortcut("s", modifiers: .command)
+
+                Button("Load Settings…") {
+                    appState.loadSettings()
+                }
+                .keyboardShortcut("o", modifiers: .command)
+
+                Divider()
+
+                Button("Save Image…") {
+                    appState.saveImage()
+                }
+                .keyboardShortcut("s", modifiers: [.command, .shift])
 
                 Button("Export Batch…") {
                     appState.exportBatch(count: 9)

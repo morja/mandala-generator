@@ -230,6 +230,34 @@ class AppState: ObservableObject {
         }
     }
 
+    func saveSettings() {
+        let panel = NSSavePanel()
+        panel.title = "Save Settings"
+        panel.allowedContentTypes = [.json]
+        panel.nameFieldStringValue = suggestedFilename() + ".json"
+        panel.begin { [weak self] response in
+            guard response == .OK, let url = panel.url, let self else { return }
+            guard let data = try? JSONEncoder().encode(self.parameters) else { return }
+            try? data.write(to: url)
+        }
+    }
+
+    func loadSettings() {
+        let panel = NSOpenPanel()
+        panel.title = "Load Settings"
+        panel.allowedContentTypes = [.json]
+        panel.canChooseFiles = true
+        panel.canChooseDirectories = false
+        panel.begin { [weak self] response in
+            guard response == .OK, let url = panel.url, let self else { return }
+            guard let data = try? Data(contentsOf: url),
+                  let params = try? JSONDecoder().decode(MandalaParameters.self, from: data) else { return }
+            Task { @MainActor [weak self] in
+                self?.parameters = params
+            }
+        }
+    }
+
     func saveImage() {
         guard let image = currentImage else { return }
         let panel = NSSavePanel()

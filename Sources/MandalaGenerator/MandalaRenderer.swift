@@ -711,6 +711,28 @@ struct MandalaRenderer {
             }
         }
 
+        // ── 3D Relief — directional emboss soft-light blended over image ──
+        if settings.relief > 0 {
+            let angle  = CGFloat(settings.reliefAngle * .pi * 2)
+            let ca = cos(angle), sa = sin(angle)
+            let r  = CGFloat(settings.relief)
+            // Directional gradient kernel (emboss); scaled by relief so r=0 → neutral 0.5 gray → no-op
+            let w: [CGFloat] = [
+                (-ca - sa) * r, -sa * r, (ca - sa) * r,
+                -ca * r,         0,       ca * r,
+                (-ca + sa) * r,  sa * r, (ca + sa) * r
+            ]
+            let emboss = ci.applyingFilter("CIConvolution3X3", parameters: [
+                "inputWeights": CIVector(values: w, count: 9),
+                "inputBias":    0.5 as CGFloat
+            ])
+            // Soft-light blend: emboss as overlay, original as base
+            // 0.5-gray is neutral in soft-light → effect scales naturally with kernel magnitude
+            ci = emboss.applyingFilter("CISoftLightBlendMode",
+                                       parameters: [kCIInputBackgroundImageKey: ci])
+                       .cropped(to: ext)
+        }
+
         // Flush CIFilter pipeline → CGImage
         guard let flushed = ciCtx.createCGImage(ci, from: ext) else { return image }
         var result = flushed

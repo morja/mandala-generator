@@ -30,6 +30,16 @@ struct ScenePanel: View {
                 EffectsLayerCard(settings: $appState.parameters.effectsLayer)
                     .padding(.horizontal, 8)
 
+                // ── Export ─────────────────────────────────────────────
+                Text("EXPORT")
+                    .font(.system(size: 10, weight: .semibold))
+                    .foregroundColor(.secondary).kerning(1.2)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 12)
+
+                ExportCard(appState: appState)
+                    .padding(.horizontal, 8)
+
                 Spacer(minLength: 20)
             }
         }
@@ -240,6 +250,10 @@ struct EffectsLayerCard: View {
                 VStack(spacing: 8) {
                     SceneSlider(label: "Vignette",   value: $settings.vignette,   color: .gray)
                     SceneSlider(label: "Chromatic",  value: $settings.chromatic,  color: .cyan)
+                    SceneSlider(label: "Relief",     value: $settings.relief,     color: .orange)
+                    if settings.relief > 0 {
+                        SceneSlider(label: "Light",  value: $settings.reliefAngle, color: .yellow)
+                    }
                     Divider()
                     EffectRow(label: "Dimming",    value: $settings.dimming,    seed: $settings.dimmingSeed,    color: .indigo)
                     EffectRow(label: "Erasure",    value: $settings.erasure,    seed: $settings.erasureSeed,    color: .red)
@@ -283,6 +297,76 @@ private struct EffectRow: View {
             .buttonStyle(.plain)
             .help("Randomize \(label.lowercased()) positions")
         }
+    }
+}
+
+// MARK: - Export Card
+
+struct ExportCard: View {
+    @ObservedObject var appState: AppState
+
+    var body: some View {
+        VStack(spacing: 8) {
+            // Size
+            HStack(spacing: 6) {
+                Text("Size")
+                    .font(.system(size: 10)).foregroundColor(.secondary)
+                    .frame(width: 52, alignment: .leading)
+                Picker("", selection: $appState.parameters.outputSize) {
+                    Text("512 px").tag(512)
+                    Text("800 px").tag(800)
+                    Text("1024 px").tag(1024)
+                    Text("1400 px").tag(1400)
+                    Text("2048 px").tag(2048)
+                }
+                .pickerStyle(.menu).labelsHidden().fixedSize()
+                Spacer()
+            }
+
+            // Format
+            HStack(spacing: 6) {
+                Text("Format")
+                    .font(.system(size: 10)).foregroundColor(.secondary)
+                    .frame(width: 52, alignment: .leading)
+                Picker("", selection: $appState.parameters.outputFormat) {
+                    Text("PNG").tag("png")
+                    Text("JPG").tag("jpg")
+                }
+                .pickerStyle(.menu).labelsHidden().fixedSize()
+                Spacer()
+            }
+
+            // Shape
+            HStack(spacing: 6) {
+                Text("Shape")
+                    .font(.system(size: 10)).foregroundColor(.secondary)
+                    .frame(width: 52, alignment: .leading)
+                Picker("", selection: $appState.parameters.outputShape) {
+                    Text("Square").tag("square")
+                    Text("Circle").tag("circle")
+                    Text("Squircle").tag("squircle")
+                    Text("Rounded").tag("rounded")
+                }
+                .pickerStyle(.menu).labelsHidden().fixedSize()
+                .disabled(appState.parameters.outputFormat != "png")
+                Spacer()
+            }
+
+            Divider()
+
+            // Save Image button
+            Button(action: { appState.saveImage() }) {
+                Label("Save Image", systemImage: "square.and.arrow.down")
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.bordered)
+            .disabled(appState.currentImage == nil || appState.isGenerating)
+            .keyboardShortcut("s", modifiers: [.command, .shift])
+        }
+        .padding(10)
+        .background(Color(NSColor.controlBackgroundColor).opacity(0.7))
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.white.opacity(0.08), lineWidth: 1))
     }
 }
 
