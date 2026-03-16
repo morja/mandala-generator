@@ -70,9 +70,9 @@ struct ColorPalettes {
         candy,
         tropical,
         ice,
-        rose,
         synthwave,
         lava,
+        gold,
     ]
 
     // MARK: - Rich multi-colour palettes
@@ -170,14 +170,16 @@ struct ColorPalettes {
 
     // MARK: - Focused-colour palettes
 
+    /// Neon acid: near-black → toxic green → acid lime → pale yellow-white
     static let fire = ColorPalette(
-        id: "fire", name: "Fire",
+        id: "fire", name: "Toxic",
         stops: [
-            (0.0,  NSColor(red: 0.5,  green: 0.0,  blue: 0.0,  alpha: 1)),
-            (0.25, NSColor(red: 1.0,  green: 0.1,  blue: 0.0,  alpha: 1)),
-            (0.55, NSColor(red: 1.0,  green: 0.5,  blue: 0.0,  alpha: 1)),
-            (0.8,  NSColor(red: 1.0,  green: 0.85, blue: 0.1,  alpha: 1)),
-            (1.0,  NSColor(red: 1.0,  green: 0.98, blue: 0.6,  alpha: 1)),
+            (0.0,  NSColor(red: 0.0,  green: 0.04, blue: 0.0,  alpha: 1)),
+            (0.2,  NSColor(red: 0.0,  green: 0.3,  blue: 0.02, alpha: 1)),
+            (0.5,  NSColor(red: 0.05, green: 0.95, blue: 0.0,  alpha: 1)),
+            (0.75, NSColor(red: 0.65, green: 1.0,  blue: 0.0,  alpha: 1)),
+            (0.9,  NSColor(red: 0.92, green: 1.0,  blue: 0.5,  alpha: 1)),
+            (1.0,  NSColor(red: 1.0,  green: 1.0,  blue: 0.85, alpha: 1)),
         ]
     )
 
@@ -259,16 +261,6 @@ struct ColorPalettes {
         ]
     )
 
-    static let rose = ColorPalette(
-        id: "rose", name: "Rose",
-        stops: [
-            (0.0,  NSColor(red: 0.5,  green: 0.0,  blue: 0.1,  alpha: 1)),
-            (0.35, NSColor(red: 0.95, green: 0.05, blue: 0.35, alpha: 1)),
-            (0.65, NSColor(red: 1.0,  green: 0.4,  blue: 0.6,  alpha: 1)),
-            (1.0,  NSColor(red: 1.0,  green: 0.8,  blue: 0.88, alpha: 1)),
-        ]
-    )
-
     /// Retro synth: deep teal → magenta → neon violet → hot pink
     static let synthwave = ColorPalette(
         id: "synthwave", name: "Synthwave",
@@ -291,6 +283,19 @@ struct ColorPalettes {
             (0.7,  NSColor(red: 1.0,  green: 0.5,  blue: 0.0,  alpha: 1)),
             (0.9,  NSColor(red: 1.0,  green: 0.9,  blue: 0.3,  alpha: 1)),
             (1.0,  NSColor(red: 1.0,  green: 1.0,  blue: 0.95, alpha: 1)),
+        ]
+    )
+
+    /// Mostly yellow: dark amber → deep gold → bright yellow → pale cream
+    static let gold = ColorPalette(
+        id: "gold", name: "Gold",
+        stops: [
+            (0.0,  NSColor(red: 0.18, green: 0.09, blue: 0.0,  alpha: 1)),
+            (0.2,  NSColor(red: 0.55, green: 0.28, blue: 0.0,  alpha: 1)),
+            (0.45, NSColor(red: 0.95, green: 0.65, blue: 0.0,  alpha: 1)),
+            (0.65, NSColor(red: 1.0,  green: 0.88, blue: 0.05, alpha: 1)),
+            (0.82, NSColor(red: 1.0,  green: 0.97, blue: 0.45, alpha: 1)),
+            (1.0,  NSColor(red: 1.0,  green: 1.0,  blue: 0.88, alpha: 1)),
         ]
     )
 }

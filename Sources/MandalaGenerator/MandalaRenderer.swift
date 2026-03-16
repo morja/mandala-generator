@@ -115,7 +115,15 @@ struct MandalaRenderer {
                 layerImage = applyPaintedEffect(image: layerImage, abstractLevel: layer.abstractLevel)
             }
             layerImage = applyColourGrade(image: layerImage, saturation: layer.saturation, brightness: layer.brightness)
-            compositeImage = screenComposite(base: compositeImage, overlay: layerImage)
+            if layer.rotation > 0.001 || layer.rotation < -0.001 {
+                layerImage = rotateImage(layerImage, angle: layer.rotation * .pi * 2)
+            }
+            switch layer.blendMode {
+            case .screen:   compositeImage = blendComposite(base: compositeImage, overlay: layerImage, mode: "CIScreenBlendMode")
+            case .add:      compositeImage = blendComposite(base: compositeImage, overlay: layerImage, mode: "CIAdditionCompositing")
+            case .normal:   compositeImage = blendComposite(base: compositeImage, overlay: layerImage, mode: "CILightenBlendMode")
+            case .multiply: compositeImage = blendComposite(base: compositeImage, overlay: layerImage, mode: "CIMultiplyBlendMode")
+            }
         }
 
         // ── EFFECTS LAYER ──
@@ -707,25 +715,53 @@ struct MandalaRenderer {
         guard let flushed = ciCtx.createCGImage(ci, from: ext) else { return image }
         var result = flushed
 
-        // ── Stars — sharp bright sparkle points with cross flares ──
+        // ── Stars — tapered diffraction spikes ──
         if settings.stars > 0 {
             let starBuffer = PixelBuffer(width: bufferSize, height: bufferSize)
             var rng = SeededRNG(seed: settings.starsSeed)
-            let nStars = Int(settings.stars * 600) + 15
+            let nStars = Int(settings.stars * 400) + 10
             let wf = Float(bufferSize)
+            let nSeg = 10  // segments per arm for brightness taper
+
+            // Draw one tapered arm from (x,y) in direction (dx,dy) for length len
+            func drawArm(_ x: Float, _ y: Float, _ dx: Float, _ dy: Float,
+                         _ len: Float, _ b: Float, _ dimMul: Float) {
+                for seg in 0..<nSeg {
+                    let t0  = Float(seg)     / Float(nSeg)
+                    let t1  = Float(seg + 1) / Float(nSeg)
+                    let fade = pow(1.0 - t0, 2.2) * dimMul  // steep falloff
+                    let br  = b * fade
+                    let col: (r: Float, g: Float, b: Float) = (br, br * 0.93, br * 0.82)
+                    starBuffer.addLine(x0: x + dx * len * t0, y0: y + dy * len * t0,
+                                       x1: x + dx * len * t1, y1: y + dy * len * t1,
+                                       color: col, weight: br * 0.18)
+                }
+            }
+
             for _ in 0..<nStars {
-                let x = rng.nextFloat() * wf
-                let y = rng.nextFloat() * wf
-                let b = Float(settings.stars) * (rng.nextFloat() * 0.7 + 0.3)
-                let flare = rng.nextFloat() * wf * 0.018 + 2.0
-                let col: (r: Float, g: Float, b: Float) = (b, b * 0.95, b * 0.88)
-                let fCol: (r: Float, g: Float, b: Float) = (b * 0.25, b * 0.22, b * 0.2)
-                starBuffer.addLine(x0: x, y0: y, x1: x + 0.01, y1: y, color: col, weight: b * 1.2)
-                starBuffer.addLine(x0: x - flare, y0: y, x1: x + flare, y1: y, color: fCol, weight: b * 0.12)
-                starBuffer.addLine(x0: x, y0: y - flare, x1: x, y1: y + flare, color: fCol, weight: b * 0.12)
+                let x   = rng.nextFloat() * wf
+                let y   = rng.nextFloat() * wf
+                let b   = Float(settings.stars) * (rng.nextFloat() * 0.5 + 0.5) * 10.0
+                let len = rng.nextFloat() * wf * 0.022 + wf * 0.006
+
+                // Hot pinpoint core
+                let core: (r: Float, g: Float, b: Float) = (b, b * 0.96, b * 0.9)
+                starBuffer.addLine(x0: x, y0: y, x1: x + 0.5, y1: y, color: core, weight: b * 0.6)
+
+                // 4 cardinal arms
+                drawArm(x, y,  1,  0, len, b, 1.0)
+                drawArm(x, y, -1,  0, len, b, 1.0)
+                drawArm(x, y,  0,  1, len, b, 1.0)
+                drawArm(x, y,  0, -1, len, b, 1.0)
+                // 4 diagonal arms (shorter, dimmer)
+                let inv = Float(1.0 / 1.4142)
+                drawArm(x, y,  inv,  inv, len * 0.5, b, 0.35)
+                drawArm(x, y, -inv,  inv, len * 0.5, b, 0.35)
+                drawArm(x, y,  inv, -inv, len * 0.5, b, 0.35)
+                drawArm(x, y, -inv, -inv, len * 0.5, b, 0.35)
             }
             if let starCG = starBuffer.toCGImage() {
-                let starGlowed = applyGlow(image: starCG, intensity: 0.4)
+                let starGlowed = applyGlow(image: starCG, intensity: 0.28)
                 result = screenComposite(base: result, overlay: starGlowed)
             }
         }
@@ -2392,18 +2428,37 @@ struct MandalaRenderer {
     }
 
 
-    // MARK: - Screen composite (painted base + crisp overlay)
+    // MARK: - Layer rotation
 
-    private static func screenComposite(base: CGImage, overlay: CGImage) -> CGImage {
+    private static func rotateImage(_ image: CGImage, angle: Double) -> CGImage {
+        let ci  = CIImage(cgImage: image)
+        let ctx = CIContext(options: [.workingColorSpace: CGColorSpace(name: CGColorSpace.displayP3) as Any])
+        let ext = ci.extent
+        let cx  = ext.midX, cy = ext.midY
+        let t   = CGAffineTransform(translationX: cx, y: cy)
+                    .rotated(by: CGFloat(angle))
+                    .translatedBy(x: -cx, y: -cy)
+        let rotated = ci.transformed(by: t).cropped(to: ext)
+        return ctx.createCGImage(rotated, from: ext) ?? image
+    }
+
+    // MARK: - Blend composite
+
+    private static func blendComposite(base: CGImage, overlay: CGImage, mode: String) -> CGImage {
         let ciBase    = CIImage(cgImage: base)
         let ciOverlay = CIImage(cgImage: overlay)
         let ctx = CIContext(options: [.workingColorSpace: CGColorSpace(name: CGColorSpace.displayP3) as Any])
         let ext = ciBase.extent
-        guard let screen = CIFilter(name: "CIScreenBlendMode") else { return base }
-        screen.setValue(ciBase,    forKey: kCIInputBackgroundImageKey)
-        screen.setValue(ciOverlay, forKey: kCIInputImageKey)
-        guard let out = screen.outputImage?.cropped(to: ext) else { return base }
+        guard let filter = CIFilter(name: mode) else { return base }
+        filter.setValue(ciBase,    forKey: kCIInputBackgroundImageKey)
+        filter.setValue(ciOverlay, forKey: kCIInputImageKey)
+        guard let out = filter.outputImage?.cropped(to: ext) else { return base }
         return ctx.createCGImage(out, from: ext) ?? base
+    }
+
+    // Keep screenComposite for internal use (effects pipeline)
+    private static func screenComposite(base: CGImage, overlay: CGImage) -> CGImage {
+        blendComposite(base: base, overlay: overlay, mode: "CIScreenBlendMode")
     }
 
     // MARK: - Post-processing

@@ -70,6 +70,21 @@ struct EffectsLayerSettings: Equatable {
     var starsSeed: UInt64      = 44
 }
 
+// MARK: - Layer Blend Mode
+
+enum LayerBlendMode: String, CaseIterable, Identifiable {
+    case screen, add, normal, multiply
+    var id: String { rawValue }
+    var displayName: String {
+        switch self {
+        case .screen:   return "Screen"
+        case .add:      return "Add"
+        case .normal:   return "Normal"
+        case .multiply: return "Multiply"
+        }
+    }
+}
+
 // MARK: - Mandala Style
 
 enum MandalaStyle: String, CaseIterable, Identifiable {
@@ -146,6 +161,8 @@ struct StyleLayer: Equatable {
     var abstractLevel: Double = 0.3
     var saturation: Double = 0.7
     var brightness: Double = 0.5
+    var rotation: Double = 0.0   // 0–1 → 0–360°
+    var blendMode: LayerBlendMode = .screen
     var symmetry: Int = 6
     var seed: UInt64 = 42
 }

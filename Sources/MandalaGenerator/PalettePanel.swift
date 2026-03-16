@@ -4,6 +4,7 @@ import SwiftUI
 
 struct PalettePanel: View {
     @EnvironmentObject private var appState: AppState
+    @State private var draggedIndex: Int? = nil
 
     var body: some View {
         ScrollView(.vertical, showsIndicators: true) {
@@ -32,6 +33,16 @@ struct PalettePanel: View {
                         onDelete: { appState.parameters.layers.remove(at: i) }
                     )
                     .padding(.horizontal, 8)
+                    .opacity(draggedIndex == i ? 0.4 : 1.0)
+                    .onDrag {
+                        draggedIndex = i
+                        return NSItemProvider(object: "\(i)" as NSString)
+                    }
+                    .onDrop(of: [.plainText], delegate: LayerDropDelegate(
+                        toIndex: i,
+                        layers: $appState.parameters.layers,
+                        draggedIndex: $draggedIndex
+                    ))
                 }
 
                 Spacer(minLength: 20)
@@ -126,14 +137,23 @@ private struct LayerCard: View {
             // ── Body (expanded) ──────────────────────────────────────
             if isExpanded {
                 VStack(spacing: 8) {
-                    // Style picker
-                    Picker("", selection: $layer.style) {
-                        ForEach(MandalaStyle.allCases) { s in
-                            Label(s.displayName, systemImage: s.sfSymbol).tag(s)
+                    // Style + blend mode row
+                    HStack(spacing: 6) {
+                        Picker("", selection: $layer.style) {
+                            ForEach(MandalaStyle.allCases) { s in
+                                Label(s.displayName, systemImage: s.sfSymbol).tag(s)
+                            }
                         }
+                        .pickerStyle(.menu).labelsHidden()
+
+                        Picker("", selection: $layer.blendMode) {
+                            ForEach(LayerBlendMode.allCases) { m in
+                                Text(m.displayName).tag(m)
+                            }
+                        }
+                        .pickerStyle(.menu).labelsHidden()
+                        .frame(width: 80)
                     }
-                    .pickerStyle(.menu).labelsHidden()
-                    .frame(maxWidth: .infinity)
 
                     Divider()
 
@@ -196,6 +216,7 @@ private struct LayerCard: View {
                     CardSlider(label: "Abstract",    value: $layer.abstractLevel,range: 0...1,     color: .purple)
                     CardSlider(label: "Saturation",  value: $layer.saturation,   range: 0...1,     color: .pink)
                     CardSlider(label: "Brightness",  value: $layer.brightness,   range: 0...1,     color: .yellow)
+                    CardSlider(label: "Rotation",    value: $layer.rotation,     range: 0...1,     color: .mint)
                 }
                 .padding(10)
                 .background(Color(NSColor.controlBackgroundColor).opacity(0.7))
@@ -228,6 +249,27 @@ private struct CardSlider: View {
                 .font(.system(size: 9)).foregroundColor(.secondary).monospacedDigit()
                 .frame(width: 28, alignment: .trailing)
         }
+    }
+}
+
+// MARK: - Drag-to-reorder
+
+import UniformTypeIdentifiers
+
+private struct LayerDropDelegate: DropDelegate {
+    let toIndex: Int
+    @Binding var layers: [StyleLayer]
+    @Binding var draggedIndex: Int?
+
+    func performDrop(info: DropInfo) -> Bool {
+        guard let from = draggedIndex, from != toIndex else { draggedIndex = nil; return false }
+        withAnimation { layers.move(fromOffsets: IndexSet(integer: from), toOffset: toIndex > from ? toIndex + 1 : toIndex) }
+        draggedIndex = nil
+        return true
+    }
+
+    func dropUpdated(info: DropInfo) -> DropProposal? {
+        DropProposal(operation: .move)
     }
 }
 
