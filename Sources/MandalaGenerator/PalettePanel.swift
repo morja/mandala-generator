@@ -7,77 +7,86 @@ struct PalettePanel: View {
     @State private var draggedIndex: Int? = nil
 
     var body: some View {
-        ScrollView(.vertical, showsIndicators: true) {
-            VStack(spacing: 8) {
-                HStack {
-                    Text("LAYERS")
-                        .font(.system(size: 10, weight: .semibold))
-                        .foregroundColor(.secondary).kerning(1.2)
-                    Spacer()
-                    Button(action: addLayer) {
-                        Image(systemName: "plus.circle.fill")
-                            .foregroundColor(.accentColor)
-                    }
-                    .buttonStyle(.plain)
-                    .disabled(appState.parameters.layers.count >= 5)
-                    .help("Add layer")
+        VStack(spacing: 0) {
+            // ── Sticky header ─────────────────────────────────────────
+            HStack {
+                Text("LAYERS")
+                    .font(.system(size: 10, weight: .semibold))
+                    .foregroundColor(.secondary).kerning(1.2)
+                Spacer()
+                Button(action: addLayer) {
+                    Image(systemName: "plus.circle.fill")
+                        .font(.system(size: 16))
+                        .foregroundColor(appState.parameters.layers.count >= 5 ? .secondary.opacity(0.3) : .accentColor)
                 }
-                .padding(.horizontal, 12)
-                .padding(.top, 12)
+                .buttonStyle(.plain)
+                .disabled(appState.parameters.layers.count >= 5)
+                .help("Add layer")
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 10)
+            .background(Color(NSColor.controlBackgroundColor))
 
-                ForEach(appState.parameters.layers.indices, id: \.self) { i in
-                    LayerCard(
-                        layer: $appState.parameters.layers[i],
-                        index: i,
-                        canDelete: appState.parameters.layers.count > 1,
-                        canDuplicate: appState.parameters.layers.count < 5,
-                        onDelete: { appState.parameters.layers.remove(at: i) },
-                        onDuplicate: { appState.duplicateLayer(at: i) },
-                        onRandomize: { appState.randomizeLayer(at: i) },
-                        onCopy: { appState.copiedLayer = appState.parameters.layers[i] },
-                        onPaste: {
-                            if var pasted = appState.copiedLayer {
-                                pasted.seed = UInt64.random(in: 1...UInt64.max)
-                                appState.parameters.layers[i] = pasted
-                            }
-                        },
-                        hasCopied: appState.copiedLayer != nil
-                    )
-                    .padding(.horizontal, 8)
-                    .opacity(draggedIndex == i ? 0.4 : 1.0)
-                    .onDrag {
-                        draggedIndex = i
-                        return NSItemProvider(object: "\(i)" as NSString)
+            Divider()
+
+            // ── Scrollable layers ─────────────────────────────────────
+            ScrollView(.vertical, showsIndicators: true) {
+                VStack(spacing: 8) {
+                    ForEach(appState.parameters.layers.indices, id: \.self) { i in
+                        LayerCard(
+                            layer: $appState.parameters.layers[i],
+                            index: i,
+                            canDelete: appState.parameters.layers.count > 1,
+                            canDuplicate: appState.parameters.layers.count < 5,
+                            onDelete: { appState.parameters.layers.remove(at: i) },
+                            onDuplicate: { appState.duplicateLayer(at: i) },
+                            onRandomize: { appState.randomizeLayer(at: i) },
+                            onCopy: { appState.copiedLayer = appState.parameters.layers[i] },
+                            onPaste: {
+                                if var pasted = appState.copiedLayer {
+                                    pasted.seed = UInt64.random(in: 1...UInt64.max)
+                                    appState.parameters.layers[i] = pasted
+                                }
+                            },
+                            hasCopied: appState.copiedLayer != nil
+                        )
+                        .padding(.horizontal, 8)
+                        .opacity(draggedIndex == i ? 0.4 : 1.0)
+                        .onDrag {
+                            draggedIndex = i
+                            return NSItemProvider(object: "\(i)" as NSString)
+                        }
+                        .onDrop(of: [.plainText], delegate: LayerDropDelegate(
+                            toIndex: i,
+                            layers: $appState.parameters.layers,
+                            draggedIndex: $draggedIndex
+                        ))
                     }
-                    .onDrop(of: [.plainText], delegate: LayerDropDelegate(
-                        toIndex: i,
-                        layers: $appState.parameters.layers,
-                        draggedIndex: $draggedIndex
-                    ))
-                }
 
-                // ── Drawing (experimental) ───────────────────────────────
-                if appState.showDrawingPanel {
-                    Divider().padding(.horizontal, 8)
+                    // ── Drawing (experimental) ───────────────────────
+                    if appState.showDrawingPanel {
+                        Divider().padding(.horizontal, 8)
 
-                    HStack {
-                        Text("DRAWING")
-                            .font(.system(size: 10, weight: .semibold))
-                            .foregroundColor(.secondary).kerning(1.2)
-                        Text("experimental")
-                            .font(.system(size: 8)).foregroundColor(.orange.opacity(0.7))
-                        Spacer()
+                        HStack {
+                            Text("DRAWING")
+                                .font(.system(size: 10, weight: .semibold))
+                                .foregroundColor(.secondary).kerning(1.2)
+                            Text("experimental")
+                                .font(.system(size: 8)).foregroundColor(.orange.opacity(0.7))
+                            Spacer()
+                        }
+                        .padding(.horizontal, 12)
+
+                        DrawingCard(
+                            settings: $appState.parameters.drawingLayer,
+                            isDrawingMode: $appState.isDrawingMode
+                        )
+                        .padding(.horizontal, 8)
                     }
-                    .padding(.horizontal, 12)
 
-                    DrawingCard(
-                        settings: $appState.parameters.drawingLayer,
-                        isDrawingMode: $appState.isDrawingMode
-                    )
-                    .padding(.horizontal, 8)
+                    Spacer(minLength: 20)
                 }
-
-                Spacer(minLength: 20)
+                .padding(.top, 8)
             }
         }
         .background(Color(NSColor.controlBackgroundColor))
@@ -128,46 +137,47 @@ private struct LayerCard: View {
     var body: some View {
         VStack(spacing: 0) {
             // ── Header ──────────────────────────────────────────────
-            HStack(spacing: 6) {
+            HStack(spacing: 8) {
                 DragHandle()
 
                 Toggle("", isOn: $layer.isEnabled)
-                    .toggleStyle(.switch).scaleEffect(0.7).labelsHidden()
-                    .frame(width: 32)
+                    .toggleStyle(.switch).scaleEffect(0.75).labelsHidden()
+                    .frame(width: 34)
 
                 // Thumbnail preview
                 if let preview = appState.layerPreviews[index] {
                     Image(nsImage: preview)
                         .resizable().interpolation(.high)
-                        .frame(width: 28, height: 28)
-                        .cornerRadius(4)
+                        .frame(width: 32, height: 32)
+                        .cornerRadius(5)
                         .opacity(layer.isEnabled ? 1 : 0.4)
                 } else {
-                    RoundedRectangle(cornerRadius: 4)
+                    RoundedRectangle(cornerRadius: 5)
                         .fill(Color.secondary.opacity(0.12))
-                        .frame(width: 28, height: 28)
+                        .frame(width: 32, height: 32)
                 }
 
-                // Colour strip (shorter)
-                LinearGradient(
-                    gradient: Gradient(stops: palette.stops.map {
-                        Gradient.Stop(color: Color(nsColor: $0.1), location: $0.0)
-                    }),
-                    startPoint: .leading, endPoint: .trailing
-                )
-                .frame(height: 5).cornerRadius(2.5)
-                .opacity(layer.isEnabled ? 1 : 0.3)
-
-                Text(layer.style.displayName)
-                    .font(.caption.weight(.medium))
-                    .foregroundColor(layer.isEnabled ? .primary : .secondary)
-                    .lineLimit(1)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(layer.style.displayName)
+                        .font(.caption.weight(.medium))
+                        .foregroundColor(layer.isEnabled ? .primary : .secondary)
+                        .lineLimit(1)
+                    // Colour strip
+                    LinearGradient(
+                        gradient: Gradient(stops: palette.stops.map {
+                            Gradient.Stop(color: Color(nsColor: $0.1), location: $0.0)
+                        }),
+                        startPoint: .leading, endPoint: .trailing
+                    )
+                    .frame(height: 4).cornerRadius(2)
+                    .opacity(layer.isEnabled ? 0.9 : 0.3)
+                }
 
                 Spacer()
 
                 Button(action: onRandomize) {
                     Image(systemName: "dice")
-                        .font(.system(size: 9))
+                        .font(.system(size: 10))
                         .foregroundColor(.blue)
                 }
                 .buttonStyle(.plain)
@@ -176,7 +186,7 @@ private struct LayerCard: View {
                 if canDuplicate {
                     Button(action: onDuplicate) {
                         Image(systemName: "plus.square.on.square")
-                            .font(.system(size: 9))
+                            .font(.system(size: 10))
                             .foregroundColor(.secondary)
                     }
                     .buttonStyle(.plain)
@@ -185,7 +195,7 @@ private struct LayerCard: View {
 
                 Button(action: { withAnimation(.easeInOut(duration: 0.18)) { isExpanded.toggle() } }) {
                     Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
-                        .font(.system(size: 9))
+                        .font(.system(size: 10))
                         .foregroundColor(.secondary)
                 }
                 .buttonStyle(.plain)
@@ -193,7 +203,7 @@ private struct LayerCard: View {
                 if canDelete {
                     Button(action: onDelete) {
                         Image(systemName: "xmark")
-                            .font(.system(size: 9))
+                            .font(.system(size: 10))
                             .foregroundColor(.secondary.opacity(0.6))
                     }
                     .buttonStyle(.plain)
@@ -208,7 +218,7 @@ private struct LayerCard: View {
                     .disabled(!canDuplicate)
             }
             .padding(.horizontal, 10)
-            .padding(.vertical, 8)
+            .padding(.vertical, 10)
             .background(Color(NSColor.windowBackgroundColor))
             .cornerRadius(isExpanded ? 0 : 8)
             .cornerRadius(8, corners: [.topLeft, .topRight])

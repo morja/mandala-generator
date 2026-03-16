@@ -426,9 +426,12 @@ class AppState: ObservableObject {
         let frameCount = options.frameCount
         let fps = options.fps
 
-        // Expand render canvas by √2 so background corners never show during rotation
+        // Expand render canvas by √2 so background corners never show during rotation.
+        // Each layer's scale is reduced by the same ratio so the mandala appears at the
+        // same visual size as the static render — only the background fills the extra area.
         let expanded = Int((Double(outputSize) * sqrt(2)).rounded(.up))
         let renderSize = expanded % 2 == 0 ? expanded : expanded + 1
+        let scaleRatio = Double(outputSize) / Double(renderSize)  // ≈ 0.707
         let cropOrig = (renderSize - outputSize) / 2
         let cropRect = CGRect(x: cropOrig, y: cropOrig, width: outputSize, height: outputSize)
 
@@ -445,6 +448,8 @@ class AppState: ObservableObject {
                     .truncatingRemainder(dividingBy: 1.0)
                 if r < 0 { r += 1.0 }
                 p.layers[li].rotation = r
+                // Scale down to keep mandala the same visual size after center-crop
+                p.layers[li].scale = baseParams.layers[li].scale * scaleRatio
             }
             return (f, p)
         }
