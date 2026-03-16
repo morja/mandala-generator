@@ -357,7 +357,15 @@ struct ExportCard: View {
                         .font(.system(size: 10, design: .monospaced))
                         .frame(width: 70)
                         .onSubmit { applyCustomSize() }
-                        .onChange(of: customSizeText) { applyCustomSize() }
+                        .onChange(of: customSizeText) { _, newValue in
+                            let digitsOnly = newValue.filter { $0.isNumber }
+                            let limited = String(digitsOnly.prefix(4))
+                            if limited != newValue {
+                                customSizeText = limited
+                                return
+                            }
+                            applyCustomSize()
+                        }
                     Text("px")
                         .font(.system(size: 10)).foregroundColor(.secondary)
                     Spacer()
@@ -432,8 +440,12 @@ struct ExportCard: View {
     }
 
     private func applyCustomSize() {
-        let clamped = max(64, min(8192, Int(customSizeText) ?? appState.parameters.outputSizeCustom))
+        let parsed = Int(customSizeText) ?? appState.parameters.outputSizeCustom
+        let clamped = max(64, min(4000, parsed))
         appState.parameters.outputSizeCustom = clamped
+        if customSizeText != String(clamped) {
+            customSizeText = String(clamped)
+        }
     }
 }
 
