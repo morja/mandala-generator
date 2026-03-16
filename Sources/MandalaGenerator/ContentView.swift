@@ -13,10 +13,10 @@ struct ContentView: View {
                 .frame(minWidth: 380)
 
             PalettePanel()
-                .frame(width: 320)
-                .frame(minWidth: 320, maxWidth: 320)
+                .frame(width: 360)
+                .frame(minWidth: 360, maxWidth: 360)
         }
         .background(Color(NSColor.windowBackgroundColor))
-        .frame(minWidth: 980, minHeight: 600)
+        .frame(minWidth: 1020, minHeight: 600)
     }
 }
