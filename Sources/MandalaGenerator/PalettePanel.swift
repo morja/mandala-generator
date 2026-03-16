@@ -87,6 +87,8 @@ private struct LayerCard: View {
         VStack(spacing: 0) {
             // ── Header ──────────────────────────────────────────────
             HStack(spacing: 8) {
+                DragHandle()
+
                 Toggle("", isOn: $layer.isEnabled)
                     .toggleStyle(.switch).scaleEffect(0.7).labelsHidden()
 
@@ -226,6 +228,24 @@ private struct LayerCard: View {
         .clipShape(RoundedRectangle(cornerRadius: 8))
         .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.white.opacity(layer.isEnabled ? 0.08 : 0.03), lineWidth: 1))
         .opacity(layer.isEnabled ? 1 : 0.55)
+    }
+}
+
+// MARK: - Drag handle (2×3 dot grid)
+
+private struct DragHandle: View {
+    var body: some View {
+        VStack(spacing: 3) {
+            ForEach(0..<3) { _ in
+                HStack(spacing: 3) {
+                    ForEach(0..<2) { _ in
+                        Circle()
+                            .fill(Color.secondary.opacity(0.4))
+                            .frame(width: 2.5, height: 2.5)
+                    }
+                }
+            }
+        }
     }
 }
 

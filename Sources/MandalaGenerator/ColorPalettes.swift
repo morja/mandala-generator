@@ -210,12 +210,12 @@ struct ColorPalettes {
     static let dragon = ColorPalette(
         id: "dragon", name: "Dragon",
         stops: [
-            (0.0,  NSColor(red: 0.2,  green: 0.0,  blue: 0.35, alpha: 1)),
-            (0.2,  NSColor(red: 0.7,  green: 0.0,  blue: 0.05, alpha: 1)),
-            (0.45, NSColor(red: 1.0,  green: 0.15, blue: 0.0,  alpha: 1)),
-            (0.7,  NSColor(red: 1.0,  green: 0.6,  blue: 0.0,  alpha: 1)),
-            (0.9,  NSColor(red: 1.0,  green: 0.9,  blue: 0.2,  alpha: 1)),
-            (1.0,  NSColor(red: 1.0,  green: 1.0,  blue: 0.8,  alpha: 1)),
+            (0.0,  NSColor(red: 0.0,  green: 0.0,  blue: 0.25, alpha: 1)),
+            (0.2,  NSColor(red: 0.0,  green: 0.05, blue: 0.8,  alpha: 1)),
+            (0.45, NSColor(red: 0.4,  green: 0.0,  blue: 0.9,  alpha: 1)),
+            (0.65, NSColor(red: 0.85, green: 0.0,  blue: 0.2,  alpha: 1)),
+            (0.82, NSColor(red: 1.0,  green: 0.15, blue: 0.15, alpha: 1)),
+            (1.0,  NSColor(red: 1.0,  green: 0.7,  blue: 0.75, alpha: 1)),
         ]
     )
 
@@ -277,12 +277,12 @@ struct ColorPalettes {
     static let lava = ColorPalette(
         id: "lava", name: "Lava",
         stops: [
-            (0.0,  NSColor(red: 0.05, green: 0.0,  blue: 0.0,  alpha: 1)),
-            (0.2,  NSColor(red: 0.4,  green: 0.0,  blue: 0.0,  alpha: 1)),
-            (0.45, NSColor(red: 0.95, green: 0.05, blue: 0.0,  alpha: 1)),
-            (0.7,  NSColor(red: 1.0,  green: 0.5,  blue: 0.0,  alpha: 1)),
-            (0.9,  NSColor(red: 1.0,  green: 0.9,  blue: 0.3,  alpha: 1)),
-            (1.0,  NSColor(red: 1.0,  green: 1.0,  blue: 0.95, alpha: 1)),
+            (0.0,  NSColor(red: 0.2,  green: 0.0,  blue: 0.35, alpha: 1)),
+            (0.2,  NSColor(red: 0.7,  green: 0.0,  blue: 0.05, alpha: 1)),
+            (0.45, NSColor(red: 1.0,  green: 0.15, blue: 0.0,  alpha: 1)),
+            (0.7,  NSColor(red: 1.0,  green: 0.6,  blue: 0.0,  alpha: 1)),
+            (0.9,  NSColor(red: 1.0,  green: 0.9,  blue: 0.2,  alpha: 1)),
+            (1.0,  NSColor(red: 1.0,  green: 1.0,  blue: 0.8,  alpha: 1)),
         ]
     )
 

@@ -27,6 +27,9 @@ class AppState: ObservableObject {
                     await self.generate()
                 }
             }
+
+        // Start with a random mandala
+        randomizeAll()
     }
 
     func generate() async {
