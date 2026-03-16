@@ -3,6 +3,7 @@ import AVFoundation
 import Combine
 import CoreVideo
 import Foundation
+import ImageIO
 import SwiftUI
 import UniformTypeIdentifiers
 
@@ -28,6 +29,25 @@ class AppState: ObservableObject {
     @Published var showAnimationOptions: Bool = false
     @Published var animationOptions = AnimationExportOptions()
     @Published var animationExportProgress: Double? = nil
+    
+    // WebP support detection
+    static let webPSupported = AppState.detectWebPSupport()
+    
+    private static func detectWebPSupport() -> Bool {
+        // Check if ImageIO supports WebP
+        let imageData = NSMutableData()
+        if CGImageDestinationCreateWithData(imageData, "org.webmproject.webp" as CFString, 1, nil) != nil {
+            return true
+        }
+        
+        // Check if cwebp tool is available
+        if FileManager.default.fileExists(atPath: "/opt/homebrew/bin/cwebp") ||
+           FileManager.default.fileExists(atPath: "/usr/local/bin/cwebp") {
+            return true
+        }
+        
+        return false
+    }
 
     var allPalettes: [ColorPalette] {
         ColorPalettes.all + customPalettes.map { $0.colorPalette }
@@ -41,6 +61,11 @@ class AppState: ObservableObject {
     private var isNavigatingHistory: Bool = false
 
     init() {
+        // Validate output format based on system support
+        if parameters.outputFormat == "webp" && !AppState.webPSupported {
+            parameters.outputFormat = "png" // Fallback to PNG
+        }
+        
         // Debounced auto-generate when parameters change
         parameterCancellable = $parameters
             .dropFirst()
@@ -350,6 +375,13 @@ class AppState: ObservableObject {
 
     func saveImage() {
         guard let image = currentImage else { return }
+        
+        // Validate format before showing save panel
+        if parameters.outputFormat == "webp" && !AppState.webPSupported {
+            // Fallback to PNG if WebP is not supported
+            parameters.outputFormat = "png"
+        }
+        
         let panel = NSSavePanel()
         panel.title = "Save Mandala"
         let webpType = UTType("org.webmproject.webp") ?? UTType(filenameExtension: "webp") ?? .data
@@ -358,7 +390,9 @@ class AppState: ObservableObject {
         panel.nameFieldStringValue = suggestedFilename() + "." + parameters.outputFormat
         panel.begin { [weak self] response in
             guard response == .OK, let url = panel.url else { return }
-            self?.writeImage(image, to: url)
+            Task { @MainActor [weak self] in
+                self?.writeImage(image, to: url)
+            }
         }
     }
 
@@ -570,14 +604,36 @@ class AppState: ObservableObject {
             ? maskedImage(image, shape: parameters.outputShape) ?? image
             : image
 
-        // WebP via CGImageDestination (Image I/O)
+        // WebP via ImageIO framework
         if isWebP {
-            guard let cgImage = finalImage.cgImage(forProposedRect: nil, context: nil, hints: nil),
-                  let dest = CGImageDestinationCreateWithURL(
-                      url as CFURL, "org.webmproject.webp" as CFString, 1, nil) else { return }
-            CGImageDestinationAddImage(dest, cgImage,
-                [kCGImageDestinationLossyCompressionQuality: 0.92] as CFDictionary)
-            CGImageDestinationFinalize(dest)
+            guard let cgImage = finalImage.cgImage(forProposedRect: nil, context: nil, hints: nil) else {
+                return
+            }
+            
+            // Try ImageIO with proper WebP type using NSMutableData
+            let imageData = NSMutableData()
+            guard let destination = CGImageDestinationCreateWithData(
+                imageData,
+                "org.webmproject.webp" as CFString,
+                1,
+                nil
+            ) else {
+                // If ImageIO fails, try the direct approach
+                saveWebPDirectly(cgImage: cgImage, to: url)
+                return
+            }
+            
+            CGImageDestinationAddImage(destination, cgImage, [
+                kCGImageDestinationLossyCompressionQuality: 0.92
+            ] as CFDictionary)
+            
+            if CGImageDestinationFinalize(destination) {
+                // Write the data to file
+                try? imageData.write(to: url)
+            } else {
+                // Fallback to direct WebP encoding
+                saveWebPDirectly(cgImage: cgImage, to: url)
+            }
             return
         }
 
@@ -588,6 +644,52 @@ class AppState: ObservableObject {
             ? bitmap.representation(using: .jpeg, properties: [.compressionFactor: 0.92])
             : bitmap.representation(using: .png,  properties: [:])
         try? data?.write(to: url)
+    }
+    
+    private func saveWebPDirectly(cgImage: CGImage, to url: URL) {
+        // Create a temporary PNG file first
+        let tempURL = FileManager.default.temporaryDirectory
+            .appendingPathComponent("temp_\(UUID().uuidString).png")
+        
+        // Save as PNG first
+        let tempImage = NSImage(cgImage: cgImage, size: NSSize(width: cgImage.width, height: cgImage.height))
+        guard let tiffData = tempImage.tiffRepresentation,
+              let bitmap = NSBitmapImageRep(data: tiffData),
+              let pngData = bitmap.representation(using: .png, properties: [:]) else {
+            return
+        }
+        
+        do {
+            try pngData.write(to: tempURL)
+            
+            // Try to convert PNG to WebP using cwebp tool
+            let process = Process()
+            process.executableURL = URL(fileURLWithPath: "/opt/homebrew/bin/cwebp")
+            process.arguments = ["-q", "90", tempURL.path, "-o", url.path]
+            
+            do {
+                try process.run()
+                process.waitUntilExit()
+                
+                // Clean up temp file
+                try? FileManager.default.removeItem(at: tempURL)
+                
+                // Check if WebP file was created successfully
+                if FileManager.default.fileExists(atPath: url.path) {
+                    return
+                }
+            } catch {
+                // cwebp failed, clean up
+                try? FileManager.default.removeItem(at: tempURL)
+            }
+            
+            // If cwebp is not available or failed, save as PNG with webp extension as last resort
+            try pngData.write(to: url)
+            
+        } catch {
+            // If everything fails, try to save the PNG directly to the target URL
+            try? pngData.write(to: url)
+        }
     }
 
     /// Returns a copy of `image` clipped to a circle or squircle, with alpha transparency.

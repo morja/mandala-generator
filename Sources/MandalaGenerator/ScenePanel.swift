@@ -372,7 +372,9 @@ struct ExportCard: View {
                 Picker("", selection: $appState.parameters.outputFormat) {
                     Text("PNG").tag("png")
                     Text("JPG").tag("jpg")
-                    Text("WebP").tag("webp")
+                    if AppState.webPSupported {
+                        Text("WebP").tag("webp")
+                    }
                 }
                 .pickerStyle(.menu).labelsHidden().fixedSize()
                 Spacer()
