@@ -121,13 +121,14 @@ struct CanvasView: View {
             Divider().frame(height: 20)
 
             Picker("", selection: $appState.parameters.previewSize) {
-                Text("512").tag(512)
-                Text("800").tag(800)
-                Text("1024").tag(1024)
-                Text("1400").tag(1400)
-                Text("2048").tag(2048)
+                Text("512 px").tag(512)
+                Text("800 px").tag(800)
+                Text("1024 px").tag(1024)
+                Text("1400 px").tag(1400)
+                Text("2048 px").tag(2048)
             }
-            .pickerStyle(.segmented)
+            .pickerStyle(.menu)
+            .labelsHidden()
             .fixedSize()
             .help("Render resolution")
 
