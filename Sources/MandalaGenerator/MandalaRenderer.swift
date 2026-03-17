@@ -3294,47 +3294,79 @@ struct MandalaRenderer {
         guard intensity > 0 else { return image }
         let ciImage = CIImage(cgImage: image)
         let context = CIContext(options: [.workingColorSpace: CGColorSpace(name: CGColorSpace.displayP3) as Any])
-        let scale = Double(image.width) / 1600.0
+        let ext = ciImage.extent
 
-        // Multiple blur radii for bloom — scaled to buffer size
-        let blurRadii: [Double] = [2.0 * scale, 8.0 * scale, 20.0 * scale]
+        // Resolution-independent glow: compute the glow contribution at a fixed reference
+        // width (1600 px) so that blur radii and strengths are always identical regardless
+        // of the actual buffer size.  The glow result is upscaled back to full resolution
+        // before being screen-composited — safe because glow is inherently blurry.
+        let actualWidth  = Double(image.width)
+        let refWidth     = 1600.0
+        let downFactor   = min(1.0, refWidth / actualWidth)   // 1.0 when already ≤ ref
+
+        // Optionally downsample the source for glow computation
+        var workCI  = ciImage
+        var workExt = ext
+        if downFactor < 1.0,
+           let scaleF = CIFilter(name: "CILanczosScaleTransform") {
+            scaleF.setValue(ciImage,      forKey: kCIInputImageKey)
+            scaleF.setValue(downFactor,   forKey: kCIInputScaleKey)
+            scaleF.setValue(1.0,          forKey: "inputAspectRatio")
+            let w = actualWidth  * downFactor
+            let h = Double(image.height) * downFactor
+            workExt = CGRect(x: 0, y: 0, width: w, height: h)
+            workCI  = scaleF.outputImage?.cropped(to: workExt) ?? ciImage
+        }
+
+        // Blur radii are in workCI pixel space — always the same fraction of refWidth
+        let workScale = (actualWidth * downFactor) / refWidth  // ≤ 1
+        let blurRadii: [Double] = [2.0 * workScale, 8.0 * workScale, 20.0 * workScale]
         let strengths: [Double] = [1.0, 0.4, 0.15]
 
-        var result = ciImage
+        // Accumulate the glow passes additively (each is a tinted blur of the source)
+        var glowCI: CIImage? = nil
         for (radius, strength) in zip(blurRadii, strengths) {
-            guard let blurFilter = CIFilter(name: "CIGaussianBlur") else { continue }
-            blurFilter.setValue(ciImage, forKey: kCIInputImageKey)
+            guard let blurFilter = CIFilter(name: "CIGaussianBlur"),
+                  let tintFilter = CIFilter(name: "CIColorMatrix") else { continue }
+            blurFilter.setValue(workCI, forKey: kCIInputImageKey)
             blurFilter.setValue(radius * intensity * 3.0, forKey: kCIInputRadiusKey)
-            guard let blurred = blurFilter.outputImage else { continue }
+            guard let blurred = blurFilter.outputImage?.cropped(to: workExt) else { continue }
 
-            // Screen composite: result + blurred - result*blurred (approx)
-            let scaledStrength = strength * intensity
-            if let screenFilter = CIFilter(name: "CIScreenBlendMode") {
-                // Tint the blur by strength
-                guard let tintFilter = CIFilter(name: "CIColorMatrix") else {
-                    result = blended(base: result, overlay: blurred, strength: scaledStrength) ?? result
-                    continue
-                }
-                let sv = Float(scaledStrength)
-                tintFilter.setValue(blurred, forKey: kCIInputImageKey)
-                tintFilter.setValue(CIVector(x: CGFloat(sv), y: 0, z: 0, w: 0), forKey: "inputRVector")
-                tintFilter.setValue(CIVector(x: 0, y: CGFloat(sv), z: 0, w: 0), forKey: "inputGVector")
-                tintFilter.setValue(CIVector(x: 0, y: 0, z: CGFloat(sv), w: 0), forKey: "inputBVector")
-                tintFilter.setValue(CIVector(x: 0, y: 0, z: 0, w: 1), forKey: "inputAVector")
-                guard let tinted = tintFilter.outputImage else { continue }
-                screenFilter.setValue(result, forKey: kCIInputBackgroundImageKey)
-                screenFilter.setValue(tinted, forKey: kCIInputImageKey)
-                if let out = screenFilter.outputImage {
-                    result = out.cropped(to: ciImage.extent)
-                }
+            let sv = Float(strength * intensity)
+            tintFilter.setValue(blurred, forKey: kCIInputImageKey)
+            tintFilter.setValue(CIVector(x: CGFloat(sv), y: 0,          z: 0,          w: 0), forKey: "inputRVector")
+            tintFilter.setValue(CIVector(x: 0,          y: CGFloat(sv), z: 0,          w: 0), forKey: "inputGVector")
+            tintFilter.setValue(CIVector(x: 0,          y: 0,          z: CGFloat(sv), w: 0), forKey: "inputBVector")
+            tintFilter.setValue(CIVector(x: 0,          y: 0,          z: 0,           w: 1), forKey: "inputAVector")
+            guard let tinted = tintFilter.outputImage?.cropped(to: workExt) else { continue }
+
+            if let prev = glowCI,
+               let addF = CIFilter(name: "CIAdditionCompositing") {
+                addF.setValue(prev,   forKey: kCIInputBackgroundImageKey)
+                addF.setValue(tinted, forKey: kCIInputImageKey)
+                glowCI = addF.outputImage?.cropped(to: workExt)
             } else {
-                result = blended(base: result, overlay: blurred, strength: scaledStrength) ?? result
+                glowCI = tinted
             }
         }
 
-        let rect = CGRect(x: 0, y: 0, width: image.width, height: image.height)
-        guard let output = context.createCGImage(result, from: rect) else { return image }
-        return output
+        guard var glow = glowCI else { return image }
+
+        // Upsample the glow contribution back to full resolution if it was downscaled
+        if downFactor < 1.0,
+           let upF = CIFilter(name: "CILanczosScaleTransform") {
+            upF.setValue(glow,            forKey: kCIInputImageKey)
+            upF.setValue(1.0 / downFactor, forKey: kCIInputScaleKey)
+            upF.setValue(1.0,             forKey: "inputAspectRatio")
+            glow = upF.outputImage?.cropped(to: ext) ?? glow
+        }
+
+        // Single screen composite: original + glow
+        guard let screenFilter = CIFilter(name: "CIScreenBlendMode") else { return image }
+        screenFilter.setValue(ciImage, forKey: kCIInputBackgroundImageKey)
+        screenFilter.setValue(glow,    forKey: kCIInputImageKey)
+        guard let composited = screenFilter.outputImage?.cropped(to: ext) else { return image }
+        return context.createCGImage(composited, from: ext) ?? image
     }
 
     private static func blended(base: CIImage, overlay: CIImage, strength: Double) -> CIImage? {

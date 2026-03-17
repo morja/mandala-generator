@@ -91,11 +91,24 @@ class AppState: ObservableObject {
         }
     }
 
+    /// Returns true only when fields that actually affect the rendered canvas image changed.
+    /// Export-only fields (outputSize, outputSizeCustom, outputFormat, outputShape) are ignored.
+    private func needsRender(from previous: MandalaParameters?) -> Bool {
+        guard let previous else { return true }
+        func strip(_ p: MandalaParameters) -> MandalaParameters {
+            var q = p
+            q.outputSize = 0; q.outputSizeCustom = 0
+            q.outputFormat = ""; q.outputShape = ""
+            return q
+        }
+        return strip(parameters) != strip(previous)
+    }
+
     func generate() async {
         let navigating = isNavigatingHistory
         defer { isNavigatingHistory = false }
         guard !isGenerating else { return }
-        guard parameters != lastRenderedParams else { return }
+        guard needsRender(from: lastRenderedParams) else { return }
         debounceTask?.cancel()
         debounceTask = nil
         isGenerating = true
