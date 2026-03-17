@@ -850,19 +850,19 @@ struct MandalaRenderer {
             }
         }
 
-        // ── Wash — bleach toward white, desaturate ──
+        // ── Wash — subtle bleach / overexposed look ──
         if settings.wash > 0.001 {
             let t = CGFloat(settings.wash)
-            // First strip saturation
+            // Gentle saturation reduction (max −40% at full)
             if let sat = CIFilter(name: "CIColorControls") {
                 sat.setValue(ci, forKey: kCIInputImageKey)
-                sat.setValue(1.0 - t * 0.85, forKey: kCIInputSaturationKey)
+                sat.setValue(max(0, 1.0 - t * 0.4), forKey: kCIInputSaturationKey)
                 if let out = sat.outputImage?.cropped(to: ext) { ci = out }
             }
-            // Then push toward white via color matrix
+            // Light push toward white (max +30% at full)
             if let mat = CIFilter(name: "CIColorMatrix") {
-                let s = 1.0 - t * 0.55
-                let b = t * 0.55
+                let s = 1.0 - t * 0.3
+                let b = t * 0.3
                 mat.setValue(ci, forKey: kCIInputImageKey)
                 mat.setValue(CIVector(x: s, y: 0, z: 0, w: 0), forKey: "inputRVector")
                 mat.setValue(CIVector(x: 0, y: s, z: 0, w: 0), forKey: "inputGVector")
@@ -881,81 +881,100 @@ struct MandalaRenderer {
             if let out = sep.outputImage?.cropped(to: ext) { ci = out }
         }
 
-        // ── Fade — mix toward flat neutral gray ──
+        // ── Fade — gentle matte / lifted-shadows look ──
         if settings.fade > 0.001,
            let mat = CIFilter(name: "CIColorMatrix") {
-            let t = CGFloat(settings.fade * 0.75)
-            let s = 1.0 - t
-            let b = t * 0.45
+            // Compress tonal range into [lift, 1] without touching global brightness much
+            let lift = CGFloat(settings.fade * 0.22)   // max +22% floor at full
+            let s    = 1.0 - lift                       // scale so white stays at 1
             mat.setValue(ci, forKey: kCIInputImageKey)
             mat.setValue(CIVector(x: s, y: 0, z: 0, w: 0), forKey: "inputRVector")
             mat.setValue(CIVector(x: 0, y: s, z: 0, w: 0), forKey: "inputGVector")
             mat.setValue(CIVector(x: 0, y: 0, z: s, w: 0), forKey: "inputBVector")
             mat.setValue(CIVector(x: 0, y: 0, z: 0, w: 1), forKey: "inputAVector")
-            mat.setValue(CIVector(x: b, y: b, z: b, w: 0), forKey: "inputBiasVector")
+            mat.setValue(CIVector(x: lift, y: lift, z: lift, w: 0), forKey: "inputBiasVector")
             if let out = mat.outputImage?.cropped(to: ext) { ci = out }
         }
 
-        // ── Bloom — soft wide glow bleed via multi-scale screen blur ──
+        // ── Bloom — multi-scale soft glow (two passes: medium + wide) ──
         if settings.bloom > 0.001 {
-            let radii: [CGFloat] = [4, 12, 30, 70]
-            let weights: [CGFloat] = [0.5, 0.35, 0.22, 0.12]
-            for (radius, weight) in zip(radii, weights) {
-                let blurR = CGFloat(bufferSize) * radius / 1000.0 * CGFloat(settings.bloom)
-                if blurR < 0.5 { continue }
-                if let blur = CIFilter(name: "CIGaussianBlur"),
-                   let tint = CIFilter(name: "CIColorMatrix"),
-                   let screen = CIFilter(name: "CIScreenBlendMode") {
-                    blur.setValue(ci, forKey: kCIInputImageKey)
-                    blur.setValue(blurR, forKey: kCIInputRadiusKey)
-                    let blurred = blur.outputImage?.cropped(to: ext)
-                    tint.setValue(blurred, forKey: kCIInputImageKey)
-                    tint.setValue(CIVector(x: weight, y: 0, z: 0, w: 0), forKey: "inputRVector")
-                    tint.setValue(CIVector(x: 0, y: weight, z: 0, w: 0), forKey: "inputGVector")
-                    tint.setValue(CIVector(x: 0, y: 0, z: weight, w: 0), forKey: "inputBVector")
-                    tint.setValue(CIVector(x: 0, y: 0, z: 0, w: 1), forKey: "inputAVector")
-                    tint.setValue(CIVector(x: 0, y: 0, z: 0, w: 0), forKey: "inputBiasVector")
-                    screen.setValue(ci, forKey: kCIInputBackgroundImageKey)
-                    screen.setValue(tint.outputImage?.cropped(to: ext), forKey: kCIInputImageKey)
-                    if let out = screen.outputImage?.cropped(to: ext) { ci = out }
-                }
+            // pass tuples: (blur radius as fraction of bufferSize, screen mix strength)
+            let passes: [(CGFloat, CGFloat)] = [
+                (0.025, 0.55 * CGFloat(settings.bloom)),   // medium glow
+                (0.090, 0.30 * CGFloat(settings.bloom))    // wide atmospheric haze
+            ]
+            for (radiusFrac, mix) in passes {
+                let blurR = CGFloat(bufferSize) * radiusFrac
+                guard blurR >= 1.0,
+                      let blur = CIFilter(name: "CIGaussianBlur") else { continue }
+                blur.setValue(ci, forKey: kCIInputImageKey)
+                blur.setValue(blurR, forKey: kCIInputRadiusKey)
+                guard let blurred = blur.outputImage?.cropped(to: ext) else { continue }
+                // Scale blurred layer to `mix` brightness, then screen-composite
+                guard let tint = CIFilter(name: "CIColorMatrix") else { continue }
+                tint.setValue(blurred, forKey: kCIInputImageKey)
+                tint.setValue(CIVector(x: mix, y: 0, z: 0, w: 0), forKey: "inputRVector")
+                tint.setValue(CIVector(x: 0, y: mix, z: 0, w: 0), forKey: "inputGVector")
+                tint.setValue(CIVector(x: 0, y: 0, z: mix, w: 0), forKey: "inputBVector")
+                tint.setValue(CIVector(x: 0, y: 0, z: 0,   w: 1), forKey: "inputAVector")
+                tint.setValue(CIVector(x: 0, y: 0, z: 0,   w: 0), forKey: "inputBiasVector")
+                guard let tinted = tint.outputImage?.cropped(to: ext),
+                      let screen = CIFilter(name: "CIScreenBlendMode") else { continue }
+                screen.setValue(ci,     forKey: kCIInputBackgroundImageKey)
+                screen.setValue(tinted, forKey: kCIInputImageKey)
+                if let out = screen.outputImage?.cropped(to: ext) { ci = out }
             }
         }
 
-        // ── Local Contrast — clarity / mid-tone edge crunch via unsharp mask ──
-        // Blurs at two scales; subtracts the large blur from original, adds back amplified
+        // ── Local Contrast — Lightroom-style Clarity (high-pass hard light) ──
+        // Extracts mid-frequency structure via large-radius blur, centres the
+        // high-pass at 0.5 gray, then applies it as a Hard Light layer over the
+        // original. Hard Light < 0.5 darkens, > 0.5 brightens → punchy HDR look.
         if settings.localContrast > 0.001 {
-            let amount = CGFloat(settings.localContrast)
-            // Large-radius blur captures global tonal distribution
-            let largeR  = CGFloat(bufferSize) * 0.045
-            // Medium-radius for fine detail boost
-            let mediumR = CGFloat(bufferSize) * 0.008
-            func unsharpLayer(_ radius: CGFloat, _ strength: CGFloat) {
-                guard let blur = CIFilter(name: "CIGaussianBlur"),
-                      let sub  = CIFilter(name: "CISubtractBlendMode"),
-                      let tint = CIFilter(name: "CIColorMatrix"),
-                      let add  = CIFilter(name: "CIAdditionCompositing") else { return }
+            localContrastBlock: do {
+                let amount = CGFloat(settings.localContrast)
+                // Radius ~6% of image — matches Lightroom's Clarity working scale
+                let blurR = CGFloat(bufferSize) * 0.06
+                guard let blur = CIFilter(name: "CIGaussianBlur") else { break localContrastBlock }
                 blur.setValue(ci, forKey: kCIInputImageKey)
-                blur.setValue(radius, forKey: kCIInputRadiusKey)
-                guard let blurred = blur.outputImage?.cropped(to: ext) else { return }
-                // detail = original - blurred  (CISubtractBlendMode: bg - overlay)
-                sub.setValue(ci,      forKey: kCIInputBackgroundImageKey)
-                sub.setValue(blurred, forKey: kCIInputImageKey)
-                guard let detail = sub.outputImage?.cropped(to: ext) else { return }
-                // Scale detail by strength
-                tint.setValue(detail, forKey: kCIInputImageKey)
-                let s = strength * amount
-                tint.setValue(CIVector(x: s, y: 0, z: 0, w: 0), forKey: "inputRVector")
-                tint.setValue(CIVector(x: 0, y: s, z: 0, w: 0), forKey: "inputGVector")
-                tint.setValue(CIVector(x: 0, y: 0, z: s, w: 0), forKey: "inputBVector")
-                tint.setValue(CIVector(x: 0, y: 0, z: 0, w: 1), forKey: "inputAVector")
-                tint.setValue(CIVector(x: 0, y: 0, z: 0, w: 0), forKey: "inputBiasVector")
-                add.setValue(ci, forKey: kCIInputBackgroundImageKey)
-                add.setValue(tint.outputImage?.cropped(to: ext), forKey: kCIInputImageKey)
-                if let out = add.outputImage?.cropped(to: ext) { ci = out }
+                blur.setValue(blurR, forKey: kCIInputRadiusKey)
+                guard let blurred = blur.outputImage?.cropped(to: ext) else { break localContrastBlock }
+
+                // Invert & centre the blurred image: -1*blurred + 0.5
+                guard let invertMat = CIFilter(name: "CIColorMatrix") else { break localContrastBlock }
+                invertMat.setValue(blurred, forKey: kCIInputImageKey)
+                invertMat.setValue(CIVector(x: -1, y:  0, z: 0, w: 0), forKey: "inputRVector")
+                invertMat.setValue(CIVector(x:  0, y: -1, z: 0, w: 0), forKey: "inputGVector")
+                invertMat.setValue(CIVector(x:  0, y:  0, z:-1, w: 0), forKey: "inputBVector")
+                invertMat.setValue(CIVector(x:  0, y:  0, z: 0, w: 1), forKey: "inputAVector")
+                invertMat.setValue(CIVector(x: 0.5, y: 0.5, z: 0.5, w: 0), forKey: "inputBiasVector")
+                guard let inverted = invertMat.outputImage?.cropped(to: ext) else { break localContrastBlock }
+
+                // highPass = original + (-blurred + 0.5) = (original - blurred) + 0.5
+                guard let addHF = CIFilter(name: "CIAdditionCompositing") else { break localContrastBlock }
+                addHF.setValue(ci,       forKey: kCIInputBackgroundImageKey)
+                addHF.setValue(inverted, forKey: kCIInputImageKey)
+                guard let highPass = addHF.outputImage?.cropped(to: ext) else { break localContrastBlock }
+
+                // Blend the high-pass toward neutral (0.5) by (1 - amount):
+                // scaled = highPass * amount + 0.5 * (1 - amount)
+                guard let scaleMat = CIFilter(name: "CIColorMatrix") else { break localContrastBlock }
+                let bias = 0.5 * (1.0 - amount)
+                scaleMat.setValue(highPass, forKey: kCIInputImageKey)
+                scaleMat.setValue(CIVector(x: amount, y: 0,      z: 0,      w: 0), forKey: "inputRVector")
+                scaleMat.setValue(CIVector(x: 0,      y: amount, z: 0,      w: 0), forKey: "inputGVector")
+                scaleMat.setValue(CIVector(x: 0,      y: 0,      z: amount, w: 0), forKey: "inputBVector")
+                scaleMat.setValue(CIVector(x: 0,      y: 0,      z: 0,      w: 1), forKey: "inputAVector")
+                scaleMat.setValue(CIVector(x: bias, y: bias, z: bias, w: 0),       forKey: "inputBiasVector")
+                guard let scaledHP = scaleMat.outputImage?.cropped(to: ext) else { break localContrastBlock }
+
+                // Hard Light of scaledHP over original → local contrast boost
+                if let hardLight = CIFilter(name: "CIHardLightBlendMode") {
+                    hardLight.setValue(ci,       forKey: kCIInputBackgroundImageKey)
+                    hardLight.setValue(scaledHP, forKey: kCIInputImageKey)
+                    if let out = hardLight.outputImage?.cropped(to: ext) { ci = out }
+                }
             }
-            unsharpLayer(largeR,  0.7)   // broad structure boost
-            unsharpLayer(mediumR, 0.4)   // fine detail crunch
         }
 
         // ── Grain — film grain / analogue noise ──
@@ -3548,8 +3567,8 @@ struct MandalaRenderer {
             }
         }
 
-        // Stars — always present, scattered in symmetry sectors
-        let starCount = Int(80 + density * 700)
+        // Stars — only shown when symmetry > 1 (background dots look wrong at symmetry 1)
+        let starCount = symmetry > 1 ? Int(80 + density * 700) : 0
         let sectorAngle = Float.pi * 2.0 / Float(max(1, symmetry))
         for _ in 0..<starCount {
             // Place star in first sector, then replicate via forSym
