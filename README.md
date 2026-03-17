@@ -18,7 +18,9 @@ Find more samples [here](samples/).
 
 ## Features
 
-- **25 drawing styles** — Spirograph, Rose Curves, String Art, Sunburst, Epitrochoid, Floral, Lissajous, Butterfly, Geometric, Fractal, Phyllotaxis, Hypocycloid, Wave Interference, Spider Web, Weave, Sacred Geometry, Radial Mesh, Flow Field, Tendril, Moiré, Voronoi, Torus Knot, Sphere Grid, Tesseract, Mixed
+- **27 drawing styles** — Spirograph, Rose Curves, String Art, Sunburst, Epitrochoid, Floral, Lissajous, Butterfly, Geometric, Fractal, Phyllotaxis, Hypocycloid, Wave Interference, Spider Web, Weave, Sacred Geometry, Radial Mesh, Flow Field, Tendril, Moiré, Voronoi, Torus Knot, Sphere Grid, Tesseract, Mixed, **Universe**, **Symbols**
+- **Universe style** — density drives a 7-level cosmic progression: single planet → two planets → Saturn with rings → full solar system → Milky Way spiral galaxy → multiple galaxies → cosmic web with filaments and galaxy clusters; fully symmetry-aware
+- **Symbols style** — 20 sacred and universal symbols arranged in mandala rings: Heart, Peace, Infinity, Eye of Providence, Yin-Yang, Crescent, Star of David, Pentagram, Ankh, Om, Chakra Lotus, Flower of Life, Dharma Wheel, Merkaba, Triquetra, Ouroboros, Triskelion, Vesica Piscis, Hamsa, Sri Yantra, Eye of Horus, Star of Ishtar, Caduceus — seed-driven selection with concentric center symbol
 - **3D styles** — Torus Knot (full tube surface with Frenet frame), Sphere Grid (tilted great circles + pole spirals), Tesseract (4D hypercube with nested shells) — all with perspective depth shading, symmetry, and ripple
 - **Multi-layer compositing** — stack up to 5 independent layers, each with its own style, palette, blend mode, and settings
 - **Per-layer controls** — symmetry, seed, scale, complexity, density, glow, colour drift, ripple, wash, abstract level, saturation, brightness, rotation, opacity, blend mode
@@ -27,7 +29,7 @@ Find more samples [here](samples/).
 - **Drag-to-reorder layers** — drag handle on each layer card; sticky "Add Layer" button always visible at the top
 - **Background layer** — solid colour, gradient (radial or linear), pattern (checkerboard, stripes, diagonal, crosshatch), grain, image, or **Auto** (palette-derived dark ambient gradient)
 - **Hue colour sliders** — background hue controls show a rainbow gradient track so you can see what colour you're picking
-- **Effects layer** — brightness, contrast, vignette, chromatic aberration, 3D relief, dimming, erasure, highlights, star sparkles — each spatial effect with independent seed dice button
+- **Effects layer** — brightness, contrast, vignette, chromatic aberration, 3D relief, dimming, erasure, highlights, star sparkles, **wash** (bleached/overexposed), **sepia** (warm antique), **fade** (matte gray), **bloom** (multi-scale glow bleed), **local contrast** (clarity / unsharp mask), **grain** (film noise), **glitter** (rainbow iridescent sparkles) — each spatial effect with independent seed dice button
 - **18 colour palettes** — Aurora, Nebula, Neon City, Sunset, Prism, Bioluminescence, Blue/Red, Synthwave, Lava, Gold, Toxic, and more
 - **Custom palette editor** — create, name, and save your own palettes with a gradient stop editor (HSB sliders per stop); custom palettes are marked with a star and persist across sessions
 - **Persistent history** — back/forward navigation (⌘[ / ⌘]) through every render, survives app restarts
@@ -123,12 +125,19 @@ Post-processing applied to the final composite. Reset button restores all to def
 | **Chromatic** | RGB channel separation (chromatic aberration) |
 | **Relief** | 3D emboss depth — hard-light blend of a directional height map |
 | **Light** | Relief light direction (0–360°, shown when Relief > 0) |
+| **Wash** | Bleached / washed-out look — desaturates and pushes colours toward white |
+| **Sepia** | Warm antique sepia tone |
+| **Fade** | Matte finish — fades toward flat neutral gray, reduces saturation and contrast |
+| **Bloom** | Multi-scale soft glow bleed — bright areas melt into surrounding space across four radii |
+| **Local Contrast** | Clarity / unsharp mask — boosts mid-range edge contrast without affecting global brightness |
+| **Grain** | Analogue film grain / noise |
 | **Dimming** | Random dark blotches (multiply blend) |
 | **Erasure** | Burn-through holes in the image |
 | **Highlights** | Additive glowing radial spots |
 | **Stars** | Sharp cross-flare diffraction spike sparkles |
+| **Glitter** | Dense iridescent rainbow sparkles — each a tiny coloured cross-flare; fully seeded |
 
-Each spatially-random effect has a dice button to reshuffle its position independently.
+Each spatially-random effect (Dimming, Erasure, Highlights, Stars, Glitter) has a dice button to reshuffle its position independently.
 
 ### Export Card (left, below Effects)
 
@@ -187,7 +196,7 @@ Each layer has its own palette grid. You can select from the 18 built-in palette
 | File | Purpose |
 |---|---|
 | `MandalaParameters.swift` | All model structs (`StyleLayer`, `BaseLayerSettings`, `EffectsLayerSettings`, `DrawingLayerSettings`, `MandalaParameters`) — fully `Codable` with backward-compatible `decodeSafe` fallbacks |
-| `MandalaRenderer.swift` | Core renderer — 25 curve styles including 3D (torus knot, sphere grid, tesseract), base/effects layers, CIFilter post-processing, layer preview thumbnails |
+| `MandalaRenderer.swift` | Core renderer — 27 curve styles including 3D (torus knot, sphere grid, tesseract), Universe and Symbols styles, base/effects layers, CIFilter post-processing, layer preview thumbnails |
 | `PixelBuffer.swift` | Float32 additive pixel buffer with Wu anti-aliased line drawing and tone mapping |
 | `ColorPalettes.swift` | 18 built-in named colour palettes |
 | `PaletteEditor.swift` | Custom palette editor — `PaletteStop`, `CustomPalette` (Codable), `PaletteEditorSheet` with gradient preview and HSB stop editor |
@@ -204,7 +213,7 @@ Each layer has its own palette grid. You can select from the 18 built-in palette
 2. **Per mandala layer** — curves collected into `CurveDrawTask` structs, drawn in parallel via `DispatchQueue.concurrentPerform` into per-thread sub-buffers, merged with `vDSP_vadd`, then glow → wash → abstract → colour grade applied; 3D styles use perspective projection with depth-shaded weights
 3. **Blend composite** — each layer blended onto the running composite using the chosen blend mode (Screen, Add, Normal/Lighten, or Multiply); optional 2D rotation via `CIAffineTransform`; optional opacity via `CIColorMatrix`
 4. **Drawing layer** (experimental) — user strokes composited with a chosen blend mode and symmetry
-5. **Effects layer** — brightness/contrast, 3D relief (hard-light emboss), vignette, chromatic aberration, dimming, erasure, highlights, stars applied as CIFilter passes
+5. **Effects layer** — wash → sepia → fade → bloom → local contrast → grain applied as CIFilter passes; brightness/contrast, 3D relief (hard-light emboss), vignette, chromatic aberration; dimming, erasure, highlights, stars, glitter drawn into PixelBuffers and screen-composited
 6. **Downscale** — Lanczos downscale from 2× render buffer to output size
 
 ### Animation export

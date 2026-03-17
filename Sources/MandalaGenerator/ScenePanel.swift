@@ -240,6 +240,7 @@ struct EffectsLayerCard: View {
                     settings.erasureSeed    = UInt64.random(in: 1...UInt64.max)
                     settings.highlightsSeed = UInt64.random(in: 1...UInt64.max)
                     settings.starsSeed      = UInt64.random(in: 1...UInt64.max)
+                    settings.glitterSeed    = UInt64.random(in: 1...UInt64.max)
                 }) {
                     Image(systemName: "dice").font(.system(size: 10)).foregroundColor(.blue)
                 }
@@ -267,11 +268,19 @@ struct EffectsLayerCard: View {
                         SceneSlider(label: "Light", value: $settings.reliefAngle, color: .yellow)
                     }
                     Divider()
+                    SceneSlider(label: "Wash",          value: $settings.wash,         color: .white)
+                    SceneSlider(label: "Sepia",         value: $settings.sepia,        color: Color(red: 0.8, green: 0.6, blue: 0.3))
+                    SceneSlider(label: "Fade",          value: $settings.fade,         color: .secondary)
+                    SceneSlider(label: "Bloom",         value: $settings.bloom,        color: .purple)
+                    SceneSlider(label: "Local Contrast",value: $settings.localContrast,color: .teal)
+                    SceneSlider(label: "Grain",         value: $settings.grain,        color: Color(red: 0.6, green: 0.55, blue: 0.5))
+                    Divider()
                     EffectRow(label: "Dimming",    value: $settings.dimming,    seed: $settings.dimmingSeed,    color: .indigo)
                     EffectRow(label: "Erasure",    value: $settings.erasure,    seed: $settings.erasureSeed,    color: .red)
                     Divider()
                     EffectRow(label: "Highlights", value: $settings.highlights, seed: $settings.highlightsSeed, color: .orange)
                     EffectRow(label: "Stars",      value: $settings.stars,      seed: $settings.starsSeed,      color: .yellow)
+                    EffectRow(label: "Glitter",    value: $settings.glitter,    seed: $settings.glitterSeed,    color: .pink)
                 }
                 .padding(10)
                 .background(Color(NSColor.controlBackgroundColor).opacity(0.7))

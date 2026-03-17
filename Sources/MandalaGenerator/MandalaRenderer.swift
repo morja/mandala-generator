@@ -850,6 +850,134 @@ struct MandalaRenderer {
             }
         }
 
+        // ── Wash — bleach toward white, desaturate ──
+        if settings.wash > 0.001 {
+            let t = CGFloat(settings.wash)
+            // First strip saturation
+            if let sat = CIFilter(name: "CIColorControls") {
+                sat.setValue(ci, forKey: kCIInputImageKey)
+                sat.setValue(1.0 - t * 0.85, forKey: kCIInputSaturationKey)
+                if let out = sat.outputImage?.cropped(to: ext) { ci = out }
+            }
+            // Then push toward white via color matrix
+            if let mat = CIFilter(name: "CIColorMatrix") {
+                let s = 1.0 - t * 0.55
+                let b = t * 0.55
+                mat.setValue(ci, forKey: kCIInputImageKey)
+                mat.setValue(CIVector(x: s, y: 0, z: 0, w: 0), forKey: "inputRVector")
+                mat.setValue(CIVector(x: 0, y: s, z: 0, w: 0), forKey: "inputGVector")
+                mat.setValue(CIVector(x: 0, y: 0, z: s, w: 0), forKey: "inputBVector")
+                mat.setValue(CIVector(x: 0, y: 0, z: 0, w: 1), forKey: "inputAVector")
+                mat.setValue(CIVector(x: b, y: b, z: b, w: 0), forKey: "inputBiasVector")
+                if let out = mat.outputImage?.cropped(to: ext) { ci = out }
+            }
+        }
+
+        // ── Sepia — warm antique tone ──
+        if settings.sepia > 0.001,
+           let sep = CIFilter(name: "CISepiaTone") {
+            sep.setValue(ci, forKey: kCIInputImageKey)
+            sep.setValue(CGFloat(settings.sepia), forKey: kCIInputIntensityKey)
+            if let out = sep.outputImage?.cropped(to: ext) { ci = out }
+        }
+
+        // ── Fade — mix toward flat neutral gray ──
+        if settings.fade > 0.001,
+           let mat = CIFilter(name: "CIColorMatrix") {
+            let t = CGFloat(settings.fade * 0.75)
+            let s = 1.0 - t
+            let b = t * 0.45
+            mat.setValue(ci, forKey: kCIInputImageKey)
+            mat.setValue(CIVector(x: s, y: 0, z: 0, w: 0), forKey: "inputRVector")
+            mat.setValue(CIVector(x: 0, y: s, z: 0, w: 0), forKey: "inputGVector")
+            mat.setValue(CIVector(x: 0, y: 0, z: s, w: 0), forKey: "inputBVector")
+            mat.setValue(CIVector(x: 0, y: 0, z: 0, w: 1), forKey: "inputAVector")
+            mat.setValue(CIVector(x: b, y: b, z: b, w: 0), forKey: "inputBiasVector")
+            if let out = mat.outputImage?.cropped(to: ext) { ci = out }
+        }
+
+        // ── Bloom — soft wide glow bleed via multi-scale screen blur ──
+        if settings.bloom > 0.001 {
+            let radii: [CGFloat] = [4, 12, 30, 70]
+            let weights: [CGFloat] = [0.5, 0.35, 0.22, 0.12]
+            for (radius, weight) in zip(radii, weights) {
+                let blurR = CGFloat(bufferSize) * radius / 1000.0 * CGFloat(settings.bloom)
+                if blurR < 0.5 { continue }
+                if let blur = CIFilter(name: "CIGaussianBlur"),
+                   let tint = CIFilter(name: "CIColorMatrix"),
+                   let screen = CIFilter(name: "CIScreenBlendMode") {
+                    blur.setValue(ci, forKey: kCIInputImageKey)
+                    blur.setValue(blurR, forKey: kCIInputRadiusKey)
+                    let blurred = blur.outputImage?.cropped(to: ext)
+                    tint.setValue(blurred, forKey: kCIInputImageKey)
+                    tint.setValue(CIVector(x: weight, y: 0, z: 0, w: 0), forKey: "inputRVector")
+                    tint.setValue(CIVector(x: 0, y: weight, z: 0, w: 0), forKey: "inputGVector")
+                    tint.setValue(CIVector(x: 0, y: 0, z: weight, w: 0), forKey: "inputBVector")
+                    tint.setValue(CIVector(x: 0, y: 0, z: 0, w: 1), forKey: "inputAVector")
+                    tint.setValue(CIVector(x: 0, y: 0, z: 0, w: 0), forKey: "inputBiasVector")
+                    screen.setValue(ci, forKey: kCIInputBackgroundImageKey)
+                    screen.setValue(tint.outputImage?.cropped(to: ext), forKey: kCIInputImageKey)
+                    if let out = screen.outputImage?.cropped(to: ext) { ci = out }
+                }
+            }
+        }
+
+        // ── Local Contrast — clarity / mid-tone edge crunch via unsharp mask ──
+        // Blurs at two scales; subtracts the large blur from original, adds back amplified
+        if settings.localContrast > 0.001 {
+            let amount = CGFloat(settings.localContrast)
+            // Large-radius blur captures global tonal distribution
+            let largeR  = CGFloat(bufferSize) * 0.045
+            // Medium-radius for fine detail boost
+            let mediumR = CGFloat(bufferSize) * 0.008
+            func unsharpLayer(_ radius: CGFloat, _ strength: CGFloat) {
+                guard let blur = CIFilter(name: "CIGaussianBlur"),
+                      let sub  = CIFilter(name: "CISubtractBlendMode"),
+                      let tint = CIFilter(name: "CIColorMatrix"),
+                      let add  = CIFilter(name: "CIAdditionCompositing") else { return }
+                blur.setValue(ci, forKey: kCIInputImageKey)
+                blur.setValue(radius, forKey: kCIInputRadiusKey)
+                guard let blurred = blur.outputImage?.cropped(to: ext) else { return }
+                // detail = original - blurred  (CISubtractBlendMode: bg - overlay)
+                sub.setValue(ci,      forKey: kCIInputBackgroundImageKey)
+                sub.setValue(blurred, forKey: kCIInputImageKey)
+                guard let detail = sub.outputImage?.cropped(to: ext) else { return }
+                // Scale detail by strength
+                tint.setValue(detail, forKey: kCIInputImageKey)
+                let s = strength * amount
+                tint.setValue(CIVector(x: s, y: 0, z: 0, w: 0), forKey: "inputRVector")
+                tint.setValue(CIVector(x: 0, y: s, z: 0, w: 0), forKey: "inputGVector")
+                tint.setValue(CIVector(x: 0, y: 0, z: s, w: 0), forKey: "inputBVector")
+                tint.setValue(CIVector(x: 0, y: 0, z: 0, w: 1), forKey: "inputAVector")
+                tint.setValue(CIVector(x: 0, y: 0, z: 0, w: 0), forKey: "inputBiasVector")
+                add.setValue(ci, forKey: kCIInputBackgroundImageKey)
+                add.setValue(tint.outputImage?.cropped(to: ext), forKey: kCIInputImageKey)
+                if let out = add.outputImage?.cropped(to: ext) { ci = out }
+            }
+            unsharpLayer(largeR,  0.7)   // broad structure boost
+            unsharpLayer(mediumR, 0.4)   // fine detail crunch
+        }
+
+        // ── Grain — film grain / analogue noise ──
+        if settings.grain > 0.001,
+           let random = CIFilter(name: "CIRandomGenerator"),
+           let noiseCtrl = CIFilter(name: "CIColorMatrix") {
+            let amount = CGFloat(settings.grain * 0.28)
+            let bias   = CGFloat(-settings.grain * 0.14)
+            noiseCtrl.setValue(random.outputImage?.cropped(to: ext), forKey: kCIInputImageKey)
+            noiseCtrl.setValue(CIVector(x: amount, y: 0, z: 0, w: 0), forKey: "inputRVector")
+            noiseCtrl.setValue(CIVector(x: 0, y: amount, z: 0, w: 0), forKey: "inputGVector")
+            noiseCtrl.setValue(CIVector(x: 0, y: 0, z: amount, w: 0), forKey: "inputBVector")
+            noiseCtrl.setValue(CIVector(x: 0, y: 0, z: 0, w: 0), forKey: "inputAVector")
+            noiseCtrl.setValue(CIVector(x: bias, y: bias, z: bias, w: 0), forKey: "inputBiasVector")
+            if let grainImg = noiseCtrl.outputImage?.cropped(to: ext),
+               let add = CIFilter(name: "CIAdditionCompositing") {
+                add.setValue(ci, forKey: kCIInputBackgroundImageKey)
+                add.setValue(grainImg, forKey: kCIInputImageKey)
+                if let out = add.outputImage?.cropped(to: ext) { ci = out }
+            }
+        }
+
         // ── Brightness & Contrast ──
         if settings.brightness != 0.5 || settings.contrast != 0.5 {
             let b = CGFloat((settings.brightness - 0.5) * 0.6)   // −0.3 … +0.3
@@ -936,6 +1064,49 @@ struct MandalaRenderer {
             if let starCG = starBuffer.toCGImage() {
                 let starGlowed = applyGlow(image: starCG, intensity: 0.28)
                 result = screenComposite(base: result, overlay: starGlowed)
+            }
+        }
+
+        // ── Glitter — dense tiny iridescent rainbow sparkles ──
+        if settings.glitter > 0 {
+            let glitterBuffer = PixelBuffer(width: bufferSize, height: bufferSize)
+            var rng = SeededRNG(seed: settings.glitterSeed)
+            let nGlitter = Int(settings.glitter * 2500) + 80
+            let wf = Float(bufferSize)
+
+            for _ in 0..<nGlitter {
+                let x = rng.nextFloat() * wf
+                let y = rng.nextFloat() * wf
+                let hue = rng.nextFloat()
+                let bright = Float(settings.glitter) * (rng.nextFloat() * 0.55 + 0.45) * 9.0
+                // HSV → RGB inline
+                let hi = Int(hue * 6.0) % 6
+                let f  = hue * 6.0 - Float(Int(hue * 6.0))
+                let q  = 1.0 - f
+                let rgb: (Float, Float, Float)
+                switch hi {
+                case 0: rgb = (1, f, 0)
+                case 1: rgb = (q, 1, 0)
+                case 2: rgb = (0, 1, f)
+                case 3: rgb = (0, q, 1)
+                case 4: rgb = (f, 0, 1)
+                default: rgb = (1, 0, q)
+                }
+                let col = (r: rgb.0*bright, g: rgb.1*bright, b: rgb.2*bright)
+                let len = (rng.nextFloat() * 0.006 + 0.002) * wf
+                let wt  = bright * 0.12
+                // Tiny cross
+                glitterBuffer.addLine(x0: x-len, y0: y, x1: x+len, y1: y, color: col, weight: wt)
+                glitterBuffer.addLine(x0: x, y0: y-len*0.65, x1: x, y1: y+len*0.65, color: col, weight: wt)
+                // Diagonal glints at reduced brightness
+                let d = len * 0.45
+                let dc = (r: col.r*0.5, g: col.g*0.5, b: col.b*0.5)
+                glitterBuffer.addLine(x0: x-d, y0: y-d, x1: x+d, y1: y+d, color: dc, weight: wt*0.6)
+                glitterBuffer.addLine(x0: x+d, y0: y-d, x1: x-d, y1: y+d, color: dc, weight: wt*0.6)
+            }
+            if let gCG = glitterBuffer.toCGImage() {
+                let gGlowed = applyGlow(image: gCG, intensity: 0.18)
+                result = screenComposite(base: result, overlay: gGlowed)
             }
         }
 

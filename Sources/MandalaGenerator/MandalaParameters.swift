@@ -105,16 +105,26 @@ struct EffectsLayerSettings: Equatable, Codable {
     var contrast: Double    = 0.5   // 0=flat, 0.5=neutral, 1=punchy
     var relief: Double      = 0.0   // 3D emboss/relief depth
     var reliefAngle: Double = 0.125 // 0–1 → 0–360° light direction
+    // New tonal / atmospheric effects
+    var wash: Double        = 0.0   // bleached / washed-out (push toward white)
+    var sepia: Double       = 0.0   // warm sepia tone
+    var fade: Double        = 0.0   // fade to flat gray / matte finish
+    var bloom: Double       = 0.0   // soft wide glow bleed
+    var grain: Double       = 0.0   // film grain / noise
+    var glitter: Double     = 0.0   // dense tiny rainbow sparkles
+    var localContrast: Double = 0.0 // mid-range clarity / local contrast enhancement
     // Per-effect seeds — each can be randomized independently
     var dimmingSeed: UInt64    = 11
     var erasureSeed: UInt64    = 22
     var highlightsSeed: UInt64 = 33
     var starsSeed: UInt64      = 44
+    var glitterSeed: UInt64    = 55
 
     enum CodingKeys: String, CodingKey {
         case isEnabled, dimming, erasure, highlights, stars, vignette, chromatic
         case brightness, contrast, relief, reliefAngle
-        case dimmingSeed, erasureSeed, highlightsSeed, starsSeed
+        case wash, sepia, fade, bloom, grain, glitter, localContrast
+        case dimmingSeed, erasureSeed, highlightsSeed, starsSeed, glitterSeed
     }
 
     init(isEnabled: Bool = false) {
@@ -134,10 +144,18 @@ struct EffectsLayerSettings: Equatable, Codable {
         contrast       = c.decodeSafe(Double.self,  forKey: .contrast,       default: 0.5)
         relief         = c.decodeSafe(Double.self,  forKey: .relief,         default: 0.0)
         reliefAngle    = c.decodeSafe(Double.self,  forKey: .reliefAngle,    default: 0.125)
+        wash           = c.decodeSafe(Double.self,  forKey: .wash,           default: 0.0)
+        sepia          = c.decodeSafe(Double.self,  forKey: .sepia,          default: 0.0)
+        fade           = c.decodeSafe(Double.self,  forKey: .fade,           default: 0.0)
+        bloom          = c.decodeSafe(Double.self,  forKey: .bloom,          default: 0.0)
+        grain          = c.decodeSafe(Double.self,  forKey: .grain,          default: 0.0)
+        glitter        = c.decodeSafe(Double.self,  forKey: .glitter,        default: 0.0)
+        localContrast  = c.decodeSafe(Double.self,  forKey: .localContrast,  default: 0.0)
         dimmingSeed    = c.decodeSafe(UInt64.self,  forKey: .dimmingSeed,    default: 11)
         erasureSeed    = c.decodeSafe(UInt64.self,  forKey: .erasureSeed,    default: 22)
         highlightsSeed = c.decodeSafe(UInt64.self,  forKey: .highlightsSeed, default: 33)
         starsSeed      = c.decodeSafe(UInt64.self,  forKey: .starsSeed,      default: 44)
+        glitterSeed    = c.decodeSafe(UInt64.self,  forKey: .glitterSeed,    default: 55)
     }
 }
 
