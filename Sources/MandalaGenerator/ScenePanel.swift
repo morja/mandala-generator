@@ -329,22 +329,6 @@ struct ExportCard: View {
 
     var body: some View {
         VStack(spacing: 8) {
-            // Render (preview) size
-            HStack(spacing: 6) {
-                Text("Render")
-                    .font(.system(size: 10)).foregroundColor(.secondary)
-                    .frame(width: 52, alignment: .leading)
-                Picker("", selection: $appState.parameters.previewSize) {
-                    Text("512 px").tag(512)
-                    Text("800 px").tag(800)
-                    Text("1024 px").tag(1024)
-                    Text("1400 px").tag(1400)
-                    Text("2048 px").tag(2048)
-                }
-                .pickerStyle(.menu).labelsHidden().fixedSize()
-                Spacer()
-            }
-
             // Export size
             HStack(spacing: 6) {
                 Text("Export")

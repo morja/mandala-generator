@@ -118,6 +118,19 @@ struct CanvasView: View {
             .help("Go forward (⌘])")
             .keyboardShortcut("]", modifiers: .command)
 
+            Divider().frame(height: 20)
+
+            Picker("", selection: $appState.parameters.previewSize) {
+                Text("512").tag(512)
+                Text("800").tag(800)
+                Text("1024").tag(1024)
+                Text("1400").tag(1400)
+                Text("2048").tag(2048)
+            }
+            .pickerStyle(.segmented)
+            .fixedSize()
+            .help("Render resolution")
+
             Spacer()
 
             if zoomScale != 1.0 || panOffset != .zero {
