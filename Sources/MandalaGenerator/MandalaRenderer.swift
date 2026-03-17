@@ -367,6 +367,16 @@ struct MandalaRenderer {
             drawStarBurstLayers(buffer: buffer, cx: cx, cy: cy, radius: baseRadius,
                                 params: params, palette: palette, rng: &rng)
             return
+        case .universe:
+            drawUniverseLayers(buffer: buffer, cx: cx, cy: cy, radius: baseRadius,
+                               params: params, palette: palette, rng: &rng,
+                               colorOffset: colorOffset, symmetry: symmetry)
+            return
+        case .symbols:
+            drawSymbolsLayers(buffer: buffer, cx: cx, cy: cy, radius: baseRadius,
+                              params: params, palette: palette, rng: &rng,
+                              colorOffset: colorOffset, layerCount: layerCount, symmetry: symmetry)
+            return
         case .mixed:
             // Seed-driven random zone selection — different every render
             var zoneRng = SeededRNG(seed: params.seed &+ 0xbeef1234)
@@ -375,7 +385,8 @@ struct MandalaRenderer {
                                               .butterfly, .floral, .stringArt, .sunburst, .geometric, .fractal,
                                               .phyllotaxis, .hypocycloid, .waveInterference, .spiderWeb,
                                               .weave, .sacredGeometry, .radialMesh, .flowField, .tendril,
-                                              .moire, .voronoi, .torusKnot, .sphereGrid, .tesseract, .starBurst]
+                                              .moire, .voronoi, .torusKnot, .sphereGrid, .tesseract, .starBurst,
+                                              .universe, .symbols]
             let radii: [Double] = [1.0, 0.72, 0.45]
             let sub = max(2, layerCount / 3)
             for (zi, zRadius) in radii.enumerated() {
@@ -482,6 +493,14 @@ struct MandalaRenderer {
                 case .starBurst:
                     drawStarBurstLayers(buffer: buffer, cx: cx, cy: cy, radius: scaled,
                                        params: params, palette: palette, rng: &rng)
+                case .universe:
+                    drawUniverseLayers(buffer: buffer, cx: cx, cy: cy, radius: scaled,
+                                       params: params, palette: palette, rng: &rng,
+                                       colorOffset: 0, symmetry: symmetry)
+                case .symbols:
+                    drawSymbolsLayers(buffer: buffer, cx: cx, cy: cy, radius: scaled,
+                                      params: params, palette: palette, rng: &rng,
+                                      colorOffset: 0, layerCount: sub, symmetry: symmetry)
                 case .mixed:
                     collectSpirographTasks(into: &tasks, cx: cx, cy: cy, radius: scaled,
                                            params: params, rng: &rng, layerCount: sub,
@@ -3276,6 +3295,717 @@ struct MandalaRenderer {
             return ctx.createCGImage(satImg, from: ext) ?? image
         }
         return ctx.createCGImage(out, from: ext) ?? image
+    }
+
+    // MARK: - Universe Layer
+
+    private static func drawUniverseLayers(buffer: PixelBuffer, cx: Float, cy: Float,
+                                           radius: Double, params: MandalaParameters,
+                                           palette: ColorPalette, rng: inout SeededRNG,
+                                           colorOffset: Double, symmetry: Int) {
+        let R = Float(radius)
+        let density = params.density
+        let complexity = params.complexity
+        let w = max(0.5, Float(0.6 + complexity * 1.0) * R / 900.0)
+
+        func col(at t: Double) -> (r: Float, g: Float, b: Float) {
+            let c = palette.color(at: (t + colorOffset).truncatingRemainder(dividingBy: 1.0))
+            return (Float(c.redComponent), Float(c.greenComponent), Float(c.blueComponent))
+        }
+        func addCircle(_ bx: Float, _ by: Float, _ r: Float,
+                       _ color: (r: Float, g: Float, b: Float), _ weight: Float, _ steps: Int = 100) {
+            guard r > 0.5 else { return }
+            let step = Float.pi * 2.0 / Float(steps)
+            for i in 0..<steps {
+                let t0 = Float(i) * step, t1 = t0 + step
+                buffer.addLine(x0: bx + cos(t0)*r, y0: by + sin(t0)*r,
+                               x1: bx + cos(t1)*r, y1: by + sin(t1)*r, color: color, weight: weight)
+            }
+        }
+        func addEllipse(_ bx: Float, _ by: Float, _ rx: Float, _ ry: Float,
+                        _ color: (r: Float, g: Float, b: Float), _ weight: Float, _ steps: Int = 100) {
+            guard rx > 0.5, ry > 0.5 else { return }
+            let step = Float.pi * 2.0 / Float(steps)
+            for i in 0..<steps {
+                let t0 = Float(i) * step, t1 = t0 + step
+                buffer.addLine(x0: bx + cos(t0)*rx, y0: by + sin(t0)*ry,
+                               x1: bx + cos(t1)*rx, y1: by + sin(t1)*ry, color: color, weight: weight)
+            }
+        }
+        // Symmetry helper: run body once per symmetry copy, rotating (rx,ry) relative to center
+        func forSym(rx: Float, ry: Float, _ body: (Float, Float) -> Void) {
+            for s in 0..<symmetry {
+                let a = Float(s) * .pi * 2.0 / Float(symmetry)
+                let ca = cos(a), sa = sin(a)
+                body(cx + rx*ca - ry*sa, cy + rx*sa + ry*ca)
+            }
+        }
+
+        // Draw a planet with atmosphere halos
+        func drawPlanet(_ bx: Float, _ by: Float, _ pr: Float, _ ct: Double, _ wMul: Float = 1.0) {
+            let pc = col(at: ct)
+            addCircle(bx, by, pr, pc, w * 3.0 * wMul, 140)
+            for i in 1...5 {
+                let haloR = pr * (1.0 + Float(i) * 0.22)
+                let a = Float(1.0 - Double(i) * 0.17)
+                let hc = col(at: ct + Double(i) * 0.03)
+                addCircle(bx, by, haloR, (hc.r*a, hc.g*a, hc.b*a), w * 0.7 * wMul, 100)
+            }
+        }
+        // Draw a mini spiral galaxy at position
+        func drawMiniGalaxy(_ gx: Float, _ gy: Float, _ gR: Float, _ gt: Double, _ arms: Int = 2) {
+            let gc = col(at: gt)
+            for i in 0...4 {
+                let a = Float(1.0 - Double(i)*0.18)
+                addCircle(gx, gy, gR*Float(0.2+Double(i)*0.18), (gc.r*a, gc.g*a, gc.b*a), w*Float(2.5-Double(i)*0.4), 35)
+            }
+            let ac = col(at: gt + 0.1)
+            for arm in 0..<arms {
+                let aOff = Float(arm) * .pi * 2.0 / Float(arms) + Float(rng.nextDouble() * 0.6)
+                for s in 0..<70 {
+                    let t = Float(s) / 70.0
+                    let lr = gR * pow(t, 0.48)
+                    let th = t * .pi * 4.0 + aOff
+                    let x0 = gx + cos(th)*lr, y0 = gy + sin(th)*lr
+                    let t2 = t + 1.0/70.0
+                    let lr2 = gR * pow(t2, 0.48)
+                    let th2 = t2 * .pi * 4.0 + aOff
+                    let x1 = gx + cos(th2)*lr2, y1 = gy + sin(th2)*lr2
+                    buffer.addLine(x0: x0, y0: y0, x1: x1, y1: y1,
+                                   color: ac, weight: w*(1.2-t*0.7))
+                }
+            }
+        }
+
+        // Stars — always present, scattered in symmetry sectors
+        let starCount = Int(80 + density * 700)
+        let sectorAngle = Float.pi * 2.0 / Float(max(1, symmetry))
+        for _ in 0..<starCount {
+            // Place star in first sector, then replicate via forSym
+            let ang = Float(rng.nextDouble()) * sectorAngle
+            let dist = Float(sqrt(rng.nextDouble())) * R * 0.96
+            let rx = cos(ang) * dist, ry = sin(ang) * dist
+            let bright = Float(rng.nextDouble() * 0.5 + 0.5)
+            let sc = col(at: rng.nextDouble() * 0.4 + 0.55)
+            let sr = Float(rng.nextDouble() * 1.8 + 0.5)
+            forSym(rx: rx, ry: ry) { sx, sy in
+                addCircle(sx, sy, sr, (sc.r*bright, sc.g*bright, sc.b*bright), 0.6, 8)
+            }
+        }
+
+        let level = density
+
+        if level < 0.14 {
+            // ── Level 1: Single abstract planet ──
+            let pr = R * 0.32
+            drawPlanet(cx, cy, pr, 0.28)
+            addEllipse(cx, cy, pr * 1.05, pr * 0.35, col(at: 0.35), w * 0.8, 100)
+            // Moon — replicated per symmetry at angular offset
+            let moonAng = Float(rng.nextDouble()) * sectorAngle
+            let moonDist = pr * 1.9
+            forSym(rx: cos(moonAng)*moonDist, ry: sin(moonAng)*moonDist) { mx, my in
+                drawPlanet(mx, my, pr*0.22, 0.55, 0.7)
+            }
+
+        } else if level < 0.27 {
+            // ── Level 2: Two planets ──
+            let off1: (Float, Float) = (-R*0.35, R*0.06)
+            let off2: (Float, Float) = (R*0.30, -R*0.08)
+            forSym(rx: off1.0, ry: off1.1) { px, py in drawPlanet(px, py, R*0.22, 0.18) }
+            forSym(rx: off2.0, ry: off2.1) { px, py in drawPlanet(px, py, R*0.16, 0.56) }
+            addCircle(cx, cy, R*0.32, col(at: 0.72), w*0.25, 80)
+            // Moon
+            let mAng = Float(rng.nextDouble()) * sectorAngle
+            let mBase = (off1.0 + cos(mAng)*R*0.22*2.0, off1.1 + sin(mAng)*R*0.22*2.0)
+            forSym(rx: mBase.0, ry: mBase.1) { px, py in drawPlanet(px, py, R*0.05, 0.6, 0.6) }
+
+        } else if level < 0.40 {
+            // ── Level 3: Saturn ──
+            let pr = R * 0.26
+            let pc = col(at: 0.42)
+            addCircle(cx, cy, pr, pc, w * 3.0, 140)
+            for j in 1...4 {
+                let hc = col(at: 0.40 + Double(j)*0.025)
+                let a = Float(1.0 - Double(j)*0.18)
+                addCircle(cx, cy, pr*(1.0+Float(j)*0.14), (hc.r*a, hc.g*a, hc.b*a), w*0.6, 100)
+            }
+            for b in 0..<3 {
+                let bf = Float(0.55 + Double(b)*0.15)
+                addEllipse(cx, cy, pr*bf, pr*0.18, col(at: 0.38+Double(b)*0.04), w*0.7, 100)
+            }
+            for ri in 0...6 {
+                let rf = Float(1.5 + Double(ri) * 0.16)
+                let rc = col(at: 0.55 + Double(ri)*0.04)
+                let a = Float(1.0 - Double(ri)*0.10)
+                addEllipse(cx, cy, pr*rf, pr*0.38, (rc.r*a, rc.g*a, rc.b*a), w*0.7, 140)
+            }
+            // Companion moons — one per symmetry sector
+            let mAng = Float(rng.nextDouble()) * sectorAngle
+            forSym(rx: cos(mAng)*pr*3.0, ry: sin(mAng)*pr*3.0) { mx, my in
+                drawPlanet(mx, my, pr*0.14, 0.65, 0.7)
+            }
+
+        } else if level < 0.54 {
+            // ── Level 4: Solar system ──
+            let sunR = R * 0.12
+            let sunC = col(at: 0.13)
+            for i in 0...7 {
+                let a = Float(1.0 - Double(i)*0.11)
+                addCircle(cx, cy, sunR*(1.0+Float(i)*0.4), (sunC.r*a, sunC.g*a, sunC.b*a), w*Float(3.5-Double(i)*0.35), 120)
+            }
+            // Solar flares replicated by symmetry
+            let flareCount = max(2, 6 / max(1, symmetry))
+            for f in 0..<flareCount {
+                let fa = Float(f) * sectorAngle / Float(flareCount) + Float(rng.nextDouble()*0.3)
+                let fr = sunR * Float(1.4 + rng.nextDouble() * 0.8)
+                forSym(rx: cos(fa)*fr, ry: sin(fa)*fr) { x1, y1 in
+                    buffer.addLine(x0: cx + cos(fa)*sunR*1.3, y0: cy + sin(fa)*sunR*1.3,
+                                   x1: x1, y1: y1, color: col(at: 0.1), weight: w*0.8)
+                }
+            }
+            let planetData: [(Double, Double, Double)] = [
+                (0.18, 0.028, 0.25), (0.27, 0.045, 0.45), (0.38, 0.060, 0.60),
+                (0.50, 0.055, 0.75), (0.63, 0.100, 0.12), (0.76, 0.080, 0.35),
+                (0.88, 0.065, 0.55), (0.97, 0.045, 0.70)
+            ]
+            for (orbitFrac, sizeFrac, ct) in planetData {
+                let orbitR = R * Float(orbitFrac)
+                addCircle(cx, cy, orbitR, col(at: ct*0.4+0.48), w*0.22, 90)
+                let pAng = Float(rng.nextDouble()) * sectorAngle
+                let rx = cos(pAng)*orbitR, ry = sin(pAng)*orbitR
+                let pr = R * Float(sizeFrac)
+                forSym(rx: rx, ry: ry) { px, py in
+                    drawPlanet(px, py, pr, ct, 0.9)
+                    if orbitFrac > 0.60 && orbitFrac < 0.65 {
+                        for ri in 0...3 {
+                            addEllipse(px, py, pr*Float(1.5+Double(ri)*0.15), pr*0.35,
+                                       col(at: ct+0.12), w*0.5, 80)
+                        }
+                    }
+                }
+            }
+
+        } else if level < 0.67 {
+            // ── Level 5: Milky Way spiral galaxy ──
+            // Spiral arms naturally wrap the full circle — multiply arm count by symmetry
+            // so each symmetry sector gets the same arm density
+            let armCount = (2 + Int(complexity * 3)) * max(1, symmetry)
+            let stepsPerArm = Int(280 + complexity * 420)
+            for i in 0...8 {
+                let br = R * Float(0.04 + Double(i)*0.038)
+                let a = Float(1.0 - Double(i)*0.10)
+                let bc = col(at: 0.33 + Double(i)*0.01)
+                addCircle(cx, cy, br, (bc.r*a, bc.g*a, bc.b*a), w*Float(3.5-Double(i)*0.3), 70)
+            }
+            addEllipse(cx, cy, R*0.30, R*0.06, col(at: 0.28), w*0.5, 80)
+            for arm in 0..<armCount {
+                let armOff = Float(arm) * .pi * 2.0 / Float(armCount)
+                let ac = col(at: Double(arm)/Double(armCount) * 0.7 + 0.05)
+                for s in 0..<stepsPerArm {
+                    let t = Float(s) / Float(stepsPerArm)
+                    let logR = R * 0.94 * pow(t, 0.52)
+                    let theta = t * .pi * 5.5 + armOff
+                    let scatter = Float(rng.nextDouble()*0.08 - 0.04) * logR
+                    let x0 = cx + cos(theta)*(logR+scatter), y0 = cy + sin(theta)*(logR+scatter)
+                    let t2 = t + 1.0/Float(stepsPerArm)
+                    let logR2 = R * 0.94 * pow(t2, 0.52)
+                    let theta2 = t2 * .pi * 5.5 + armOff
+                    let x1 = cx + cos(theta2)*logR2, y1 = cy + sin(theta2)*logR2
+                    let alpha = t * 0.88 + 0.12
+                    buffer.addLine(x0: x0, y0: y0, x1: x1, y1: y1,
+                                   color: (ac.r*alpha, ac.g*alpha, ac.b*alpha),
+                                   weight: w * (2.0 - t * 1.1))
+                }
+                for _ in 0..<Int(3 + complexity*6) {
+                    let t = Float(0.1 + rng.nextDouble() * 0.85)
+                    let lr = R * 0.94 * pow(t, 0.52)
+                    let th = t * .pi * 5.5 + armOff
+                    let kx = cx + cos(th)*lr, ky = cy + sin(th)*lr
+                    addCircle(kx, ky, R*Float(0.008+rng.nextDouble()*0.018),
+                              col(at: Double(arm)/Double(armCount)*0.7+0.05), w*2.0, 20)
+                }
+            }
+
+        } else if level < 0.82 {
+            // ── Level 6: Multiple galaxies ──
+            let count = max(symmetry, 5 + Int(density * 10))
+            for g in 0..<(count / max(1, symmetry)) {
+                let gt = Double(g) / Double(count / max(1, symmetry))
+                let gAng = Float(gt) * sectorAngle + Float(rng.nextDouble()*0.3)
+                let gDist = R * Float(0.15 + rng.nextDouble() * 0.68)
+                let rx = cos(gAng)*gDist, ry = sin(gAng)*gDist
+                let gR = R * Float(0.06 + rng.nextDouble() * 0.16)
+                let arms = 2 + Int(rng.nextDouble() * 3)
+                let gc = col(at: gt)
+                forSym(rx: rx, ry: ry) { gx, gy in
+                    drawMiniGalaxy(gx, gy, gR, gt, arms)
+                    // Tidal stream toward center
+                    buffer.addLine(x0: gx, y0: gy, x1: cx, y1: cy,
+                                   color: (gc.r*0.2, gc.g*0.2, gc.b*0.2), weight: w*0.2)
+                }
+            }
+            for ri in 0..<4 {
+                let rr = R * Float(0.2 + Double(ri) * 0.22)
+                let rc = col(at: Double(ri)*0.15 + 0.4)
+                addCircle(cx, cy, rr, (rc.r*0.3, rc.g*0.3, rc.b*0.3), w*0.25, 60)
+            }
+
+        } else {
+            // ── Level 7: The Universe — cosmic web ──
+            let nodeCount = Int(16 + density * 55)
+            // Generate nodes in one sector, replicate via symmetry
+            var relNodes: [(Float, Float)] = []
+            for _ in 0..<(nodeCount / max(1, symmetry) + 1) {
+                let ang = Float(rng.nextDouble()) * sectorAngle
+                let dist = Float(sqrt(rng.nextDouble())) * R * 0.92
+                relNodes.append((cos(ang)*dist, sin(ang)*dist))
+            }
+            // Expand to all symmetry copies
+            var nodes: [(Float, Float)] = []
+            for (rx, ry) in relNodes {
+                for s in 0..<symmetry {
+                    let a = Float(s) * .pi * 2.0 / Float(symmetry)
+                    let ca = cos(a), sa = sin(a)
+                    nodes.append((cx + rx*ca - ry*sa, cy + rx*sa + ry*ca))
+                }
+            }
+            let connectDist = R * 0.42
+            for i in 0..<nodes.count {
+                for j in (i+1)..<nodes.count {
+                    let dx = nodes[i].0 - nodes[j].0, dy = nodes[i].1 - nodes[j].1
+                    let d = sqrt(dx*dx + dy*dy)
+                    if d < connectDist {
+                        let alpha = Float(1.0 - Double(d/connectDist)) * 0.75
+                        let tc = Double(i + j) / Double(nodes.count * 2)
+                        let fc = col(at: tc)
+                        buffer.addLine(x0: nodes[i].0, y0: nodes[i].1,
+                                       x1: nodes[j].0, y1: nodes[j].1,
+                                       color: (fc.r*alpha, fc.g*alpha, fc.b*alpha), weight: w*alpha*1.5)
+                    }
+                }
+                let nc = col(at: Double(i) / Double(nodes.count) * 0.65 + 0.12)
+                let cr = R * Float(0.025 + rng.nextDouble() * 0.06)
+                for ri in 0...3 {
+                    let a = Float(1.0 - Double(ri)*0.22)
+                    addCircle(nodes[i].0, nodes[i].1, cr*Float(1.0+Double(ri)*0.55),
+                              (nc.r*a, nc.g*a, nc.b*a), w*Float(2.5-Double(ri)*0.5), 30)
+                }
+                if cr > R * 0.04 {
+                    drawMiniGalaxy(nodes[i].0, nodes[i].1, cr*0.8,
+                                   Double(i)/Double(nodes.count)*0.65+0.12, 2)
+                }
+            }
+            let walls = 4 + Int(complexity * 5)
+            for ri in 0..<walls {
+                let rr = R * Float(0.08 + Double(ri) * 0.84 / Double(walls))
+                let rc = col(at: Double(ri)/Double(walls)*0.45 + 0.48)
+                addCircle(cx, cy, rr, (rc.r*0.4, rc.g*0.4, rc.b*0.4), w*0.3, 70)
+            }
+            for i in 0...5 {
+                let bc = col(at: 0.2 + Double(i)*0.03)
+                let a = Float(1.0 - Double(i)*0.15)
+                addCircle(cx, cy, R*Float(0.04+Double(i)*0.03), (bc.r*a, bc.g*a, bc.b*a), w*Float(3.0-Double(i)*0.4), 50)
+            }
+        }
+    }
+
+    // MARK: - Symbols Layer
+
+    private static func drawSymbolsLayers(buffer: PixelBuffer, cx: Float, cy: Float,
+                                          radius: Double, params: MandalaParameters,
+                                          palette: ColorPalette, rng: inout SeededRNG,
+                                          colorOffset: Double, layerCount: Int, symmetry: Int) {
+        let R = Float(radius)
+        let density = params.density
+        let complexity = params.complexity
+        let baseW = max(0.5, Float(0.6 + complexity * 1.1) * R / 900.0)
+
+        func col(at t: Double) -> (r: Float, g: Float, b: Float) {
+            let c = palette.color(at: (t + colorOffset).truncatingRemainder(dividingBy: 1.0))
+            return (Float(c.redComponent), Float(c.greenComponent), Float(c.blueComponent))
+        }
+        func drawLines(_ pts: [(Float, Float)], bx: Float, by: Float, scale: Float,
+                       rotation: Float, color: (r: Float, g: Float, b: Float), weight: Float) {
+            guard pts.count >= 2 else { return }
+            let ca = cos(rotation), sa = sin(rotation)
+            func tr(_ p: (Float, Float)) -> (Float, Float) {
+                return (bx + (p.0*ca - p.1*sa)*scale, by + (p.0*sa + p.1*ca)*scale)
+            }
+            for i in 1..<pts.count {
+                let p0 = tr(pts[i-1]), p1 = tr(pts[i])
+                buffer.addLine(x0: p0.0, y0: p0.1, x1: p1.0, y1: p1.1, color: color, weight: weight)
+            }
+        }
+        func drawClosed(_ pts: [(Float, Float)], bx: Float, by: Float, scale: Float,
+                        rotation: Float, color: (r: Float, g: Float, b: Float), weight: Float) {
+            guard pts.count >= 2 else { return }
+            var all = pts; all.append(pts[0])
+            drawLines(all, bx: bx, by: by, scale: scale, rotation: rotation, color: color, weight: weight)
+        }
+        func circlePts(_ steps: Int, _ r: Float = 1.0) -> [(Float, Float)] {
+            let s = Float.pi * 2.0 / Float(steps)
+            return (0..<steps).map { (cos(Float($0)*s)*r, sin(Float($0)*s)*r) }
+        }
+        func arcPts(_ start: Float, _ end: Float, _ steps: Int, _ r: Float = 1.0) -> [(Float, Float)] {
+            let range = end - start
+            return (0...steps).map { i in
+                let t = start + Float(i)/Float(steps) * range
+                return (cos(t)*r, sin(t)*r)
+            }
+        }
+
+        // ── Symbol library (20 symbols, normalized to ~radius 1.0) ──
+
+        func heart() -> [(Float, Float)] {
+            return (0...100).map { i in
+                let t = Float(i)/100.0 * .pi * 2
+                return (pow(sin(t),3), -(0.8125*cos(t) - 0.3125*cos(2*t) - 0.125*cos(3*t) - 0.0625*cos(4*t)))
+            }
+        }
+        func peace() -> [[(Float, Float)]] {
+            return [circlePts(80),
+                    [(0,-1),(0,0)],
+                    [(0,0),(-0.866,0.5)],
+                    [(0,0),(0.866,0.5)]]
+        }
+        func infinity() -> [(Float, Float)] {
+            return (0...120).map { i in
+                let t = Float(i)/120.0 * .pi * 2
+                let d = 1.0 + sin(t)*sin(t)
+                return (cos(t)/d, sin(t)*cos(t)/d)
+            }
+        }
+        func eyeOfProvidence() -> [[(Float, Float)]] {
+            let tri: [(Float, Float)] = [(-0.866,0.5),(0.866,0.5),(0,-1.0)]
+            let eye = (0..<60).map { i -> (Float, Float) in
+                let t = Float(i)/59.0 * .pi * 2
+                return (cos(t)*0.32, sin(t)*0.16 - 0.08)
+            }
+            let pupil = circlePts(16, 0.11).map { ($0.0, $0.1 - 0.08) }
+            return [tri, eye, pupil]
+        }
+        func yinYang() -> [[(Float, Float)]] {
+            let outer = circlePts(100)
+            let topS = (0..<40).map { i -> (Float, Float) in
+                let t = Float(i)/39.0 * .pi; return (sin(t)*0.5, cos(t)*0.5)
+            }
+            let botS = (0..<40).map { i -> (Float, Float) in
+                let t = Float(i)/39.0 * .pi; return (-sin(t)*0.5, -cos(t)*0.5)
+            }
+            let dotA = circlePts(20, 0.25).map { ($0.0, $0.1 + 0.5) }
+            let dotB = circlePts(20, 0.25).map { ($0.0, $0.1 - 0.5) }
+            return [outer, topS, botS, dotA, dotB]
+        }
+        func crescent() -> [(Float, Float)] {
+            return circlePts(80) + arcPts(-Float.pi*0.62, Float.pi*0.62, 50, 0.84).map { ($0.0+0.32, $0.1) }
+        }
+        func starOfDavid() -> [[(Float, Float)]] {
+            return [[(0,-1),(0.866,0.5),(-0.866,0.5)],
+                    [(0,1),(0.866,-0.5),(-0.866,-0.5)]]
+        }
+        func pentagram() -> [(Float, Float)] {
+            let v = (0..<5).map { i -> (Float, Float) in
+                let t = Float(i) * .pi * 2.0/5.0 - .pi/2.0
+                return (cos(t), sin(t))
+            }
+            return [v[0],v[2],v[4],v[1],v[3]]
+        }
+        func ankh() -> [[(Float, Float)]] {
+            let oval = (0..<60).map { i -> (Float, Float) in
+                let t = Float(i)/60.0 * .pi * 2; return (cos(t)*0.42, sin(t)*0.46 - 0.54)
+            }
+            return [[(0,-0.18),(0,1.0)],[(-0.62,0.16),(0.62,0.16)],oval]
+        }
+        func om() -> [[(Float, Float)]] {
+            let body = (0..<55).map { i -> (Float, Float) in
+                let t = Float.pi*0.1 + Float(i)/54.0 * Float.pi*1.3
+                return (cos(t)*0.72, sin(t)*0.56)
+            }
+            let curl = (0..<32).map { i -> (Float, Float) in
+                let t = -Float.pi*0.2 + Float(i)/31.0 * Float.pi*1.4
+                return (cos(t)*0.36 + 0.2, sin(t)*0.30 + 0.36)
+            }
+            let tail = (0..<28).map { i -> (Float, Float) in
+                let t = Float(i)/27.0 * Float.pi
+                return (cos(t)*0.26 - 0.36, -sin(t)*0.32 - 0.54)
+            }
+            let dot = circlePts(14, 0.06).map { ($0.0, $0.1 - 0.80) }
+            return [body, curl, tail, [(-0.16,-0.88),(0.16,-0.88)], dot]
+        }
+        func chakra(petals: Int) -> [[(Float, Float)]] {
+            var p: [[(Float, Float)]] = [circlePts(50, 0.42), circlePts(50, 1.0), circlePts(50, 1.45)]
+            for i in 0..<petals {
+                let a = Float(i) * .pi * 2.0/Float(petals)
+                let petal = (0..<22).map { j -> (Float, Float) in
+                    let t = Float(j)/21.0 * .pi
+                    let r = sin(t)*0.42
+                    let pa = a + (t - .pi/2)*0.42
+                    return (cos(pa)*(1.0+r), sin(pa)*(1.0+r))
+                }
+                p.append(petal)
+            }
+            return p
+        }
+        func flowerOfLife() -> [[(Float, Float)]] {
+            var parts: [[(Float, Float)]] = []
+            var centers: [(Float, Float)] = [(0,0)]
+            for i in 0..<6 {
+                let a = Float(i) * .pi/3.0
+                centers.append((cos(a), sin(a)))
+            }
+            for center in centers {
+                parts.append((0..<40).map { i in
+                    let t = Float(i)/39.0 * .pi * 2
+                    return (cos(t)*0.52 + center.0, sin(t)*0.52 + center.1)
+                })
+            }
+            return parts
+        }
+        // Dharma wheel: hub + 8 spokes + rim
+        func dharmaWheel() -> [[(Float, Float)]] {
+            var p: [[(Float, Float)]] = [circlePts(70), circlePts(30, 0.28)]
+            for i in 0..<8 {
+                let a = Float(i) * .pi/4.0
+                p.append([(cos(a)*0.28, sin(a)*0.28), (cos(a)*0.95, sin(a)*0.95)])
+                // Blade decorations
+                let b0 = a + 0.18, b1 = a + 0.32
+                p.append(arcPts(b0, b1, 8, 0.7))
+            }
+            return p
+        }
+        // Merkaba (Star Tetrahedron): two overlapping triangles at different scales
+        func merkaba() -> [[(Float, Float)]] {
+            let up: [(Float, Float)] = [(0,-1.0),(0.866,0.5),(-0.866,0.5)]
+            let dn: [(Float, Float)] = [(0,1.0),(0.866,-0.5),(-0.866,-0.5)]
+            let upS: [(Float, Float)] = [(0,-0.55),(0.476,0.275),(-0.476,0.275)]
+            let dnS: [(Float, Float)] = [(0,0.55),(0.476,-0.275),(-0.476,-0.275)]
+            return [up, dn, upS, dnS, circlePts(60)]
+        }
+        // Triquetra (Celtic trinity knot — approximated with 3 interlocked arcs)
+        func triquetra() -> [[(Float, Float)]] {
+            var p: [[(Float, Float)]] = []
+            for k in 0..<3 {
+                let base = Float(k) * .pi * 2.0/3.0
+                let arc = (0...60).map { i -> (Float, Float) in
+                    let t = base + Float(i)/60.0 * .pi * 4.0/3.0
+                    let r = Float(0.55)
+                    let ox = cos(base + .pi * 2.0/3.0) * 0.3
+                    let oy = sin(base + .pi * 2.0/3.0) * 0.3
+                    return (ox + cos(t)*r, oy + sin(t)*r)
+                }
+                p.append(arc)
+            }
+            p.append(circlePts(50, 1.0))
+            return p
+        }
+        // Ouroboros: snake eating its tail — circle with a slight gap and head
+        func ouroboros() -> [[(Float, Float)]] {
+            let body = (0...90).map { i -> (Float, Float) in
+                let t = Float(i)/90.0 * .pi * 1.85
+                return (cos(t), sin(t))
+            }
+            // Head
+            let headPts: [(Float, Float)] = [(1.0, 0.0),(1.15,-0.1),(1.0,-0.18),(0.85,-0.1),(1.0,0.0)]
+            return [body, headPts]
+        }
+        // Triskelion: three spiraling arms
+        func triskelion() -> [[(Float, Float)]] {
+            var p: [[(Float, Float)]] = []
+            for k in 0..<3 {
+                let offset = Float(k) * .pi * 2.0/3.0
+                let arm = (0...50).map { i -> (Float, Float) in
+                    let t = Float(i)/50.0
+                    let r = t * 0.85
+                    let theta = t * .pi * 2.5 + offset
+                    return (cos(theta)*r, sin(theta)*r)
+                }
+                p.append(arm)
+            }
+            p.append(circlePts(30, 0.12))
+            return p
+        }
+        // Vesica Piscis: two overlapping circles
+        func vesicaPiscis() -> [[(Float, Float)]] {
+            return [circlePts(70).map { ($0.0 - 0.5, $0.1) },
+                    circlePts(70).map { ($0.0 + 0.5, $0.1) }]
+        }
+        // Hamsa: hand outline + eye in palm (stylized)
+        func hamsa() -> [[(Float, Float)]] {
+            // Palm circle + 5 finger lines
+            let palm = circlePts(50, 0.55)
+            var p: [[(Float, Float)]] = [palm]
+            let fingers: [(Float, Double)] = [
+                (0.0, -1.0), (-0.28, -0.96), (-0.52, -0.8), (0.28, -0.96), (0.52, -0.8)
+            ]
+            for (fx, fy) in fingers {
+                p.append([(fx, Float(fy)*0.55), (fx, Float(fy))])
+            }
+            p.append(circlePts(20, 0.22))  // eye outer
+            p.append(circlePts(12, 0.10))  // pupil
+            return p
+        }
+        // Sri Yantra (simplified): nested triangles + circles
+        func sriYantra() -> [[(Float, Float)]] {
+            var p: [[(Float, Float)]] = []
+            p.append(circlePts(70, 1.0))
+            p.append(circlePts(60, 0.85))
+            // 4 upward triangles
+            for i in 0..<4 {
+                let s = Float(1.0 - Double(i) * 0.18)
+                p.append([(0,-s),(s*0.866,s*0.5),(-s*0.866,s*0.5)])
+            }
+            // 5 downward triangles
+            for i in 0..<5 {
+                let s = Float(0.9 - Double(i) * 0.15)
+                p.append([(0,s),(s*0.866,-s*0.5),(-s*0.866,-s*0.5)])
+            }
+            p.append(circlePts(12, 0.08))  // bindu dot
+            return p
+        }
+        // Eye of Horus (stylized)
+        func eyeOfHorus() -> [[(Float, Float)]] {
+            let eyeOuter = arcPts(Float.pi*1.1, Float.pi*2.0 - Float.pi*0.1, 50, 1.0)
+            let eyeLid   = arcPts(Float.pi*0.1, Float.pi*0.9, 50, 1.0)
+            let pupil    = circlePts(30, 0.35)
+            let tail: [(Float, Float)] = [(1.0,0.0),(1.3,0.4),(1.0,0.7),(0.5,0.6)]
+            let brow: [(Float, Float)] = [(-0.5,-0.5),(0.0,-0.8),(0.5,-0.5)]
+            return [eyeOuter, eyeLid, pupil, tail, brow]
+        }
+        // 8-pointed star (Star of Ishtar)
+        func starOfIshtar() -> [(Float, Float)] {
+            var pts: [(Float, Float)] = []
+            for i in 0..<16 {
+                let t = Float(i) * .pi/8.0 - .pi/2.0
+                let r: Float = (i % 2 == 0) ? 1.0 : 0.42
+                pts.append((cos(t)*r, sin(t)*r))
+            }
+            return pts
+        }
+        // Caduceus: central staff + two spiraling curves
+        func caduceus() -> [[(Float, Float)]] {
+            let staff: [(Float, Float)] = [(0,-1.0),(0,1.0)]
+            let snake1 = (0...60).map { i -> (Float, Float) in
+                let t = Float(i)/60.0 * .pi * 3.0 - .pi*1.5
+                return (sin(t)*0.4, Float(i)/60.0 * 2.0 - 1.0)
+            }
+            let snake2 = (0...60).map { i -> (Float, Float) in
+                let t = Float(i)/60.0 * .pi * 3.0 - .pi*0.5
+                return (sin(t)*0.4, Float(i)/60.0 * 2.0 - 1.0)
+            }
+            // Wings
+            let wingL = arcPts(.pi*0.7, .pi*1.4, 20, 0.5).map { ($0.0 - 0.2, $0.1 - 0.65) }
+            let wingR = arcPts(-.pi*0.4, .pi*0.3, 20, 0.5).map { ($0.0 + 0.2, $0.1 - 0.65) }
+            return [staff, snake1, snake2, wingL, wingR]
+        }
+
+        // Dispatch helper
+        func drawSymbol(_ type: Int, bx: Float, by: Float, scale: Float,
+                        rot: Float, c: (r: Float, g: Float, b: Float), wt: Float) {
+            let totalTypes = 20
+            switch type % totalTypes {
+            case 0:
+                drawLines(heart(), bx: bx, by: by, scale: scale, rotation: rot, color: c, weight: wt)
+            case 1:
+                for seg in peace() { drawLines(seg, bx: bx, by: by, scale: scale, rotation: rot, color: c, weight: wt) }
+            case 2:
+                drawLines(infinity(), bx: bx, by: by, scale: scale*1.6, rotation: rot, color: c, weight: wt)
+            case 3:
+                for seg in eyeOfProvidence() { drawClosed(seg, bx: bx, by: by, scale: scale, rotation: rot, color: c, weight: wt) }
+            case 4:
+                for seg in yinYang() { drawLines(seg, bx: bx, by: by, scale: scale, rotation: rot, color: c, weight: wt) }
+            case 5:
+                drawLines(crescent(), bx: bx, by: by, scale: scale, rotation: rot, color: c, weight: wt)
+            case 6:
+                for seg in starOfDavid() { drawClosed(seg, bx: bx, by: by, scale: scale, rotation: rot, color: c, weight: wt) }
+            case 7:
+                drawClosed(pentagram(), bx: bx, by: by, scale: scale, rotation: rot, color: c, weight: wt)
+            case 8:
+                for seg in ankh() { drawLines(seg, bx: bx, by: by, scale: scale, rotation: rot, color: c, weight: wt) }
+            case 9:
+                for seg in om() { drawLines(seg, bx: bx, by: by, scale: scale, rotation: rot, color: c, weight: wt) }
+            case 10:
+                let petals = [4,6,8,10,12,16][min(5, Int(complexity*6))]
+                for seg in chakra(petals: petals) { drawLines(seg, bx: bx, by: by, scale: scale, rotation: rot, color: c, weight: wt) }
+            case 11:
+                for seg in flowerOfLife() { drawLines(seg, bx: bx, by: by, scale: scale*0.52, rotation: rot, color: c, weight: wt) }
+            case 12:
+                for seg in dharmaWheel() { drawLines(seg, bx: bx, by: by, scale: scale, rotation: rot, color: c, weight: wt) }
+            case 13:
+                for seg in merkaba() { drawClosed(seg, bx: bx, by: by, scale: scale, rotation: rot, color: c, weight: wt) }
+            case 14:
+                for seg in triquetra() { drawLines(seg, bx: bx, by: by, scale: scale, rotation: rot, color: c, weight: wt) }
+            case 15:
+                for seg in ouroboros() { drawLines(seg, bx: bx, by: by, scale: scale, rotation: rot, color: c, weight: wt) }
+            case 16:
+                for seg in triskelion() { drawLines(seg, bx: bx, by: by, scale: scale, rotation: rot, color: c, weight: wt) }
+            case 17:
+                for seg in vesicaPiscis() { drawLines(seg, bx: bx, by: by, scale: scale*0.75, rotation: rot, color: c, weight: wt) }
+            case 18:
+                for seg in hamsa() { drawLines(seg, bx: bx, by: by, scale: scale, rotation: rot, color: c, weight: wt) }
+            case 19:
+                for seg in sriYantra() { drawClosed(seg, bx: bx, by: by, scale: scale, rotation: rot, color: c, weight: wt) }
+            case 20:
+                for seg in eyeOfHorus() { drawLines(seg, bx: bx, by: by, scale: scale, rotation: rot, color: c, weight: wt) }
+            case 21:
+                drawClosed(starOfIshtar(), bx: bx, by: by, scale: scale, rotation: rot, color: c, weight: wt)
+            default:
+                for seg in caduceus() { drawLines(seg, bx: bx, by: by, scale: scale, rotation: rot, color: c, weight: wt) }
+            }
+        }
+
+        // Seed → base symbol type + per-ring variation
+        let baseType = Int(rng.next() % 20)
+        let ringCount = max(1, Int(density * 5.0) + 1)
+        let symbolScale = R * Float(0.07 + (1.0 - density) * 0.14)
+
+        for ring in 0..<ringCount {
+            let ringFrac = ringCount > 1 ? Double(ring) / Double(ringCount - 1) : 0.5
+            let ringRadius = R * Float(0.14 + ringFrac * 0.78)
+            let countInRing = max(symmetry, (Int(density * 9) + symmetry) / symmetry * symmetry)
+            let scale = symbolScale * Float(1.0 - ringFrac * 0.32)
+            let ringColorT = ringFrac * 0.72 + Double(ring) * 0.09
+            // Each ring gets its own symbol type for more variety
+            let ringType = (baseType + ring * 3) % 20
+
+            for si in 0..<countInRing {
+                let frac = Double(si) / Double(countInRing)
+                let angle = Float(frac) * .pi * 2
+                let sx = cx + cos(angle)*ringRadius, sy = cy + sin(angle)*ringRadius
+                let rot = angle + .pi/2
+                let ct = (ringColorT + frac * params.colorDrift).truncatingRemainder(dividingBy: 1.0)
+                let c = col(at: ct)
+                let wt = baseW * Float(0.85 + complexity * 0.75)
+                drawSymbol(ringType, bx: sx, by: sy, scale: scale, rot: rot, c: c, wt: wt)
+
+                // Glow rings around each symbol
+                if complexity > 0.35 {
+                    let rc = col(at: (ct + 0.14).truncatingRemainder(dividingBy: 1.0))
+                    let circ = circlePts(44)
+                    drawClosed(circ, bx: sx, by: sy, scale: scale*1.3, rotation: 0,
+                               color: (rc.r*0.55, rc.g*0.55, rc.b*0.55), weight: wt*0.4)
+                    if complexity > 0.65 {
+                        drawClosed(circ, bx: sx, by: sy, scale: scale*1.65, rotation: 0,
+                                   color: (rc.r*0.28, rc.g*0.28, rc.b*0.28), weight: wt*0.28)
+                    }
+                }
+            }
+        }
+
+        // Center symbol — larger, different type from rings
+        let centerType = (baseType + 7) % 20
+        let centerScale = R * Float(0.21 + complexity * 0.13)
+        let centerC = col(at: 0.5)
+        drawSymbol(centerType, bx: cx, by: cy, scale: centerScale, rot: 0, c: centerC, wt: baseW * 2.2)
+        // Second concentric symbol at smaller scale
+        let innerC = col(at: 0.25)
+        drawSymbol((centerType + 5) % 20, bx: cx, by: cy, scale: centerScale * 0.5, rot: Float.pi/6, c: innerC, wt: baseW * 1.4)
+        // Decorative rings
+        for ri in 0..<(2 + Int(complexity*3)) {
+            let rr = centerScale * Float(1.3 + Double(ri)*0.4)
+            let rc = col(at: (0.5 + Double(ri)*0.12).truncatingRemainder(dividingBy: 1.0))
+            drawClosed(circlePts(60), bx: cx, by: cy, scale: rr, rotation: 0,
+                       color: (rc.r*0.5, rc.g*0.5, rc.b*0.5), weight: baseW*0.5)
+        }
     }
 
     private static func downscaleLanczos(image: CGImage, targetSize: Int) -> CGImage {

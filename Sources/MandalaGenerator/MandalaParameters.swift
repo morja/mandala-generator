@@ -230,6 +230,7 @@ enum MandalaStyle: String, CaseIterable, Identifiable, Codable {
     }
     case phyllotaxis, hypocycloid, waveInterference, spiderWeb, weave, sacredGeometry, radialMesh, flowField, tendril, moire, voronoi
     case torusKnot, sphereGrid, tesseract
+    case universe, symbols
     var id: String { rawValue }
     var displayName: String {
         switch self {
@@ -259,6 +260,8 @@ enum MandalaStyle: String, CaseIterable, Identifiable, Codable {
         case .torusKnot:       return "Torus Knot"
         case .sphereGrid:      return "Sphere Grid"
         case .tesseract:       return "Tesseract"
+        case .universe:        return "Universe"
+        case .symbols:         return "Symbols"
         }
     }
     var sfSymbol: String {
@@ -289,6 +292,8 @@ enum MandalaStyle: String, CaseIterable, Identifiable, Codable {
         case .torusKnot:       return "hurricane"
         case .sphereGrid:      return "globe"
         case .tesseract:       return "square.on.square"
+        case .universe:        return "sparkles"
+        case .symbols:         return "heart.circle"
         }
     }
 }
