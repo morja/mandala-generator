@@ -329,9 +329,25 @@ struct ExportCard: View {
 
     var body: some View {
         VStack(spacing: 8) {
-            // Size
+            // Render (preview) size
             HStack(spacing: 6) {
-                Text("Size")
+                Text("Render")
+                    .font(.system(size: 10)).foregroundColor(.secondary)
+                    .frame(width: 52, alignment: .leading)
+                Picker("", selection: $appState.parameters.previewSize) {
+                    Text("512 px").tag(512)
+                    Text("800 px").tag(800)
+                    Text("1024 px").tag(1024)
+                    Text("1400 px").tag(1400)
+                    Text("2048 px").tag(2048)
+                }
+                .pickerStyle(.menu).labelsHidden().fixedSize()
+                Spacer()
+            }
+
+            // Export size
+            HStack(spacing: 6) {
+                Text("Export")
                     .font(.system(size: 10)).foregroundColor(.secondary)
                     .frame(width: 52, alignment: .leading)
                 Picker("", selection: $appState.parameters.outputSize) {
@@ -405,11 +421,16 @@ struct ExportCard: View {
 
             // Save Image button
             Button(action: { appState.saveImage() }) {
-                Label("Save Image", systemImage: "square.and.arrow.down")
-                    .frame(maxWidth: .infinity)
+                if appState.isExporting {
+                    Label("Exporting…", systemImage: "hourglass")
+                        .frame(maxWidth: .infinity)
+                } else {
+                    Label("Save Image", systemImage: "square.and.arrow.down")
+                        .frame(maxWidth: .infinity)
+                }
             }
             .buttonStyle(.bordered)
-            .disabled(appState.currentImage == nil || appState.isGenerating)
+            .disabled(appState.currentImage == nil || appState.isGenerating || appState.isExporting)
             .keyboardShortcut("s", modifiers: [.command, .shift])
 
             Button(action: { appState.showAnimationOptions = true }) {

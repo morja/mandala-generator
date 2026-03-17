@@ -79,16 +79,6 @@ struct CanvasView: View {
                 Divider().frame(height: 20)
             }
 
-            Button(action: {
-                Task { await appState.generate() }
-            }) {
-                Label("Generate", systemImage: "sparkles")
-            }
-            .buttonStyle(.borderedProminent)
-            .tint(.blue)
-            .disabled(appState.isGenerating)
-            .keyboardShortcut("r", modifiers: .command)
-
             Button(action: { appState.randomizeAll() }) {
                 Label("Randomize All", systemImage: "shuffle")
             }
@@ -222,12 +212,9 @@ struct CanvasView: View {
             Image(systemName: "sparkles")
                 .font(.system(size: 48))
                 .foregroundColor(.secondary.opacity(0.5))
-            Text("Press Generate to create a mandala")
+            Text("Generating…")
                 .foregroundColor(.secondary)
                 .font(.title3)
-            Text("Cmd+R or click Generate")
-                .foregroundColor(.secondary.opacity(0.6))
-                .font(.caption)
         }
     }
 

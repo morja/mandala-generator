@@ -29,6 +29,7 @@ class AppState: ObservableObject {
     @Published var showAnimationOptions: Bool = false
     @Published var animationOptions = AnimationExportOptions()
     @Published var animationExportProgress: Double? = nil
+    @Published var isExporting: Bool = false
     
     // WebP support detection
     static let webPSupported = AppState.detectWebPSupport()
@@ -100,7 +101,9 @@ class AppState: ObservableObject {
         isGenerating = true
         var params = parameters
         params.resolvedPalettes = allPalettes
-        lastRenderedParams = params
+        lastRenderedParams = params  // record before size override so change-detection is accurate
+        // Canvas preview always renders at previewSize, independent of export size
+        params.outputSize = parameters.previewSize
         let start = Date()
         let image = await Task.detached(priority: .userInitiated) {
             MandalaRenderer.render(params: params)
@@ -374,14 +377,13 @@ class AppState: ObservableObject {
     }
 
     func saveImage() {
-        guard let image = currentImage else { return }
-        
+        guard currentImage != nil else { return }
+
         // Validate format before showing save panel
         if parameters.outputFormat == "webp" && !AppState.webPSupported {
-            // Fallback to PNG if WebP is not supported
             parameters.outputFormat = "png"
         }
-        
+
         let panel = NSSavePanel()
         panel.title = "Save Mandala"
         let webpType = UTType("org.webmproject.webp") ?? UTType(filenameExtension: "webp") ?? .data
@@ -389,9 +391,19 @@ class AppState: ObservableObject {
             : parameters.outputFormat == "webp" ? [webpType] : [.png]
         panel.nameFieldStringValue = suggestedFilename() + "." + parameters.outputFormat
         panel.begin { [weak self] response in
-            guard response == .OK, let url = panel.url else { return }
+            guard response == .OK, let url = panel.url, let self else { return }
             Task { @MainActor [weak self] in
-                self?.writeImage(image, to: url)
+                guard let self else { return }
+                self.isExporting = true
+                // Re-render at the full export resolution (may differ from previewSize)
+                var exportParams = self.parameters
+                exportParams.resolvedPalettes = self.allPalettes
+                // outputSize is already the export size — no override needed
+                let exportImage = await Task.detached(priority: .userInitiated) {
+                    MandalaRenderer.render(params: exportParams)
+                }.value
+                self.isExporting = false
+                self.writeImage(exportImage, to: url)
             }
         }
     }

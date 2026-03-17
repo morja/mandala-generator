@@ -968,11 +968,13 @@ struct MandalaRenderer {
                 scaleMat.setValue(CIVector(x: bias, y: bias, z: bias, w: 0),       forKey: "inputBiasVector")
                 guard let scaledHP = scaleMat.outputImage?.cropped(to: ext) else { break localContrastBlock }
 
-                // Hard Light of scaledHP over original → local contrast boost
-                if let hardLight = CIFilter(name: "CIHardLightBlendMode") {
-                    hardLight.setValue(ci,       forKey: kCIInputBackgroundImageKey)
-                    hardLight.setValue(scaledHP, forKey: kCIInputImageKey)
-                    if let out = hardLight.outputImage?.cropped(to: ext) { ci = out }
+                // Soft Light of scaledHP over original → local contrast boost.
+                // Soft Light is gentler than Hard Light: it brightens edges without
+                // aggressively darkening the surrounding shadow areas.
+                if let softLight = CIFilter(name: "CISoftLightBlendMode") {
+                    softLight.setValue(ci,       forKey: kCIInputBackgroundImageKey)
+                    softLight.setValue(scaledHP, forKey: kCIInputImageKey)
+                    if let out = softLight.outputImage?.cropped(to: ext) { ci = out }
                 }
             }
         }

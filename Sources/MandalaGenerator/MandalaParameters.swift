@@ -404,7 +404,8 @@ struct MandalaParameters: Equatable, Codable {
 
     // Truly global — render setup
     var seed: UInt64 = 42   // used for background/grass; each layer also has its own seed
-    var outputSize: Int = 800           // 0 = custom
+    var previewSize: Int = 800          // resolution used for the canvas preview
+    var outputSize: Int = 1024          // export resolution preset (0 = custom)
     var outputSizeCustom: Int = 2048   // used when outputSize == 0
     var outputFormat: String = "png"
     var outputShape: String = "square"  // "square", "circle", "squircle"
@@ -432,7 +433,7 @@ struct MandalaParameters: Equatable, Codable {
 
     enum CodingKeys: String, CodingKey {
         case layers, baseLayer, effectsLayer, drawingLayer
-        case seed, outputSize, outputSizeCustom, outputFormat, outputShape
+        case seed, previewSize, outputSize, outputSizeCustom, outputFormat, outputShape
         case symmetry, complexity, density, glowIntensity, colorDrift, ripple, wash, paletteIndex
     }
 
@@ -445,7 +446,8 @@ struct MandalaParameters: Equatable, Codable {
         effectsLayer    = c.decodeSafe(EffectsLayerSettings.self,  forKey: .effectsLayer,    default: EffectsLayerSettings())
         drawingLayer    = c.decodeSafe(DrawingLayerSettings.self,  forKey: .drawingLayer,    default: DrawingLayerSettings())
         seed            = c.decodeSafe(UInt64.self,                forKey: .seed,            default: 42)
-        outputSize      = c.decodeSafe(Int.self,                   forKey: .outputSize,      default: 800)
+        previewSize     = c.decodeSafe(Int.self,                   forKey: .previewSize,     default: 800)
+        outputSize      = c.decodeSafe(Int.self,                   forKey: .outputSize,      default: 1024)
         outputSizeCustom = c.decodeSafe(Int.self,                  forKey: .outputSizeCustom,default: 2048)
         outputFormat    = c.decodeSafe(String.self,                forKey: .outputFormat,    default: "png")
         outputShape     = c.decodeSafe(String.self,                forKey: .outputShape,     default: "square")
@@ -467,6 +469,7 @@ extension MandalaParameters {
         lhs.effectsLayer == rhs.effectsLayer &&
         lhs.drawingLayer == rhs.drawingLayer &&
         lhs.seed == rhs.seed &&
+        lhs.previewSize == rhs.previewSize &&
         lhs.outputSize == rhs.outputSize &&
         lhs.outputSizeCustom == rhs.outputSizeCustom &&
         lhs.outputFormat == rhs.outputFormat &&
