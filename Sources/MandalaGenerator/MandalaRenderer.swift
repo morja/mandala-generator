@@ -59,6 +59,10 @@ struct MandalaRenderer {
         let cx = Float(bufferSize) * 0.5
         let cy = Float(bufferSize) * 0.5
         let baseRadius = Double(bufferSize) * 0.72
+        // Brightness normalisation: lines accumulate energy ∝ 1/bufferSize, so higher-res
+        // buffers are linearly dimmer. pow(…, 1.15) adds a slight super-linear boost to
+        // compensate for the filmic tone-map not reaching the same saturation at lower raw values.
+        let brightnessScale = pow(Float(bufferSize) / 1600.0, 1.15)
 
         // ── BACKGROUND ──
         let bgBuffer = PixelBuffer(width: bufferSize, height: bufferSize)
@@ -113,6 +117,7 @@ struct MandalaRenderer {
                                  layerCount: layerCount, symmetry: layerSymmetry,
                                  rippleAmount: Float(layer.ripple), weightMul: 1.0)
 
+            buffer.scale(brightnessScale)
             guard var layerImage = buffer.toCGImage() else { continue }
             layerImage = applyGlow(image: layerImage, intensity: layer.glowIntensity)
             if layer.wash > 0 {
@@ -4496,7 +4501,7 @@ struct MandalaRenderer {
                                               palette: ColorPalette, rng: inout SeededRNG,
                                               layerCount: Int, symmetry: Int,
                                               colorOffset: Double) {
-        let R = Float(radius) * 1.056
+        let R = Float(radius) * 1.162
 
         // Precompute colour LUT
         let nColors = 1024
@@ -4521,7 +4526,7 @@ struct MandalaRenderer {
         let nLines = 30 + Int(params.density * 50)   // 30–80 ruling lines per family
         let steps  = 24                               // segments per ruling line
 
-        for li in 0..<layerCount {
+        for _ in 0..<layerCount {
             let rimR   = R * Float(0.35 + rng.nextDouble() * 0.55)
             let height = rimR * Float(0.5 + rng.nextDouble() * 0.8)
             // twist angle controls waist tightness: π/3 = mild, 2π/3 = very tight waist
@@ -4614,12 +4619,15 @@ struct MandalaRenderer {
         let nMeridians = 16 + Int(params.density * 24)   // 16–40
         let nParallels = 8  + Int(params.density * 16)   // 8–24
         let steps      = 32
+        // Normalise accumulated brightness: N overlapping copies at centre → ×N overexposure.
+        // Dividing by sqrt(N) keeps centre from blowing out while preserving visible lines.
+        let symScale   = 1.0 / sqrt(Float(max(1, symmetry)))
 
         for _ in 0..<layerCount {
             // bigR = distance from torus centre to tube centre; smallR = tube radius
             let bigR   = R * Float(0.40 + rng.nextDouble() * 0.30)
             let smallR = bigR * Float(0.25 + rng.nextDouble() * 0.40)
-            let baseW  = Float(rng.nextDouble(in: 0.5...1.4)) * Float(params.complexity)
+            let baseW  = Float(rng.nextDouble(in: 0.5...1.4)) * Float(params.complexity) * symScale
             let tShift = rng.nextDouble()
 
             // Draw meridian circles (constant u, vary v 0…2π)
@@ -4728,12 +4736,13 @@ struct MandalaRenderer {
         let nSpiralLines = 6 + Int(params.density * 10) // 6–16 surface spirals
         let ribSteps     = 24
         let spiralSteps  = 64
+        let symScale     = 1.0 / sqrt(Float(max(1, symmetry)))
 
         for _ in 0..<layerCount {
             // b = growth rate; r = relative tube radius
             let b: Float  = Float(0.12 + rng.nextDouble() * 0.10)
             let r: Float  = Float(0.25 + rng.nextDouble() * 0.30)
-            let baseW     = Float(rng.nextDouble(in: 0.5...1.4)) * Float(params.complexity)
+            let baseW     = Float(rng.nextDouble(in: 0.5...1.4)) * Float(params.complexity) * symScale
             let tShift    = rng.nextDouble()
 
             // Normalise so the outermost edge fits within R

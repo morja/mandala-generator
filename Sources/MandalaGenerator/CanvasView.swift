@@ -568,7 +568,6 @@ struct FavoriteThumbnailView: View {
                 .animation(.spring(response: 0.2), value: isHovered)
             }
             .buttonStyle(.plain)
-            .onHover { isHovered = $0 }
 
             Button(action: onDelete) {
                 Image(systemName: "xmark.circle.fill")
@@ -582,5 +581,6 @@ struct FavoriteThumbnailView: View {
             .animation(.easeInOut(duration: 0.15), value: isHovered)
         }
         .frame(width: 120, height: 120)
+        .onHover { isHovered = $0 }
     }
 }

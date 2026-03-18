@@ -15,6 +15,17 @@ class PixelBuffer {
         self.data   = [Float](repeating: 0, count: width * height * 3)
     }
 
+    /// Multiply every channel value by `factor` in-place using vDSP SIMD.
+    /// Call this after rendering to normalise brightness across different buffer sizes.
+    func scale(_ factor: Float) {
+        guard factor != 1.0, !data.isEmpty else { return }
+        data.withUnsafeMutableBufferPointer { ptr in
+            guard let base = ptr.baseAddress else { return }
+            var f = factor
+            vDSP_vsmul(base, 1, &f, base, 1, vDSP_Length(ptr.count))
+        }
+    }
+
     func clear() {
         data.withUnsafeMutableBufferPointer { ptr in
             guard let base = ptr.baseAddress, ptr.count > 0 else { return }
