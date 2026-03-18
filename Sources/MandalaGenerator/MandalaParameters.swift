@@ -239,79 +239,107 @@ enum LayerBlendMode: String, CaseIterable, Identifiable, Codable {
 // MARK: - Mandala Style
 
 enum MandalaStyle: String, CaseIterable, Identifiable, Codable {
-    case spirograph, roseCurves, stringArt, sunburst, epitrochoid, floral, lissajous, butterfly, geometric, fractal, starBurst, mixed
+    // ── Parametric Curves ──────────────────────────────────────────
+    case spirograph, roseCurves, floral, butterfly, epitrochoid
+    case lissajous, hypocycloid, phyllotaxis, fractal, superformula, waveInterference
+    // ── Geometric & Pattern ────────────────────────────────────────
+    case geometric, sacredGeometry, sunburst, starBurst, stringArt
+    case spiderWeb, weave, radialMesh, moire
+    // ── Organic & Flow ─────────────────────────────────────────────
+    case flowField, tendril, voronoi, strangeAttractor
+    // ── 3D ────────────────────────────────────────────────────────
+    case hyperboloid, torus, nautilus, sphereGrid, torusKnot, tesseract
+    // ── Special ───────────────────────────────────────────────────
+    case universe, symbols, mixed
 
     init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
         let raw = (try? container.decode(String.self)) ?? ""
         self = MandalaStyle(rawValue: raw) ?? .mixed
     }
-    case phyllotaxis, hypocycloid, waveInterference, spiderWeb, weave, sacredGeometry, radialMesh, flowField, tendril, moire, voronoi
-    case torusKnot, sphereGrid, tesseract
-    case universe, symbols
     var id: String { rawValue }
     var displayName: String {
         switch self {
-        case .spirograph:      return "Spirograph"
-        case .roseCurves:      return "Rose Curves"
-        case .stringArt:       return "String Art"
-        case .sunburst:        return "Sunburst"
-        case .epitrochoid:     return "Epitrochoid"
-        case .floral:          return "Floral"
-        case .lissajous:       return "Lissajous"
-        case .butterfly:       return "Butterfly"
-        case .geometric:       return "Geometric"
-        case .fractal:         return "Fractal"
-        case .starBurst:       return "Star Burst"
-        case .mixed:           return "Mixed"
-        case .phyllotaxis:     return "Phyllotaxis"
-        case .hypocycloid:     return "Hypocycloid"
+        // Parametric Curves
+        case .spirograph:       return "Spirograph"
+        case .roseCurves:       return "Rose Curves"
+        case .floral:           return "Floral"
+        case .butterfly:        return "Butterfly"
+        case .epitrochoid:      return "Epitrochoid"
+        case .lissajous:        return "Lissajous"
+        case .hypocycloid:      return "Hypocycloid"
+        case .phyllotaxis:      return "Phyllotaxis"
+        case .fractal:          return "Fractal"
+        case .superformula:     return "Superformula"
         case .waveInterference: return "Wave Interference"
-        case .spiderWeb:       return "Spider Web"
-        case .weave:           return "Weave"
-        case .sacredGeometry:  return "Sacred Geometry"
-        case .radialMesh:      return "Radial Mesh"
-        case .flowField:       return "Flow Field"
-        case .tendril:         return "Tendril"
-        case .moire:           return "Moiré"
-        case .voronoi:         return "Voronoi"
-        case .torusKnot:       return "Torus Knot"
-        case .sphereGrid:      return "Sphere Grid"
-        case .tesseract:       return "Tesseract"
-        case .universe:        return "Universe"
-        case .symbols:         return "Symbols"
+        // Geometric & Pattern
+        case .geometric:        return "Geometric"
+        case .sacredGeometry:   return "Sacred Geometry"
+        case .sunburst:         return "Sunburst"
+        case .starBurst:        return "Star Burst"
+        case .stringArt:        return "String Art"
+        case .spiderWeb:        return "Spider Web"
+        case .weave:            return "Weave"
+        case .radialMesh:       return "Radial Mesh"
+        case .moire:            return "Moiré"
+        // Organic & Flow
+        case .flowField:        return "Flow Field"
+        case .tendril:          return "Tendril"
+        case .voronoi:          return "Voronoi"
+        case .strangeAttractor: return "Strange Attractor"
+        // 3D
+        case .hyperboloid:      return "Hyperboloid"
+        case .torus:            return "Torus"
+        case .nautilus:         return "Nautilus"
+        case .sphereGrid:       return "Sphere Grid"
+        case .torusKnot:        return "Torus Knot"
+        case .tesseract:        return "Tesseract"
+        // Special
+        case .universe:         return "Universe"
+        case .symbols:          return "Symbols"
+        case .mixed:            return "Mixed"
         }
     }
     var sfSymbol: String {
         switch self {
-        case .spirograph:      return "circle.hexagongrid"
-        case .roseCurves:      return "allergens"
-        case .stringArt:       return "network"
-        case .sunburst:        return "sun.max"
-        case .epitrochoid:     return "atom"
-        case .floral:          return "leaf"
-        case .lissajous:       return "waveform.path"
-        case .butterfly:       return "wind"
-        case .geometric:       return "seal"
-        case .fractal:         return "snowflake"
-        case .starBurst:       return "rays"
-        case .mixed:           return "sparkles"
-        case .phyllotaxis:     return "circle.grid.3x3"
-        case .hypocycloid:     return "star.circle"
+        // Parametric Curves
+        case .spirograph:       return "circle.hexagongrid"
+        case .roseCurves:       return "allergens"
+        case .floral:           return "leaf"
+        case .butterfly:        return "wind"
+        case .epitrochoid:      return "atom"
+        case .lissajous:        return "waveform.path"
+        case .hypocycloid:      return "star.circle"
+        case .phyllotaxis:      return "circle.grid.3x3"
+        case .fractal:          return "snowflake"
+        case .superformula:     return "aqi.medium"
         case .waveInterference: return "waveform.path.ecg"
-        case .spiderWeb:       return "circle.grid.cross"
-        case .weave:           return "square.grid.4x3.fill"
-        case .sacredGeometry:  return "hexagon"
-        case .radialMesh:      return "chart.pie"
-        case .flowField:       return "tornado"
-        case .tendril:         return "arrow.triangle.branch"
-        case .moire:           return "circle.grid.2x1"
-        case .voronoi:         return "rectangle.split.3x3"
-        case .torusKnot:       return "hurricane"
-        case .sphereGrid:      return "globe"
-        case .tesseract:       return "square.on.square"
-        case .universe:        return "sparkles"
-        case .symbols:         return "heart.circle"
+        // Geometric & Pattern
+        case .geometric:        return "seal"
+        case .sacredGeometry:   return "hexagon"
+        case .sunburst:         return "sun.max"
+        case .starBurst:        return "rays"
+        case .stringArt:        return "network"
+        case .spiderWeb:        return "circle.grid.cross"
+        case .weave:            return "square.grid.4x3.fill"
+        case .radialMesh:       return "chart.pie"
+        case .moire:            return "circle.grid.2x1"
+        // Organic & Flow
+        case .flowField:        return "tornado"
+        case .tendril:          return "arrow.triangle.branch"
+        case .voronoi:          return "rectangle.split.3x3"
+        case .strangeAttractor: return "scribble"
+        // 3D
+        case .hyperboloid:      return "cylinder.split.1x2"
+        case .torus:            return "circle.dotted"
+        case .nautilus:         return "arrow.clockwise.circle"
+        case .sphereGrid:       return "globe"
+        case .torusKnot:        return "hurricane"
+        case .tesseract:        return "square.on.square"
+        // Special
+        case .universe:         return "sparkles"
+        case .symbols:          return "heart.circle"
+        case .mixed:            return "sparkles"
         }
     }
 }

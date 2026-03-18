@@ -150,6 +150,25 @@ struct CanvasView: View {
                 .font(.caption)
                 .foregroundColor(.secondary)
                 .monospacedDigit()
+
+            Divider().frame(height: 20)
+
+            Button(action: { appState.copyToClipboard() }) {
+                Image(systemName: "doc.on.clipboard")
+            }
+            .buttonStyle(.bordered)
+            .disabled(appState.currentImage == nil)
+            .help("Copy to Clipboard (⌘⇧C)")
+            .keyboardShortcut("c", modifiers: [.command, .shift])
+
+            Button(action: { appState.addFavorite() }) {
+                Image(systemName: "star")
+            }
+            .buttonStyle(.bordered)
+            .disabled(appState.currentImage == nil)
+            .help("Add to Favorites")
+
+            FavoritesButton()
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 10)
@@ -421,5 +440,147 @@ struct MandalaOutputShape: Shape {
         }
         path.closeSubpath()
         return path
+    }
+}
+
+// MARK: - Favorites Button
+
+struct FavoritesButton: View {
+    @EnvironmentObject private var appState: AppState
+    @State private var showPopover = false
+
+    var body: some View {
+        Button(action: { showPopover.toggle() }) {
+            Image(systemName: appState.favorites.isEmpty ? "star.slash" : "star.fill")
+                .foregroundColor(appState.favorites.isEmpty ? .secondary : .yellow)
+        }
+        .buttonStyle(.bordered)
+        .help("Favorites")
+        .popover(isPresented: $showPopover, arrowEdge: .bottom) {
+            FavoritesPopover(isPresented: $showPopover)
+                .environmentObject(appState)
+        }
+    }
+}
+
+// MARK: - Favorites Popover
+
+struct FavoritesPopover: View {
+    @EnvironmentObject private var appState: AppState
+    @Binding var isPresented: Bool
+
+    private let columns = [GridItem(.adaptive(minimum: 120, maximum: 140), spacing: 10)]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            HStack {
+                Text("Favorites")
+                    .font(.headline)
+                Spacer()
+                Button(action: { isPresented = false }) {
+                    Image(systemName: "xmark.circle.fill")
+                        .foregroundColor(.secondary)
+                }
+                .buttonStyle(.plain)
+            }
+            .padding(.horizontal, 16)
+            .padding(.top, 14)
+            .padding(.bottom, 10)
+
+            Divider()
+
+            if appState.favorites.isEmpty {
+                VStack(spacing: 10) {
+                    Image(systemName: "star.slash")
+                        .font(.system(size: 32))
+                        .foregroundColor(.secondary.opacity(0.4))
+                    Text("No favorites yet")
+                        .foregroundColor(.secondary)
+                        .font(.callout)
+                    Text("Press ★ while viewing an image to save it.")
+                        .foregroundColor(.secondary.opacity(0.7))
+                        .font(.caption)
+                        .multilineTextAlignment(.center)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 40)
+                .padding(.horizontal, 24)
+            } else {
+                ScrollView {
+                    LazyVGrid(columns: columns, spacing: 10) {
+                        ForEach(appState.favorites) { fav in
+                            FavoriteThumbnailView(favorite: fav, onApply: {
+                                appState.applyFavorite(fav)
+                                isPresented = false
+                            }, onDelete: {
+                                appState.removeFavorite(id: fav.id)
+                            })
+                        }
+                    }
+                    .padding(14)
+                }
+                .frame(maxHeight: 380)
+            }
+        }
+        .frame(width: 340)
+        .background(Color(NSColor.windowBackgroundColor))
+    }
+}
+
+// MARK: - Favorite Thumbnail
+
+struct FavoriteThumbnailView: View {
+    let favorite: Favorite
+    let onApply: () -> Void
+    let onDelete: () -> Void
+
+    @State private var isHovered = false
+
+    private var thumbnail: NSImage? {
+        NSImage(data: favorite.thumbnailData)
+    }
+
+    var body: some View {
+        ZStack(alignment: .topTrailing) {
+            Button(action: onApply) {
+                ZStack {
+                    if let img = thumbnail {
+                        Image(nsImage: img)
+                            .resizable()
+                            .aspectRatio(1, contentMode: .fill)
+                            .clipped()
+                    } else {
+                        Color.secondary.opacity(0.15)
+                        Image(systemName: "photo")
+                            .foregroundColor(.secondary)
+                    }
+                }
+                .frame(width: 120, height: 120)
+                .clipShape(RoundedRectangle(cornerRadius: 8))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8)
+                        .strokeBorder(
+                            isHovered ? Color.accentColor : Color.white.opacity(0.08),
+                            lineWidth: isHovered ? 2 : 1
+                        )
+                )
+                .scaleEffect(isHovered ? 1.03 : 1.0)
+                .animation(.spring(response: 0.2), value: isHovered)
+            }
+            .buttonStyle(.plain)
+            .onHover { isHovered = $0 }
+
+            Button(action: onDelete) {
+                Image(systemName: "xmark.circle.fill")
+                    .font(.system(size: 16))
+                    .foregroundColor(.white)
+                    .background(Color.black.opacity(0.5).clipShape(Circle()))
+            }
+            .buttonStyle(.plain)
+            .padding(5)
+            .opacity(isHovered ? 1 : 0)
+            .animation(.easeInOut(duration: 0.15), value: isHovered)
+        }
+        .frame(width: 120, height: 120)
     }
 }

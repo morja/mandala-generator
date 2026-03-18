@@ -7,6 +7,16 @@ import ImageIO
 import SwiftUI
 import UniformTypeIdentifiers
 
+// MARK: - Favorite
+
+struct Favorite: Identifiable, Codable {
+    var id: UUID = UUID()
+    var parameters: MandalaParameters
+    var thumbnailData: Data          // JPEG thumbnail ~128 px
+    var name: String = ""
+    var createdAt: Date = Date()
+}
+
 struct AnimationExportOptions {
     var format: String = "mov"   // "mov" or "gif"
     var frameCount: Int = 48
@@ -30,6 +40,7 @@ class AppState: ObservableObject {
     @Published var animationOptions = AnimationExportOptions()
     @Published var animationExportProgress: Double? = nil
     @Published var isExporting: Bool = false
+    @Published var favorites: [Favorite] = []
     
     // WebP support detection
     static let webPSupported = AppState.detectWebPSupport()
@@ -83,6 +94,7 @@ class AppState: ObservableObject {
         // Start with a random mandala or restore history
         let hasHistory = loadHistory()
         loadCustomPalettes()
+        loadFavorites()
         if hasHistory {
             isNavigatingHistory = true
             Task { await generate() }
@@ -326,6 +338,68 @@ class AppState: ObservableObject {
         parameters = history[historyIndex]
         updateHistoryState()
         return true
+    }
+
+    // MARK: - Clipboard
+
+    func copyToClipboard() {
+        guard let image = currentImage,
+              let tiff = image.tiffRepresentation,
+              let rep  = NSBitmapImageRep(data: tiff),
+              let png  = rep.representation(using: .png, properties: [:]) else { return }
+        let pb = NSPasteboard.general
+        pb.clearContents()
+        pb.declareTypes([.png, .tiff], owner: nil)
+        pb.setData(png, forType: .png)
+        pb.setData(tiff, forType: .tiff)
+    }
+
+    // MARK: - Favorites
+
+    func addFavorite() {
+        guard let image = currentImage else { return }
+        // Render a 128 px JPEG thumbnail from the current preview image
+        let thumbSize = NSSize(width: 128, height: 128)
+        let thumb = NSImage(size: thumbSize)
+        thumb.lockFocus()
+        image.draw(in: NSRect(origin: .zero, size: thumbSize),
+                   from: NSRect(origin: .zero, size: image.size),
+                   operation: .copy, fraction: 1)
+        thumb.unlockFocus()
+        guard let tiff = thumb.tiffRepresentation,
+              let rep  = NSBitmapImageRep(data: tiff),
+              let jpeg = rep.representation(using: .jpeg,
+                                            properties: [.compressionFactor: 0.85]) else { return }
+        let fav = Favorite(parameters: parameters, thumbnailData: jpeg)
+        favorites.insert(fav, at: 0)
+        saveFavorites()
+    }
+
+    func removeFavorite(id: UUID) {
+        favorites.removeAll { $0.id == id }
+        saveFavorites()
+    }
+
+    func applyFavorite(_ fav: Favorite) {
+        parameters = fav.parameters
+    }
+
+    private func saveFavorites() {
+        guard let data = try? JSONEncoder().encode(favorites) else { return }
+        try? data.write(to: favoritesFileURL)
+    }
+
+    private func loadFavorites() {
+        guard let data   = try? Data(contentsOf: favoritesFileURL),
+              let loaded = try? JSONDecoder().decode([Favorite].self, from: data) else { return }
+        favorites = loaded
+    }
+
+    private var favoritesFileURL: URL {
+        let dir = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+            .appendingPathComponent("MandalaGenerator", isDirectory: true)
+        try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        return dir.appendingPathComponent("favorites.json")
     }
 
     func duplicateLayer(at index: Int) {

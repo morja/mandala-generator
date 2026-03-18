@@ -377,6 +377,35 @@ struct MandalaRenderer {
                               params: params, palette: palette, rng: &rng,
                               colorOffset: colorOffset, layerCount: layerCount, symmetry: symmetry)
             return
+        case .strangeAttractor:
+            drawStrangeAttractorLayers(buffer: buffer, cx: cx, cy: cy, radius: baseRadius,
+                                       params: params, palette: palette, rng: &rng,
+                                       layerCount: layerCount, symmetry: symmetry,
+                                       colorOffset: colorOffset)
+            return
+        case .superformula:
+            collectSuperformulaTasks(into: &tasks, cx: cx, cy: cy, radius: baseRadius,
+                                     params: params, rng: &rng, layerCount: layerCount,
+                                     symmetry: symmetry, rippleAmount: rippleAmount,
+                                     weightMul: weightMul)
+        case .hyperboloid:
+            drawHyperboloidLayers(buffer: buffer, cx: cx, cy: cy, radius: baseRadius,
+                                  params: params, palette: palette, rng: &rng,
+                                  layerCount: layerCount, symmetry: symmetry,
+                                  colorOffset: colorOffset)
+            return
+        case .torus:
+            drawTorusLayers(buffer: buffer, cx: cx, cy: cy, radius: baseRadius,
+                            params: params, palette: palette, rng: &rng,
+                            layerCount: layerCount, symmetry: symmetry,
+                            colorOffset: colorOffset)
+            return
+        case .nautilus:
+            drawNautilusLayers(buffer: buffer, cx: cx, cy: cy, radius: baseRadius,
+                               params: params, palette: palette, rng: &rng,
+                               layerCount: layerCount, symmetry: symmetry,
+                               colorOffset: colorOffset)
+            return
         case .mixed:
             // Seed-driven random zone selection — different every render
             var zoneRng = SeededRNG(seed: params.seed &+ 0xbeef1234)
@@ -386,7 +415,8 @@ struct MandalaRenderer {
                                               .phyllotaxis, .hypocycloid, .waveInterference, .spiderWeb,
                                               .weave, .sacredGeometry, .radialMesh, .flowField, .tendril,
                                               .moire, .voronoi, .torusKnot, .sphereGrid, .tesseract, .starBurst,
-                                              .universe, .symbols]
+                                              .universe, .symbols, .strangeAttractor, .superformula,
+                                              .hyperboloid, .torus, .nautilus]
             let radii: [Double] = [1.0, 0.72, 0.45]
             let sub = max(2, layerCount / 3)
             for (zi, zRadius) in radii.enumerated() {
@@ -501,6 +531,31 @@ struct MandalaRenderer {
                     drawSymbolsLayers(buffer: buffer, cx: cx, cy: cy, radius: scaled,
                                       params: params, palette: palette, rng: &rng,
                                       colorOffset: 0, layerCount: sub, symmetry: symmetry)
+                case .strangeAttractor:
+                    drawStrangeAttractorLayers(buffer: buffer, cx: cx, cy: cy, radius: scaled,
+                                               params: params, palette: palette, rng: &rng,
+                                               layerCount: sub, symmetry: symmetry,
+                                               colorOffset: 0)
+                case .superformula:
+                    collectSuperformulaTasks(into: &tasks, cx: cx, cy: cy, radius: scaled,
+                                             params: params, rng: &rng, layerCount: sub,
+                                             symmetry: symmetry, rippleAmount: rippleAmount,
+                                             weightMul: wmul)
+                case .hyperboloid:
+                    drawHyperboloidLayers(buffer: buffer, cx: cx, cy: cy, radius: scaled,
+                                          params: params, palette: palette, rng: &rng,
+                                          layerCount: sub, symmetry: symmetry,
+                                          colorOffset: 0)
+                case .torus:
+                    drawTorusLayers(buffer: buffer, cx: cx, cy: cy, radius: scaled,
+                                    params: params, palette: palette, rng: &rng,
+                                    layerCount: sub, symmetry: symmetry,
+                                    colorOffset: 0)
+                case .nautilus:
+                    drawNautilusLayers(buffer: buffer, cx: cx, cy: cy, radius: scaled,
+                                       params: params, palette: palette, rng: &rng,
+                                       layerCount: sub, symmetry: symmetry,
+                                       colorOffset: 0)
                 case .mixed:
                     collectSpirographTasks(into: &tasks, cx: cx, cy: cy, radius: scaled,
                                            params: params, rng: &rng, layerCount: sub,
@@ -4203,6 +4258,558 @@ struct MandalaRenderer {
             let rc = col(at: (0.5 + Double(ri)*0.12).truncatingRemainder(dividingBy: 1.0))
             drawClosed(circlePts(60), bx: cx, by: cy, scale: rr, rotation: 0,
                        color: (rc.r*0.5, rc.g*0.5, rc.b*0.5), weight: baseW*0.5)
+        }
+    }
+
+    // MARK: - Strange Attractors (Clifford / De Jong)
+
+    private static func drawStrangeAttractorLayers(buffer: PixelBuffer, cx: Float, cy: Float,
+                                                    radius: Double, params: MandalaParameters,
+                                                    palette: ColorPalette, rng: inout SeededRNG,
+                                                    layerCount: Int, symmetry: Int,
+                                                    colorOffset: Double) {
+        let R = Float(radius)
+
+        // (type, a, b, c, d)
+        // type 0 = Clifford:  x'=sin(a·y)+c·cos(a·x),  y'=sin(b·x)+d·cos(b·y)
+        // type 1 = De Jong:   x'=sin(a·y)-cos(b·x),    y'=sin(c·x)-cos(d·y)
+        // type 2 = Bedhead:   x'=sin(x·y/b)·y+cos(a·x-y), y'=x+sin(y)/b  (c,d unused)
+        // type 3 = Hopalong:  x'=y-sign(x)·√|b·x-c|,   y'=a-x           (d unused)
+        let presets: [(Int, Double, Double, Double, Double)] = [
+            // Clifford — wide variety of flow patterns
+            (0, -1.4,  1.6,  1.0,  0.7),
+            (0, -1.7,  1.3, -0.1, -1.21),
+            (0,  1.5, -1.8,  1.6,  0.9),
+            (0, -1.8, -2.0, -0.5, -0.9),
+            (0,  1.7,  1.7,  0.6,  1.2),
+            (0, -1.3, -1.3, -1.8, -1.9),
+            (0, -1.5, -1.8,  1.6,  0.9),
+            (0,  1.6, -0.6, -1.0,  0.7),
+            (0, -2.0,  0.4, -1.1, -0.9),
+            (0,  0.8, -1.9,  1.0,  1.5),
+            (0, -1.1,  2.0, -1.6, -0.7),
+            (0,  1.4,  1.4,  1.1, -1.7),
+            // De Jong — more intricate filament structures
+            (1, -2.0, -2.0, -1.2,  2.0),
+            (1,  1.4, -2.3,  2.4, -2.1),
+            (1, -0.8, -2.4, -0.7,  2.0),
+            (1,  2.0, -1.0, -0.5,  2.0),
+            (1, -1.5,  2.0, -1.0,  1.5),
+            (1, -2.4,  2.4, -1.6,  1.0),
+            (1, -0.7,  0.5, -1.4,  2.1),
+            (1,  0.3, -1.5,  1.2, -1.9),
+            (1, -1.8,  1.8,  0.9, -1.5),
+            (1,  2.3, -2.3,  2.0, -0.8),
+            // Bedhead — tangled organic loops
+            (2,  0.64, 0.76, 0,    0   ),
+            (2,  0.85, 0.92, 0,    0   ),
+            (2,  0.50, 0.80, 0,    0   ),
+            (2,  1.20, 0.60, 0,    0   ),
+            // Hopalong — spiky radial flower forms
+            (3,  0.4,  1.0,  0.0,  0   ),
+            (3,  1.1,  0.5,  1.0,  0   ),
+            (3, -0.5,  1.5,  0.2,  0   ),
+            (3,  0.7,  1.2, -0.3,  0   ),
+        ]
+
+        // Precompute colour LUT — avoids per-point NSColor allocation
+        let nColors = 2048
+        let colorLUT: [(Float, Float, Float)] = (0..<nColors).map { i in
+            let t = (Double(i) / Double(nColors) + colorOffset).truncatingRemainder(dividingBy: 1.0)
+            let c = palette.color(at: t < 0 ? t + 1 : t)
+            return (Float(c.redComponent), Float(c.greenComponent), Float(c.blueComponent))
+        }
+
+        let iters  = Int(200_000 + params.density * 600_000)
+        let bright = Float(params.density * 1.2 + 0.5) / Float(max(1, symmetry))
+
+        for li in 0..<layerCount {
+            let pIdx = (li + Int(params.seed % 13)) % presets.count
+            let (type, a, b, c, d) = presets[pIdx]
+
+            // Step function for the chosen attractor type
+            func step(_ x: Double, _ y: Double) -> (Double, Double) {
+                switch type {
+                case 0: return (sin(a*y) + c*cos(a*x), sin(b*x) + d*cos(b*y))
+                case 1: return (sin(a*y) - cos(b*x),   sin(c*x) - cos(d*y))
+                case 2: // Bedhead
+                    let nx = sin(x*y/b)*y + cos(a*x - y)
+                    let ny = x + sin(y)/b
+                    return (nx, ny)
+                default: // Hopalong
+                    let nx = y - (x >= 0 ? 1 : -1) * sqrt(abs(b*x - c))
+                    let ny = a - x
+                    return (nx, ny)
+                }
+            }
+
+            // Warmup: find bounding box of the attractor
+            var x = 0.1 + Double(li) * 0.07, y = 0.13 + Double(li) * 0.05
+            var minX = x, maxX = x, minY = y, maxY = y
+            for _ in 0..<3000 {
+                let (nx, ny) = step(x, y)
+                x = nx; y = ny
+                // Bail if diverging
+                guard x.isFinite && y.isFinite && abs(x) < 1e6 && abs(y) < 1e6 else { break }
+                minX = min(minX, x); maxX = max(maxX, x)
+                minY = min(minY, y); maxY = max(maxY, y)
+            }
+            let rangeX = maxX - minX, rangeY = maxY - minY
+            guard rangeX > 0.001, rangeY > 0.001 else { continue }
+            let scale  = min(Double(R) * 1.98 / rangeX, Double(R) * 1.98 / rangeY)
+            let offX   = -(minX + maxX) * 0.5 * scale
+            let offY   = -(minY + maxY) * 0.5 * scale
+
+            let weight = Float(rng.nextDouble(in: 0.25...0.7)) * bright
+            let tShift = rng.nextDouble()
+
+            for i in 0..<iters {
+                let (nx, ny) = step(x, y)
+                x = nx; y = ny
+                guard x.isFinite && y.isFinite else { break }
+
+                let px = Float(x * scale + offX)
+                let py = Float(y * scale + offY)
+
+                // Colour by angle from origin
+                let angle01 = Double(atan2(py, px)) / (.pi * 2.0) + 0.5
+                let colorIdx = Int((angle01 + tShift + params.colorDrift * Double(i) / Double(iters))
+                    .truncatingRemainder(dividingBy: 1.0) * Double(nColors)) % nColors
+                let col = colorLUT[max(0, min(nColors - 1, colorIdx))]
+
+                for s in 0..<symmetry {
+                    let ang  = Float(s) * .pi * 2.0 / Float(symmetry)
+                    let cosA = cos(ang), sinA = sin(ang)
+                    buffer.addPixel(x: Int(cx + px * cosA - py * sinA),
+                                    y: Int(cy + px * sinA + py * cosA),
+                                    color: col, weight: weight)
+                }
+            }
+        }
+    }
+
+    // MARK: - Superformula (Gielis)
+
+    /// Gielis' generalisation of the circle — one formula produces triangles, stars,
+    /// flowers, leaves, astroids, and organic blobs depending on (m, n1, n2, n3).
+    private static func collectSuperformulaTasks(into tasks: inout [CurveDrawTask],
+                                                 cx: Float, cy: Float, radius: Double,
+                                                 params: MandalaParameters, rng: inout SeededRNG,
+                                                 layerCount: Int, symmetry: Int,
+                                                 rippleAmount: Float, weightMul: Float) {
+        // (m, n1, n2, n3) — covers the full range from sharp stars to smooth blobs
+        // n1 small → spiky/star, n1 large → polygon, n1~1 → astroid/organic
+        // n2≠n3 → asymmetric shapes
+        let presets: [(Double, Double, Double, Double)] = [
+            (5,  0.25, 0.25, 0.25),  // sharp 5-pointed star
+            (4,  0.25, 0.25, 0.25),  // sharp 4-pointed star
+            (3,  0.25, 0.25, 0.25),  // sharp 3-pointed star
+            (8,  0.25, 0.25, 0.25),  // sharp 8-pointed star
+            (6,  0.3,  0.3,  0.3 ),  // sharp snowflake
+            (5,  1,    1,    1   ),   // 5-pointed astroid
+            (3,  1,    1,    1   ),   // 3-pointed astroid (tricorn)
+            (4,  1,    1,    1   ),   // 4-pointed astroid
+            (5,  2,    7,    7   ),   // smooth 5-petal flower
+            (3,  2,    7,    7   ),   // smooth 3-petal flower
+            (7,  2,    7,    7   ),   // smooth 7-petal flower
+            (4,  8,    8,    8   ),   // rounded square (squircle)
+            (3,  8,    8,    8   ),   // rounded triangle
+            (6,  8,    8,    8   ),   // rounded hexagon
+            (12, 15,   15,   15  ),   // 12-sided polygon
+            (2,  1,    4,    8   ),   // lens / vesica (asymmetric)
+            (4,  1,    0.5,  8   ),   // elongated cross (asymmetric)
+            (6,  1,    0.5,  0.3 ),   // organic leaf
+            (7,  3,    4,    17  ),   // 7-petal irregular
+            (5,  0.5,  0.5,  4   ),   // 5-spike with wide base
+            (4,  2,    2,    2   ),   // intermediate 4 shape
+            (10, 0.3,  0.3,  0.3 ),   // 10-spike star
+        ]
+        let steps = 2000
+
+        for li in 0..<layerCount {
+            let preset  = presets[(li + Int(params.seed % 19)) % presets.count]
+            let mG      = preset.0
+            let n1      = preset.1   // no randomization — keep canonical shape
+            let n2      = preset.2
+            let n3      = preset.3
+            let curveR  = radius * (0.2 + rng.nextDouble() * 0.8)
+
+            var xs = [Float](repeating: 0, count: steps)
+            var ys = [Float](repeating: 0, count: steps)
+            var valid = true
+
+            for j in 0..<steps {
+                let theta = Double(j) / Double(steps) * .pi * 2.0
+                let t1    = pow(abs(cos(mG * theta / 4.0)), n2)
+                let t2    = pow(abs(sin(mG * theta / 4.0)), n3)
+                let sum   = t1 + t2
+                guard sum > 1e-10 else { valid = false; break }
+                let r = pow(sum, -1.0 / n1)
+                guard r.isFinite && r < 50.0 else { valid = false; break }
+                xs[j] = Float(curveR * r * cos(theta))
+                ys[j] = Float(curveR * r * sin(theta))
+            }
+            guard valid else { continue }
+
+            // Normalize if curve extends beyond the allowed radius
+            var maxR: Float = 0
+            for j in 0..<steps { maxR = max(maxR, hypot(xs[j], ys[j])) }
+            if maxR > Float(radius) * 1.02 {
+                let scale = Float(radius) * 0.92 / maxR
+                for j in 0..<steps { xs[j] *= scale; ys[j] *= scale }
+            }
+
+            let tOffset   = rng.nextDouble()
+            let densityMul = Float(params.density * 1.6 + 0.3)
+            let weight    = Float(rng.nextDouble(in: 0.5...1.8)) * Float(params.complexity) * weightMul * densityMul
+            let thickness = Int(rng.nextDouble(in: 1...3))
+            let ripSeed   = params.seed &+ UInt64(li * 41 + 3)
+
+            for sym in 0..<symmetry {
+                let angle = Double(sym) * .pi * 2.0 / Double(symmetry)
+                let cosA  = Float(cos(angle)), sinA = Float(sin(angle))
+                var rxs = [Float](repeating: 0, count: steps)
+                var rys = [Float](repeating: 0, count: steps)
+                for j in 0..<steps {
+                    rxs[j] = cx + xs[j] * cosA - ys[j] * sinA
+                    rys[j] = cy + xs[j] * sinA + ys[j] * cosA
+                }
+                if rippleAmount > 0 {
+                    applyRippleToPoints(xs: &rxs, ys: &rys, amount: rippleAmount,
+                                        seed: ripSeed &+ UInt64(sym))
+                }
+                tasks.append(CurveDrawTask(xs: rxs, ys: rys,
+                                           tOffset: tOffset + Double(sym) * 0.08,
+                                           drift: params.colorDrift,
+                                           weight: weight, thickness: thickness))
+            }
+        }
+    }
+
+    // MARK: - Hyperboloid (Ruled Surface — 3D)
+
+    /// A hyperboloid of one sheet rendered via its two families of ruling lines,
+    /// projected at a tilt angle so the 3D waist shape is clearly visible.
+    /// Depth shading (front = bright, back = dim) reinforces the 3D illusion.
+    private static func drawHyperboloidLayers(buffer: PixelBuffer, cx: Float, cy: Float,
+                                              radius: Double, params: MandalaParameters,
+                                              palette: ColorPalette, rng: inout SeededRNG,
+                                              layerCount: Int, symmetry: Int,
+                                              colorOffset: Double) {
+        let R = Float(radius) * 1.056
+
+        // Precompute colour LUT
+        let nColors = 1024
+        let colorLUT: [(Float, Float, Float)] = (0..<nColors).map { i in
+            let t = (Double(i) / Double(nColors) + colorOffset).truncatingRemainder(dividingBy: 1.0)
+            let c = palette.color(at: t < 0 ? t + 1 : t)
+            return (Float(c.redComponent), Float(c.greenComponent), Float(c.blueComponent))
+        }
+
+        // Tilt the hyperboloid so we see it at roughly 35–50° from above
+        let tiltBase: Float = .pi / 5.0
+        let tilt = tiltBase + Float(rng.nextDouble() * 0.3)
+        let cosTilt = cos(tilt), sinTilt = sin(tilt)
+
+        // Project 3D (x3, y3, z3) → screen (sx, sy) + depth for shading
+        func proj(_ x3: Float, _ y3: Float, _ z3: Float) -> (Float, Float, Float) {
+            let sy    = y3 * cosTilt - z3 * sinTilt
+            let depth = y3 * sinTilt + z3 * cosTilt
+            return (x3, sy, depth)
+        }
+
+        let nLines = 30 + Int(params.density * 50)   // 30–80 ruling lines per family
+        let steps  = 24                               // segments per ruling line
+
+        for li in 0..<layerCount {
+            let rimR   = R * Float(0.35 + rng.nextDouble() * 0.55)
+            let height = rimR * Float(0.5 + rng.nextDouble() * 0.8)
+            // twist angle controls waist tightness: π/3 = mild, 2π/3 = very tight waist
+            let twist  = Float.pi * Float(0.35 + rng.nextDouble() * 0.45)
+            let baseW  = Float(rng.nextDouble(in: 0.6...1.6)) * Float(params.complexity)
+            let tShift = rng.nextDouble()
+
+            // Draw both ruling families (+twist and −twist)
+            for family in 0..<2 {
+                let sign: Float = family == 0 ? 1 : -1
+
+                for line in 0..<nLines {
+                    let phi    = Float(line) / Float(nLines) * .pi * 2.0
+                    let topPhi = phi
+                    let botPhi = phi + sign * twist
+
+                    let tx = rimR * cos(topPhi), tz = rimR * sin(topPhi)
+                    let bx = rimR * cos(botPhi), bz = rimR * sin(botPhi)
+
+                    var prevSX: Float = 0, prevSY: Float = 0, prevDepth: Float = 0
+
+                    for j in 0...steps {
+                        let t  = Float(j) / Float(steps)
+                        let x3 = tx + t * (bx - tx)
+                        let y3 = height * (1 - 2*t)      // top → bottom
+                        let z3 = tz + t * (bz - tz)
+
+                        let (sx, sy, depth) = proj(x3, y3, z3)
+
+                        if j > 0 {
+                            // Depth factor: front half bright, back half dim
+                            let df = max(0.08, min(1.0, 0.5 + depth / rimR * 0.55))
+                            let w  = baseW * df
+
+                            // Colour by angle around the hyperboloid
+                            let colorPhi = Double(phi / (.pi * 2.0))
+                            let colorT   = (colorPhi + tShift + params.colorDrift * Double(line) / Double(nLines)).truncatingRemainder(dividingBy: 1.0)
+                            let cIdx     = Int(colorT * Double(nColors)) % nColors
+                            let col = colorLUT[max(0, min(nColors - 1, cIdx))]
+
+                            // Paint with symmetry rotations
+                            for s in 0..<symmetry {
+                                let ang  = Float(s) * .pi * 2.0 / Float(symmetry)
+                                let cosA = cos(ang), sinA = sin(ang)
+                                let rx0  = cx + prevSX * cosA - prevSY * sinA
+                                let ry0  = cy + prevSX * sinA + prevSY * cosA
+                                let rx1  = cx + sx * cosA - sy * sinA
+                                let ry1  = cy + sx * sinA + sy * cosA
+                                buffer.addLine(x0: rx0, y0: ry0, x1: rx1, y1: ry1,
+                                               color: col, weight: w)
+                            }
+                        }
+                        prevSX = sx; prevSY = sy; prevDepth = depth
+                    }
+                    _ = prevDepth
+                }
+            }
+        }
+    }
+
+    // MARK: - Torus (3D)
+
+    /// A parametric torus rendered as wireframe meridian and parallel circles,
+    /// tilted ~40° so the donut shape reads clearly in 2D. Depth-shaded.
+    private static func drawTorusLayers(buffer: PixelBuffer, cx: Float, cy: Float,
+                                        radius: Double, params: MandalaParameters,
+                                        palette: ColorPalette, rng: inout SeededRNG,
+                                        layerCount: Int, symmetry: Int,
+                                        colorOffset: Double) {
+        let R = Float(radius) * 1.2
+
+        let nColors = 1024
+        let colorLUT: [(Float, Float, Float)] = (0..<nColors).map { i in
+            let t = (Double(i) / Double(nColors) + colorOffset).truncatingRemainder(dividingBy: 1.0)
+            let c = palette.color(at: t < 0 ? t + 1 : t)
+            return (Float(c.redComponent), Float(c.greenComponent), Float(c.blueComponent))
+        }
+
+        let tiltBase: Float = .pi * 0.222   // ~40°
+        let tilt = tiltBase + Float(rng.nextDouble() * 0.25)
+        let cosTilt = cos(tilt), sinTilt = sin(tilt)
+
+        // Tilt around the X-axis: (x,y,z) → screen x = x3, screen y = y3*cos - z3*sin
+        func proj(_ x3: Float, _ y3: Float, _ z3: Float) -> (Float, Float, Float) {
+            let sy    = y3 * cosTilt - z3 * sinTilt
+            let depth = y3 * sinTilt + z3 * cosTilt
+            return (x3, sy, depth)
+        }
+
+        let nMeridians = 16 + Int(params.density * 24)   // 16–40
+        let nParallels = 8  + Int(params.density * 16)   // 8–24
+        let steps      = 32
+
+        for _ in 0..<layerCount {
+            // bigR = distance from torus centre to tube centre; smallR = tube radius
+            let bigR   = R * Float(0.40 + rng.nextDouble() * 0.30)
+            let smallR = bigR * Float(0.25 + rng.nextDouble() * 0.40)
+            let baseW  = Float(rng.nextDouble(in: 0.5...1.4)) * Float(params.complexity)
+            let tShift = rng.nextDouble()
+
+            // Draw meridian circles (constant u, vary v 0…2π)
+            for mi in 0..<nMeridians {
+                let u    = Float(mi) / Float(nMeridians) * .pi * 2.0
+                let cosU = cos(u), sinU = sin(u)
+                var prevSX: Float = 0, prevSY: Float = 0, prevDepth: Float = 0
+                for j in 0...steps {
+                    let v    = Float(j) / Float(steps) * .pi * 2.0
+                    let cosV = cos(v), sinV = sin(v)
+                    let x3   = (bigR + smallR * cosV) * cosU
+                    let y3   = (bigR + smallR * cosV) * sinU
+                    let z3   = smallR * sinV
+                    let (sx, sy, depth) = proj(x3, y3, z3)
+                    if j > 0 {
+                        let df   = max(0.08, min(1.0, 0.5 + depth / (bigR + smallR) * 0.55))
+                        let w    = baseW * df
+                        let cT   = (Double(mi) / Double(nMeridians) + tShift + params.colorDrift * Double(j) / Double(steps)).truncatingRemainder(dividingBy: 1.0)
+                        let cIdx = Int(max(0.0, min(1.0, cT)) * Double(nColors - 1))
+                        let col  = colorLUT[cIdx]
+                        for s in 0..<symmetry {
+                            let ang  = Float(s) * .pi * 2.0 / Float(symmetry)
+                            let cosA = cos(ang), sinA = sin(ang)
+                            let rx0  = cx + prevSX * cosA - prevSY * sinA
+                            let ry0  = cy + prevSX * sinA + prevSY * cosA
+                            let rx1  = cx + sx    * cosA - sy    * sinA
+                            let ry1  = cy + sx    * sinA + sy    * cosA
+                            buffer.addLine(x0: rx0, y0: ry0, x1: rx1, y1: ry1,
+                                           color: col, weight: w)
+                        }
+                    }
+                    prevSX = sx; prevSY = sy; prevDepth = depth
+                }
+                _ = prevDepth
+            }
+
+            // Draw parallel circles (constant v, vary u 0…2π)
+            for pi2 in 0..<nParallels {
+                let v    = Float(pi2) / Float(nParallels) * .pi * 2.0
+                let cosV = cos(v), sinV = sin(v)
+                var prevSX: Float = 0, prevSY: Float = 0, prevDepth: Float = 0
+                for j in 0...steps {
+                    let u    = Float(j) / Float(steps) * .pi * 2.0
+                    let cosU = cos(u), sinU = sin(u)
+                    let x3   = (bigR + smallR * cosV) * cosU
+                    let y3   = (bigR + smallR * cosV) * sinU
+                    let z3   = smallR * sinV
+                    let (sx, sy, depth) = proj(x3, y3, z3)
+                    if j > 0 {
+                        let df   = max(0.08, min(1.0, 0.5 + depth / (bigR + smallR) * 0.55))
+                        let w    = baseW * df * 0.6    // parallels slightly thinner
+                        let cT   = (Double(pi2) / Double(nParallels) + tShift + 0.5 + params.colorDrift * Double(j) / Double(steps)).truncatingRemainder(dividingBy: 1.0)
+                        let cIdx = Int(max(0.0, min(1.0, cT)) * Double(nColors - 1))
+                        let col  = colorLUT[cIdx]
+                        for s in 0..<symmetry {
+                            let ang  = Float(s) * .pi * 2.0 / Float(symmetry)
+                            let cosA = cos(ang), sinA = sin(ang)
+                            let rx0  = cx + prevSX * cosA - prevSY * sinA
+                            let ry0  = cy + prevSX * sinA + prevSY * cosA
+                            let rx1  = cx + sx    * cosA - sy    * sinA
+                            let ry1  = cy + sx    * sinA + sy    * cosA
+                            buffer.addLine(x0: rx0, y0: ry0, x1: rx1, y1: ry1,
+                                           color: col, weight: w)
+                        }
+                    }
+                    prevSX = sx; prevSY = sy; prevDepth = depth
+                }
+                _ = prevDepth
+            }
+        }
+    }
+
+    // MARK: - Nautilus Shell (3D)
+
+    /// A logarithmic spiral shell rendered as cross-section ribs (constant u) and
+    /// surface spirals (constant v), projected at ~35° tilt. Depth-shaded.
+    private static func drawNautilusLayers(buffer: PixelBuffer, cx: Float, cy: Float,
+                                           radius: Double, params: MandalaParameters,
+                                           palette: ColorPalette, rng: inout SeededRNG,
+                                           layerCount: Int, symmetry: Int,
+                                           colorOffset: Double) {
+        let R = Float(radius) * 1.1
+
+        let nColors = 1024
+        let colorLUT: [(Float, Float, Float)] = (0..<nColors).map { i in
+            let t = (Double(i) / Double(nColors) + colorOffset).truncatingRemainder(dividingBy: 1.0)
+            let c = palette.color(at: t < 0 ? t + 1 : t)
+            return (Float(c.redComponent), Float(c.greenComponent), Float(c.blueComponent))
+        }
+
+        let tiltBase: Float = .pi / 5.0   // ~36°
+        let tilt = tiltBase + Float(rng.nextDouble() * 0.25)
+        let cosTilt = cos(tilt), sinTilt = sin(tilt)
+
+        func proj(_ x3: Float, _ y3: Float, _ z3: Float) -> (Float, Float, Float) {
+            let sy    = y3 * cosTilt - z3 * sinTilt
+            let depth = y3 * sinTilt + z3 * cosTilt
+            return (x3, sy, depth)
+        }
+
+        // uMin…uMax spans 2 full turns; shell grows outward as u increases toward 0
+        let uMin: Float = -.pi * 4.0
+        let uMax: Float = 0.0
+
+        let nRibs     = 18 + Int(params.density * 22)   // 18–40 cross-section ribs
+        let nSpiralLines = 6 + Int(params.density * 10) // 6–16 surface spirals
+        let ribSteps     = 24
+        let spiralSteps  = 64
+
+        for _ in 0..<layerCount {
+            // b = growth rate; r = relative tube radius
+            let b: Float  = Float(0.12 + rng.nextDouble() * 0.10)
+            let r: Float  = Float(0.25 + rng.nextDouble() * 0.30)
+            let baseW     = Float(rng.nextDouble(in: 0.5...1.4)) * Float(params.complexity)
+            let tShift    = rng.nextDouble()
+
+            // Normalise so the outermost edge fits within R
+            let outerScale: Float = R / (exp(b * 0) * (1 + r))  // u=0 is outermost
+
+            func shellPt(_ u: Float, _ v: Float) -> (Float, Float, Float) {
+                let ebu  = exp(b * u) * outerScale
+                let cosU = cos(u), sinU = sin(u)
+                let cosV = cos(v), sinV = sin(v)
+                let x3   = ebu * (1 + r * cosV) * cosU
+                let y3   = ebu * (1 + r * cosV) * sinU
+                let z3   = ebu * r * sinV
+                return (x3, y3, z3)
+            }
+
+            // Cross-section ribs (constant u, vary v 0…2π)
+            for ri in 0..<nRibs {
+                let u = uMin + Float(ri) / Float(nRibs - 1) * (uMax - uMin)
+                var prevSX: Float = 0, prevSY: Float = 0, prevDepth: Float = 0
+                for j in 0...ribSteps {
+                    let v = Float(j) / Float(ribSteps) * .pi * 2.0
+                    let (x3, y3, z3) = shellPt(u, v)
+                    let (sx, sy, depth) = proj(x3, y3, z3)
+                    if j > 0 {
+                        let normDepth = (depth + R) / (2 * R)
+                        let df   = max(0.08, min(1.0, normDepth * 0.92 + 0.08))
+                        let w    = baseW * df
+                        let cT   = (Double(ri) / Double(nRibs) + tShift + params.colorDrift * Double(j) / Double(ribSteps)).truncatingRemainder(dividingBy: 1.0)
+                        let cIdx = Int(max(0.0, min(1.0, cT)) * Double(nColors - 1))
+                        let col  = colorLUT[cIdx]
+                        for s in 0..<symmetry {
+                            let ang  = Float(s) * .pi * 2.0 / Float(symmetry)
+                            let cosA = cos(ang), sinA = sin(ang)
+                            let rx0  = cx + prevSX * cosA - prevSY * sinA
+                            let ry0  = cy + prevSX * sinA + prevSY * cosA
+                            let rx1  = cx + sx    * cosA - sy    * sinA
+                            let ry1  = cy + sx    * sinA + sy    * cosA
+                            buffer.addLine(x0: rx0, y0: ry0, x1: rx1, y1: ry1,
+                                           color: col, weight: w)
+                        }
+                    }
+                    prevSX = sx; prevSY = sy; prevDepth = depth
+                }
+                _ = prevDepth
+            }
+
+            // Surface spirals (constant v, vary u uMin…uMax)
+            for si in 0..<nSpiralLines {
+                let v = Float(si) / Float(nSpiralLines) * .pi * 2.0
+                var prevSX: Float = 0, prevSY: Float = 0, prevDepth: Float = 0
+                for j in 0...spiralSteps {
+                    let u = uMin + Float(j) / Float(spiralSteps) * (uMax - uMin)
+                    let (x3, y3, z3) = shellPt(u, v)
+                    let (sx, sy, depth) = proj(x3, y3, z3)
+                    if j > 0 {
+                        let normDepth = (depth + R) / (2 * R)
+                        let df   = max(0.08, min(1.0, normDepth * 0.92 + 0.08))
+                        let w    = baseW * df * 0.7
+                        let cT   = (Double(si) / Double(nSpiralLines) + tShift + 0.5 + params.colorDrift * Double(j) / Double(spiralSteps)).truncatingRemainder(dividingBy: 1.0)
+                        let cIdx = Int(max(0.0, min(1.0, cT)) * Double(nColors - 1))
+                        let col  = colorLUT[cIdx]
+                        for s in 0..<symmetry {
+                            let ang  = Float(s) * .pi * 2.0 / Float(symmetry)
+                            let cosA = cos(ang), sinA = sin(ang)
+                            let rx0  = cx + prevSX * cosA - prevSY * sinA
+                            let ry0  = cy + prevSX * sinA + prevSY * cosA
+                            let rx1  = cx + sx    * cosA - sy    * sinA
+                            let ry1  = cy + sx    * sinA + sy    * cosA
+                            buffer.addLine(x0: rx0, y0: ry0, x1: rx1, y1: ry1,
+                                           color: col, weight: w)
+                        }
+                    }
+                    prevSX = sx; prevSY = sy; prevDepth = depth
+                }
+                _ = prevDepth
+            }
         }
     }
 
