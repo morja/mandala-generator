@@ -59,10 +59,11 @@ struct MandalaRenderer {
         let cx = Float(bufferSize) * 0.5
         let cy = Float(bufferSize) * 0.5
         let baseRadius = Double(bufferSize) * 0.72
-        // Brightness normalisation: lines accumulate energy ∝ 1/bufferSize, so higher-res
-        // buffers are linearly dimmer. pow(…, 1.15) adds a slight super-linear boost to
-        // compensate for the filmic tone-map not reaching the same saturation at lower raw values.
-        let brightnessScale = pow(Float(bufferSize) / 1600.0, 1.15)
+        // Brightness normalisation: mean raw pixel value ∝ 1/outputSize because the same
+        // lines are spread over a proportionally larger canvas. Linear scale exactly cancels
+        // this so every resolution produces the same tone-mapped output.
+        // Using a power > 1 would give unequal results when preview and export sizes differ.
+        let brightnessScale = Float(bufferSize) / 1600.0
 
         // ── BACKGROUND ──
         let bgBuffer = PixelBuffer(width: bufferSize, height: bufferSize)
@@ -82,10 +83,19 @@ struct MandalaRenderer {
                     drawGrassFibers(buffer: bgBuffer, params: lp, palette: bgPalette, rng: &rng)
                 }
             } else {
-                drawBaseLayer(buffer: bgBuffer, settings: params.baseLayer, bufferSize: bufferSize)
+                // .color type bypasses the PixelBuffer pipeline — applied after all layers
+                if params.baseLayer.type != .color {
+                    drawBaseLayer(buffer: bgBuffer, settings: params.baseLayer, bufferSize: bufferSize)
+                }
             }
         }
-        // isEnabled == false → buffer stays black (all zeros)
+        // isEnabled == false (or .color type) → buffer stays black (all zeros)
+
+        // Solid-colour background is created outside the PixelBuffer/tone-map pipeline so
+        // the displayed colour exactly matches the user's HSB picker. It is composited AFTER
+        // all layers so blend modes (Add, Screen…) between layers don't pollute it.
+        let solidBgImage: CGImage? = (params.baseLayer.isEnabled && params.baseLayer.type == .color)
+            ? makeSolidCGImage(settings: params.baseLayer, size: bufferSize) : nil
 
         guard var compositeImage = bgBuffer.toCGImage() else { return NSImage() }
 
@@ -199,6 +209,14 @@ struct MandalaRenderer {
                 compositeImage = blendComposite(base: compositeImage, overlay: drawImage,
                                                 mode: blendFilter)
             }
+        }
+
+        // ── SOLID BACKGROUND (applied after all layers so blend modes don't pollute it) ──
+        // CILightenBlendMode = max(composite, solidBg) per channel: dark areas become the
+        // solid colour while bright mandala content is completely unaffected.
+        if let solidBg = solidBgImage {
+            compositeImage = blendComposite(base: compositeImage, overlay: solidBg,
+                                            mode: "CILightenBlendMode")
         }
 
         // ── EFFECTS LAYER ──
@@ -647,6 +665,31 @@ struct MandalaRenderer {
     }
 
     // MARK: - Base Layer
+
+    /// Creates a solid-colour CGImage with exact RGB values — bypasses the filmic tone-map
+    /// so the displayed colour matches the user's HSB picker exactly.
+    private static func makeSolidCGImage(settings: BaseLayerSettings, size: Int) -> CGImage? {
+        let c = hsbToRGB(h: settings.hue, s: settings.saturation, b: settings.brightness)
+        let opacity = Float(settings.opacity)
+        let r = UInt8(max(0, min(255, Int(c.r * opacity * 255 + 0.5))))
+        let g = UInt8(max(0, min(255, Int(c.g * opacity * 255 + 0.5))))
+        let b = UInt8(max(0, min(255, Int(c.b * opacity * 255 + 0.5))))
+        let count = size * size * 4
+        var bytes = [UInt8](repeating: 255, count: count)
+        for i in 0..<size * size {
+            let p = i * 4
+            bytes[p] = r; bytes[p+1] = g; bytes[p+2] = b
+        }
+        guard let data     = CFDataCreate(nil, bytes, count),
+              let provider = CGDataProvider(data: data) else { return nil }
+        let space = CGColorSpace(name: CGColorSpace.displayP3) ?? CGColorSpaceCreateDeviceRGB()
+        return CGImage(width: size, height: size,
+                       bitsPerComponent: 8, bitsPerPixel: 32,
+                       bytesPerRow: size * 4, space: space,
+                       bitmapInfo: CGBitmapInfo(rawValue: CGImageAlphaInfo.noneSkipLast.rawValue),
+                       provider: provider, decode: nil,
+                       shouldInterpolate: false, intent: .defaultIntent)
+    }
 
     private static func drawBaseLayer(buffer: PixelBuffer, settings: BaseLayerSettings, bufferSize: Int) {
         let w   = bufferSize
