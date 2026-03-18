@@ -18,20 +18,31 @@ Find more samples [here](samples/).
 
 ## Features
 
-- **27 drawing styles** — Spirograph, Rose Curves, String Art, Sunburst, Epitrochoid, Floral, Lissajous, Butterfly, Geometric, Fractal, Phyllotaxis, Hypocycloid, Wave Interference, Spider Web, Weave, Sacred Geometry, Radial Mesh, Flow Field, Tendril, Moiré, Voronoi, Torus Knot, Sphere Grid, Tesseract, Mixed, **Universe**, **Symbols**
+- **33 drawing styles** organised into five categories:
+  - *Parametric Curves* — Spirograph, Rose Curves, Floral, Butterfly, Epitrochoid, Lissajous, Hypocycloid, Phyllotaxis, Fractal, Superformula, Wave Interference
+  - *Geometric & Pattern* — Geometric, Sacred Geometry, Sunburst, Star Burst, String Art, Spider Web, Weave, Radial Mesh, Moiré
+  - *Organic & Flow* — Flow Field, Tendril, Voronoi, **Strange Attractor** (Clifford / De Jong / Bedhead / Hopalong with 30 presets)
+  - *3D* — **Hyperboloid** (ruled surface), **Torus** (parametric wireframe), **Nautilus Shell** (logarithmic spiral), Torus Knot, Sphere Grid, Tesseract
+  - *Special* — Universe, Symbols, Mixed
+- **3D styles** — Hyperboloid, Torus, and Nautilus Shell are rendered as tilted wireframe / spiral projections with depth shading (front faces bright, back faces dim at 8%) and per-symmetry brightness normalisation to prevent centre overexposure at high symmetry counts
+- **Strange Attractor style** — 30 presets across four attractor types; 500 k–1 M iterated points; colour LUT for performance; scale adapts to attractor bounds
+- **Superformula style** — 22 Gielis presets spanning sharp stars through smooth polygons; density-driven stroke weight
 - **Universe style** — density drives a 7-level cosmic progression: single planet → two planets → Saturn with rings → full solar system → Milky Way spiral galaxy → multiple galaxies → cosmic web with filaments and galaxy clusters; fully symmetry-aware
 - **Symbols style** — 20 sacred and universal symbols arranged in mandala rings: Heart, Peace, Infinity, Eye of Providence, Yin-Yang, Crescent, Star of David, Pentagram, Ankh, Om, Chakra Lotus, Flower of Life, Dharma Wheel, Merkaba, Triquetra, Ouroboros, Triskelion, Vesica Piscis, Hamsa, Sri Yantra, Eye of Horus, Star of Ishtar, Caduceus — seed-driven selection with concentric center symbol
-- **3D styles** — Torus Knot (full tube surface with Frenet frame), Sphere Grid (tilted great circles + pole spirals), Tesseract (4D hypercube with nested shells) — all with perspective depth shading, symmetry, and ripple
 - **Multi-layer compositing** — stack up to 5 independent layers, each with its own style, palette, blend mode, and settings
 - **Per-layer controls** — symmetry, seed, scale, complexity, density, glow, colour drift, ripple, wash, abstract level, saturation, brightness, rotation, opacity, blend mode
 - **Layer header actions** — dice (randomize), duplicate, copy/paste via context menu; drag handle for reordering
 - **Layer mini-previews** — each layer card shows a live thumbnail that updates after every render
 - **Drag-to-reorder layers** — drag handle on each layer card; sticky "Add Layer" button always visible at the top
-- **Background layer** — solid colour, gradient (radial or linear), pattern (checkerboard, stripes, diagonal, crosshatch), grain, image, or **Auto** (palette-derived dark ambient gradient)
+- **Favorites** — save any render as a favourite (★ button in the toolbar); browse, apply, and delete favourites from a popover thumbnail grid; favourites persist across sessions
+- **Copy to clipboard** (⌘⇧C) — copies the current image as PNG to the system clipboard; also available in the Edit menu
+- **Background layer** — solid colour (exact RGB, independent of layer blend modes), gradient (radial or linear), pattern (checkerboard, stripes, diagonal, crosshatch), grain, image, or **Auto** (palette-derived dark ambient gradient)
+- **Solid colour background** — bypasses the filmic tone-map so the displayed colour exactly matches the HSB picker; composited after all layers so Add/Screen blend modes between layers never pollute the background
 - **Hue colour sliders** — background hue controls show a rainbow gradient track so you can see what colour you're picking
 - **Effects layer** — brightness, contrast, vignette, chromatic aberration, 3D relief, dimming, erasure, highlights, star sparkles, **wash** (bleached/overexposed), **sepia** (warm antique), **fade** (matte gray), **bloom** (multi-scale glow bleed), **local contrast** (clarity / unsharp mask), **grain** (film noise), **glitter** (rainbow iridescent sparkles) — each spatial effect with independent seed dice button
 - **18 colour palettes** — Aurora, Nebula, Neon City, Sunset, Prism, Bioluminescence, Blue/Red, Synthwave, Lava, Gold, Toxic, and more
 - **Custom palette editor** — create, name, and save your own palettes with a gradient stop editor (HSB sliders per stop); custom palettes are marked with a star and persist across sessions
+- **Resolution-independent brightness** — rendered at any preview or export resolution (512–8192 px), images always match in perceived brightness; the Float32 additive buffer is scaled by `bufferSize / 1600` before filmic tone-mapping so line energy density is constant across resolutions
 - **Persistent history** — back/forward navigation (⌘[ / ⌘]) through every render, survives app restarts
 - **Randomize All** (⌘⇧R) — generates a completely new random mandala; app starts with a random mandala on first launch
 - **Save/Load settings** — save full parameter state as JSON (⌘S), load it back (⌘O); backward-compatible with older saves
@@ -96,6 +107,7 @@ The app detects WebP export support at runtime and only shows the WebP option wh
 | ⌘S | Save settings |
 | ⌘O | Load settings |
 | ⌘⇧S | Save image |
+| ⌘⇧C | Copy image to clipboard |
 | ⌘⇧E | Batch export |
 | ⌘⌥E | Export animation |
 | ⌘[ / ⌘] | Navigate history back / forward |
@@ -107,6 +119,7 @@ Controls a dedicated background layer rendered before the mandala layers.
 | Setting | Description |
 |---|---|
 | **Type** | Solid colour, gradient, pattern, grain, image, or Auto |
+| **Color** | Exact solid fill — composited after all layers, immune to blend-mode interactions |
 | **Auto** | Derives a dark ambient background from the first layer's palette |
 | **Primary / Secondary** | Hue (colour gradient slider), saturation, brightness |
 | **Gradient style** | Radial or linear (with angle control) |
@@ -170,7 +183,7 @@ Each layer is an independent drawing pass composited on top of previous layers. 
 
 | Parameter | Effect |
 |---|---|
-| **Style** | One of 25 drawing algorithms |
+| **Style** | One of 33 drawing algorithms, grouped by category |
 | **Blend Mode** | Screen (default), Add, Normal, or Multiply |
 | **Symmetry** | Rotational repeat count (1–8) |
 | **Seed** | RNG seed — change for a different arrangement |
@@ -196,25 +209,26 @@ Each layer has its own palette grid. You can select from the 18 built-in palette
 | File | Purpose |
 |---|---|
 | `MandalaParameters.swift` | All model structs (`StyleLayer`, `BaseLayerSettings`, `EffectsLayerSettings`, `DrawingLayerSettings`, `MandalaParameters`) — fully `Codable` with backward-compatible `decodeSafe` fallbacks |
-| `MandalaRenderer.swift` | Core renderer — 27 curve styles including 3D (torus knot, sphere grid, tesseract), Universe and Symbols styles, base/effects layers, CIFilter post-processing, layer preview thumbnails |
-| `PixelBuffer.swift` | Float32 additive pixel buffer with Wu anti-aliased line drawing and tone mapping |
+| `MandalaRenderer.swift` | Core renderer — 33 curve styles including 3D (hyperboloid, torus, nautilus, torus knot, sphere grid, tesseract), Strange Attractor, Superformula, Universe and Symbols styles, base/effects layers, CIFilter post-processing, layer preview thumbnails |
+| `PixelBuffer.swift` | Float32 additive pixel buffer with Wu anti-aliased line drawing, `vDSP`-accelerated merge/scale/clear, and filmic tone-mapping |
 | `ColorPalettes.swift` | 18 built-in named colour palettes |
 | `PaletteEditor.swift` | Custom palette editor — `PaletteStop`, `CustomPalette` (Codable), `PaletteEditorSheet` with gradient preview and HSB stop editor |
-| `AppState.swift` | `@MainActor ObservableObject` — debounced auto-generate, persistent history, save/load, batch/animation export, custom palette persistence |
+| `AppState.swift` | `@MainActor ObservableObject` — debounced auto-generate, persistent history, save/load, batch/animation export, custom palette persistence, favourites |
 | `ContentView.swift` | Root layout (3-column HSplitView: scene panel + canvas + layers panel) |
-| `CanvasView.swift` | Canvas with pan/zoom, toolbar, drawing overlay (experimental) |
+| `CanvasView.swift` | Canvas with pan/zoom, toolbar (resolution picker, copy, favourites), drawing overlay (experimental) |
 | `ScenePanel.swift` | Left panel — Background, Effects, and Export cards; animation options sheet |
 | `PalettePanel.swift` | Right panel — sticky add-layer header, draggable `LayerCard` views |
 | `ParameterPanel.swift` | Shared UI components (`PaletteSwatch`, etc.) |
 
 ### Rendering pipeline
 
-1. **Base layer** — solid colour / gradient / pattern / grain / image / auto (palette-derived gradient + grass fibers)
-2. **Per mandala layer** — curves collected into `CurveDrawTask` structs, drawn in parallel via `DispatchQueue.concurrentPerform` into per-thread sub-buffers, merged with `vDSP_vadd`, then glow → wash → abstract → colour grade applied; 3D styles use perspective projection with depth-shaded weights
+1. **Base layer** — solid colour (tone-map bypassed, exact RGB) / gradient / pattern / grain / image / auto (palette-derived gradient + grass fibers)
+2. **Per mandala layer** — curves collected into `CurveDrawTask` structs, drawn in parallel via `DispatchQueue.concurrentPerform` into per-thread sub-buffers, merged with `vDSP_vadd`, then brightness-scaled by `bufferSize / 1600`, then glow → wash → abstract → colour grade applied; 3D styles use perspective projection with depth-shaded weights
 3. **Blend composite** — each layer blended onto the running composite using the chosen blend mode (Screen, Add, Normal/Lighten, or Multiply); optional 2D rotation via `CIAffineTransform`; optional opacity via `CIColorMatrix`
 4. **Drawing layer** (experimental) — user strokes composited with a chosen blend mode and symmetry
-5. **Effects layer** — wash → sepia → fade → bloom → local contrast → grain applied as CIFilter passes; brightness/contrast, 3D relief (hard-light emboss), vignette, chromatic aberration; dimming, erasure, highlights, stars, glitter drawn into PixelBuffers and screen-composited
-6. **Downscale** — Lanczos downscale from 2× render buffer to output size
+5. **Solid background** (when type = Color) — merged in after all layers using `CILightenBlendMode`; dark areas become the background colour, bright mandala content is unaffected
+6. **Effects layer** — wash → sepia → fade → bloom → local contrast → grain applied as CIFilter passes; brightness/contrast, 3D relief (hard-light emboss), vignette, chromatic aberration; dimming, erasure, highlights, stars, glitter drawn into PixelBuffers and screen-composited
+7. **Downscale** — Lanczos downscale from 2× render buffer to output size
 
 ### Animation export
 

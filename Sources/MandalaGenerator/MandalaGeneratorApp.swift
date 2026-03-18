@@ -40,6 +40,14 @@ struct MandalaGeneratorApp: App {
                 .keyboardShortcut("e", modifiers: [.command, .option])
             }
 
+            CommandGroup(after: .pasteboard) {
+                Divider()
+                Button("Copy Image") {
+                    appState.copyToClipboard()
+                }
+                .keyboardShortcut("c", modifiers: [.command, .shift])
+            }
+
             CommandMenu("Experimental") {
                 Button(action: { appState.showDrawingPanel.toggle() }) {
                     Text(appState.showDrawingPanel ? "Hide Drawing Layer" : "Show Drawing Layer")
