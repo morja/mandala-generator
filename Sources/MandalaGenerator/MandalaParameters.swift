@@ -329,12 +329,11 @@ enum MandalaStyle: String, CaseIterable, Identifiable, Codable {
     case spiderWeb, weave, radialMesh, moire
     // ── Organic & Flow ─────────────────────────────────────────────
     case flowField, tendril, voronoi, strangeAttractor
-    case nebulaVeins, constellationWeb, auroraRibbons, crystalBloom
-    case blackHoleLens, plasmaPetals, recursiveHalo
+    case constellationWeb
     // ── 3D ────────────────────────────────────────────────────────
     case hyperboloid, torus, nautilus, sphereGrid, torusKnot, tesseract
     // ── Special ───────────────────────────────────────────────────
-    case universe, symbols, mixed, dust
+    case universe, symbols, mixed
 
     init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
@@ -371,13 +370,7 @@ enum MandalaStyle: String, CaseIterable, Identifiable, Codable {
         case .tendril:          return "Tendril"
         case .voronoi:          return "Voronoi"
         case .strangeAttractor: return "Strange Attractor"
-        case .nebulaVeins:      return "Nebula Veins"
         case .constellationWeb: return "Constellation Web"
-        case .auroraRibbons:    return "Aurora Ribbons"
-        case .crystalBloom:     return "Crystal Bloom"
-        case .blackHoleLens:    return "Black Hole Lens"
-        case .plasmaPetals:     return "Plasma Petals"
-        case .recursiveHalo:    return "Recursive Halo"
         // 3D
         case .hyperboloid:      return "Hyperboloid"
         case .torus:            return "Torus"
@@ -389,7 +382,6 @@ enum MandalaStyle: String, CaseIterable, Identifiable, Codable {
         case .universe:         return "Universe"
         case .symbols:          return "Symbols"
         case .mixed:            return "Mixed"
-        case .dust:             return "Dust Clouds"
         }
     }
     var sfSymbol: String {
@@ -421,13 +413,7 @@ enum MandalaStyle: String, CaseIterable, Identifiable, Codable {
         case .tendril:          return "arrow.triangle.branch"
         case .voronoi:          return "rectangle.split.3x3"
         case .strangeAttractor: return "scribble"
-        case .nebulaVeins:      return "smoke.fill"
         case .constellationWeb: return "point.3.connected.trianglepath.dotted"
-        case .auroraRibbons:    return "water.waves"
-        case .crystalBloom:     return "sparkle"
-        case .blackHoleLens:    return "circle.circle"
-        case .plasmaPetals:     return "flame"
-        case .recursiveHalo:    return "smallcircle.filled.circle"
         // 3D
         case .hyperboloid:      return "cylinder.split.1x2"
         case .torus:            return "circle.dotted"
@@ -439,7 +425,6 @@ enum MandalaStyle: String, CaseIterable, Identifiable, Codable {
         case .universe:         return "sparkles"
         case .symbols:          return "heart.circle"
         case .mixed:            return "sparkles"
-        case .dust:             return "cloud.fill"
         }
     }
 }

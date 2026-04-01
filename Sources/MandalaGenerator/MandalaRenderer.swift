@@ -105,30 +105,6 @@ struct MandalaRenderer {
             let palette = palettes[max(0, min(palettes.count-1, layer.paletteIndex))]
             var layerRng = SeededRNG(seed: layer.seed == 0 ? params.seed &+ UInt64(li + 1) &* 0x9e3779b97f4a7c15 : layer.seed)
 
-            // ── Dust Clouds: CGContext-based, bypasses PixelBuffer ──────────────
-            if layer.style == .dust {
-                guard var layerImage = renderDustAsStyleLayer(layer: layer, palette: palette,
-                                                              size: bufferSize, rng: &layerRng)
-                else { continue }
-                layerImage = applyGlow(image: layerImage, intensity: layer.glowIntensity)
-                layerImage = applyColourGrade(image: layerImage,
-                                              saturation: layer.saturation,
-                                              brightness: layer.brightness)
-                if abs(layer.rotation) > 0.001 {
-                    layerImage = rotateImage(layerImage, angle: layer.rotation * .pi * 2)
-                }
-                if layer.opacity < 0.999 {
-                    layerImage = applyLayerOpacity(image: layerImage, opacity: layer.opacity)
-                }
-                switch layer.blendMode {
-                case .screen:   compositeImage = blendComposite(base: compositeImage, overlay: layerImage, mode: "CIScreenBlendMode")
-                case .add:      compositeImage = blendComposite(base: compositeImage, overlay: layerImage, mode: "CIAdditionCompositing")
-                case .normal:   compositeImage = blendComposite(base: compositeImage, overlay: layerImage, mode: "CILightenBlendMode")
-                case .multiply: compositeImage = blendComposite(base: compositeImage, overlay: layerImage, mode: "CIMultiplyBlendMode")
-                }
-                continue
-            }
-
             let layerSymmetry = max(1, min(8, layer.symmetry))
             let layerRadius = baseRadius * max(0.1, min(1.0, layer.scale))
             let layerCount  = max(2, Int(layer.complexity * 8) + 1)
@@ -457,40 +433,10 @@ struct MandalaRenderer {
                                        layerCount: layerCount, symmetry: symmetry,
                                        colorOffset: colorOffset)
             return
-        case .nebulaVeins:
-            drawNebulaVeinsLayers(buffer: buffer, cx: cx, cy: cy, radius: baseRadius,
-                                  params: params, palette: palette, rng: &rng,
-                                  colorOffset: colorOffset, symmetry: symmetry)
-            return
         case .constellationWeb:
             drawConstellationWebLayers(buffer: buffer, cx: cx, cy: cy, radius: baseRadius,
                                        params: params, palette: palette, rng: &rng,
                                        colorOffset: colorOffset, symmetry: symmetry)
-            return
-        case .auroraRibbons:
-            drawAuroraRibbonsLayers(buffer: buffer, cx: cx, cy: cy, radius: baseRadius,
-                                    params: params, palette: palette, rng: &rng,
-                                    colorOffset: colorOffset, symmetry: symmetry)
-            return
-        case .crystalBloom:
-            drawCrystalBloomLayers(buffer: buffer, cx: cx, cy: cy, radius: baseRadius,
-                                   params: params, palette: palette, rng: &rng,
-                                   colorOffset: colorOffset, symmetry: symmetry)
-            return
-        case .blackHoleLens:
-            drawBlackHoleLensLayers(buffer: buffer, cx: cx, cy: cy, radius: baseRadius,
-                                    params: params, palette: palette, rng: &rng,
-                                    colorOffset: colorOffset, symmetry: symmetry)
-            return
-        case .plasmaPetals:
-            drawPlasmaPetalsLayers(buffer: buffer, cx: cx, cy: cy, radius: baseRadius,
-                                   params: params, palette: palette, rng: &rng,
-                                   colorOffset: colorOffset, symmetry: symmetry)
-            return
-        case .recursiveHalo:
-            drawRecursiveHaloLayers(buffer: buffer, cx: cx, cy: cy, radius: baseRadius,
-                                    params: params, palette: palette, rng: &rng,
-                                    colorOffset: colorOffset, symmetry: symmetry)
             return
         case .superformula:
             collectSuperformulaTasks(into: &tasks, cx: cx, cy: cy, radius: baseRadius,
@@ -515,8 +461,6 @@ struct MandalaRenderer {
                                layerCount: layerCount, symmetry: symmetry,
                                colorOffset: colorOffset)
             return
-        case .dust:
-            return  // handled separately in the per-layer loop; nothing to draw here
         case .mixed:
             // Seed-driven random zone selection — different every render
             var zoneRng = SeededRNG(seed: params.seed &+ 0xbeef1234)
@@ -526,9 +470,7 @@ struct MandalaRenderer {
                                               .phyllotaxis, .hypocycloid, .waveInterference, .spiderWeb,
                                               .weave, .sacredGeometry, .radialMesh, .flowField, .tendril,
                                               .moire, .voronoi, .torusKnot, .sphereGrid, .tesseract, .starBurst,
-                                              .universe, .symbols, .strangeAttractor, .nebulaVeins,
-                                              .constellationWeb, .auroraRibbons, .crystalBloom,
-                                              .blackHoleLens, .plasmaPetals, .recursiveHalo, .superformula,
+                                              .universe, .symbols, .strangeAttractor, .constellationWeb, .superformula,
                                               .hyperboloid, .torus, .nautilus]
             let radii: [Double] = [1.0, 0.72, 0.45]
             let sub = max(2, layerCount / 3)
@@ -649,34 +591,10 @@ struct MandalaRenderer {
                                                params: params, palette: palette, rng: &rng,
                                                layerCount: sub, symmetry: symmetry,
                                                colorOffset: 0)
-                case .nebulaVeins:
-                    drawNebulaVeinsLayers(buffer: buffer, cx: cx, cy: cy, radius: scaled,
-                                          params: params, palette: palette, rng: &rng,
-                                          colorOffset: 0, symmetry: symmetry)
                 case .constellationWeb:
                     drawConstellationWebLayers(buffer: buffer, cx: cx, cy: cy, radius: scaled,
                                                params: params, palette: palette, rng: &rng,
                                                colorOffset: 0, symmetry: symmetry)
-                case .auroraRibbons:
-                    drawAuroraRibbonsLayers(buffer: buffer, cx: cx, cy: cy, radius: scaled,
-                                            params: params, palette: palette, rng: &rng,
-                                            colorOffset: 0, symmetry: symmetry)
-                case .crystalBloom:
-                    drawCrystalBloomLayers(buffer: buffer, cx: cx, cy: cy, radius: scaled,
-                                           params: params, palette: palette, rng: &rng,
-                                           colorOffset: 0, symmetry: symmetry)
-                case .blackHoleLens:
-                    drawBlackHoleLensLayers(buffer: buffer, cx: cx, cy: cy, radius: scaled,
-                                            params: params, palette: palette, rng: &rng,
-                                            colorOffset: 0, symmetry: symmetry)
-                case .plasmaPetals:
-                    drawPlasmaPetalsLayers(buffer: buffer, cx: cx, cy: cy, radius: scaled,
-                                           params: params, palette: palette, rng: &rng,
-                                           colorOffset: 0, symmetry: symmetry)
-                case .recursiveHalo:
-                    drawRecursiveHaloLayers(buffer: buffer, cx: cx, cy: cy, radius: scaled,
-                                            params: params, palette: palette, rng: &rng,
-                                            colorOffset: 0, symmetry: symmetry)
                 case .superformula:
                     collectSuperformulaTasks(into: &tasks, cx: cx, cy: cy, radius: scaled,
                                              params: params, rng: &rng, layerCount: sub,
@@ -697,7 +615,7 @@ struct MandalaRenderer {
                                        params: params, palette: palette, rng: &rng,
                                        layerCount: sub, symmetry: symmetry,
                                        colorOffset: 0)
-                case .mixed, .dust:
+                case .mixed:
                     collectSpirographTasks(into: &tasks, cx: cx, cy: cy, radius: scaled,
                                            params: params, rng: &rng, layerCount: sub,
                                            symmetry: symmetry, rippleAmount: rippleAmount, weightMul: wmul)
@@ -1699,6 +1617,28 @@ struct MandalaRenderer {
         addPolyline(buffer: buffer, points: pts, color: color, weight: weight)
     }
 
+    private static func drawTinyStar(buffer: PixelBuffer, cx: Float, cy: Float,
+                                     radius: Float, rotation: Float,
+                                     color: (r: Float, g: Float, b: Float),
+                                     coreWeight: Float, spikeWeight: Float) {
+        let longR = radius
+        let shortR = radius * 0.45
+        for i in 0..<4 {
+            let a = rotation + Float(i) * Float.pi * 0.5
+            buffer.addLine(x0: cx - cos(a) * longR, y0: cy - sin(a) * longR,
+                           x1: cx + cos(a) * longR, y1: cy + sin(a) * longR,
+                           color: color, weight: spikeWeight)
+        }
+        for i in 0..<4 {
+            let a = rotation + Float.pi * 0.25 + Float(i) * Float.pi * 0.5
+            buffer.addLine(x0: cx - cos(a) * shortR, y0: cy - sin(a) * shortR,
+                           x1: cx + cos(a) * shortR, y1: cy + sin(a) * shortR,
+                           color: color, weight: spikeWeight * 0.55)
+        }
+        addCircle(buffer: buffer, cx: cx, cy: cy, radius: max(1.2, radius * 0.16),
+                  color: color, weight: coreWeight, steps: 10)
+    }
+
     private static func drawNebulaVeinsLayers(buffer: PixelBuffer, cx: Float, cy: Float,
                                               radius: Double, params: MandalaParameters,
                                               palette: ColorPalette, rng: inout SeededRNG,
@@ -1748,14 +1688,23 @@ struct MandalaRenderer {
                                                    colorOffset: Double, symmetry: Int) {
         let R = Float(radius)
         let sector = Float.pi * 2 / Float(max(1, symmetry))
-        let baseNodes = max(5, Int(8 + params.density * 16))
+        let ringCount = max(2, Int(2 + params.complexity * 4))
+        let baseNodes = max(6, Int(7 + params.density * 12 + params.complexity * 8))
         var relNodes: [(Float, Float)] = []
         relNodes.reserveCapacity(baseNodes)
 
-        for _ in 0..<baseNodes {
-            let ang = Float(rng.nextDouble()) * sector
-            let dist = Float(sqrt(rng.nextDouble())) * R * 0.92
-            relNodes.append((cos(ang) * dist, sin(ang) * dist))
+        for ring in 0..<ringCount {
+            let ringT = Float(ring + 1) / Float(ringCount + 1)
+            let onRing = max(2, baseNodes / ringCount + Int(rng.nextDouble() * 3))
+            for idx in 0..<onRing {
+                let baseA = Float(idx) / Float(onRing) * sector
+                let jitterA = Float(rng.nextDouble() - 0.5) * sector * (0.08 + Float(params.abstractLevel) * 0.20)
+                let distBase = R * (0.12 + ringT * 0.74)
+                let distJitter = R * Float((rng.nextDouble() - 0.5) * (0.12 + params.density * 0.10))
+                let ang = baseA + jitterA
+                let dist = max(R * 0.06, min(R * 0.94, distBase + distJitter))
+                relNodes.append((cos(ang) * dist, sin(ang) * dist))
+            }
         }
 
         var nodes: [(Float, Float)] = []
@@ -1767,14 +1716,22 @@ struct MandalaRenderer {
             }
         }
 
-        let connectDist = R * Float(0.26 + params.complexity * 0.22)
+        let connectDist = R * Float(0.18 + params.complexity * 0.28 + params.density * 0.10)
+        let radialBias = Float(0.32 + params.complexity * 0.20)
         for i in 0..<nodes.count {
             for j in (i + 1)..<nodes.count {
-                let dx = nodes[i].0 - nodes[j].0
-                let dy = nodes[i].1 - nodes[j].1
+                let n0 = nodes[i]
+                let n1 = nodes[j]
+                let dx = n0.0 - n1.0
+                let dy = n0.1 - n1.1
                 let d = sqrt(dx * dx + dy * dy)
                 if d < connectDist {
                     let alpha: Float = 1 - d / connectDist
+                    let midX = (n0.0 + n1.0) * 0.5 - cx
+                    let midY = (n0.1 + n1.1) * 0.5 - cy
+                    let midR = sqrt(midX * midX + midY * midY) / max(R, 1)
+                    let keepChance = min(0.97, Double(alpha * 0.9 + (1 - midR) * radialBias))
+                    if rng.nextDouble() > keepChance { continue }
                     let t = Double(i + j) / Double(max(1, nodes.count * 2))
                     let c = paletteColor(palette, at: t, colorOffset: colorOffset)
                     let lineColor: (r: Float, g: Float, b: Float) = (
@@ -1782,9 +1739,7 @@ struct MandalaRenderer {
                         c.g * alpha,
                         c.b * alpha
                     )
-                    let lineWeight = Float(0.10 + Double(alpha) * (0.22 + params.density * 0.15))
-                    let n0 = nodes[i]
-                    let n1 = nodes[j]
+                    let lineWeight = Float(0.07 + Double(alpha) * (0.18 + params.density * 0.14))
                     buffer.addLine(x0: n0.0, y0: n0.1, x1: n1.0, y1: n1.1,
                                    color: lineColor, weight: lineWeight)
                 }
@@ -1793,13 +1748,17 @@ struct MandalaRenderer {
 
         for (idx, node) in nodes.enumerated() {
             let c = paletteColor(palette, at: Double(idx) / Double(max(1, nodes.count)), colorOffset: colorOffset)
-            addCircle(buffer: buffer, cx: node.0, cy: node.1, radius: R * 0.010,
-                      color: c, weight: 1.2, steps: 16)
-            let flare = R * Float(0.015 + params.glowIntensity * 0.04)
-            buffer.addLine(x0: node.0 - flare, y0: node.1, x1: node.0 + flare, y1: node.1,
-                           color: c, weight: 0.6)
-            buffer.addLine(x0: node.0, y0: node.1 - flare, x1: node.0, y1: node.1 + flare,
-                           color: c, weight: 0.6)
+            let dx = node.0 - cx
+            let dy = node.1 - cy
+            let nodeR: Float = sqrt(dx * dx + dy * dy) / max(R, 1)
+            let densityTerm = Float(params.density * 0.008)
+            let centerBias: Float = (1 - nodeR) * 0.010
+            let starRadius: Float = R * (0.006 + densityTerm + centerBias)
+            let rotation = Float(rng.nextDouble() * Double.pi * 0.5)
+            drawTinyStar(buffer: buffer, cx: node.0, cy: node.1,
+                         radius: starRadius, rotation: rotation, color: c,
+                         coreWeight: Float(0.45 + params.glowIntensity * 0.30),
+                         spikeWeight: Float(0.22 + params.glowIntensity * 0.12))
         }
     }
 
@@ -1808,32 +1767,54 @@ struct MandalaRenderer {
                                                 palette: ColorPalette, rng: inout SeededRNG,
                                                 colorOffset: Double, symmetry: Int) {
         let R = Float(radius)
-        let bands = max(3, Int(4 + params.density * 5))
-        let steps = Int(120 + params.complexity * 160)
+        let bands = max(4, Int(5 + params.density * 5 + params.complexity * 3))
+        let steps = Int(140 + params.complexity * 180)
         let sector = Float.pi * 2 / Float(max(1, symmetry))
+        let abstractBoost = Float(0.35 + params.abstractLevel * 0.85)
 
         for band in 0..<bands {
             let c = paletteColor(palette, at: Double(band) / Double(max(1, bands)) * 0.9, colorOffset: colorOffset)
-            let baseR = R * Float(0.18 + Double(band) / Double(max(1, bands)) * 0.60)
-            let amp = R * Float(0.025 + params.abstractLevel * 0.09 + rng.nextDouble() * 0.03)
-            let waviness = Float(2.5 + params.complexity * 5.5 + rng.nextDouble() * 1.2)
+            let bandFrac = Double(band) / Double(max(1, bands - 1))
+            let baseR = R * Float(0.12 + bandFrac * (0.68 + params.density * 0.10))
+            let amp = R * Float(0.055 + params.abstractLevel * 0.11 + params.density * 0.04 + rng.nextDouble() * 0.04)
+            let waviness = Float(3.2 + params.complexity * 6.2 + rng.nextDouble() * 2.4)
+            let spiral = Float(0.12 + params.complexity * 0.55 + rng.nextDouble() * 0.25)
             for sym in 0..<symmetry {
                 let rot = Float(sym) * sector
-                for lane in 0..<3 {
+                for lane in 0..<4 {
                     var points: [(Float, Float)] = []
                     points.reserveCapacity(steps + 1)
-                    let laneShift = (Float(lane) - 1) * amp * 0.45
+                    let laneShift = (Float(lane) - 1.5) * amp * 0.34
+                    let lanePhase = Float(lane) * 0.55 + Float(rng.nextDouble() * 0.3)
                     for i in 0...steps {
                         let t = Float(i) / Float(steps)
-                        let a = rot + t * sector + Float(band) * 0.05
-                        let rr = baseR + laneShift + sin(t * .pi * waviness + Float(band) * 0.8) * amp
+                        let localSector = sector * Float(0.95 + params.density * 0.65 + rng.nextDouble() * 0.35)
+                        let a = rot + t * localSector + Float(band) * 0.08 + t * spiral
+                        let ribbonWave = sin(t * .pi * waviness + lanePhase + Float(band) * 0.8)
+                        let secondaryWave = sin(t * .pi * (waviness * 0.42) + lanePhase * 1.9) * 0.45
+                        let rr = baseR + laneShift + (ribbonWave + secondaryWave) * amp
                         points.append((cx + cos(a) * rr, cy + sin(a) * rr))
                     }
                     addPolyline(buffer: buffer, points: points,
-                                color: (c.r * 0.75, c.g * 0.75, c.b * 0.75),
-                                weight: Float(0.12 + params.density * 0.12))
+                                color: (c.r * (0.78 + abstractBoost * 0.18),
+                                        c.g * (0.78 + abstractBoost * 0.18),
+                                        c.b * (0.78 + abstractBoost * 0.18)),
+                                weight: Float(0.16 + params.density * 0.14 + params.glowIntensity * 0.06))
                 }
             }
+        }
+
+        let veilCount = max(2, symmetry)
+        for i in 0..<veilCount {
+            let t = Double(i) / Double(max(1, veilCount - 1))
+            let c = paletteColor(palette, at: 0.12 + t * 0.55, colorOffset: colorOffset)
+            addEllipse(buffer: buffer, cx: cx, cy: cy,
+                       rx: R * Float(0.24 + t * 0.46),
+                       ry: R * Float(0.08 + t * 0.13),
+                       rotation: Float(t) * .pi + Float(rng.nextDouble() * 0.45),
+                       color: (c.r * 0.22, c.g * 0.22, c.b * 0.22),
+                       weight: Float(0.10 + params.glowIntensity * 0.05),
+                       steps: 84)
         }
     }
 
@@ -1873,36 +1854,84 @@ struct MandalaRenderer {
                                                 palette: ColorPalette, rng: inout SeededRNG,
                                                 colorOffset: Double, symmetry: Int) {
         let R = Float(radius)
-        let darkRing = R * Float(0.16 + params.density * 0.10)
-        let ringCount = max(4, Int(5 + params.complexity * 5))
+        let coreR = R * Float(0.08 + params.density * 0.16)
+        let tilt = Float(rng.nextDouble(in: 0.18...1.05))
+        let spin = Float(rng.nextDouble() * Double.pi * 2)
+        let ringCount = max(5, Int(6 + params.complexity * 7 + params.density * 4))
+        let arcFamilies = max(3, Int(2 + params.complexity * 4))
+        let lensArms = max(symmetry, 3 + Int(params.density * 5))
 
         for i in 0..<ringCount {
             let t = Double(i) / Double(max(1, ringCount - 1))
-            let c = paletteColor(palette, at: 0.08 + t * 0.42, colorOffset: colorOffset)
-            let rr = darkRing * Float(1.2 + t * 3.6)
-            let squash = Float(0.24 + t * 0.18)
+            let c = paletteColor(palette, at: 0.06 + t * 0.55, colorOffset: colorOffset)
+            let rr = coreR * Float(1.4 + t * (3.8 + params.density * 2.6))
+            let squash = Float(0.12 + t * (0.16 + params.abstractLevel * 0.22))
+            let rot = spin + Float(t) * (0.35 + Float(params.complexity) * 0.9)
+            let start = Float(-Double.pi + rng.nextDouble() * 0.55)
+            let end = Float(Double.pi - rng.nextDouble() * 0.55)
             addEllipse(buffer: buffer, cx: cx, cy: cy, rx: rr, ry: rr * squash,
-                       rotation: Float(0.12 + rng.nextDouble() * 0.5),
-                       color: (c.r, c.g, c.b), weight: Float(0.18 + (1 - t) * 0.22), steps: 100)
+                       rotation: tilt + rot,
+                       color: (c.r * (0.75 + Float(1 - t) * 0.25),
+                               c.g * (0.75 + Float(1 - t) * 0.25),
+                               c.b * (0.75 + Float(1 - t) * 0.25)),
+                       weight: Float(0.13 + (1 - t) * 0.24 + params.glowIntensity * 0.05),
+                       steps: 110, start: start, end: end)
         }
 
-        let arcCount = max(6, symmetry * 2)
-        for i in 0..<arcCount {
-            let a0 = Float(i) * .pi * 2 / Float(arcCount) + Float(rng.nextDouble() * 0.2)
-            let span = Float(0.22 + params.abstractLevel * 0.55)
-            let rr = R * Float(0.34 + rng.nextDouble() * 0.42)
-            let c = paletteColor(palette, at: 0.45 + Double(i) / Double(max(1, arcCount)) * 0.35, colorOffset: colorOffset)
-            addEllipse(buffer: buffer, cx: cx, cy: cy, rx: rr, ry: rr * 0.42,
-                       rotation: a0, color: (c.r * 0.7, c.g * 0.7, c.b * 0.7),
-                       weight: 0.12, steps: 44, start: -span, end: span)
+        for fam in 0..<arcFamilies {
+            let famT = Double(fam) / Double(max(1, arcFamilies - 1))
+            let radiusBase = R * Float(0.24 + famT * 0.58)
+            let c = paletteColor(palette, at: 0.38 + famT * 0.42, colorOffset: colorOffset)
+            for arm in 0..<lensArms {
+                let a0 = Float(arm) * .pi * 2 / Float(lensArms) + spin + Float(rng.nextDouble() * 0.4)
+                let span = Float(0.18 + params.abstractLevel * 0.60 + params.complexity * 0.40 + rng.nextDouble() * 0.25)
+                let rr = radiusBase * Float(0.82 + rng.nextDouble() * 0.42)
+                addEllipse(buffer: buffer, cx: cx, cy: cy,
+                           rx: rr, ry: rr * Float(0.18 + famT * 0.30),
+                           rotation: a0,
+                           color: (c.r * 0.55, c.g * 0.55, c.b * 0.55),
+                           weight: Float(0.08 + params.density * 0.09),
+                           steps: 54, start: -span, end: span)
+            }
         }
 
-        let jet = R * Float(0.28 + params.glowIntensity * 0.30)
-        let c = paletteColor(palette, at: 0.86, colorOffset: colorOffset)
-        for dir in [-Float.pi / 2, Float.pi / 2] {
-            buffer.addLine(x0: cx + cos(dir) * darkRing, y0: cy + sin(dir) * darkRing,
-                           x1: cx + cos(dir) * (darkRing + jet), y1: cy + sin(dir) * (darkRing + jet),
-                           color: c, weight: Float(0.26 + params.glowIntensity * 0.2))
+        let streamCount = max(4, symmetry + Int(params.complexity * 4))
+        let streamSteps = Int(80 + params.complexity * 120)
+        for stream in 0..<streamCount {
+            let baseA = Float(stream) * .pi * 2 / Float(streamCount) + spin
+            let c = paletteColor(palette, at: 0.62 + Double(stream) / Double(max(1, streamCount)) * 0.28, colorOffset: colorOffset)
+            var points: [(Float, Float)] = []
+            points.reserveCapacity(streamSteps + 1)
+            for i in 0...streamSteps {
+                let t = Float(i) / Float(streamSteps)
+                let rr = R * (0.22 + (1 - t) * (0.64 + Float(params.density) * 0.08))
+                let swirl = t * (1.6 + Float(params.complexity) * 3.8)
+                let bend = sin(t * .pi * (3.0 + Float(params.abstractLevel) * 5.0) + Float(stream)) * 0.16
+                let a = baseA + swirl + bend
+                points.append((cx + cos(a) * rr, cy + sin(a) * rr))
+            }
+            addPolyline(buffer: buffer, points: points,
+                        color: (c.r * 0.62, c.g * 0.62, c.b * 0.62),
+                        weight: Float(0.09 + params.density * 0.09))
+        }
+
+        let jet = R * Float(0.20 + params.glowIntensity * 0.28 + params.complexity * 0.12)
+        let jetColor = paletteColor(palette, at: 0.94, colorOffset: colorOffset)
+        for dir in [spin + Float.pi * 0.5, spin - Float.pi * 0.5] {
+            buffer.addLine(x0: cx + cos(dir) * coreR * 0.6, y0: cy + sin(dir) * coreR * 0.6,
+                           x1: cx + cos(dir) * (coreR + jet), y1: cy + sin(dir) * (coreR + jet),
+                           color: jetColor, weight: Float(0.18 + params.glowIntensity * 0.16))
+        }
+
+        addCircle(buffer: buffer, cx: cx, cy: cy, radius: coreR * 0.55,
+                  color: paletteColor(palette, at: 0.02, colorOffset: colorOffset),
+                  weight: Float(0.16 + params.glowIntensity * 0.12), steps: 28)
+        for i in 0..<3 {
+            let halo = coreR * Float(0.95 + Double(i) * 0.34)
+            let c = paletteColor(palette, at: 0.12 + Double(i) * 0.08, colorOffset: colorOffset)
+            addCircle(buffer: buffer, cx: cx, cy: cy, radius: halo,
+                      color: (c.r * 0.40, c.g * 0.40, c.b * 0.40),
+                      weight: 0.08, steps: 44)
         }
     }
 
@@ -1911,31 +1940,79 @@ struct MandalaRenderer {
                                                palette: ColorPalette, rng: inout SeededRNG,
                                                colorOffset: Double, symmetry: Int) {
         let R = Float(radius)
-        let petals = max(8, symmetry * 2 + Int(params.complexity * 6))
-        let steps = Int(90 + params.density * 120)
-        let weight = Float(0.16 + params.density * 0.18)
+        let families = max(2, Int(2 + params.complexity * 3 + rng.nextDouble() * 2.0))
+        let steps = Int(110 + params.density * 150 + params.complexity * 90)
+        let baseWeight = Float(0.13 + params.density * 0.16)
+        let petalShapeMode = Int(rng.nextDouble() * 4.0)
+        let spiralBias = Float(rng.nextDouble(in: -0.85...0.85))
+        let radialTaper = Float(0.64 + rng.nextDouble() * 0.55)
 
-        for petal in 0..<petals {
-            let baseA = Float(petal) * .pi * 2 / Float(petals)
-            let c = paletteColor(palette, at: Double(petal) / Double(max(1, petals)) * 0.9, colorOffset: colorOffset)
-            for side: Float in [-1, 1] {
-                var points: [(Float, Float)] = []
-                points.reserveCapacity(steps + 1)
-                for i in 0...steps {
-                    let t = Float(i) / Float(steps)
-                    let flare = sin(t * .pi) * R * Float(0.10 + params.abstractLevel * 0.16)
-                    let curl = sin(t * .pi * (3.5 + Float(params.complexity) * 3.0) + Float(petal) * 0.7) * R * 0.03
-                    let rr = R * (0.08 + t * (0.82 + Float(params.density) * 0.08))
-                    let a = baseA + side * (flare + curl) / max(rr, 1)
-                    points.append((cx + cos(a) * rr, cy + sin(a) * rr))
+        for family in 0..<families {
+            let familyFrac = Double(family) / Double(max(1, families))
+            let familyPetals = max(5, symmetry + Int(params.complexity * 10) + Int(rng.nextDouble() * 6.0) + family * 2)
+            let petalOffset = Float(rng.nextDouble() * .pi * 2)
+            let innerBase = R * Float(0.05 + familyFrac * 0.20)
+            let outerBase = R * Float(0.42 + familyFrac * 0.32 + params.density * 0.10)
+            let flareAmp = R * Float(0.05 + params.abstractLevel * 0.16 + rng.nextDouble() * 0.08)
+            let curlAmp = R * Float(0.018 + params.complexity * 0.05 + rng.nextDouble() * 0.03)
+            let waveFreq = Float(2.4 + params.complexity * 5.8 + rng.nextDouble() * 4.0)
+            let colorBase = familyFrac * 0.82
+
+            for petal in 0..<familyPetals {
+                let baseA = Float(petal) * .pi * 2 / Float(familyPetals) + petalOffset
+                let c = paletteColor(palette, at: colorBase + Double(petal) / Double(max(1, familyPetals)) * 0.18,
+                                     colorOffset: colorOffset)
+                let asymmetry = Float(rng.nextDouble(in: 0.72...1.35))
+                let sideBias = Float(rng.nextDouble(in: -0.35...0.35))
+
+                for side in [-1.0 as Float, 1.0 as Float] {
+                    var points: [(Float, Float)] = []
+                    points.reserveCapacity(steps + 1)
+                    for i in 0...steps {
+                        let t = Float(i) / Float(steps)
+                        let profile: Float
+                        switch petalShapeMode {
+                        case 0:
+                            profile = sin(t * .pi)
+                        case 1:
+                            profile = pow(sin(t * .pi), 0.55)
+                        case 2:
+                            profile = sin(t * .pi) * (0.45 + t * 0.8)
+                        default:
+                            profile = pow(max(0.0001, sin(t * .pi)), 1.8)
+                        }
+                        let flare = profile * flareAmp * (side > 0 ? asymmetry : 2 - asymmetry)
+                        let flicker = sin(t * .pi * waveFreq + Float(petal) * 0.7 + Float(family) * 1.1) * curlAmp
+                        let secondary = sin(t * .pi * (waveFreq * 0.43) + Float(petal) * 1.6) * curlAmp * 0.7
+                        let rr = innerBase + t * (outerBase - innerBase) * (0.92 + radialTaper * (1 - t) * 0.12)
+                        let spin = t * spiralBias * (1.0 + Float(params.complexity) * 2.2)
+                        let a = baseA + spin + side * ((flare + flicker + secondary) / max(rr, 1) + sideBias * profile * 0.18)
+                        points.append((cx + cos(a) * rr, cy + sin(a) * rr))
+                    }
+                    addPolyline(buffer: buffer, points: points, color: c,
+                                weight: baseWeight * Float(0.92 + familyFrac * 0.35))
                 }
-                addPolyline(buffer: buffer, points: points, color: c, weight: weight)
+
+                if rng.nextDouble() < 0.55 + params.density * 0.25 {
+                    let spokeLen = outerBase * Float(0.72 + rng.nextDouble() * 0.24)
+                    buffer.addLine(x0: cx + cos(baseA) * innerBase, y0: cy + sin(baseA) * innerBase,
+                                   x1: cx + cos(baseA) * spokeLen, y1: cy + sin(baseA) * spokeLen,
+                                   color: (c.r * 0.45, c.g * 0.45, c.b * 0.45),
+                                   weight: baseWeight * 0.35)
+                }
             }
         }
 
-        addCircle(buffer: buffer, cx: cx, cy: cy, radius: R * 0.12,
-                  color: paletteColor(palette, at: 0.04, colorOffset: colorOffset),
-                  weight: Float(0.55 + params.glowIntensity * 0.35), steps: 60)
+        let coreLayers = 2 + Int(rng.nextDouble() * 3.0)
+        for i in 0..<coreLayers {
+            let t = Double(i) / Double(max(1, coreLayers - 1))
+            let c = paletteColor(palette, at: 0.04 + t * 0.18, colorOffset: colorOffset)
+            addCircle(buffer: buffer, cx: cx, cy: cy,
+                      radius: R * Float(0.07 + t * 0.08 + rng.nextDouble() * 0.03),
+                      color: c,
+                      weight: Float(0.34 + params.glowIntensity * 0.26 - t * 0.10),
+                      steps: 52)
+        }
     }
 
     private static func drawRecursiveHaloLayers(buffer: PixelBuffer, cx: Float, cy: Float,
@@ -1943,31 +2020,83 @@ struct MandalaRenderer {
                                                 palette: ColorPalette, rng: inout SeededRNG,
                                                 colorOffset: Double, symmetry: Int) {
         let R = Float(radius)
-        let rings = max(4, Int(5 + params.complexity * 5))
-        let burstCount = max(5, symmetry * 2)
+        let rings = max(4, Int(4 + params.complexity * 6 + rng.nextDouble() * 3.0))
+        let branchFamilies = max(2, Int(2 + params.density * 3 + rng.nextDouble() * 2.0))
+        let ringPhase = Float(rng.nextDouble() * .pi * 2)
+        let ringMode = Int(rng.nextDouble() * 4.0)
 
         for ring in 0..<rings {
             let t = Double(ring) / Double(max(1, rings - 1))
-            let rr = R * Float(0.10 + t * 0.74)
-            let c = paletteColor(palette, at: 0.15 + t * 0.65, colorOffset: colorOffset)
-            addCircle(buffer: buffer, cx: cx, cy: cy, radius: rr,
-                      color: (c.r, c.g, c.b), weight: Float(0.12 + (1 - t) * 0.20), steps: 96)
+            let tf = Float(t)
+            let baseRadius = R * Float(0.09 + t * (0.70 + params.density * 0.08))
+            let wobbleAmp = R * Float(0.006 + params.abstractLevel * 0.030 + rng.nextDouble() * 0.014)
+            let wobbleFreq = Float(3.0 + params.complexity * 7.0 + rng.nextDouble() * 4.0 + Double(ringMode))
+            let wobblePhase = ringPhase + Float(ring) * Float(rng.nextDouble(in: 0.18...0.52))
+            let c = paletteColor(palette, at: 0.12 + t * 0.72, colorOffset: colorOffset)
+            let ringWeight = Float(0.09 + (1 - t) * 0.18 + params.glowIntensity * 0.05)
+            let ringSteps = Int(90 + params.complexity * 70)
 
-            for b in 0..<burstCount {
-                let a = Float(b) * .pi * 2 / Float(burstCount) + Float(ring) * 0.06
-                let inner = rr * Float(0.88 + sin(a * 3 + Float(ring)) * 0.04)
-                let outer = rr * Float(1.07 + params.abstractLevel * 0.18)
+            var ringPoints: [(Float, Float)] = []
+            ringPoints.reserveCapacity(ringSteps + 1)
+            for i in 0...ringSteps {
+                let a = Float(i) / Float(ringSteps) * Float.pi * 2
+                let mod: Float
+                switch ringMode {
+                case 0:
+                    mod = sin(a * wobbleFreq + wobblePhase)
+                case 1:
+                    mod = sin(a * wobbleFreq + wobblePhase) * (0.45 + 0.55 * sin(a * 2 + wobblePhase))
+                case 2:
+                    mod = cos(a * (wobbleFreq * 0.5) + wobblePhase) + sin(a * wobbleFreq * 1.4)
+                default:
+                    mod = sin(a * wobbleFreq + wobblePhase) * cos(a * 2.0 + wobblePhase * 0.7)
+                }
+                let rr = baseRadius + mod * wobbleAmp
+                ringPoints.append((cx + cos(a) * rr, cy + sin(a) * rr))
+            }
+            addPolyline(buffer: buffer, points: ringPoints,
+                        color: (c.r, c.g, c.b), weight: ringWeight)
+
+            for family in 0..<branchFamilies {
+                let familyFrac = Double(family) / Double(max(1, branchFamilies))
+                let burstCount = max(4, symmetry + Int(params.complexity * 4) + family * 2 + Int(rng.nextDouble() * 4.0))
+                let familyPhase = Float(family) * Float.pi * 2 / Float(max(1, branchFamilies)) + Float(rng.nextDouble() * 0.8)
+                let branchOuter = baseRadius * Float(1.04 + params.abstractLevel * 0.25 + familyFrac * 0.12)
+                let nodeOrbit = baseRadius * Float(0.46 + params.complexity * 0.28 + familyFrac * 0.20)
+                for b in 0..<burstCount {
+                    let a = Float(b) * .pi * 2 / Float(burstCount) + familyPhase + tf * 0.22
+                    let branchWave = sin(a * (2.0 + Float(family)) + wobblePhase) * wobbleAmp * 0.65
+                    let inner = baseRadius * Float(0.84 + rng.nextDouble() * 0.10)
+                    let outer = branchOuter + branchWave
+                    buffer.addLine(x0: cx + cos(a) * inner, y0: cy + sin(a) * inner,
+                                   x1: cx + cos(a) * outer, y1: cy + sin(a) * outer,
+                                   color: (c.r * 0.88, c.g * 0.88, c.b * 0.88),
+                                   weight: Float(0.07 + params.density * 0.09 + familyFrac * 0.05))
+
+                    if ring < rings - 1 && rng.nextDouble() < 0.72 {
+                        let orbitJitter = Float(rng.nextDouble(in: -0.10...0.12)) * baseRadius
+                        let nodeR = nodeOrbit + orbitJitter
+                        let nx = cx + cos(a) * nodeR
+                        let ny = cy + sin(a) * nodeR
+                        addCircle(buffer: buffer, cx: nx, cy: ny,
+                                  radius: R * Float(0.007 + t * 0.016 + familyFrac * 0.007),
+                                  color: (c.r * 0.62, c.g * 0.62, c.b * 0.62),
+                                  weight: Float(0.14 + familyFrac * 0.12), steps: 16)
+                    }
+                }
+            }
+        }
+
+        if rng.nextDouble() < 0.8 {
+            let spokes = max(3, symmetry + Int(params.density * 4))
+            let c = paletteColor(palette, at: 0.92, colorOffset: colorOffset)
+            for i in 0..<spokes {
+                let a = Float(i) * .pi * 2 / Float(spokes) + ringPhase * 0.4
+                let inner = R * Float(0.05 + rng.nextDouble() * 0.05)
+                let outer = R * Float(0.24 + rng.nextDouble() * 0.18)
                 buffer.addLine(x0: cx + cos(a) * inner, y0: cy + sin(a) * inner,
                                x1: cx + cos(a) * outer, y1: cy + sin(a) * outer,
-                               color: (c.r * 0.9, c.g * 0.9, c.b * 0.9),
-                               weight: Float(0.09 + params.density * 0.09))
-                if ring < rings - 1 {
-                    let nodeR = rr * Float(0.55 + params.complexity * 0.22)
-                    let nx = cx + cos(a) * nodeR
-                    let ny = cy + sin(a) * nodeR
-                    addCircle(buffer: buffer, cx: nx, cy: ny, radius: R * Float(0.010 + t * 0.014),
-                              color: (c.r * 0.65, c.g * 0.65, c.b * 0.65), weight: 0.22, steps: 18)
-                }
+                               color: (c.r * 0.35, c.g * 0.35, c.b * 0.35), weight: 0.05)
             }
         }
     }
