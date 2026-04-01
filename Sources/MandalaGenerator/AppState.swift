@@ -23,6 +23,20 @@ struct AnimationExportOptions {
     var fps: Int = 24
 }
 
+enum LayerStyleSortOrder: String, CaseIterable, Identifiable {
+    case style
+    case alphabetic
+
+    var id: String { rawValue }
+
+    var displayName: String {
+        switch self {
+        case .style: return "Style"
+        case .alphabetic: return "Alphabetic"
+        }
+    }
+}
+
 @MainActor
 class AppState: ObservableObject {
     @Published var parameters = MandalaParameters()
@@ -41,6 +55,12 @@ class AppState: ObservableObject {
     @Published var animationExportProgress: Double? = nil
     @Published var isExporting: Bool = false
     @Published var favorites: [Favorite] = []
+    @Published var disabledStyleRawValues: Set<String> = [] {
+        didSet { saveStylePreferences() }
+    }
+    @Published var styleSortOrder: LayerStyleSortOrder = .style {
+        didSet { saveStylePreferences() }
+    }
     
     // WebP support detection
     static let webPSupported = AppState.detectWebPSupport()
@@ -71,6 +91,8 @@ class AppState: ObservableObject {
     private var history: [MandalaParameters] = []
     private var historyIndex: Int = -1
     private var isNavigatingHistory: Bool = false
+    private let disabledStylesKey = "disabledLayerStyles"
+    private let styleSortOrderKey = "layerStyleSortOrder"
 
     init() {
         // Validate output format based on system support
@@ -95,6 +117,7 @@ class AppState: ObservableObject {
         let hasHistory = loadHistory()
         loadCustomPalettes()
         loadFavorites()
+        loadStylePreferences()
         if hasHistory {
             isNavigatingHistory = true
             Task { await generate() }
@@ -211,17 +234,34 @@ class AppState: ObservableObject {
             mix(fx.highlightsSeed)
             mix(fx.starsSeed)
         }
+        // Text layer
+        let tl = parameters.textLayer
+        if tl.isEnabled && !tl.text.isEmpty {
+            mix(UInt64(bitPattern: Int64(tl.text.hashValue)))
+            mix(UInt64(bitPattern: Int64(tl.fontName.hashValue)))
+            mix(UInt64(Int(tl.fontSize   * 1000)))
+            mix(UInt64(Int(tl.glow       * 1000)))
+            mix(UInt64(Int(tl.blur       * 1000)))
+            mix(UInt64(Int(tl.hue        * 1000)))
+            mix(UInt64(Int(tl.saturation * 1000)))
+        }
         let bgTag = bg.isEnabled  ? "bg-\(String(bg.type.rawValue.prefix(3)))" : ""
         let fxTag = fx.isEnabled  ? "fx" : ""
+        let txtTag: String = {
+            guard tl.isEnabled && !tl.text.isEmpty else { return "" }
+            // Use first 3 chars of first word, lowercased, alphanumeric only
+            let firstWord = tl.text.components(separatedBy: .whitespaces).first ?? ""
+            let clean = firstWord.filter { $0.isLetter || $0.isNumber }.prefix(4).lowercased()
+            return "txt-\(clean)"
+        }()
         let hash = String(format: "%08x", h & 0xFFFFFFFF)
-        return (["mandala", styleAbbr, pal, sym, bgTag, fxTag, hash]
+        return (["mandala", styleAbbr, pal, sym, bgTag, fxTag, txtTag, hash]
             .filter { !$0.isEmpty }.joined(separator: "-"))
     }
 
-    func randomizeAll() {
+    func randomizeLayers() {
         randomizeSeed()
-
-        let allStyles = MandalaStyle.allCases
+        let allStyles = enabledStyles
         let nLayers = Int.random(in: 1...3)
         let sharedSymmetry = Int.random(in: 1...8)
         var newLayers: [StyleLayer] = []
@@ -262,6 +302,25 @@ class AppState: ObservableObject {
         }
         parameters.layers = newLayers
         Task { await generate() }
+    }
+
+    func randomizeAll() {
+        // ── Graphics layers ───────────────────────────────────────────
+        randomizeLayers()
+
+        // ── Background ────────────────────────────────────────────────
+        let bgTypes: [BaseLayerType] = [.color, .gradient, .sunburst, .grain]
+        parameters.baseLayer.isEnabled = Bool.random()
+        parameters.baseLayer.type      = bgTypes.randomElement() ?? .gradient
+        parameters.baseLayer.hue       = Double.random(in: 0...1)
+        parameters.baseLayer.saturation = Double.random(in: 0.3...1.0)
+        parameters.baseLayer.brightness = Double.random(in: 0.05...0.3)
+        parameters.baseLayer.hue2       = Double.random(in: 0...1)
+        parameters.baseLayer.saturation2 = Double.random(in: 0.3...1.0)
+        parameters.baseLayer.brightness2 = Double.random(in: 0.0...0.12)
+        parameters.baseLayer.isRadial   = Bool.random()
+        parameters.baseLayer.gradientAngle = Double.random(in: 0...1)
+
     }
 
     func goBack() {
@@ -412,7 +471,7 @@ class AppState: ObservableObject {
 
     func randomizeLayer(at index: Int) {
         guard index < parameters.layers.count else { return }
-        let allStyles = MandalaStyle.allCases
+        let allStyles = enabledStyles
         parameters.layers[index].style          = allStyles.randomElement() ?? .mixed
         parameters.layers[index].seed           = UInt64.random(in: 1...UInt64.max)
         parameters.layers[index].paletteIndex   = Int.random(in: 0..<ColorPalettes.all.count)
@@ -507,7 +566,7 @@ class AppState: ObservableObject {
                 guard let self else { return }
                 let baseParams = self.parameters
                 // Build all param variants up-front — vary seed, palettes, and occasionally style
-                let allStyles = MandalaStyle.allCases
+                let allStyles = self.enabledStyles
                 let allPaletteCount = ColorPalettes.all.count
                 let variants: [(Int, MandalaParameters)] = (0..<count).map { i in
                     var p = baseParams
@@ -549,6 +608,74 @@ class AppState: ObservableObject {
             guard response == .OK, let url = panel.url, let self else { return }
             Task { await self.renderAnimation(to: url, options: options) }
         }
+    }
+
+    var enabledStyles: [MandalaStyle] {
+        let filtered = MandalaStyle.allCases.filter { !disabledStyleRawValues.contains($0.rawValue) }
+        return filtered.isEmpty ? MandalaStyle.allCases : filtered
+    }
+
+    func styleOptions(including current: MandalaStyle? = nil) -> [MandalaStyle] {
+        var styles = enabledStyles
+        if let current, !styles.contains(current) {
+            styles.append(current)
+        }
+        return sortStyles(styles)
+    }
+
+    func allStyleOptions() -> [MandalaStyle] {
+        sortStyles(MandalaStyle.allCases)
+    }
+
+    private func sortStyles(_ styles: [MandalaStyle]) -> [MandalaStyle] {
+        switch styleSortOrder {
+        case .style:
+            return styles.sorted {
+                (MandalaStyle.allCases.firstIndex(of: $0) ?? 0) < (MandalaStyle.allCases.firstIndex(of: $1) ?? 0)
+            }
+        case .alphabetic:
+            return styles.sorted { $0.displayName.localizedCaseInsensitiveCompare($1.displayName) == .orderedAscending }
+        }
+    }
+
+    func addLayerStyle() -> MandalaStyle {
+        let styles = styleOptions()
+        guard !styles.isEmpty else { return .mixed }
+        return styles[parameters.layers.count % styles.count]
+    }
+
+    func isStyleEnabled(_ style: MandalaStyle) -> Bool {
+        !disabledStyleRawValues.contains(style.rawValue)
+    }
+
+    func setStyleEnabled(_ style: MandalaStyle, isEnabled: Bool) {
+        if isEnabled {
+            disabledStyleRawValues.remove(style.rawValue)
+            return
+        }
+        guard enabledStyles.count > 1 else { return }
+        disabledStyleRawValues.insert(style.rawValue)
+    }
+
+    func canDisableStyle(_ style: MandalaStyle) -> Bool {
+        !isStyleEnabled(style) || enabledStyles.count > 1
+    }
+
+    private func loadStylePreferences() {
+        let defaults = UserDefaults.standard
+        if let rawValues = defaults.array(forKey: disabledStylesKey) as? [String] {
+            disabledStyleRawValues = Set(rawValues.filter { raw in MandalaStyle(rawValue: raw) != nil })
+        }
+        if let raw = defaults.string(forKey: styleSortOrderKey),
+           let order = LayerStyleSortOrder(rawValue: raw) {
+            styleSortOrder = order
+        }
+    }
+
+    private func saveStylePreferences() {
+        let defaults = UserDefaults.standard
+        defaults.set(Array(disabledStyleRawValues).sorted(), forKey: disabledStylesKey)
+        defaults.set(styleSortOrder.rawValue, forKey: styleSortOrderKey)
     }
 
     private func renderAnimation(to url: URL, options: AnimationExportOptions) async {

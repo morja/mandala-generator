@@ -1,55 +1,61 @@
 import SwiftUI
 import UniformTypeIdentifiers
 
-// MARK: - Scene Panel (left side) — Background & Effects
+// MARK: - Scene Panel (left side) — Effects & Export
 
 struct ScenePanel: View {
     @EnvironmentObject private var appState: AppState
 
     var body: some View {
-        ScrollView(.vertical, showsIndicators: true) {
-            VStack(spacing: 8) {
-            // invisible but necessary for sheet attachment
-            Color.clear.frame(height: 0)
-                .sheet(isPresented: Binding(
-                    get: { appState.showAnimationOptions },
-                    set: { appState.showAnimationOptions = $0 }
-                )) {
-                    AnimationOptionsSheet()
-                        .environmentObject(appState)
+        VStack(spacing: 0) {
+            // ── Header ─────────────────────────────────────────────────
+            HStack {
+                Text("SCENE")
+                    .font(.system(size: 10, weight: .semibold))
+                    .foregroundColor(.secondary).kerning(1.2)
+                Spacer()
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 10)
+            .background(Color(NSColor.controlBackgroundColor))
+
+            Divider()
+
+            ScrollView(.vertical, showsIndicators: true) {
+                VStack(spacing: 8) {
+                    // invisible but necessary for sheet attachment
+                    Color.clear.frame(height: 0)
+                        .sheet(isPresented: Binding(
+                            get: { appState.showAnimationOptions },
+                            set: { appState.showAnimationOptions = $0 }
+                        )) {
+                            AnimationOptionsSheet()
+                                .environmentObject(appState)
+                        }
+
+                    // ── Effects ────────────────────────────────────────
+                    Text("EFFECTS")
+                        .font(.system(size: 10, weight: .semibold))
+                        .foregroundColor(.secondary).kerning(1.2)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal, 12)
+                        .padding(.top, 12)
+
+                    EffectsLayerCard(settings: $appState.parameters.effectsLayer)
+                        .padding(.horizontal, 8)
+
+                    // ── Export ─────────────────────────────────────────
+                    Text("EXPORT")
+                        .font(.system(size: 10, weight: .semibold))
+                        .foregroundColor(.secondary).kerning(1.2)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal, 12)
+
+                    ExportCard(appState: appState)
+                        .padding(.horizontal, 8)
+
+                    Spacer(minLength: 20)
                 }
-                // ── Background ─────────────────────────────────────────
-                Text("BACKGROUND")
-                    .font(.system(size: 10, weight: .semibold))
-                    .foregroundColor(.secondary).kerning(1.2)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal, 12)
-                    .padding(.top, 12)
-
-                BaseLayerCard(settings: $appState.parameters.baseLayer)
-                    .padding(.horizontal, 8)
-
-                // ── Effects ────────────────────────────────────────────
-                Text("EFFECTS")
-                    .font(.system(size: 10, weight: .semibold))
-                    .foregroundColor(.secondary).kerning(1.2)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal, 12)
-
-                EffectsLayerCard(settings: $appState.parameters.effectsLayer)
-                    .padding(.horizontal, 8)
-
-                // ── Export ─────────────────────────────────────────────
-                Text("EXPORT")
-                    .font(.system(size: 10, weight: .semibold))
-                    .foregroundColor(.secondary).kerning(1.2)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal, 12)
-
-                ExportCard(appState: appState)
-                    .padding(.horizontal, 8)
-
-                Spacer(minLength: 20)
             }
         }
         .background(Color(NSColor.controlBackgroundColor))
@@ -60,7 +66,7 @@ struct ScenePanel: View {
 
 struct BaseLayerCard: View {
     @Binding var settings: BaseLayerSettings
-    @State private var isExpanded = false
+    @State private var isExpanded = true
 
     var body: some View {
         VStack(spacing: 0) {
@@ -504,6 +510,241 @@ private struct AnimationOptionsSheet: View {
         }
         .padding(24)
         .frame(width: 340)
+    }
+}
+
+// MARK: - Text Layer Card
+
+struct TextLayerCard: View {
+    @Binding var settings: TextLayerSettings
+    @State private var isExpanded = true
+
+    private var selectedFontDisplay: String {
+        QuoteDatabase.availableFonts.first { $0.name == settings.fontName }?.display ?? settings.fontName
+    }
+
+    @ViewBuilder
+    private func sectionLabel(_ title: String) -> some View {
+        Text(title)
+            .font(.system(size: 9, weight: .semibold))
+            .foregroundColor(.secondary).kerning(1.1)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.top, 4)
+    }
+
+    var body: some View {
+        VStack(spacing: 0) {
+            // ── Header ─────────────────────────────────────────────────
+            HStack(spacing: 8) {
+                Image(systemName: settings.isEnabled ? "textformat" : "textformat")
+                    .font(.system(size: 12))
+                    .foregroundColor(settings.isEnabled ? .accentColor : .secondary)
+                    .frame(width: 16)
+                Toggle("", isOn: $settings.isEnabled)
+                    .toggleStyle(.switch).scaleEffect(0.7).labelsHidden()
+                Text("Text")
+                    .font(.caption.weight(.medium))
+                    .foregroundColor(settings.isEnabled ? .primary : .secondary)
+                Spacer()
+                // Random all settings
+                Button(action: randomizeAll) {
+                    Image(systemName: "dice")
+                        .font(.system(size: 10)).foregroundColor(.purple)
+                }
+                .buttonStyle(.plain).help("Randomize all text settings")
+                // Reset
+                Button(action: { settings = TextLayerSettings() }) {
+                    Image(systemName: "arrow.counterclockwise")
+                        .font(.system(size: 10)).foregroundColor(.secondary)
+                }
+                .buttonStyle(.plain).help("Reset text layer")
+                // Expand
+                Button(action: { withAnimation(.easeInOut(duration: 0.18)) { isExpanded.toggle() } }) {
+                    Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
+                        .font(.system(size: 9)).foregroundColor(.secondary)
+                }
+                .buttonStyle(.plain)
+            }
+            .padding(.horizontal, 10).padding(.vertical, 8)
+            .background(Color(NSColor.windowBackgroundColor))
+            .cornerRadius(isExpanded ? 0 : 8)
+            .cornerRadius(8, corners: [.topLeft, .topRight])
+
+            if isExpanded {
+                VStack(spacing: 8) {
+                    // ── Text input ────────────────────────────────────────
+                    HStack(spacing: 6) {
+                        Text("Text")
+                            .font(.system(size: 10)).foregroundColor(.secondary)
+                            .frame(width: 52, alignment: .leading)
+                        TextEditor(text: $settings.text)
+                            .font(.system(size: 11))
+                            .frame(minHeight: 52, maxHeight: 80)
+                            .scrollContentBackground(.hidden)
+                            .background(Color(NSColor.textBackgroundColor).opacity(0.5))
+                            .cornerRadius(5)
+                        Button(action: insertRandomQuote) {
+                            Image(systemName: "quote.bubble")
+                                .font(.system(size: 12))
+                                .foregroundColor(.orange)
+                        }
+                        .buttonStyle(.plain)
+                        .help("Insert random quote")
+                    }
+
+                    // ── Font ─────────────────────────────────────────────
+                    HStack(spacing: 6) {
+                        Text("Font")
+                            .font(.system(size: 10)).foregroundColor(.secondary)
+                            .frame(width: 52, alignment: .leading)
+                        Menu(selectedFontDisplay) {
+                            ForEach(QuoteDatabase.availableFonts, id: \.name) { entry in
+                                Button(action: { settings.fontName = entry.name }) {
+                                    Text(entry.display)
+                                        .font(.custom(entry.name, size: 13))
+                                }
+                            }
+                        }
+                        .font(.system(size: 10))
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        Spacer()
+                    }
+
+                    // ── Typography ────────────────────────────────────────
+                    sectionLabel("TYPOGRAPHY")
+                    SceneSlider(label: "Size",    value: $settings.fontSize, range: 0.02...0.105, color: .cyan)
+                    SceneSlider(label: "Tracking",value: $settings.tracking, range: -0.5...1.0,  color: .mint)
+
+                    // ── Position ──────────────────────────────────────────
+                    sectionLabel("POSITION")
+                    SceneSlider(label: "Pos X", value: $settings.offsetX, color: .blue)
+                    SceneSlider(label: "Pos Y", value: $settings.offsetY, color: .blue)
+
+                    // ── Color ─────────────────────────────────────────────
+                    sectionLabel("COLOR")
+                    HueSlider(value: $settings.hue)
+                    SceneSlider(label: "Sat",  value: $settings.saturation, color: .pink)
+                    SceneSlider(label: "Bri",  value: $settings.brightness, range: 0...2, color: .yellow)
+                    SceneSlider(label: "Glow",   value: $settings.glow,    color: .purple)
+
+                    // ── Shadow ────────────────────────────────────────────
+                    sectionLabel("SHADOW")
+                    SceneSlider(label: "Opacity", value: $settings.shadowOpacity, color: .gray)
+                    if settings.shadowOpacity > 0.01 {
+                        SceneSlider(label: "Blur",    value: $settings.shadowBlur,       color: .secondary)
+                        SceneSlider(label: "X",       value: $settings.shadowOffsetX,    range: -2...2, color: .orange)
+                        SceneSlider(label: "Y",       value: $settings.shadowOffsetY,    range: -2...2, color: .orange)
+                        HueSlider(value: $settings.shadowHue)
+                        SceneSlider(label: "Sat",     value: $settings.shadowSaturation, color: .pink)
+                        SceneSlider(label: "Bri",     value: $settings.shadowBrightness, color: .white)
+                    }
+
+                    // ── Cloud ─────────────────────────────────────────────
+                    sectionLabel("CLOUD")
+                    SceneSlider(label: "Opacity", value: $settings.cloudOpacity, color: .teal)
+                    if settings.cloudOpacity > 0.01 {
+                        SceneSlider(label: "Blur",    value: $settings.cloudRadius,      range: 0.1...2.0, color: .cyan)
+                        HueSlider(value: $settings.cloudHue)
+                        SceneSlider(label: "Sat",     value: $settings.cloudSaturation,  color: .pink)
+                        SceneSlider(label: "Bri",     value: $settings.cloudBrightness,  color: .white)
+                    }
+
+                    // ── Layer ─────────────────────────────────────────────
+                    sectionLabel("LAYER")
+                    SceneSlider(label: "Blur",   value: $settings.blur,    color: .indigo)
+                    SceneSlider(label: "Opacity",value: $settings.opacity,  color: .white)
+
+                    Divider()
+
+                    // ── Blend & Author ────────────────────────────────────
+                    HStack(spacing: 6) {
+                        Text("Blend")
+                            .font(.system(size: 10)).foregroundColor(.secondary)
+                            .frame(width: 52, alignment: .leading)
+                        Picker("", selection: $settings.blendMode) {
+                            ForEach(LayerBlendMode.allCases) { mode in
+                                Text(mode.displayName).tag(mode)
+                            }
+                        }
+                        .pickerStyle(.menu).labelsHidden().fixedSize()
+                        Spacer()
+                    }
+
+                    HStack(spacing: 6) {
+                        Text("Author")
+                            .font(.system(size: 10)).foregroundColor(.secondary)
+                            .frame(width: 52, alignment: .leading)
+                        Toggle("Show attribution", isOn: $settings.showAuthor)
+                            .font(.system(size: 10))
+                            .toggleStyle(.checkbox)
+                        Spacer()
+                    }
+                    if settings.showAuthor {
+                        HStack(spacing: 6) {
+                            Text("Name")
+                                .font(.system(size: 10)).foregroundColor(.secondary)
+                                .frame(width: 52, alignment: .leading)
+                            TextField("auto-detect or type name", text: $settings.customAuthor)
+                                .font(.system(size: 10))
+                                .textFieldStyle(.roundedBorder)
+                        }
+                        SceneSlider(label: "Aut. Size", value: $settings.authorScale,
+                                    range: 0.3...1.5, color: .orange)
+                        HStack(spacing: 6) {
+                            Text("Italic")
+                                .font(.system(size: 10)).foregroundColor(.secondary)
+                                .frame(width: 52, alignment: .leading)
+                            Toggle("Italic author line", isOn: $settings.authorItalic)
+                                .font(.system(size: 10))
+                                .toggleStyle(.checkbox)
+                            Spacer()
+                        }
+                    }
+                }
+                .padding(10)
+                .background(Color(NSColor.controlBackgroundColor).opacity(0.7))
+                .cornerRadius(8, corners: [.bottomLeft, .bottomRight])
+            }
+        }
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .overlay(RoundedRectangle(cornerRadius: 8)
+            .stroke(Color.accentColor.opacity(settings.isEnabled ? 0.35 : 0.08), lineWidth: 1))
+        .onAppear { syncAuthorIfNeeded() }
+        .onChange(of: settings.text) { syncAuthorIfNeeded() }
+    }
+
+    private func insertRandomQuote() {
+        let q = QuoteDatabase.randomQuote()
+        settings.text = q.text
+        settings.customAuthor = q.author
+        settings.isEnabled = true
+    }
+
+    private func syncAuthorIfNeeded() {
+        guard settings.customAuthor.isEmpty, !settings.text.isEmpty else { return }
+        if let match = QuoteDatabase.quotes.first(where: {
+            $0.text == settings.text || settings.text.hasSuffix($0.text)
+        }) {
+            settings.customAuthor = match.author
+        }
+    }
+
+    private func randomizeAll() {
+        let fonts = QuoteDatabase.availableFonts.map(\.name)
+        settings.fontName      = fonts.randomElement() ?? "Georgia"
+        settings.fontSize      = Double.random(in: 0.04...0.15)
+        settings.tracking      = Double.random(in: -0.1...0.4)
+        settings.hue           = Double.random(in: 0...1)
+        settings.saturation    = Double.random(in: 0...0.5)
+        settings.brightness    = Double.random(in: 0.75...1.0)
+        settings.glow          = Double.random(in: 0...0.6)
+        settings.shadowOpacity = Double.random(in: 0...0.5)
+        settings.shadowBlur    = Double.random(in: 0.2...0.8)
+        settings.blur          = Double.random(in: 0...0.2)
+        settings.opacity       = Double.random(in: 0.6...1.0)
+        settings.blendMode     = .normal
+        settings.isEnabled     = true
+        if settings.text.isEmpty { insertRandomQuote() }
     }
 }
 

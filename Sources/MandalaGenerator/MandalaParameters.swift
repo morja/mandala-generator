@@ -186,6 +186,7 @@ struct DrawingLayerSettings: Equatable, Codable {
     var paletteIndex: Int  = 0
     var glowIntensity: Double = 0.5
     var strokeWeight: Double  = 0.4   // 0–1
+    var scale: Double         = 1.0   // 0.1–3.0, scales strokes around center
     var colorDrift: Double    = 0.4   // palette traversal across strokes
     var saturation: Double    = 1.0
     var brightness: Double    = 0.7
@@ -194,7 +195,7 @@ struct DrawingLayerSettings: Equatable, Codable {
 
     enum CodingKeys: String, CodingKey {
         case isEnabled, strokes, symmetry, paletteIndex, glowIntensity
-        case strokeWeight, colorDrift, saturation, brightness, blendMode, opacity
+        case strokeWeight, scale, colorDrift, saturation, brightness, blendMode, opacity
     }
 
     init() {}
@@ -207,11 +208,92 @@ struct DrawingLayerSettings: Equatable, Codable {
         paletteIndex  = c.decodeSafe(Int.self,              forKey: .paletteIndex,  default: 0)
         glowIntensity = c.decodeSafe(Double.self,           forKey: .glowIntensity, default: 0.5)
         strokeWeight  = c.decodeSafe(Double.self,           forKey: .strokeWeight,  default: 0.4)
+        scale         = c.decodeSafe(Double.self,           forKey: .scale,         default: 1.0)
         colorDrift    = c.decodeSafe(Double.self,           forKey: .colorDrift,    default: 0.4)
         saturation    = c.decodeSafe(Double.self,           forKey: .saturation,    default: 1.0)
         brightness    = c.decodeSafe(Double.self,           forKey: .brightness,    default: 0.7)
         blendMode     = c.decodeSafe(LayerBlendMode.self,   forKey: .blendMode,     default: .screen)
         opacity       = c.decodeSafe(Double.self,           forKey: .opacity,       default: 1.0)
+    }
+}
+
+// MARK: - Text Layer
+
+struct TextLayerSettings: Equatable, Codable {
+    var isEnabled: Bool    = false
+    var text: String       = ""
+    var fontName: String   = "Georgia"
+    var fontSize: Double   = 0.07   // fraction of canvas width (0.02–0.30)
+    var glow: Double       = 0.0    // glow intensity around the text
+    var shadowOpacity: Double = 0.0     // drop shadow darkness
+    var shadowBlur: Double = 0.5        // shadow softness (0–1)
+    var shadowOffsetX: Double = 0.3     // horizontal offset (-1 left … 1 right)
+    var shadowOffsetY: Double = -0.3    // vertical offset (-1 up … 1 down)
+    var shadowHue: Double = 0.0         // shadow color hue
+    var shadowSaturation: Double = 0.0  // 0 = black/grey shadow
+    var shadowBrightness: Double = 0.0  // 0 = dark shadow, 1 = white/bright shadow
+    var cloudOpacity: Double = 0.0      // diffuse halo/cloud drawn behind text
+    var cloudRadius: Double = 0.5       // cloud blur radius and padding (relative to font size)
+    var cloudHue: Double = 0.0          // cloud color hue
+    var cloudSaturation: Double = 0.0   // 0 = black/white cloud
+    var cloudBrightness: Double = 0.0   // 0 = dark cloud, 1 = white/bright cloud
+    var blur: Double       = 0.0        // Gaussian blur on the whole text layer
+    var opacity: Double    = 1.0
+    var hue: Double        = 0.0
+    var saturation: Double = 0.0    // 0 = white/grey, 1 = saturated
+    var brightness: Double = 1.0
+    var tracking: Double   = 0.0    // letter spacing (−1 tight … 1 loose)
+    var offsetX: Double    = 0.5    // 0–1, 0.5 = horizontal center
+    var offsetY: Double    = 0.38   // 0–1, 0=bottom 1=top; slightly below center
+    var blendMode: LayerBlendMode = .normal
+    var showAuthor: Bool   = true   // append "— Author" line for quotes
+    var customAuthor: String = ""  // if non-empty, overrides database lookup for author
+    var authorScale: Double = 0.667 // author line font size relative to main font size
+    var authorItalic: Bool = true   // render author line in italic
+
+    enum CodingKeys: String, CodingKey {
+        case isEnabled, text, fontName, fontSize, glow
+        case shadowOpacity, shadowBlur, shadowOffsetX, shadowOffsetY
+        case shadowHue, shadowSaturation, shadowBrightness
+        case cloudOpacity, cloudRadius, cloudHue, cloudSaturation, cloudBrightness, blur, opacity
+        case hue, saturation, brightness, tracking
+        case offsetX, offsetY, blendMode, showAuthor, customAuthor, authorScale, authorItalic
+    }
+
+    init() {}
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        isEnabled     = c.decodeSafe(Bool.self,           forKey: .isEnabled,     default: false)
+        text          = c.decodeSafe(String.self,         forKey: .text,          default: "")
+        fontName      = c.decodeSafe(String.self,         forKey: .fontName,      default: "Georgia")
+        fontSize      = c.decodeSafe(Double.self,         forKey: .fontSize,      default: 0.07)
+        glow          = c.decodeSafe(Double.self,         forKey: .glow,          default: 0.0)
+        shadowOpacity    = c.decodeSafe(Double.self,      forKey: .shadowOpacity,    default: 0.0)
+        shadowBlur       = c.decodeSafe(Double.self,      forKey: .shadowBlur,       default: 0.5)
+        shadowOffsetX    = c.decodeSafe(Double.self,      forKey: .shadowOffsetX,    default: 0.3)
+        shadowOffsetY    = c.decodeSafe(Double.self,      forKey: .shadowOffsetY,    default: -0.3)
+        shadowHue        = c.decodeSafe(Double.self,      forKey: .shadowHue,        default: 0.0)
+        shadowSaturation = c.decodeSafe(Double.self,      forKey: .shadowSaturation, default: 0.0)
+        shadowBrightness = c.decodeSafe(Double.self,      forKey: .shadowBrightness, default: 0.0)
+        cloudOpacity      = c.decodeSafe(Double.self, forKey: .cloudOpacity,      default: 0.0)
+        cloudRadius       = c.decodeSafe(Double.self, forKey: .cloudRadius,       default: 0.5)
+        cloudHue          = c.decodeSafe(Double.self, forKey: .cloudHue,          default: 0.0)
+        cloudSaturation   = c.decodeSafe(Double.self, forKey: .cloudSaturation,   default: 0.0)
+        cloudBrightness   = c.decodeSafe(Double.self, forKey: .cloudBrightness,   default: 0.0)
+        blur          = c.decodeSafe(Double.self,         forKey: .blur,          default: 0.0)
+        opacity       = c.decodeSafe(Double.self,         forKey: .opacity,       default: 1.0)
+        hue           = c.decodeSafe(Double.self,         forKey: .hue,           default: 0.0)
+        saturation    = c.decodeSafe(Double.self,         forKey: .saturation,    default: 0.0)
+        brightness    = c.decodeSafe(Double.self,         forKey: .brightness,    default: 1.0)
+        tracking      = c.decodeSafe(Double.self,         forKey: .tracking,      default: 0.0)
+        offsetX       = c.decodeSafe(Double.self,         forKey: .offsetX,       default: 0.5)
+        offsetY       = c.decodeSafe(Double.self,         forKey: .offsetY,       default: 0.38)
+        blendMode     = c.decodeSafe(LayerBlendMode.self, forKey: .blendMode,     default: .normal)
+        showAuthor    = c.decodeSafe(Bool.self,           forKey: .showAuthor,    default: true)
+        customAuthor  = c.decodeSafe(String.self,         forKey: .customAuthor,  default: "")
+        authorScale   = c.decodeSafe(Double.self,         forKey: .authorScale,   default: 0.667)
+        authorItalic  = c.decodeSafe(Bool.self,           forKey: .authorItalic,  default: true)
     }
 }
 
@@ -247,10 +329,12 @@ enum MandalaStyle: String, CaseIterable, Identifiable, Codable {
     case spiderWeb, weave, radialMesh, moire
     // ── Organic & Flow ─────────────────────────────────────────────
     case flowField, tendril, voronoi, strangeAttractor
+    case nebulaVeins, constellationWeb, auroraRibbons, crystalBloom
+    case blackHoleLens, plasmaPetals, recursiveHalo
     // ── 3D ────────────────────────────────────────────────────────
     case hyperboloid, torus, nautilus, sphereGrid, torusKnot, tesseract
     // ── Special ───────────────────────────────────────────────────
-    case universe, symbols, mixed
+    case universe, symbols, mixed, dust
 
     init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
@@ -287,6 +371,13 @@ enum MandalaStyle: String, CaseIterable, Identifiable, Codable {
         case .tendril:          return "Tendril"
         case .voronoi:          return "Voronoi"
         case .strangeAttractor: return "Strange Attractor"
+        case .nebulaVeins:      return "Nebula Veins"
+        case .constellationWeb: return "Constellation Web"
+        case .auroraRibbons:    return "Aurora Ribbons"
+        case .crystalBloom:     return "Crystal Bloom"
+        case .blackHoleLens:    return "Black Hole Lens"
+        case .plasmaPetals:     return "Plasma Petals"
+        case .recursiveHalo:    return "Recursive Halo"
         // 3D
         case .hyperboloid:      return "Hyperboloid"
         case .torus:            return "Torus"
@@ -298,6 +389,7 @@ enum MandalaStyle: String, CaseIterable, Identifiable, Codable {
         case .universe:         return "Universe"
         case .symbols:          return "Symbols"
         case .mixed:            return "Mixed"
+        case .dust:             return "Dust Clouds"
         }
     }
     var sfSymbol: String {
@@ -329,6 +421,13 @@ enum MandalaStyle: String, CaseIterable, Identifiable, Codable {
         case .tendril:          return "arrow.triangle.branch"
         case .voronoi:          return "rectangle.split.3x3"
         case .strangeAttractor: return "scribble"
+        case .nebulaVeins:      return "smoke.fill"
+        case .constellationWeb: return "point.3.connected.trianglepath.dotted"
+        case .auroraRibbons:    return "water.waves"
+        case .crystalBloom:     return "sparkle"
+        case .blackHoleLens:    return "circle.circle"
+        case .plasmaPetals:     return "flame"
+        case .recursiveHalo:    return "smallcircle.filled.circle"
         // 3D
         case .hyperboloid:      return "cylinder.split.1x2"
         case .torus:            return "circle.dotted"
@@ -340,6 +439,7 @@ enum MandalaStyle: String, CaseIterable, Identifiable, Codable {
         case .universe:         return "sparkles"
         case .symbols:          return "heart.circle"
         case .mixed:            return "sparkles"
+        case .dust:             return "cloud.fill"
         }
     }
 }
@@ -429,6 +529,7 @@ struct MandalaParameters: Equatable, Codable {
     var baseLayer: BaseLayerSettings = BaseLayerSettings()
     var effectsLayer: EffectsLayerSettings = EffectsLayerSettings()
     var drawingLayer: DrawingLayerSettings = DrawingLayerSettings()
+    var textLayer: TextLayerSettings = TextLayerSettings()
 
     // Truly global — render setup
     var seed: UInt64 = 42   // used for background/grass; each layer also has its own seed
@@ -449,6 +550,7 @@ struct MandalaParameters: Equatable, Codable {
     var colorDrift: Double = 0.4
     var ripple: Double = 0.0
     var wash: Double = 0.0
+    var abstractLevel: Double = 0.3
     var paletteIndex: Int = 0
 
     var style: MandalaStyle {
@@ -460,9 +562,9 @@ struct MandalaParameters: Equatable, Codable {
     }
 
     enum CodingKeys: String, CodingKey {
-        case layers, baseLayer, effectsLayer, drawingLayer
+        case layers, baseLayer, effectsLayer, drawingLayer, textLayer
         case seed, previewSize, outputSize, outputSizeCustom, outputFormat, outputShape
-        case symmetry, complexity, density, glowIntensity, colorDrift, ripple, wash, paletteIndex
+        case symmetry, complexity, density, glowIntensity, colorDrift, ripple, wash, abstractLevel, paletteIndex
     }
 
     init() {}
@@ -473,6 +575,7 @@ struct MandalaParameters: Equatable, Codable {
         baseLayer       = c.decodeSafe(BaseLayerSettings.self,     forKey: .baseLayer,       default: BaseLayerSettings())
         effectsLayer    = c.decodeSafe(EffectsLayerSettings.self,  forKey: .effectsLayer,    default: EffectsLayerSettings())
         drawingLayer    = c.decodeSafe(DrawingLayerSettings.self,  forKey: .drawingLayer,    default: DrawingLayerSettings())
+        textLayer       = c.decodeSafe(TextLayerSettings.self,     forKey: .textLayer,       default: TextLayerSettings())
         seed            = c.decodeSafe(UInt64.self,                forKey: .seed,            default: 42)
         previewSize     = c.decodeSafe(Int.self,                   forKey: .previewSize,     default: 800)
         outputSize      = c.decodeSafe(Int.self,                   forKey: .outputSize,      default: 1024)
@@ -486,6 +589,7 @@ struct MandalaParameters: Equatable, Codable {
         colorDrift      = c.decodeSafe(Double.self,                forKey: .colorDrift,      default: 0.4)
         ripple          = c.decodeSafe(Double.self,                forKey: .ripple,          default: 0.0)
         wash            = c.decodeSafe(Double.self,                forKey: .wash,            default: 0.0)
+        abstractLevel   = c.decodeSafe(Double.self,                forKey: .abstractLevel,   default: 0.3)
         paletteIndex    = c.decodeSafe(Int.self,                   forKey: .paletteIndex,    default: 0)
     }
 }
@@ -496,6 +600,7 @@ extension MandalaParameters {
         lhs.baseLayer == rhs.baseLayer &&
         lhs.effectsLayer == rhs.effectsLayer &&
         lhs.drawingLayer == rhs.drawingLayer &&
+        lhs.textLayer == rhs.textLayer &&
         lhs.seed == rhs.seed &&
         lhs.previewSize == rhs.previewSize &&
         lhs.outputSize == rhs.outputSize &&
@@ -509,6 +614,7 @@ extension MandalaParameters {
         lhs.colorDrift == rhs.colorDrift &&
         lhs.ripple == rhs.ripple &&
         lhs.wash == rhs.wash &&
+        lhs.abstractLevel == rhs.abstractLevel &&
         lhs.paletteIndex == rhs.paletteIndex
         // resolvedPalettes is transient, excluded from equality
     }

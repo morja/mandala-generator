@@ -102,10 +102,36 @@ struct MandalaRenderer {
         // ── PER-LAYER RENDER ──
         for (li, layer) in params.layers.enumerated() {
             guard layer.isEnabled else { continue }
+            let palette = palettes[max(0, min(palettes.count-1, layer.paletteIndex))]
+            var layerRng = SeededRNG(seed: layer.seed == 0 ? params.seed &+ UInt64(li + 1) &* 0x9e3779b97f4a7c15 : layer.seed)
+
+            // ── Dust Clouds: CGContext-based, bypasses PixelBuffer ──────────────
+            if layer.style == .dust {
+                guard var layerImage = renderDustAsStyleLayer(layer: layer, palette: palette,
+                                                              size: bufferSize, rng: &layerRng)
+                else { continue }
+                layerImage = applyGlow(image: layerImage, intensity: layer.glowIntensity)
+                layerImage = applyColourGrade(image: layerImage,
+                                              saturation: layer.saturation,
+                                              brightness: layer.brightness)
+                if abs(layer.rotation) > 0.001 {
+                    layerImage = rotateImage(layerImage, angle: layer.rotation * .pi * 2)
+                }
+                if layer.opacity < 0.999 {
+                    layerImage = applyLayerOpacity(image: layerImage, opacity: layer.opacity)
+                }
+                switch layer.blendMode {
+                case .screen:   compositeImage = blendComposite(base: compositeImage, overlay: layerImage, mode: "CIScreenBlendMode")
+                case .add:      compositeImage = blendComposite(base: compositeImage, overlay: layerImage, mode: "CIAdditionCompositing")
+                case .normal:   compositeImage = blendComposite(base: compositeImage, overlay: layerImage, mode: "CILightenBlendMode")
+                case .multiply: compositeImage = blendComposite(base: compositeImage, overlay: layerImage, mode: "CIMultiplyBlendMode")
+                }
+                continue
+            }
+
             let layerSymmetry = max(1, min(8, layer.symmetry))
             let layerRadius = baseRadius * max(0.1, min(1.0, layer.scale))
             let layerCount  = max(2, Int(layer.complexity * 8) + 1)
-            let palette     = palettes[max(0, min(palettes.count-1, layer.paletteIndex))]
 
             // Build a params copy with this layer's values for renderer internals
             var lp = params
@@ -116,12 +142,25 @@ struct MandalaRenderer {
             lp.colorDrift    = layer.colorDrift
             lp.ripple        = layer.ripple
             lp.wash          = layer.wash
+            lp.abstractLevel = layer.abstractLevel
             lp.paletteIndex  = layer.paletteIndex
 
-            let buffer = PixelBuffer(width: bufferSize, height: bufferSize)
-            var layerRng = SeededRNG(seed: layer.seed == 0 ? params.seed &+ UInt64(li + 1) &* 0x9e3779b97f4a7c15 : layer.seed)
+            // Always render into an expanded buffer large enough to hold the full mandala
+            // radius without clipping at the buffer edges.  At rotation=0 the crop produces
+            // the same visible content as a normal-size buffer; at any other angle, lines
+            // that would have been cut by the smaller buffer's edges come into view.
+            let hasRotation = abs(layer.rotation) > 0.001
+            let lBufSize: Int = {
+                let raw = Int(ceil(layerRadius * 2.0)) + 8
+                let even = raw % 2 == 0 ? raw : raw + 1
+                return max(bufferSize, even)
+            }()
+            let lcx = Float(lBufSize) * 0.5
+            let lcy = Float(lBufSize) * 0.5
 
-            drawStructuralLayers(buffer: buffer, cx: cx, cy: cy, baseRadius: layerRadius,
+            let buffer = PixelBuffer(width: lBufSize, height: lBufSize)
+
+            drawStructuralLayers(buffer: buffer, cx: lcx, cy: lcy, baseRadius: layerRadius,
                                  params: lp, style: layer.style, colorOffset: layer.colorOffset,
                                  palette: palette, rng: &layerRng,
                                  layerCount: layerCount, symmetry: layerSymmetry,
@@ -137,8 +176,12 @@ struct MandalaRenderer {
                 layerImage = applyPaintedEffect(image: layerImage, abstractLevel: layer.abstractLevel)
             }
             layerImage = applyColourGrade(image: layerImage, saturation: layer.saturation, brightness: layer.brightness)
-            if layer.rotation > 0.001 || layer.rotation < -0.001 {
+            if hasRotation {
                 layerImage = rotateImage(layerImage, angle: layer.rotation * .pi * 2)
+            }
+            // Crop back to bufferSize × bufferSize from the expanded buffer.
+            if lBufSize > bufferSize {
+                layerImage = cropCenter(layerImage, to: bufferSize)
             }
             if layer.opacity < 0.999 {
                 layerImage = applyLayerOpacity(image: layerImage, opacity: layer.opacity)
@@ -157,7 +200,8 @@ struct MandalaRenderer {
             let palette = palettes[max(0, min(palettes.count - 1, dl.paletteIndex))]
             let drawBuffer = PixelBuffer(width: bufferSize, height: bufferSize)
             let sym = max(1, dl.symmetry)
-            let baseWeight = max(0.8, Float(dl.strokeWeight) * Float(bufferSize) * 0.008 + 1.0)
+            let lineThickness = max(1, Int(Float(dl.strokeWeight) * Float(bufferSize) * 0.015 + 1.5))
+            let drawScale = Float(max(0.1, dl.scale))
 
             for (si, stroke) in dl.strokes.enumerated() {
                 guard stroke.xs.count >= 2, stroke.xs.count == stroke.ys.count else { continue }
@@ -170,8 +214,10 @@ struct MandalaRenderer {
                 let col = (r: Float(nsColor.redComponent),
                            g: Float(nsColor.greenComponent),
                            b: Float(nsColor.blueComponent))
-                let pts: [(Float, Float)] = zip(stroke.xs, stroke.ys).map {
-                    (Float($0) * Float(bufferSize), Float($1) * Float(bufferSize))
+                let pts: [(Float, Float)] = zip(stroke.xs, stroke.ys).map { (nx, ny) in
+                    let sx = (Float(nx) - 0.5) * drawScale + 0.5
+                    let sy = (Float(ny) - 0.5) * drawScale + 0.5
+                    return (sx * Float(bufferSize), sy * Float(bufferSize))
                 }
                 for s in 0..<sym {
                     let angle = Float(s) * .pi * 2.0 / Float(sym)
@@ -185,8 +231,8 @@ struct MandalaRenderer {
                         let dx1 = x1 - cx, dy1 = y1 - cy
                         let rx1 = cx + dx1 * ca - dy1 * sa
                         let ry1 = cy + dx1 * sa + dy1 * ca
-                        drawBuffer.addLine(x0: rx0, y0: ry0, x1: rx1, y1: ry1,
-                                           color: col, weight: baseWeight)
+                        drawBuffer.addThickLine(x0: rx0, y0: ry0, x1: rx1, y1: ry1,
+                                                color: col, weight: 1.5, thickness: lineThickness)
                     }
                 }
             }
@@ -217,6 +263,11 @@ struct MandalaRenderer {
         if let solidBg = solidBgImage {
             compositeImage = blendComposite(base: compositeImage, overlay: solidBg,
                                             mode: "CILightenBlendMode")
+        }
+
+        // ── TEXT LAYER (on top of everything, before effects) ──
+        if params.textLayer.isEnabled && !params.textLayer.text.isEmpty {
+            compositeImage = applyTextLayer(image: compositeImage, settings: params.textLayer, size: bufferSize)
         }
 
         // ── EFFECTS LAYER ──
@@ -406,6 +457,41 @@ struct MandalaRenderer {
                                        layerCount: layerCount, symmetry: symmetry,
                                        colorOffset: colorOffset)
             return
+        case .nebulaVeins:
+            drawNebulaVeinsLayers(buffer: buffer, cx: cx, cy: cy, radius: baseRadius,
+                                  params: params, palette: palette, rng: &rng,
+                                  colorOffset: colorOffset, symmetry: symmetry)
+            return
+        case .constellationWeb:
+            drawConstellationWebLayers(buffer: buffer, cx: cx, cy: cy, radius: baseRadius,
+                                       params: params, palette: palette, rng: &rng,
+                                       colorOffset: colorOffset, symmetry: symmetry)
+            return
+        case .auroraRibbons:
+            drawAuroraRibbonsLayers(buffer: buffer, cx: cx, cy: cy, radius: baseRadius,
+                                    params: params, palette: palette, rng: &rng,
+                                    colorOffset: colorOffset, symmetry: symmetry)
+            return
+        case .crystalBloom:
+            drawCrystalBloomLayers(buffer: buffer, cx: cx, cy: cy, radius: baseRadius,
+                                   params: params, palette: palette, rng: &rng,
+                                   colorOffset: colorOffset, symmetry: symmetry)
+            return
+        case .blackHoleLens:
+            drawBlackHoleLensLayers(buffer: buffer, cx: cx, cy: cy, radius: baseRadius,
+                                    params: params, palette: palette, rng: &rng,
+                                    colorOffset: colorOffset, symmetry: symmetry)
+            return
+        case .plasmaPetals:
+            drawPlasmaPetalsLayers(buffer: buffer, cx: cx, cy: cy, radius: baseRadius,
+                                   params: params, palette: palette, rng: &rng,
+                                   colorOffset: colorOffset, symmetry: symmetry)
+            return
+        case .recursiveHalo:
+            drawRecursiveHaloLayers(buffer: buffer, cx: cx, cy: cy, radius: baseRadius,
+                                    params: params, palette: palette, rng: &rng,
+                                    colorOffset: colorOffset, symmetry: symmetry)
+            return
         case .superformula:
             collectSuperformulaTasks(into: &tasks, cx: cx, cy: cy, radius: baseRadius,
                                      params: params, rng: &rng, layerCount: layerCount,
@@ -429,6 +515,8 @@ struct MandalaRenderer {
                                layerCount: layerCount, symmetry: symmetry,
                                colorOffset: colorOffset)
             return
+        case .dust:
+            return  // handled separately in the per-layer loop; nothing to draw here
         case .mixed:
             // Seed-driven random zone selection — different every render
             var zoneRng = SeededRNG(seed: params.seed &+ 0xbeef1234)
@@ -438,7 +526,9 @@ struct MandalaRenderer {
                                               .phyllotaxis, .hypocycloid, .waveInterference, .spiderWeb,
                                               .weave, .sacredGeometry, .radialMesh, .flowField, .tendril,
                                               .moire, .voronoi, .torusKnot, .sphereGrid, .tesseract, .starBurst,
-                                              .universe, .symbols, .strangeAttractor, .superformula,
+                                              .universe, .symbols, .strangeAttractor, .nebulaVeins,
+                                              .constellationWeb, .auroraRibbons, .crystalBloom,
+                                              .blackHoleLens, .plasmaPetals, .recursiveHalo, .superformula,
                                               .hyperboloid, .torus, .nautilus]
             let radii: [Double] = [1.0, 0.72, 0.45]
             let sub = max(2, layerCount / 3)
@@ -559,6 +649,34 @@ struct MandalaRenderer {
                                                params: params, palette: palette, rng: &rng,
                                                layerCount: sub, symmetry: symmetry,
                                                colorOffset: 0)
+                case .nebulaVeins:
+                    drawNebulaVeinsLayers(buffer: buffer, cx: cx, cy: cy, radius: scaled,
+                                          params: params, palette: palette, rng: &rng,
+                                          colorOffset: 0, symmetry: symmetry)
+                case .constellationWeb:
+                    drawConstellationWebLayers(buffer: buffer, cx: cx, cy: cy, radius: scaled,
+                                               params: params, palette: palette, rng: &rng,
+                                               colorOffset: 0, symmetry: symmetry)
+                case .auroraRibbons:
+                    drawAuroraRibbonsLayers(buffer: buffer, cx: cx, cy: cy, radius: scaled,
+                                            params: params, palette: palette, rng: &rng,
+                                            colorOffset: 0, symmetry: symmetry)
+                case .crystalBloom:
+                    drawCrystalBloomLayers(buffer: buffer, cx: cx, cy: cy, radius: scaled,
+                                           params: params, palette: palette, rng: &rng,
+                                           colorOffset: 0, symmetry: symmetry)
+                case .blackHoleLens:
+                    drawBlackHoleLensLayers(buffer: buffer, cx: cx, cy: cy, radius: scaled,
+                                            params: params, palette: palette, rng: &rng,
+                                            colorOffset: 0, symmetry: symmetry)
+                case .plasmaPetals:
+                    drawPlasmaPetalsLayers(buffer: buffer, cx: cx, cy: cy, radius: scaled,
+                                           params: params, palette: palette, rng: &rng,
+                                           colorOffset: 0, symmetry: symmetry)
+                case .recursiveHalo:
+                    drawRecursiveHaloLayers(buffer: buffer, cx: cx, cy: cy, radius: scaled,
+                                            params: params, palette: palette, rng: &rng,
+                                            colorOffset: 0, symmetry: symmetry)
                 case .superformula:
                     collectSuperformulaTasks(into: &tasks, cx: cx, cy: cy, radius: scaled,
                                              params: params, rng: &rng, layerCount: sub,
@@ -579,7 +697,7 @@ struct MandalaRenderer {
                                        params: params, palette: palette, rng: &rng,
                                        layerCount: sub, symmetry: symmetry,
                                        colorOffset: 0)
-                case .mixed:
+                case .mixed, .dust:
                     collectSpirographTasks(into: &tasks, cx: cx, cy: cy, radius: scaled,
                                            params: params, rng: &rng, layerCount: sub,
                                            symmetry: symmetry, rippleAmount: rippleAmount, weightMul: wmul)
@@ -1529,6 +1647,328 @@ struct MandalaRenderer {
                        g: Float(col.greenComponent),
                        b: Float(col.blueComponent))
             buffer.addLine(x0: x0, y0: y0, x1: x1, y1: y1, color: c, weight: weight)
+        }
+    }
+
+    // MARK: - Cosmic Style Helpers
+
+    private static func paletteColor(_ palette: ColorPalette, at t: Double, colorOffset: Double = 0) -> (r: Float, g: Float, b: Float) {
+        let c = palette.color(at: (t + colorOffset).truncatingRemainder(dividingBy: 1.0))
+        return (Float(c.redComponent), Float(c.greenComponent), Float(c.blueComponent))
+    }
+
+    private static func addPolyline(buffer: PixelBuffer, points: [(Float, Float)],
+                                    color: (r: Float, g: Float, b: Float), weight: Float) {
+        guard points.count >= 2 else { return }
+        for i in 0..<(points.count - 1) {
+            buffer.addLine(x0: points[i].0, y0: points[i].1,
+                           x1: points[i + 1].0, y1: points[i + 1].1,
+                           color: color, weight: weight)
+        }
+    }
+
+    private static func addCircle(buffer: PixelBuffer, cx: Float, cy: Float, radius: Float,
+                                  color: (r: Float, g: Float, b: Float), weight: Float,
+                                  steps: Int = 96, start: Float = 0, end: Float = .pi * 2) {
+        guard radius > 0.5, steps > 1 else { return }
+        let dt = (end - start) / Float(steps)
+        var pts: [(Float, Float)] = []
+        pts.reserveCapacity(steps + 1)
+        for i in 0...steps {
+            let t = start + Float(i) * dt
+            pts.append((cx + cos(t) * radius, cy + sin(t) * radius))
+        }
+        addPolyline(buffer: buffer, points: pts, color: color, weight: weight)
+    }
+
+    private static func addEllipse(buffer: PixelBuffer, cx: Float, cy: Float, rx: Float, ry: Float,
+                                   rotation: Float = 0,
+                                   color: (r: Float, g: Float, b: Float), weight: Float,
+                                   steps: Int = 96, start: Float = 0, end: Float = .pi * 2) {
+        guard rx > 0.5, ry > 0.5, steps > 1 else { return }
+        let dt = (end - start) / Float(steps)
+        let ca = cos(rotation), sa = sin(rotation)
+        var pts: [(Float, Float)] = []
+        pts.reserveCapacity(steps + 1)
+        for i in 0...steps {
+            let t = start + Float(i) * dt
+            let px = cos(t) * rx
+            let py = sin(t) * ry
+            pts.append((cx + px * ca - py * sa, cy + px * sa + py * ca))
+        }
+        addPolyline(buffer: buffer, points: pts, color: color, weight: weight)
+    }
+
+    private static func drawNebulaVeinsLayers(buffer: PixelBuffer, cx: Float, cy: Float,
+                                              radius: Double, params: MandalaParameters,
+                                              palette: ColorPalette, rng: inout SeededRNG,
+                                              colorOffset: Double, symmetry: Int) {
+        let R = Float(radius)
+        let ribbons = max(3, Int(4 + params.complexity * 8))
+        let steps = Int(80 + params.density * 140)
+        let sector = Float.pi * 2 / Float(max(1, symmetry))
+        let baseWeight = Float(0.22 + params.density * 0.20)
+
+        for ribbon in 0..<ribbons {
+            let startA = Float(ribbon) / Float(ribbons) * sector + Float(rng.nextDouble() * 0.35)
+            let sway = Float(0.35 + params.abstractLevel * 0.8 + rng.nextDouble() * 0.2)
+            let color = paletteColor(palette, at: Double(ribbon) / Double(ribbons) * 0.8, colorOffset: colorOffset)
+            for sym in 0..<symmetry {
+                let rot = Float(sym) * sector
+                var points: [(Float, Float)] = []
+                points.reserveCapacity(steps + 1)
+                for step in 0...steps {
+                    let t = Float(step) / Float(steps)
+                    let branch = sin(t * .pi * (2.4 + sway * 2.2) + Float(ribbon) * 0.9) * R * 0.10 * sway
+                    let curl = sin(t * .pi * 7.0 + Float(ribbon) * 1.7) * R * 0.02 * Float(params.ripple + 0.15)
+                    let rr = R * (0.12 + t * (0.78 + Float(params.complexity) * 0.12)) + branch
+                    let ang = startA + rot + t * (0.9 + sway * 1.2) + curl / max(R, 1)
+                    points.append((cx + cos(ang) * rr, cy + sin(ang) * rr))
+                }
+                addPolyline(buffer: buffer, points: points, color: color, weight: baseWeight)
+            }
+        }
+
+        let haloCount = 3 + Int(params.glowIntensity * 4)
+        for i in 0..<haloCount {
+            let t = Double(i) / Double(max(1, haloCount))
+            let c = paletteColor(palette, at: 0.18 + t * 0.45, colorOffset: colorOffset)
+            addEllipse(buffer: buffer, cx: cx, cy: cy,
+                       rx: R * Float(0.18 + t * 0.55),
+                       ry: R * Float(0.10 + t * 0.24),
+                       rotation: Float(t) * .pi + Float(rng.nextDouble() * 0.4),
+                       color: (c.r * 0.45, c.g * 0.45, c.b * 0.45),
+                       weight: baseWeight * 0.75, steps: 90)
+        }
+    }
+
+    private static func drawConstellationWebLayers(buffer: PixelBuffer, cx: Float, cy: Float,
+                                                   radius: Double, params: MandalaParameters,
+                                                   palette: ColorPalette, rng: inout SeededRNG,
+                                                   colorOffset: Double, symmetry: Int) {
+        let R = Float(radius)
+        let sector = Float.pi * 2 / Float(max(1, symmetry))
+        let baseNodes = max(5, Int(8 + params.density * 16))
+        var relNodes: [(Float, Float)] = []
+        relNodes.reserveCapacity(baseNodes)
+
+        for _ in 0..<baseNodes {
+            let ang = Float(rng.nextDouble()) * sector
+            let dist = Float(sqrt(rng.nextDouble())) * R * 0.92
+            relNodes.append((cos(ang) * dist, sin(ang) * dist))
+        }
+
+        var nodes: [(Float, Float)] = []
+        for (rx, ry) in relNodes {
+            for sym in 0..<symmetry {
+                let a = Float(sym) * sector
+                let ca = cos(a), sa = sin(a)
+                nodes.append((cx + rx * ca - ry * sa, cy + rx * sa + ry * ca))
+            }
+        }
+
+        let connectDist = R * Float(0.26 + params.complexity * 0.22)
+        for i in 0..<nodes.count {
+            for j in (i + 1)..<nodes.count {
+                let dx = nodes[i].0 - nodes[j].0
+                let dy = nodes[i].1 - nodes[j].1
+                let d = sqrt(dx * dx + dy * dy)
+                if d < connectDist {
+                    let alpha: Float = 1 - d / connectDist
+                    let t = Double(i + j) / Double(max(1, nodes.count * 2))
+                    let c = paletteColor(palette, at: t, colorOffset: colorOffset)
+                    let lineColor: (r: Float, g: Float, b: Float) = (
+                        c.r * alpha,
+                        c.g * alpha,
+                        c.b * alpha
+                    )
+                    let lineWeight = Float(0.10 + Double(alpha) * (0.22 + params.density * 0.15))
+                    let n0 = nodes[i]
+                    let n1 = nodes[j]
+                    buffer.addLine(x0: n0.0, y0: n0.1, x1: n1.0, y1: n1.1,
+                                   color: lineColor, weight: lineWeight)
+                }
+            }
+        }
+
+        for (idx, node) in nodes.enumerated() {
+            let c = paletteColor(palette, at: Double(idx) / Double(max(1, nodes.count)), colorOffset: colorOffset)
+            addCircle(buffer: buffer, cx: node.0, cy: node.1, radius: R * 0.010,
+                      color: c, weight: 1.2, steps: 16)
+            let flare = R * Float(0.015 + params.glowIntensity * 0.04)
+            buffer.addLine(x0: node.0 - flare, y0: node.1, x1: node.0 + flare, y1: node.1,
+                           color: c, weight: 0.6)
+            buffer.addLine(x0: node.0, y0: node.1 - flare, x1: node.0, y1: node.1 + flare,
+                           color: c, weight: 0.6)
+        }
+    }
+
+    private static func drawAuroraRibbonsLayers(buffer: PixelBuffer, cx: Float, cy: Float,
+                                                radius: Double, params: MandalaParameters,
+                                                palette: ColorPalette, rng: inout SeededRNG,
+                                                colorOffset: Double, symmetry: Int) {
+        let R = Float(radius)
+        let bands = max(3, Int(4 + params.density * 5))
+        let steps = Int(120 + params.complexity * 160)
+        let sector = Float.pi * 2 / Float(max(1, symmetry))
+
+        for band in 0..<bands {
+            let c = paletteColor(palette, at: Double(band) / Double(max(1, bands)) * 0.9, colorOffset: colorOffset)
+            let baseR = R * Float(0.18 + Double(band) / Double(max(1, bands)) * 0.60)
+            let amp = R * Float(0.025 + params.abstractLevel * 0.09 + rng.nextDouble() * 0.03)
+            let waviness = Float(2.5 + params.complexity * 5.5 + rng.nextDouble() * 1.2)
+            for sym in 0..<symmetry {
+                let rot = Float(sym) * sector
+                for lane in 0..<3 {
+                    var points: [(Float, Float)] = []
+                    points.reserveCapacity(steps + 1)
+                    let laneShift = (Float(lane) - 1) * amp * 0.45
+                    for i in 0...steps {
+                        let t = Float(i) / Float(steps)
+                        let a = rot + t * sector + Float(band) * 0.05
+                        let rr = baseR + laneShift + sin(t * .pi * waviness + Float(band) * 0.8) * amp
+                        points.append((cx + cos(a) * rr, cy + sin(a) * rr))
+                    }
+                    addPolyline(buffer: buffer, points: points,
+                                color: (c.r * 0.75, c.g * 0.75, c.b * 0.75),
+                                weight: Float(0.12 + params.density * 0.12))
+                }
+            }
+        }
+    }
+
+    private static func drawCrystalBloomLayers(buffer: PixelBuffer, cx: Float, cy: Float,
+                                               radius: Double, params: MandalaParameters,
+                                               palette: ColorPalette, rng: inout SeededRNG,
+                                               colorOffset: Double, symmetry: Int) {
+        let R = Float(radius)
+        let petals = max(6, symmetry * 2)
+        let layers = max(3, Int(3 + params.complexity * 4))
+        let tipBase = R * Float(0.40 + params.density * 0.36)
+
+        for layer in 0..<layers {
+            let inner = R * Float(0.08 + Double(layer) * 0.09)
+            let tip = tipBase * Float(0.52 + Double(layer) * 0.14)
+            let width = R * Float(0.04 + params.abstractLevel * 0.09 + Double(layer) * 0.012)
+            let c = paletteColor(palette, at: Double(layer) / Double(max(1, layers)) * 0.85, colorOffset: colorOffset)
+            for p in 0..<petals {
+                let ang = Float(p) * .pi * 2 / Float(petals) + Float(layer) * 0.03
+                let p0 = (cx + cos(ang) * inner, cy + sin(ang) * inner)
+                let p1 = (cx + cos(ang - 0.11) * (tip - width), cy + sin(ang - 0.11) * (tip - width))
+                let p2 = (cx + cos(ang) * tip, cy + sin(ang) * tip)
+                let p3 = (cx + cos(ang + 0.11) * (tip - width), cy + sin(ang + 0.11) * (tip - width))
+                addPolyline(buffer: buffer, points: [p0, p1, p2, p3, p0], color: c,
+                            weight: Float(0.16 + params.density * 0.18))
+                buffer.addLine(x0: p0.0, y0: p0.1, x1: p2.0, y1: p2.1, color: c, weight: 0.10)
+            }
+        }
+
+        addCircle(buffer: buffer, cx: cx, cy: cy, radius: R * 0.14,
+                  color: paletteColor(palette, at: 0.1, colorOffset: colorOffset),
+                  weight: Float(0.45 + params.glowIntensity * 0.3), steps: 64)
+    }
+
+    private static func drawBlackHoleLensLayers(buffer: PixelBuffer, cx: Float, cy: Float,
+                                                radius: Double, params: MandalaParameters,
+                                                palette: ColorPalette, rng: inout SeededRNG,
+                                                colorOffset: Double, symmetry: Int) {
+        let R = Float(radius)
+        let darkRing = R * Float(0.16 + params.density * 0.10)
+        let ringCount = max(4, Int(5 + params.complexity * 5))
+
+        for i in 0..<ringCount {
+            let t = Double(i) / Double(max(1, ringCount - 1))
+            let c = paletteColor(palette, at: 0.08 + t * 0.42, colorOffset: colorOffset)
+            let rr = darkRing * Float(1.2 + t * 3.6)
+            let squash = Float(0.24 + t * 0.18)
+            addEllipse(buffer: buffer, cx: cx, cy: cy, rx: rr, ry: rr * squash,
+                       rotation: Float(0.12 + rng.nextDouble() * 0.5),
+                       color: (c.r, c.g, c.b), weight: Float(0.18 + (1 - t) * 0.22), steps: 100)
+        }
+
+        let arcCount = max(6, symmetry * 2)
+        for i in 0..<arcCount {
+            let a0 = Float(i) * .pi * 2 / Float(arcCount) + Float(rng.nextDouble() * 0.2)
+            let span = Float(0.22 + params.abstractLevel * 0.55)
+            let rr = R * Float(0.34 + rng.nextDouble() * 0.42)
+            let c = paletteColor(palette, at: 0.45 + Double(i) / Double(max(1, arcCount)) * 0.35, colorOffset: colorOffset)
+            addEllipse(buffer: buffer, cx: cx, cy: cy, rx: rr, ry: rr * 0.42,
+                       rotation: a0, color: (c.r * 0.7, c.g * 0.7, c.b * 0.7),
+                       weight: 0.12, steps: 44, start: -span, end: span)
+        }
+
+        let jet = R * Float(0.28 + params.glowIntensity * 0.30)
+        let c = paletteColor(palette, at: 0.86, colorOffset: colorOffset)
+        for dir in [-Float.pi / 2, Float.pi / 2] {
+            buffer.addLine(x0: cx + cos(dir) * darkRing, y0: cy + sin(dir) * darkRing,
+                           x1: cx + cos(dir) * (darkRing + jet), y1: cy + sin(dir) * (darkRing + jet),
+                           color: c, weight: Float(0.26 + params.glowIntensity * 0.2))
+        }
+    }
+
+    private static func drawPlasmaPetalsLayers(buffer: PixelBuffer, cx: Float, cy: Float,
+                                               radius: Double, params: MandalaParameters,
+                                               palette: ColorPalette, rng: inout SeededRNG,
+                                               colorOffset: Double, symmetry: Int) {
+        let R = Float(radius)
+        let petals = max(8, symmetry * 2 + Int(params.complexity * 6))
+        let steps = Int(90 + params.density * 120)
+        let weight = Float(0.16 + params.density * 0.18)
+
+        for petal in 0..<petals {
+            let baseA = Float(petal) * .pi * 2 / Float(petals)
+            let c = paletteColor(palette, at: Double(petal) / Double(max(1, petals)) * 0.9, colorOffset: colorOffset)
+            for side: Float in [-1, 1] {
+                var points: [(Float, Float)] = []
+                points.reserveCapacity(steps + 1)
+                for i in 0...steps {
+                    let t = Float(i) / Float(steps)
+                    let flare = sin(t * .pi) * R * Float(0.10 + params.abstractLevel * 0.16)
+                    let curl = sin(t * .pi * (3.5 + Float(params.complexity) * 3.0) + Float(petal) * 0.7) * R * 0.03
+                    let rr = R * (0.08 + t * (0.82 + Float(params.density) * 0.08))
+                    let a = baseA + side * (flare + curl) / max(rr, 1)
+                    points.append((cx + cos(a) * rr, cy + sin(a) * rr))
+                }
+                addPolyline(buffer: buffer, points: points, color: c, weight: weight)
+            }
+        }
+
+        addCircle(buffer: buffer, cx: cx, cy: cy, radius: R * 0.12,
+                  color: paletteColor(palette, at: 0.04, colorOffset: colorOffset),
+                  weight: Float(0.55 + params.glowIntensity * 0.35), steps: 60)
+    }
+
+    private static func drawRecursiveHaloLayers(buffer: PixelBuffer, cx: Float, cy: Float,
+                                                radius: Double, params: MandalaParameters,
+                                                palette: ColorPalette, rng: inout SeededRNG,
+                                                colorOffset: Double, symmetry: Int) {
+        let R = Float(radius)
+        let rings = max(4, Int(5 + params.complexity * 5))
+        let burstCount = max(5, symmetry * 2)
+
+        for ring in 0..<rings {
+            let t = Double(ring) / Double(max(1, rings - 1))
+            let rr = R * Float(0.10 + t * 0.74)
+            let c = paletteColor(palette, at: 0.15 + t * 0.65, colorOffset: colorOffset)
+            addCircle(buffer: buffer, cx: cx, cy: cy, radius: rr,
+                      color: (c.r, c.g, c.b), weight: Float(0.12 + (1 - t) * 0.20), steps: 96)
+
+            for b in 0..<burstCount {
+                let a = Float(b) * .pi * 2 / Float(burstCount) + Float(ring) * 0.06
+                let inner = rr * Float(0.88 + sin(a * 3 + Float(ring)) * 0.04)
+                let outer = rr * Float(1.07 + params.abstractLevel * 0.18)
+                buffer.addLine(x0: cx + cos(a) * inner, y0: cy + sin(a) * inner,
+                               x1: cx + cos(a) * outer, y1: cy + sin(a) * outer,
+                               color: (c.r * 0.9, c.g * 0.9, c.b * 0.9),
+                               weight: Float(0.09 + params.density * 0.09))
+                if ring < rings - 1 {
+                    let nodeR = rr * Float(0.55 + params.complexity * 0.22)
+                    let nx = cx + cos(a) * nodeR
+                    let ny = cy + sin(a) * nodeR
+                    addCircle(buffer: buffer, cx: nx, cy: ny, radius: R * Float(0.010 + t * 0.014),
+                              color: (c.r * 0.65, c.g * 0.65, c.b * 0.65), weight: 0.22, steps: 18)
+                }
+            }
         }
     }
 
@@ -3305,6 +3745,21 @@ struct MandalaRenderer {
 
     // MARK: - Layer rotation
 
+    /// Crop the centre `size × size` square from `image` (which may be larger).
+    private static func cropCenter(_ image: CGImage, to size: Int) -> CGImage {
+        let ci  = CIImage(cgImage: image)
+        let src = ci.extent
+        let ox  = (src.width  - CGFloat(size)) * 0.5
+        let oy  = (src.height - CGFloat(size)) * 0.5
+        let cropRect = CGRect(x: src.origin.x + ox, y: src.origin.y + oy,
+                              width: CGFloat(size), height: CGFloat(size))
+        let cropped = ci.cropped(to: cropRect)
+        let ctx = CIContext(options: [.workingColorSpace: CGColorSpace(name: CGColorSpace.displayP3) as Any])
+        // `from:` must use cropRect (CIImage coordinates), not (0,0,size,size),
+        // so that output pixel (0,0) maps to CIImage coordinate (ox, oy) — the centre of the expanded buffer.
+        return ctx.createCGImage(cropped, from: cropRect) ?? image
+    }
+
     private static func rotateImage(_ image: CGImage, angle: Double) -> CGImage {
         let ci  = CIImage(cgImage: image)
         let ctx = CIContext(options: [.workingColorSpace: CGColorSpace(name: CGColorSpace.displayP3) as Any])
@@ -3315,6 +3770,406 @@ struct MandalaRenderer {
                     .translatedBy(x: -cx, y: -cy)
         let rotated = ci.transformed(by: t).cropped(to: ext)
         return ctx.createCGImage(rotated, from: ext) ?? image
+    }
+
+    // MARK: - Dust Layer
+
+    /// Renders a Dust Clouds layer.
+    /// Two-level structure: N cloud masses, each filled with many tiny flat-alpha
+    /// ellipses with random rotation/aspect. Flat fills + blur = cloud texture,
+    /// not glowing orbs.
+    private static func renderDustAsStyleLayer(layer: StyleLayer, palette: ColorPalette,
+                                               size: Int, rng: inout SeededRNG) -> CGImage? {
+        let sym    = max(1, layer.symmetry)
+        let canvas = CGFloat(size)
+        let cx = canvas / 2, cy = canvas / 2
+
+        // Cloud mass count scales with density; sub-blob count with complexity
+        let massCount    = max(2, Int(layer.density * 12 + 3))
+        let blobsPerMass = max(80, Int(layer.complexity * 300 + 80))
+
+        // Spread of mass centres across canvas
+        let spread = canvas * 0.44 * CGFloat(layer.scale)
+
+        guard let dustRep = NSBitmapImageRep(
+            bitmapDataPlanes: nil, pixelsWide: size, pixelsHigh: size,
+            bitsPerSample: 8, samplesPerPixel: 4, hasAlpha: true, isPlanar: false,
+            colorSpaceName: .deviceRGB, bytesPerRow: 0, bitsPerPixel: 0
+        ) else { return nil }
+
+        NSGraphicsContext.saveGraphicsState()
+        if let dustCtx = NSGraphicsContext(bitmapImageRep: dustRep) {
+            NSGraphicsContext.current = dustCtx
+            let cgCtx = dustCtx.cgContext
+
+            for _ in 0..<massCount {
+                // Cloud mass centre (square-root distribution → fill canvas area evenly)
+                let massDist  = CGFloat(sqrt(rng.nextDouble())) * spread
+                let massAngle = CGFloat(rng.nextDouble()) * .pi * 2
+                let massCX    = cos(massAngle) * massDist
+                let massCY    = sin(massAngle) * massDist
+
+                // Cloud mass has a dominant axis (elongated like a real cloud)
+                let massW = canvas * CGFloat(0.08 + rng.nextDouble() * 0.18) * CGFloat(layer.scale)
+                let massH = massW * CGFloat(0.3 + rng.nextDouble() * 0.55)
+                let massRot = CGFloat(rng.nextDouble()) * .pi
+
+                // Per-mass colour
+                let massT = (layer.colorOffset + rng.nextDouble() * layer.colorDrift)
+                    .truncatingRemainder(dividingBy: 1.0)
+                let massCol = palette.color(at: massT)
+                let massR = CGFloat(massCol.redComponent)
+                let massG = CGFloat(massCol.greenComponent)
+                let massB = CGFloat(massCol.blueComponent)
+
+                for _ in 0..<blobsPerMass {
+                    // Sub-blob position: tent distribution along mass axes
+                    let u1 = CGFloat(rng.nextDouble()), u2 = CGFloat(rng.nextDouble())
+                    let v1 = CGFloat(rng.nextDouble()), v2 = CGFloat(rng.nextDouble())
+                    let localX = (u1 + u2 - 1.0) * massW
+                    let localY = (v1 + v2 - 1.0) * massH
+                    // Rotate local offset by mass dominant axis
+                    let subX = massCX + localX * cos(massRot) - localY * sin(massRot)
+                    let subY = massCY + localX * sin(massRot) + localY * cos(massRot)
+
+                    // Small flat-fill ellipses — no radial gradient → no glow look
+                    let baseR = canvas * CGFloat(0.004 + rng.nextDouble() * 0.014) * CGFloat(layer.scale)
+                    // Elongated, randomly oriented — creates wispy cloud texture
+                    let aspect   = CGFloat(0.25 + rng.nextDouble() * 1.5)
+                    let blobRot  = CGFloat(rng.nextDouble()) * .pi
+                    let bW = baseR * max(aspect, 1.0)
+                    let bH = baseR * min(1.0 / aspect, 1.0) * max(aspect, 1.0)
+
+                    // Very low alpha — cloud density comes from overlap accumulation
+                    let alpha = CGFloat(rng.nextDouble(in: 0.015...0.07))
+
+                    // Tiny colour drift within mass
+                    let subT = (massT + rng.nextDouble() * 0.05).truncatingRemainder(dividingBy: 1.0)
+                    let subCol = palette.color(at: subT)
+                    let r = massR * 0.7 + CGFloat(subCol.redComponent) * 0.3
+                    let g = massG * 0.7 + CGFloat(subCol.greenComponent) * 0.3
+                    let b = massB * 0.7 + CGFloat(subCol.blueComponent) * 0.3
+
+                    cgCtx.setFillColor(CGColor(red: r, green: g, blue: b, alpha: alpha))
+
+                    for s in 0..<sym {
+                        let symA = CGFloat(s) * .pi * 2 / CGFloat(sym)
+                        let cosS = cos(symA), sinS = sin(symA)
+                        let rx   = subX * cosS - subY * sinS + cx
+                        let ry   = subX * sinS + subY * cosS + cy
+
+                        cgCtx.saveGState()
+                        cgCtx.translateBy(x: rx, y: ry)
+                        cgCtx.rotate(by: blobRot)
+                        cgCtx.addEllipse(in: CGRect(x: -bW, y: -bH, width: bW * 2, height: bH * 2))
+                        cgCtx.fillPath()
+                        cgCtx.restoreGState()
+                    }
+                }
+            }
+        }
+        NSGraphicsContext.restoreGraphicsState()
+
+        guard let dustCG = dustRep.cgImage else { return nil }
+
+        // Blur blends sub-blobs into smooth cloud volumes.
+        // Minimum blur softens sharp blob edges; wash adds extra diffusion.
+        let minBlur = canvas * 0.014
+        let blurR   = minBlur + canvas * CGFloat(layer.wash * layer.wash) * 0.12
+        return simpleGaussianBlur(image: dustCG, radius: blurR) ?? dustCG
+    }
+
+    // MARK: - Text Layer
+
+    private static func applyTextLayer(image: CGImage, settings: TextLayerSettings, size: Int) -> CGImage {
+        guard let textImage = renderTextToCGImage(settings: settings, size: size) else { return image }
+
+        var overlayImage: CGImage = textImage
+
+        // Blur the whole text layer
+        if settings.blur > 0.005 {
+            let blurRadius = CGFloat(settings.blur * settings.blur) * CGFloat(size) * 0.025
+            if let blurred = simpleGaussianBlur(image: overlayImage, radius: blurRadius) {
+                overlayImage = blurred
+            }
+        }
+
+        // Glow (screen-blended soft copy of the text) — must run before brightness boost
+        // so the glow source has valid premultiplied alpha (RGB ≤ alpha)
+        if settings.glow > 0.005 {
+            overlayImage = applyGlow(image: overlayImage, intensity: settings.glow)
+        }
+
+        // Extra brightness boost when brightness > 1.0 (applied after glow to avoid corrupting premultiplied alpha)
+        if settings.brightness > 1.005 {
+            let boost = CGFloat(settings.brightness) - 1.0
+            let s = 1.0 + boost
+            let ci  = CIImage(cgImage: overlayImage)
+            let ext = ci.extent
+            let ctx = CIContext(options: [.workingColorSpace: CGColorSpace(name: CGColorSpace.displayP3) as Any])
+            if let filter = CIFilter(name: "CIColorMatrix") {
+                filter.setValue(ci, forKey: kCIInputImageKey)
+                filter.setValue(CIVector(x: s, y: 0, z: 0, w: 0), forKey: "inputRVector")
+                filter.setValue(CIVector(x: 0, y: s, z: 0, w: 0), forKey: "inputGVector")
+                filter.setValue(CIVector(x: 0, y: 0, z: s, w: 0), forKey: "inputBVector")
+                filter.setValue(CIVector(x: 0, y: 0, z: 0, w: 1), forKey: "inputAVector")
+                filter.setValue(CIVector(x: 0, y: 0, z: 0, w: 0), forKey: "inputBiasVector")
+                if let out = filter.outputImage?.cropped(to: ext),
+                   let boosted = ctx.createCGImage(out, from: ext) {
+                    overlayImage = boosted
+                }
+            }
+        }
+
+        // Opacity
+        if settings.opacity < 0.999 {
+            overlayImage = applyLayerOpacity(image: overlayImage, opacity: settings.opacity)
+        }
+
+        // Composite onto the main image
+        let blendFilter: String
+        switch settings.blendMode {
+        case .screen:   blendFilter = "CIScreenBlendMode"
+        case .add:      blendFilter = "CIAdditionCompositing"
+        case .normal:   blendFilter = "CISourceOverCompositing"
+        case .multiply: blendFilter = "CIMultiplyBlendMode"
+        }
+        return blendComposite(base: image, overlay: overlayImage, mode: blendFilter)
+    }
+
+    private static func renderTextToCGImage(settings: TextLayerSettings, size: Int) -> CGImage? {
+        // NSBitmapImageRep + NSGraphicsContext(bitmapImageRep:) is the most reliable path
+        // for text rendering on macOS — avoids all CGBitmapContext CTM/glyph-handedness issues.
+        // NSGraphicsContext(bitmapImageRep:) uses a FLIPPED coordinate system:
+        //   (0,0) = top-left, y increases downward.
+        guard let rep = NSBitmapImageRep(
+            bitmapDataPlanes: nil,
+            pixelsWide: size, pixelsHigh: size,
+            bitsPerSample: 8, samplesPerPixel: 4,
+            hasAlpha: true, isPlanar: false,
+            colorSpaceName: .deviceRGB,
+            bytesPerRow: 0, bitsPerPixel: 0
+        ) else { return nil }
+
+        NSGraphicsContext.saveGraphicsState()
+        defer { NSGraphicsContext.restoreGraphicsState() }
+        guard let nsCtx = NSGraphicsContext(bitmapImageRep: rep) else { return nil }
+        NSGraphicsContext.current = nsCtx
+
+        let resolvedFontSize = CGFloat(settings.fontSize * Double(size))
+        let nsFont = NSFont(name: settings.fontName, size: resolvedFontSize)
+            ?? NSFont(name: "Georgia", size: resolvedFontSize)
+            ?? NSFont.systemFont(ofSize: resolvedFontSize)
+
+        // Clamp brightness to 1.0 for NSColor — values >1 are applied later via CIColorMatrix boost
+        let textColor = NSColor(hue: CGFloat(settings.hue),
+                                saturation: CGFloat(settings.saturation),
+                                brightness: min(1.0, CGFloat(settings.brightness)),
+                                alpha: 1.0)
+
+        let paraStyle = NSMutableParagraphStyle()
+        paraStyle.alignment = .center
+        paraStyle.lineSpacing = resolvedFontSize * 0.18
+
+        let kern = CGFloat(settings.tracking) * resolvedFontSize * 0.12
+
+        let attrs: [NSAttributedString.Key: Any] = [
+            .font: nsFont,
+            .foregroundColor: textColor,
+            .paragraphStyle: paraStyle,
+            .kern: kern,
+        ]
+
+        // Shadow is rendered manually below for stronger effect (see manual shadow pass)
+
+        // ── Quote text ────────────────────────────────────────────────────────
+        let quoteString = NSAttributedString(string: settings.text, attributes: attrs)
+        let maxWidth = CGFloat(size) * 0.82
+        let quoteBounds = quoteString.boundingRect(
+            with: NSSize(width: maxWidth, height: .greatestFiniteMagnitude),
+            options: [.usesLineFragmentOrigin, .usesFontLeading]
+        )
+
+        // ── Author line (optional, drawn separately so spacing is font-independent) ──
+        // Resolve author: prefer customAuthor field, then fall back to database lookup.
+        let resolvedAuthor: String? = {
+            guard settings.showAuthor else { return nil }
+            if !settings.customAuthor.isEmpty { return settings.customAuthor }
+            return QuoteDatabase.quotes.first(where: {
+                $0.text == settings.text || settings.text.hasSuffix($0.text)
+            })?.author
+        }()
+
+        let authorAttrString: NSAttributedString? = resolvedAuthor.map { match in
+            let authorFontSize = resolvedFontSize * CGFloat(settings.authorScale)
+            let baseAuthorFont = NSFont(name: settings.fontName, size: authorFontSize)
+                ?? NSFont.systemFont(ofSize: authorFontSize)
+            let authorFont: NSFont = settings.authorItalic
+                ? NSFontManager.shared.convert(baseAuthorFont, toHaveTrait: .italicFontMask)
+                : baseAuthorFont
+            var authorAttrs = attrs
+            authorAttrs[.font] = authorFont
+            return NSAttributedString(string: "\u{2014} " + match, attributes: authorAttrs)
+        }
+
+        let authorBounds: CGRect = authorAttrString?.boundingRect(
+            with: NSSize(width: maxWidth, height: .greatestFiniteMagnitude),
+            options: [.usesLineFragmentOrigin, .usesFontLeading]
+        ) ?? .zero
+
+        // Fixed gap between quote bottom and author top — always one main-font line height,
+        // so the author's baseline sits at the same distance regardless of author scale.
+        let lineGap = authorAttrString != nil ? resolvedFontSize * 0.75 : 0
+        let totalHeight = quoteBounds.height + lineGap + authorBounds.height
+
+        let drawX = (CGFloat(size) - maxWidth) / 2.0
+        // Standard y-up coords: offsetY 0=bottom, 0.5=center, 1=top
+        let centerY = CGFloat(settings.offsetY) * CGFloat(size)
+        let blockBottom = centerY - totalHeight / 2.0
+
+        // Author is at the bottom of the block; quote sits above it.
+        // In y-up coords, higher Y = higher on screen.
+        let quoteY = blockBottom + authorBounds.height + lineGap
+
+        // ── Cloud / halo behind text ──────────────────────────────────────────
+        // Always circular: gradient drawn in a SQUARE rect so the inscribed ellipse
+        // is a circle regardless of text block aspect ratio.
+        // cloudRadius 0 → tight halo around text; 1 → fills the whole canvas.
+        if settings.cloudOpacity > 0.01 {
+            let r = CGFloat(settings.cloudRadius)
+            let textCX = drawX + maxWidth / 2
+            let textCY = blockBottom + totalHeight / 2
+
+            // Radius grows from "snug around text" to "covers full canvas corners"
+            let textHalf   = max(maxWidth, totalHeight) * 0.6
+            let fullRadius = CGFloat(size) * 0.78   // just beyond canvas corner at sqrt(2)/2
+            let circRadius = textHalf + r * (fullRadius - textHalf)
+
+            let squareRect = NSRect(x: textCX - circRadius, y: textCY - circRadius,
+                                    width: circRadius * 2, height: circRadius * 2)
+
+            if let cloudRep = NSBitmapImageRep(
+                bitmapDataPlanes: nil,
+                pixelsWide: size, pixelsHigh: size,
+                bitsPerSample: 8, samplesPerPixel: 4,
+                hasAlpha: true, isPlanar: false,
+                colorSpaceName: .deviceRGB,
+                bytesPerRow: 0, bitsPerPixel: 0
+            ), let cloudCtx = NSGraphicsContext(bitmapImageRep: cloudRep) {
+                NSGraphicsContext.current = cloudCtx
+
+                let cloudColor = NSColor(hue: CGFloat(settings.cloudHue),
+                                         saturation: CGFloat(settings.cloudSaturation),
+                                         brightness: CGFloat(settings.cloudBrightness),
+                                         alpha: CGFloat(settings.cloudOpacity))
+                let clearColor = cloudColor.withAlphaComponent(0)
+
+                // Square rect → inscribed circle gradient (always round)
+                if let gradient = NSGradient(colors: [cloudColor, cloudColor, clearColor],
+                                              atLocations: [0.0, 0.5, 1.0],
+                                              colorSpace: .deviceRGB) {
+                    gradient.draw(in: squareRect, relativeCenterPosition: NSPoint(x: 0.5, y: 0.5))
+                }
+
+                NSGraphicsContext.current = nsCtx
+
+                // Blur scales with cloudRadius: small = crisp circle, large = full-screen wash
+                let blurRadius = CGFloat(size) * r * r * 0.25 + resolvedFontSize * 0.3
+                if let cloudCGImage = cloudRep.cgImage,
+                   let blurred = simpleGaussianBlur(image: cloudCGImage, radius: blurRadius) {
+                    NSImage(cgImage: blurred, size: NSSize(width: size, height: size))
+                        .draw(in: NSRect(x: 0, y: 0, width: size, height: size))
+                }
+            }
+        }
+
+        // ── Shadow: NSShadow rendered to a temp bitmap, composited N times for strength ──
+        // NSShadow composites the shadow under the text in a single pass, so anti-aliased
+        // text edges blend correctly with no coloured fringe. Repeating the temp bitmap
+        // builds up shadow opacity while leaving fully-opaque text pixels unchanged.
+        if settings.shadowOpacity > 0.01 {
+            let blurPx  = max(1.0, CGFloat(settings.shadowBlur) * resolvedFontSize * 1.2)
+            // Offset is in units of blurPx, scaled by the user sliders.
+            // In the bitmap context y increases upward, so positive offsetY = upward on screen.
+            // Default: offsetX +0.3 (right), offsetY -0.3 → negative = downward on screen.
+            let offsetX = CGFloat(settings.shadowOffsetX) * blurPx
+            let offsetY = CGFloat(settings.shadowOffsetY) * blurPx
+
+            let nsShadow = NSShadow()
+            nsShadow.shadowOffset     = NSSize(width: offsetX, height: offsetY)
+            nsShadow.shadowBlurRadius = blurPx
+            nsShadow.shadowColor      = (NSColor(hue: CGFloat(settings.shadowHue),
+                                                  saturation: CGFloat(settings.shadowSaturation),
+                                                  brightness: CGFloat(settings.shadowBrightness),
+                                                  alpha: CGFloat(settings.shadowOpacity))
+                                         .usingColorSpace(.deviceRGB)) ?? NSColor.black
+
+            var shadowAttrs = attrs
+            shadowAttrs[.shadow] = nsShadow
+
+            if let tempRep = NSBitmapImageRep(
+                bitmapDataPlanes: nil, pixelsWide: size, pixelsHigh: size,
+                bitsPerSample: 8, samplesPerPixel: 4, hasAlpha: true, isPlanar: false,
+                colorSpaceName: .deviceRGB, bytesPerRow: 0, bitsPerPixel: 0
+            ), let tempCtx = NSGraphicsContext(bitmapImageRep: tempRep) {
+                NSGraphicsContext.current = tempCtx
+                tempCtx.imageInterpolation = .high
+
+                NSAttributedString(string: settings.text, attributes: shadowAttrs)
+                    .draw(with: NSRect(x: drawX, y: quoteY,
+                                       width: maxWidth, height: quoteBounds.height + resolvedFontSize * 0.3),
+                          options: [.usesLineFragmentOrigin, .usesFontLeading])
+
+                if let authorStr = authorAttrString,
+                   let authorFont = authorStr.attribute(.font, at: 0, effectiveRange: nil) as? NSFont {
+                    var aAttrs = shadowAttrs
+                    aAttrs[.font] = authorFont
+                    NSAttributedString(string: authorStr.string, attributes: aAttrs)
+                        .draw(with: NSRect(x: drawX, y: blockBottom,
+                                           width: maxWidth, height: authorBounds.height + resolvedFontSize * 0.2),
+                              options: [.usesLineFragmentOrigin, .usesFontLeading])
+                }
+
+                NSGraphicsContext.current = nsCtx
+
+                if let tempCG = tempRep.cgImage {
+                    let tempImg = NSImage(cgImage: tempCG, size: NSSize(width: size, height: size))
+                    // More passes = deeper shadow; text pixels are already fully opaque so they don't change
+                    let passes = max(1, Int(settings.shadowOpacity * 5 + 0.5))
+                    for _ in 0..<passes {
+                        tempImg.draw(in: NSRect(x: 0, y: 0, width: size, height: size))
+                    }
+                }
+            }
+            NSGraphicsContext.current = nsCtx
+        }
+
+        // Draw quote (top of block, higher y)
+        quoteString.draw(with: NSRect(x: drawX, y: quoteY,
+                                      width: maxWidth, height: quoteBounds.height + resolvedFontSize * 0.3),
+                         options: [.usesLineFragmentOrigin, .usesFontLeading])
+
+        // Draw author below the quote (bottom of block, lower y)
+        if let authorStr = authorAttrString {
+            authorStr.draw(with: NSRect(x: drawX, y: blockBottom,
+                                        width: maxWidth, height: authorBounds.height + resolvedFontSize * 0.2),
+                           options: [.usesLineFragmentOrigin, .usesFontLeading])
+        }
+
+        // rep stores pixels top→bottom (row 0 = visual top), matching PixelBuffer convention
+        return rep.cgImage
+    }
+
+    private static func simpleGaussianBlur(image: CGImage, radius: CGFloat) -> CGImage? {
+        guard radius > 0.5 else { return image }
+        let ci  = CIImage(cgImage: image)
+        let ext = ci.extent
+        let ctx = CIContext(options: [.workingColorSpace: CGColorSpace(name: CGColorSpace.displayP3) as Any])
+        guard let blur = CIFilter(name: "CIGaussianBlur") else { return nil }
+        blur.setValue(ci,     forKey: kCIInputImageKey)
+        blur.setValue(radius, forKey: kCIInputRadiusKey)
+        guard let out = blur.outputImage?.cropped(to: ext) else { return nil }
+        return ctx.createCGImage(out, from: ext)
     }
 
     // MARK: - Layer opacity

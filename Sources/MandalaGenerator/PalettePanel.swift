@@ -5,83 +5,132 @@ import SwiftUI
 struct PalettePanel: View {
     @EnvironmentObject private var appState: AppState
     @State private var draggedIndex: Int? = nil
+    @State private var selectedTab: String = "background"
+
+    private let tabs = [
+        ("background", "square.stack.fill",  "Background"),
+        ("graphics",   "sparkles",           "Graphics"),
+        ("manual",     "hand.draw",          "Manual"),
+        ("text",       "textformat",         "Text"),
+    ]
 
     var body: some View {
         VStack(spacing: 0) {
-            // ── Sticky header ─────────────────────────────────────────
-            HStack {
-                Text("LAYERS")
-                    .font(.system(size: 10, weight: .semibold))
-                    .foregroundColor(.secondary).kerning(1.2)
-                Spacer()
-                Button(action: addLayer) {
-                    Image(systemName: "plus.circle.fill")
-                        .font(.system(size: 16))
-                        .foregroundColor(appState.parameters.layers.count >= 5 ? .secondary.opacity(0.3) : .accentColor)
+            // ── Tab bar ───────────────────────────────────────────────
+            HStack(spacing: 0) {
+                ForEach(tabs, id: \.0) { (id, icon, label) in
+                    Button(action: { selectedTab = id }) {
+                        VStack(spacing: 3) {
+                            Image(systemName: icon)
+                                .font(.system(size: 11))
+                            Text(label)
+                                .font(.system(size: 9, weight: .medium))
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 7)
+                        .foregroundColor(selectedTab == id ? .accentColor : .secondary)
+                        .background(selectedTab == id
+                            ? Color.accentColor.opacity(0.10)
+                            : Color.clear)
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
                 }
-                .buttonStyle(.plain)
-                .disabled(appState.parameters.layers.count >= 5)
-                .help("Add layer")
             }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 10)
+            .padding(.horizontal, 4)
             .background(Color(NSColor.controlBackgroundColor))
 
             Divider()
 
-            // ── Scrollable layers ─────────────────────────────────────
+            // ── Tab content ───────────────────────────────────────────
             ScrollView(.vertical, showsIndicators: true) {
                 VStack(spacing: 8) {
-                    ForEach(appState.parameters.layers.indices, id: \.self) { i in
-                        LayerCard(
-                            layer: $appState.parameters.layers[i],
-                            index: i,
-                            canDelete: appState.parameters.layers.count > 1,
-                            canDuplicate: appState.parameters.layers.count < 5,
-                            onDelete: { appState.parameters.layers.remove(at: i) },
-                            onDuplicate: { appState.duplicateLayer(at: i) },
-                            onRandomize: { appState.randomizeLayer(at: i) },
-                            onCopy: { appState.copiedLayer = appState.parameters.layers[i] },
-                            onPaste: {
-                                if var pasted = appState.copiedLayer {
-                                    pasted.seed = UInt64.random(in: 1...UInt64.max)
-                                    appState.parameters.layers[i] = pasted
-                                }
-                            },
-                            hasCopied: appState.copiedLayer != nil
-                        )
-                        .padding(.horizontal, 8)
-                        .opacity(draggedIndex == i ? 0.4 : 1.0)
-                        .onDrag {
-                            draggedIndex = i
-                            return NSItemProvider(object: "\(i)" as NSString)
-                        }
-                        .onDrop(of: [.plainText], delegate: LayerDropDelegate(
-                            toIndex: i,
-                            layers: $appState.parameters.layers,
-                            draggedIndex: $draggedIndex
-                        ))
-                    }
+                    switch selectedTab {
 
-                    // ── Drawing (experimental) ───────────────────────
-                    if appState.showDrawingPanel {
-                        Divider().padding(.horizontal, 8)
+                    case "background":
+                        Text("BACKGROUND")
+                            .font(.system(size: 10, weight: .semibold))
+                            .foregroundColor(.secondary).kerning(1.2)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.horizontal, 12)
+                            .padding(.top, 12)
 
-                        HStack {
-                            Text("DRAWING")
+                        BaseLayerCard(settings: $appState.parameters.baseLayer)
+                            .padding(.horizontal, 8)
+
+                    case "graphics":
+                        // ── Graphics sub-header ───────────────────────
+                        HStack(spacing: 6) {
+                            Text("LAYERS")
                                 .font(.system(size: 10, weight: .semibold))
                                 .foregroundColor(.secondary).kerning(1.2)
-                            Text("experimental")
-                                .font(.system(size: 8)).foregroundColor(.orange.opacity(0.7))
                             Spacer()
+                            StyleSettingsMenu()
+                            Button(action: { appState.randomizeLayers() }) {
+                                Image(systemName: "shuffle")
+                                    .font(.system(size: 11))
+                                    .foregroundColor(.purple)
+                            }
+                            .buttonStyle(.plain)
+                            .help("Randomize all layers")
+                            Button(action: addLayer) {
+                                Image(systemName: "plus.circle.fill")
+                                    .font(.system(size: 15))
+                                    .foregroundColor(appState.parameters.layers.count >= 5 ? .secondary.opacity(0.3) : .accentColor)
+                            }
+                            .buttonStyle(.plain)
+                            .disabled(appState.parameters.layers.count >= 5)
+                            .help("Add layer")
                         }
                         .padding(.horizontal, 12)
+                        .padding(.top, 4)
 
+                        ForEach(appState.parameters.layers.indices, id: \.self) { i in
+                            LayerCard(
+                                layer: $appState.parameters.layers[i],
+                                index: i,
+                                canDelete: appState.parameters.layers.count > 1,
+                                canDuplicate: appState.parameters.layers.count < 5,
+                                onDelete: { appState.parameters.layers.remove(at: i) },
+                                onDuplicate: { appState.duplicateLayer(at: i) },
+                                onRandomize: { appState.randomizeLayer(at: i) },
+                                onCopy: { appState.copiedLayer = appState.parameters.layers[i] },
+                                onPaste: {
+                                    if var pasted = appState.copiedLayer {
+                                        pasted.seed = UInt64.random(in: 1...UInt64.max)
+                                        appState.parameters.layers[i] = pasted
+                                    }
+                                },
+                                hasCopied: appState.copiedLayer != nil
+                            )
+                            .padding(.horizontal, 8)
+                            .opacity(draggedIndex == i ? 0.4 : 1.0)
+                            .onDrag {
+                                draggedIndex = i
+                                return NSItemProvider(object: "\(i)" as NSString)
+                            }
+                            .onDrop(of: [.plainText], delegate: LayerDropDelegate(
+                                toIndex: i,
+                                layers: $appState.parameters.layers,
+                                draggedIndex: $draggedIndex
+                            ))
+                        }
+
+                    case "manual":
                         DrawingCard(
                             settings: $appState.parameters.drawingLayer,
                             isDrawingMode: $appState.isDrawingMode
                         )
                         .padding(.horizontal, 8)
+                        .padding(.top, 4)
+
+                    case "text":
+                        TextLayerCard(settings: $appState.parameters.textLayer)
+                            .padding(.horizontal, 8)
+                            .padding(.top, 8)
+
+                    default:
+                        EmptyView()
                     }
 
                     Spacer(minLength: 20)
@@ -93,8 +142,7 @@ struct PalettePanel: View {
     }
 
     private func addLayer() {
-        let allStyles = MandalaStyle.allCases
-        let nextStyle = allStyles[appState.parameters.layers.count % allStyles.count]
+        let nextStyle = appState.addLayerStyle()
         let nextPalette = (appState.parameters.layers.last.map { ($0.paletteIndex + 3) % ColorPalettes.all.count }) ?? 0
         appState.parameters.layers.append(StyleLayer(
             style: nextStyle,
@@ -229,8 +277,10 @@ private struct LayerCard: View {
                     // Style + blend mode row
                     HStack(spacing: 6) {
                         Picker("", selection: $layer.style) {
-                            ForEach(MandalaStyle.allCases) { s in
-                                Label(s.displayName, systemImage: s.sfSymbol).tag(s)
+                            ForEach(appState.styleOptions(including: layer.style)) { s in
+                                let isEnabled = appState.isStyleEnabled(s)
+                                Label(isEnabled ? s.displayName : "\(s.displayName) (Disabled)",
+                                      systemImage: s.sfSymbol).tag(s)
                             }
                         }
                         .pickerStyle(.menu).labelsHidden()
@@ -332,7 +382,7 @@ private struct LayerCard: View {
                     Divider()
 
                     // Sliders
-                    CardSlider(label: "Scale",       value: $layer.scale,        range: 0.1...1.0, color: .blue)
+                    CardSlider(label: "Scale",       value: $layer.scale,        range: 0.1...1.1, color: .blue)
                     CardSlider(label: "Complexity",  value: $layer.complexity,   range: 0...1,     color: .indigo)
                     CardSlider(label: "Density",     value: $layer.density,      range: 0...1,     color: .blue)
                     CardSlider(label: "Glow",        value: $layer.glowIntensity,range: 0...1,     color: .yellow)
@@ -356,6 +406,38 @@ private struct LayerCard: View {
         .clipShape(RoundedRectangle(cornerRadius: 8))
         .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.white.opacity(layer.isEnabled ? 0.08 : 0.03), lineWidth: 1))
         .opacity(layer.isEnabled ? 1 : 0.55)
+    }
+}
+
+private struct StyleSettingsMenu: View {
+    @EnvironmentObject private var appState: AppState
+
+    var body: some View {
+        Menu {
+            Picker("Sort", selection: $appState.styleSortOrder) {
+                ForEach(LayerStyleSortOrder.allCases) { order in
+                    Text(order.displayName).tag(order)
+                }
+            }
+
+            Divider()
+
+            ForEach(appState.allStyleOptions()) { style in
+                Toggle(isOn: Binding(
+                    get: { appState.isStyleEnabled(style) },
+                    set: { appState.setStyleEnabled(style, isEnabled: $0) }
+                )) {
+                    Label(style.displayName, systemImage: style.sfSymbol)
+                }
+                .disabled(!appState.canDisableStyle(style))
+            }
+        } label: {
+            Image(systemName: "slider.horizontal.3")
+                .font(.system(size: 11))
+                .foregroundColor(.secondary)
+        }
+        .menuStyle(.borderlessButton)
+        .help("Style settings")
     }
 }
 
@@ -447,8 +529,9 @@ private struct DrawingCard: View {
 
                     Divider()
 
-                    CardSlider(label: "Weight",      value: $settings.strokeWeight,  range: 0...1, color: .white)
-                    CardSlider(label: "Glow",        value: $settings.glowIntensity, range: 0...1, color: .yellow)
+                    CardSlider(label: "Weight",      value: $settings.strokeWeight,  range: 0...1,   color: .white)
+                    CardSlider(label: "Scale",       value: $settings.scale,         range: 0.1...3, color: .cyan)
+                    CardSlider(label: "Glow",        value: $settings.glowIntensity, range: 0...1,   color: .yellow)
                     CardSlider(label: "Color Drift", value: $settings.colorDrift,    range: 0...1, color: .purple)
                     CardSlider(label: "Saturation",  value: $settings.saturation,    range: 0...1, color: .pink)
                     CardSlider(label: "Brightness",  value: $settings.brightness,    range: 0...1, color: .yellow)

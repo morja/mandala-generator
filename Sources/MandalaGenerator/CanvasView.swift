@@ -333,10 +333,22 @@ struct DrawingOverlay: View {
                  with: .color(.white.opacity(0.25)))
     }
 
+    private func scaledCoords(xs: [Double], ys: [Double]) -> (xs: [Double], ys: [Double]) {
+        let s = max(0.1, settings.scale)
+        return (
+            xs: xs.map { 0.5 + ($0 - 0.5) * s },
+            ys: ys.map { 0.5 + ($0 - 0.5) * s }
+        )
+    }
+
+    private func overlayLineWidth(canvasWidth: CGFloat) -> CGFloat {
+        max(1.0, CGFloat(settings.strokeWeight) * canvasWidth * 0.015 + 1.5)
+    }
+
     private func drawStoredStrokes(ctx: GraphicsContext, size: CGSize) {
         let palette = ColorPalettes.all[max(0, min(ColorPalettes.all.count - 1, settings.paletteIndex))]
         let sym = settings.symmetry
-        let lw = max(1.0, CGFloat(settings.strokeWeight) * size.width * 0.012 + 1.0)
+        let lw = overlayLineWidth(canvasWidth: size.width)
         let style = StrokeStyle(lineWidth: lw, lineCap: .round, lineJoin: .round)
         for (si, stroke) in settings.strokes.enumerated() {
             guard stroke.xs.count >= 2 else { continue }
@@ -345,8 +357,9 @@ struct DrawingOverlay: View {
                     .truncatingRemainder(dividingBy: 1.0)
                 : 0.0
             let swColor = Color(nsColor: palette.color(at: t)).opacity(0.85)
+            let scaled = scaledCoords(xs: stroke.xs, ys: stroke.ys)
             for s in 0..<sym {
-                let pts = symPoints(xs: stroke.xs, ys: stroke.ys, s: s, sym: sym, size: size)
+                let pts = symPoints(xs: scaled.xs, ys: scaled.ys, s: s, sym: sym, size: size)
                 ctx.stroke(makePath(points: pts), with: .color(swColor), style: style)
             }
         }
@@ -355,11 +368,19 @@ struct DrawingOverlay: View {
     private func drawCurrentStroke(ctx: GraphicsContext, size: CGSize) {
         guard currentXs.count >= 2 else { return }
         let sym = settings.symmetry
-        let lw = max(1.0, CGFloat(settings.strokeWeight) * size.width * 0.012 + 1.0)
+        let lw = overlayLineWidth(canvasWidth: size.width)
         let style = StrokeStyle(lineWidth: lw, lineCap: .round, lineJoin: .round)
+        // Use the palette color the stroke will have once committed
+        let palette = ColorPalettes.all[max(0, min(ColorPalettes.all.count - 1, settings.paletteIndex))]
+        let nextIdx = settings.strokes.count
+        let t: Double = nextIdx == 0 ? 0.0
+            : settings.colorDrift.truncatingRemainder(dividingBy: 1.0)
+        let strokeColor = Color(nsColor: palette.color(at: t)).opacity(0.9)
+        // Apply scale so the preview exactly matches where it will land after commit
+        let scaled = scaledCoords(xs: currentXs, ys: currentYs)
         for s in 0..<sym {
-            let pts = symPoints(xs: currentXs, ys: currentYs, s: s, sym: sym, size: size)
-            ctx.stroke(makePath(points: pts), with: .color(.white.opacity(0.9)), style: style)
+            let pts = symPoints(xs: scaled.xs, ys: scaled.ys, s: s, sym: sym, size: size)
+            ctx.stroke(makePath(points: pts), with: .color(strokeColor), style: style)
         }
     }
 }
