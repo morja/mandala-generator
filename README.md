@@ -7,12 +7,11 @@ A native macOS app for generating neon light-painting mandala images. Every para
 1. Go to the [latest release](https://github.com/morja/mandala-generator/releases/latest)
 2. Download **Mandala-Generator.zip** and unzip it
 3. Move **Mandala Generator.app** to your Applications folder
-4. On first launch, right-click → **Open** to bypass Gatekeeper (the app is not notarised)
+4. Double-click to open — macOS will block it the first time
+5. Open **System Settings → Privacy & Security**, scroll down, and click **Open Anyway**
+6. Confirm by clicking **Open** in the dialog
 
-> **"damaged and can't be opened"?** Run this once in Terminal, then try again:
-> ```
-> xattr -cr "/Applications/Mandala Generator.app"
-> ```
+This is required once because the app is not notarised with Apple.
 
 Requires macOS 14 or later.
 

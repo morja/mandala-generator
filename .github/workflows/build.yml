@@ -42,7 +42,11 @@ jobs:
 
             1. Download **Mandala-Generator.zip** below and unzip it.
             2. Move **Mandala Generator.app** to your Applications folder.
-            3. On first launch, right-click → Open to bypass Gatekeeper.
+            3. Double-click to open — macOS will block it the first time.
+            4. Open **System Settings → Privacy & Security**, scroll down, click **Open Anyway**.
+            5. Confirm by clicking **Open**.
+
+            > Required once because the app is not notarised with Apple.
 
             ---
           generate_release_notes: true
