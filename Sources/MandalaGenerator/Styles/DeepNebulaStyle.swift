@@ -13,8 +13,6 @@ enum DeepNebulaStyle {
         let cloudShells = max(7, Int(7 + params.abstractLevel * 10 + params.density * 5 + params.glowIntensity * 2))
         let dustLanes = max(8, Int(8 + params.complexity * 10 + params.density * 8))
         let filaments = max(10, Int(10 + params.complexity * 8 + params.density * 6))
-        let clusterCount = max(16, Int(18 + params.density * 30))
-
         let symmetryCount = max(1, symmetry)
 
         for mass in 0..<cloudMasses {
@@ -109,57 +107,5 @@ enum DeepNebulaStyle {
             }
         }
 
-        let coreLayers = max(3, Int(3 + params.glowIntensity * 4))
-        for i in 0..<coreLayers {
-            let frac = Double(i) / Double(max(1, coreLayers - 1))
-            let c = StyleDrawing.paletteColor(palette, at: 0.78 + frac * 0.14, colorOffset: colorOffset)
-            let coreRadius = R * Float(0.04 + frac * 0.12)
-            let coreColorScale = Float(0.30 + glowFloor)
-            let coreWeightBase = Float(0.14 - frac * 0.03)
-            let coreWeightGlow = glowFloor * 0.12
-            let coreWeight = coreWeightBase + coreWeightGlow
-            let coreColor = (r: c.r * coreColorScale, g: c.g * coreColorScale, b: c.b * coreColorScale)
-            StyleDrawing.addCircle(buffer: buffer, cx: cx, cy: cy,
-                                   radius: coreRadius,
-                                   color: coreColor,
-                                   weight: coreWeight,
-                                   steps: 52)
-        }
-
-        for cluster in 0..<clusterCount {
-            let frac = Double(cluster) / Double(max(1, clusterCount))
-            let clusterColor = StyleDrawing.paletteColor(palette, at: 0.16 + frac * 0.76, colorOffset: colorOffset)
-            let a = Float(rng.nextDouble() * Double(sector))
-            let rr = R * Float(sqrt(rng.nextDouble()) * (0.10 + params.density * 0.62))
-            for sym in 0..<symmetryCount {
-                let symA = a + Float(sym) * sector
-                let x = cx + cos(symA) * rr
-                let y = cy + sin(symA) * rr
-                let starRadius = R * Float(0.004 + rng.nextDouble() * 0.010 + params.glowIntensity * 0.004)
-                let rotation = Float(rng.nextDouble() * Double.pi * 0.5)
-                let starColorScale = Float(0.90 + glowFloor * 0.4)
-                let starColor = (
-                    r: clusterColor.r * starColorScale,
-                    g: clusterColor.g * starColorScale,
-                    b: clusterColor.b * starColorScale
-                )
-                StyleDrawing.drawTinyStar(buffer: buffer, cx: x, cy: y, radius: starRadius, rotation: rotation,
-                                          color: starColor,
-                                          coreWeight: Float(0.10 + glowFloor * 0.12),
-                                          spikeWeight: Float(0.03 + params.density * 0.04))
-
-                if rng.nextDouble() < 0.55 + params.complexity * 0.25 {
-                    let shellCount = 1 + Int(rng.nextDouble() * 3.0)
-                    for shell in 0..<shellCount {
-                        let shellFrac = Double(shell) / Double(max(1, shellCount))
-                        StyleDrawing.addCircle(buffer: buffer, cx: x, cy: y,
-                                               radius: starRadius * Float(1.6 + shellFrac * 2.6),
-                                               color: (clusterColor.r * 0.08, clusterColor.g * 0.08, clusterColor.b * 0.08),
-                                               weight: 0.02,
-                                               steps: 18)
-                    }
-                }
-            }
-        }
     }
 }

@@ -106,8 +106,7 @@ struct MandalaRenderer {
             var layerRng = SeededRNG(seed: layer.seed == 0 ? params.seed &+ UInt64(li + 1) &* 0x9e3779b97f4a7c15 : layer.seed)
 
             let layerSymmetry = max(1, min(8, layer.symmetry))
-            let scaleMax = layer.style == .deepNebula ? 1.6 : 1.0
-            let layerRadius = baseRadius * max(0.1, min(1.0, layer.scale)) * scaleMax
+            let layerRadius = baseRadius * max(0.1, min(1.0, layer.scale))
             let layerCount  = max(2, Int(layer.complexity * 8) + 1)
 
             // Build a params copy with this layer's values for renderer internals
@@ -330,8 +329,7 @@ struct MandalaRenderer {
         let baseRadius = Double(bufferSize) * 0.72
 
         let layerSymmetry = max(1, min(8, layer.symmetry))
-        let scaleMax = layer.style == .deepNebula ? 1.6 : 1.0
-        let layerRadius   = baseRadius * max(0.1, min(1.0, layer.scale)) * scaleMax
+        let layerRadius   = baseRadius * max(0.1, min(1.0, layer.scale))
         let layerCount    = max(2, Int(layer.complexity * 8) + 1)
         let palette       = palettes[max(0, min(palettes.count - 1, layer.paletteIndex))]
 
@@ -499,7 +497,7 @@ struct MandalaRenderer {
                                        colorOffset: colorOffset, symmetry: symmetry)
             return
         case .deepNebula:
-            DeepNebulaStyle.draw(buffer: buffer, cx: cx, cy: cy, radius: baseRadius,
+            DeepNebulaStyle.draw(buffer: buffer, cx: cx, cy: cy, radius: baseRadius * 3.0,
                                  params: params, palette: palette, rng: &rng,
                                  colorOffset: colorOffset, symmetry: symmetry)
             return
@@ -667,7 +665,7 @@ struct MandalaRenderer {
                                                params: params, palette: palette, rng: &rng,
                                                colorOffset: 0, symmetry: symmetry)
                 case .deepNebula:
-                    DeepNebulaStyle.draw(buffer: buffer, cx: cx, cy: cy, radius: scaled * 1.5,
+                    DeepNebulaStyle.draw(buffer: buffer, cx: cx, cy: cy, radius: scaled * 3.0,
                                          params: params, palette: palette, rng: &rng,
                                          colorOffset: 0, symmetry: symmetry)
                 case .interferenceBloom:
