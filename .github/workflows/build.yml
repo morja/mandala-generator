@@ -39,5 +39,8 @@ jobs:
             1. Download **Mandala-Generator.zip** below and unzip it.
             2. Move **Mandala Generator.app** to your Applications folder.
             3. On first launch, right-click → Open to bypass Gatekeeper.
+
+            ---
+          generate_release_notes: true
           files: Mandala-Generator.zip
           fail_on_unmatched_files: true
