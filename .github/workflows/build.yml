@@ -25,6 +25,10 @@ jobs:
           chmod +x build_app.sh
           ./build_app.sh
 
+      - name: Sign app (ad-hoc)
+        run: |
+          codesign --force --deep --sign - "Mandala Generator.app"
+
       - name: Package app bundle
         run: |
           ditto -c -k --sequesterRsrc --keepParent "Mandala Generator.app" "Mandala-Generator.zip"
