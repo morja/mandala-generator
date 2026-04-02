@@ -77,6 +77,28 @@ struct CanvasView: View {
                 .help("Undo last stroke")
 
                 Divider().frame(height: 20)
+            } else if appState.isGraffitiMode {
+                Button(action: {
+                    appState.isGraffitiMode = false
+                    Task { await appState.generate() }
+                }) {
+                    Label("Done Spraying", systemImage: "checkmark.circle.fill")
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(.purple)
+
+                Button(action: {
+                    if !appState.parameters.graffitiLayer.strokes.isEmpty {
+                        appState.parameters.graffitiLayer.strokes.removeLast()
+                    }
+                }) {
+                    Image(systemName: "arrow.uturn.backward")
+                }
+                .buttonStyle(.bordered)
+                .disabled(appState.parameters.graffitiLayer.strokes.isEmpty)
+                .help("Undo last spray stroke")
+
+                Divider().frame(height: 20)
             }
 
             Button(action: { appState.randomizeAll() }) {
@@ -190,28 +212,30 @@ struct CanvasView: View {
                     Group {
                         if appState.isDrawingMode {
                             DrawingOverlay(settings: $appState.parameters.drawingLayer)
+                        } else if appState.isGraffitiMode {
+                            GraffitiOverlay(settings: $appState.parameters.graffitiLayer)
                         }
                     }
                 )
-                .scaleEffect(appState.isDrawingMode ? 1.0 : zoomScale)
-                .offset(appState.isDrawingMode ? .zero : panOffset)
+                .scaleEffect((appState.isDrawingMode || appState.isGraffitiMode) ? 1.0 : zoomScale)
+                .offset((appState.isDrawingMode || appState.isGraffitiMode) ? .zero : panOffset)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .gesture(
                     DragGesture()
                         .onChanged { value in
-                            guard !appState.isDrawingMode else { return }
+                            guard !appState.isDrawingMode && !appState.isGraffitiMode else { return }
                             panOffset = CGSize(
                                 width: lastPanOffset.width + value.translation.width,
                                 height: lastPanOffset.height + value.translation.height
                             )
                         }
                         .onEnded { _ in
-                            guard !appState.isDrawingMode else { return }
+                            guard !appState.isDrawingMode && !appState.isGraffitiMode else { return }
                             lastPanOffset = panOffset
                         }
                 )
                 .onScrollWheel { delta in
-                    guard !appState.isDrawingMode else { return }
+                    guard !appState.isDrawingMode && !appState.isGraffitiMode else { return }
                     let factor = 1.0 + delta * 0.1
                     withAnimation(.interactiveSpring()) {
                         zoomScale = max(0.1, min(10.0, zoomScale * CGFloat(factor)))
@@ -283,7 +307,12 @@ struct DrawingOverlay: View {
                     }
                     .onEnded { _ in
                         if currentXs.count >= 2 {
-                            settings.strokes.append(DrawStroke(xs: currentXs, ys: currentYs))
+                            settings.strokes.append(DrawStroke(
+                                xs: currentXs, ys: currentYs,
+                                hue: settings.currentHue,
+                                saturation: settings.currentSaturation,
+                                brightness: settings.currentBrightness
+                            ))
                         }
                         currentXs = []
                         currentYs = []
@@ -328,17 +357,8 @@ struct DrawingOverlay: View {
             ctx.stroke(path, with: .color(.white.opacity(0.12)),
                        style: StrokeStyle(lineWidth: 0.5, dash: [4, 4]))
         }
-        // Center dot
         ctx.fill(Path(ellipseIn: CGRect(x: cx - 3, y: cy - 3, width: 6, height: 6)),
                  with: .color(.white.opacity(0.25)))
-    }
-
-    private func scaledCoords(xs: [Double], ys: [Double]) -> (xs: [Double], ys: [Double]) {
-        let s = max(0.1, settings.scale)
-        return (
-            xs: xs.map { 0.5 + ($0 - 0.5) * s },
-            ys: ys.map { 0.5 + ($0 - 0.5) * s }
-        )
     }
 
     private func overlayLineWidth(canvasWidth: CGFloat) -> CGFloat {
@@ -346,20 +366,15 @@ struct DrawingOverlay: View {
     }
 
     private func drawStoredStrokes(ctx: GraphicsContext, size: CGSize) {
-        let palette = ColorPalettes.all[max(0, min(ColorPalettes.all.count - 1, settings.paletteIndex))]
+        guard settings.isEnabled else { return }
         let sym = settings.symmetry
         let lw = overlayLineWidth(canvasWidth: size.width)
         let style = StrokeStyle(lineWidth: lw, lineCap: .round, lineJoin: .round)
-        for (si, stroke) in settings.strokes.enumerated() {
+        for stroke in settings.strokes {
             guard stroke.xs.count >= 2 else { continue }
-            let t: Double = settings.strokes.count > 1
-                ? (Double(si) / Double(settings.strokes.count - 1) * settings.colorDrift)
-                    .truncatingRemainder(dividingBy: 1.0)
-                : 0.0
-            let swColor = Color(nsColor: palette.color(at: t)).opacity(0.85)
-            let scaled = scaledCoords(xs: stroke.xs, ys: stroke.ys)
+            let swColor = Color(hue: stroke.hue, saturation: stroke.saturation, brightness: stroke.brightness).opacity(0.85)
             for s in 0..<sym {
-                let pts = symPoints(xs: scaled.xs, ys: scaled.ys, s: s, sym: sym, size: size)
+                let pts = symPoints(xs: stroke.xs, ys: stroke.ys, s: s, sym: sym, size: size)
                 ctx.stroke(makePath(points: pts), with: .color(swColor), style: style)
             }
         }
@@ -370,17 +385,140 @@ struct DrawingOverlay: View {
         let sym = settings.symmetry
         let lw = overlayLineWidth(canvasWidth: size.width)
         let style = StrokeStyle(lineWidth: lw, lineCap: .round, lineJoin: .round)
-        // Use the palette color the stroke will have once committed
-        let palette = ColorPalettes.all[max(0, min(ColorPalettes.all.count - 1, settings.paletteIndex))]
-        let nextIdx = settings.strokes.count
-        let t: Double = nextIdx == 0 ? 0.0
-            : settings.colorDrift.truncatingRemainder(dividingBy: 1.0)
-        let strokeColor = Color(nsColor: palette.color(at: t)).opacity(0.9)
-        // Apply scale so the preview exactly matches where it will land after commit
-        let scaled = scaledCoords(xs: currentXs, ys: currentYs)
+        let strokeColor = Color(hue: settings.currentHue, saturation: settings.currentSaturation,
+                                brightness: settings.currentBrightness).opacity(0.9)
         for s in 0..<sym {
-            let pts = symPoints(xs: scaled.xs, ys: scaled.ys, s: s, sym: sym, size: size)
+            let pts = symPoints(xs: currentXs, ys: currentYs, s: s, sym: sym, size: size)
             ctx.stroke(makePath(points: pts), with: .color(strokeColor), style: style)
+        }
+    }
+}
+
+// MARK: - Graffiti overlay
+
+struct GraffitiOverlay: View {
+    @Binding var settings: GraffitiLayerSettings
+    @State private var currentXs: [Double] = []
+    @State private var currentYs: [Double] = []
+
+    var body: some View {
+        GeometryReader { geo in
+            let size = geo.size
+            Canvas { ctx, sz in
+                drawSymGuides(ctx: ctx, size: sz)
+                drawStoredSpray(ctx: ctx, size: sz)
+                drawCurrentSpray(ctx: ctx, size: sz)
+            }
+            .contentShape(Rectangle())
+            .gesture(
+                DragGesture(minimumDistance: 0)
+                    .onChanged { v in
+                        currentXs.append(max(0, min(1, Double(v.location.x / size.width))))
+                        currentYs.append(max(0, min(1, Double(v.location.y / size.height))))
+                    }
+                    .onEnded { _ in
+                        if !currentXs.isEmpty {
+                            settings.strokes.append(SprayStroke(
+                                xs: currentXs, ys: currentYs,
+                                brushSize: settings.currentBrushSize,
+                                hue: settings.currentHue,
+                                saturation: settings.currentSaturation,
+                                brightness: settings.currentBrightness,
+                                opacity: settings.currentOpacity
+                            ))
+                        }
+                        currentXs = []
+                        currentYs = []
+                    }
+            )
+            .onHover { hovering in
+                if hovering { NSCursor.crosshair.set() } else { NSCursor.arrow.set() }
+            }
+        }
+    }
+
+    private func symPoints(x: Double, y: Double, s: Int, sym: Int, size: CGSize) -> CGPoint {
+        let cx = size.width * 0.5, cy = size.height * 0.5
+        let angle = Double(s) * .pi * 2.0 / Double(sym)
+        let ca = cos(angle), sa = sin(angle)
+        let dx = x * size.width - cx
+        let dy = y * size.height - cy
+        return CGPoint(x: cx + dx * ca - dy * sa, y: cy + dx * sa + dy * ca)
+    }
+
+    private func drawSymGuides(ctx: GraphicsContext, size: CGSize) {
+        let cx = size.width * 0.5, cy = size.height * 0.5
+        let radius = max(size.width, size.height)
+        let sym = settings.symmetry
+        guard sym > 1 else { return }
+        for s in 0..<sym {
+            let angle = Double(s) * .pi * 2.0 / Double(sym)
+            var path = Path()
+            path.move(to: CGPoint(x: cx, y: cy))
+            path.addLine(to: CGPoint(x: cx + CGFloat(cos(angle)) * radius,
+                                     y: cy + CGFloat(sin(angle)) * radius))
+            ctx.stroke(path, with: .color(.white.opacity(0.10)),
+                       style: StrokeStyle(lineWidth: 0.5, dash: [4, 4]))
+        }
+    }
+
+    private func drawSprayStroke(ctx: GraphicsContext, xs: [Double], ys: [Double],
+                                  brushSize: Double, color: Color, opacity: Double, size: CGSize) {
+        guard xs.count >= 1 else { return }
+        let sym = max(1, settings.symmetry)
+        let lineWidth = brushSize * min(size.width, size.height)
+        let strokeColor = color.opacity(opacity * 0.85)
+
+        for s in 0..<sym {
+            let angle = Double(s) * .pi * 2.0 / Double(sym)
+            let ca = cos(angle), sa = sin(angle)
+            let cx = size.width * 0.5, cy = size.height * 0.5
+
+            if xs.count == 1 {
+                let pt = symPoints(x: xs[0], y: ys[0], s: s, sym: sym, size: size)
+                let r = lineWidth * 0.5
+                ctx.fill(Path(ellipseIn: CGRect(x: pt.x - r, y: pt.y - r, width: r * 2, height: r * 2)),
+                         with: .color(strokeColor))
+            } else {
+                var path = Path()
+                var started = false
+                for (nx, ny) in zip(xs, ys) {
+                    let dx = nx * size.width - cx
+                    let dy = ny * size.height - cy
+                    let pt = CGPoint(x: cx + dx * ca - dy * sa, y: cy + dx * sa + dy * ca)
+                    if !started { path.move(to: pt); started = true }
+                    else { path.addLine(to: pt) }
+                }
+                ctx.stroke(path, with: .color(strokeColor),
+                           style: StrokeStyle(lineWidth: lineWidth, lineCap: .round, lineJoin: .round))
+            }
+        }
+    }
+
+    private func drawStoredSpray(ctx: GraphicsContext, size: CGSize) {
+        guard settings.isEnabled else { return }
+        for stroke in settings.strokes {
+            guard !stroke.xs.isEmpty else { continue }
+            let color = Color(hue: stroke.hue, saturation: stroke.saturation, brightness: stroke.brightness)
+            drawSprayStroke(ctx: ctx, xs: stroke.xs, ys: stroke.ys,
+                            brushSize: stroke.brushSize, color: color, opacity: stroke.opacity, size: size)
+        }
+    }
+
+    private func drawCurrentSpray(ctx: GraphicsContext, size: CGSize) {
+        guard !currentXs.isEmpty else { return }
+        let color = Color(hue: settings.currentHue, saturation: settings.currentSaturation, brightness: settings.currentBrightness)
+        drawSprayStroke(ctx: ctx, xs: currentXs, ys: currentYs,
+                        brushSize: settings.currentBrushSize, color: color, opacity: settings.currentOpacity, size: size)
+        // Brush size indicator at last point
+        if let lx = currentXs.last, let ly = currentYs.last {
+            let sym = max(1, settings.symmetry)
+            let r = settings.currentBrushSize * min(size.width, size.height) * 0.5
+            for s in 0..<sym {
+                let pt = symPoints(x: lx, y: ly, s: s, sym: sym, size: size)
+                ctx.stroke(Path(ellipseIn: CGRect(x: pt.x - r, y: pt.y - r, width: r * 2, height: r * 2)),
+                           with: .color(.white.opacity(0.5)), lineWidth: 1)
+            }
         }
     }
 }

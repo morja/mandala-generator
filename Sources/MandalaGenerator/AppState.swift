@@ -47,8 +47,10 @@ class AppState: ObservableObject {
     @Published var canGoForward: Bool = false
     @Published var copiedLayer: StyleLayer? = nil
     @Published var isDrawingMode: Bool = false
+    @Published var isGraffitiMode: Bool = false
     @Published var showDrawingPanel: Bool = false
     @Published var layerPreviews: [Int: NSImage] = [:]
+    @Published var cardExpandedStates: [String: Bool] = [:]
     @Published var customPalettes: [CustomPalette] = []
     @Published var showAnimationOptions: Bool = false
     @Published var animationOptions = AnimationExportOptions()

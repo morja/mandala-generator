@@ -164,18 +164,27 @@ struct EffectsLayerSettings: Equatable, Codable {
 struct DrawStroke: Equatable, Codable {
     var xs: [Double]   // normalized 0–1, 0.5 = horizontal center
     var ys: [Double]   // normalized 0–1, 0.5 = vertical center
+    var hue: Double        = 0.6
+    var saturation: Double = 1.0
+    var brightness: Double = 0.9
 
-    enum CodingKeys: String, CodingKey { case xs, ys }
+    enum CodingKeys: String, CodingKey { case xs, ys, hue, saturation, brightness }
 
-    init(xs: [Double], ys: [Double]) {
+    init(xs: [Double], ys: [Double], hue: Double = 0.6, saturation: Double = 1.0, brightness: Double = 0.9) {
         self.xs = xs
         self.ys = ys
+        self.hue = hue
+        self.saturation = saturation
+        self.brightness = brightness
     }
 
     init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
-        xs = c.decodeSafe([Double].self, forKey: .xs, default: [])
-        ys = c.decodeSafe([Double].self, forKey: .ys, default: [])
+        xs         = c.decodeSafe([Double].self, forKey: .xs,         default: [])
+        ys         = c.decodeSafe([Double].self, forKey: .ys,         default: [])
+        hue        = c.decodeSafe(Double.self,   forKey: .hue,        default: 0.6)
+        saturation = c.decodeSafe(Double.self,   forKey: .saturation, default: 1.0)
+        brightness = c.decodeSafe(Double.self,   forKey: .brightness, default: 0.9)
     }
 }
 
@@ -183,37 +192,126 @@ struct DrawingLayerSettings: Equatable, Codable {
     var isEnabled: Bool    = true
     var strokes: [DrawStroke] = []
     var symmetry: Int      = 6
-    var paletteIndex: Int  = 0
     var glowIntensity: Double = 0.5
     var strokeWeight: Double  = 0.4   // 0–1
-    var scale: Double         = 1.0   // 0.1–3.0, scales strokes around center
-    var colorDrift: Double    = 0.4   // palette traversal across strokes
-    var saturation: Double    = 1.0
-    var brightness: Double    = 0.7
     var blendMode: LayerBlendMode = .screen
     var opacity: Double    = 1.0
+    // Current tool color (used for new strokes, not rendered directly)
+    var currentHue: Double        = 0.6
+    var currentSaturation: Double = 1.0
+    var currentBrightness: Double = 0.9
 
     enum CodingKeys: String, CodingKey {
-        case isEnabled, strokes, symmetry, paletteIndex, glowIntensity
-        case strokeWeight, scale, colorDrift, saturation, brightness, blendMode, opacity
+        case isEnabled, strokes, symmetry, glowIntensity
+        case strokeWeight, blendMode, opacity
+        case currentHue, currentSaturation, currentBrightness
     }
 
     init() {}
 
     init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
-        isEnabled     = c.decodeSafe(Bool.self,             forKey: .isEnabled,     default: true)
-        strokes       = c.decodeSafe([DrawStroke].self,     forKey: .strokes,       default: [])
-        symmetry      = c.decodeSafe(Int.self,              forKey: .symmetry,      default: 6)
-        paletteIndex  = c.decodeSafe(Int.self,              forKey: .paletteIndex,  default: 0)
-        glowIntensity = c.decodeSafe(Double.self,           forKey: .glowIntensity, default: 0.5)
-        strokeWeight  = c.decodeSafe(Double.self,           forKey: .strokeWeight,  default: 0.4)
-        scale         = c.decodeSafe(Double.self,           forKey: .scale,         default: 1.0)
-        colorDrift    = c.decodeSafe(Double.self,           forKey: .colorDrift,    default: 0.4)
-        saturation    = c.decodeSafe(Double.self,           forKey: .saturation,    default: 1.0)
-        brightness    = c.decodeSafe(Double.self,           forKey: .brightness,    default: 0.7)
-        blendMode     = c.decodeSafe(LayerBlendMode.self,   forKey: .blendMode,     default: .screen)
-        opacity       = c.decodeSafe(Double.self,           forKey: .opacity,       default: 1.0)
+        isEnabled        = c.decodeSafe(Bool.self,           forKey: .isEnabled,        default: true)
+        strokes          = c.decodeSafe([DrawStroke].self,   forKey: .strokes,          default: [])
+        symmetry         = c.decodeSafe(Int.self,            forKey: .symmetry,         default: 6)
+        glowIntensity    = c.decodeSafe(Double.self,         forKey: .glowIntensity,    default: 0.5)
+        strokeWeight     = c.decodeSafe(Double.self,         forKey: .strokeWeight,     default: 0.4)
+        blendMode        = c.decodeSafe(LayerBlendMode.self, forKey: .blendMode,        default: .screen)
+        opacity          = c.decodeSafe(Double.self,         forKey: .opacity,          default: 1.0)
+        currentHue        = c.decodeSafe(Double.self,        forKey: .currentHue,        default: 0.6)
+        currentSaturation = c.decodeSafe(Double.self,        forKey: .currentSaturation, default: 1.0)
+        currentBrightness = c.decodeSafe(Double.self,        forKey: .currentBrightness, default: 0.9)
+    }
+
+    // Tool-state fields (current*) do not affect rendering — exclude from equality.
+    static func == (lhs: DrawingLayerSettings, rhs: DrawingLayerSettings) -> Bool {
+        lhs.isEnabled     == rhs.isEnabled &&
+        lhs.strokes       == rhs.strokes &&
+        lhs.symmetry      == rhs.symmetry &&
+        lhs.glowIntensity == rhs.glowIntensity &&
+        lhs.strokeWeight  == rhs.strokeWeight &&
+        lhs.blendMode     == rhs.blendMode &&
+        lhs.opacity       == rhs.opacity
+    }
+}
+
+// MARK: - Graffiti / Spray Layer
+
+struct SprayStroke: Equatable, Codable {
+    var xs: [Double]
+    var ys: [Double]
+    var brushSize: Double  = 0.05   // fraction of canvas width (0.01–0.20)
+    var hue: Double        = 0.5
+    var saturation: Double = 0.8
+    var brightness: Double = 0.9
+    var opacity: Double    = 0.6
+
+    enum CodingKeys: String, CodingKey { case xs, ys, brushSize, hue, saturation, brightness, opacity }
+
+    init(xs: [Double], ys: [Double], brushSize: Double = 0.05,
+         hue: Double = 0.5, saturation: Double = 0.8, brightness: Double = 0.9, opacity: Double = 0.6) {
+        self.xs = xs; self.ys = ys
+        self.brushSize = brushSize
+        self.hue = hue; self.saturation = saturation; self.brightness = brightness
+        self.opacity = opacity
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        xs         = c.decodeSafe([Double].self, forKey: .xs,         default: [])
+        ys         = c.decodeSafe([Double].self, forKey: .ys,         default: [])
+        brushSize  = c.decodeSafe(Double.self,   forKey: .brushSize,  default: 0.05)
+        hue        = c.decodeSafe(Double.self,   forKey: .hue,        default: 0.5)
+        saturation = c.decodeSafe(Double.self,   forKey: .saturation, default: 0.8)
+        brightness = c.decodeSafe(Double.self,   forKey: .brightness, default: 0.9)
+        opacity    = c.decodeSafe(Double.self,   forKey: .opacity,    default: 0.6)
+    }
+}
+
+struct GraffitiLayerSettings: Equatable, Codable {
+    var isEnabled: Bool    = false
+    var strokes: [SprayStroke] = []
+    var symmetry: Int      = 1
+    var blendMode: LayerBlendMode = .screen
+    var opacity: Double    = 1.0
+    var softness: Double   = 0.7    // 0=hard, 1=very soft edge
+    // Current tool state
+    var currentHue: Double        = 0.5
+    var currentSaturation: Double = 0.8
+    var currentBrightness: Double = 0.9
+    var currentBrushSize: Double  = 0.05
+    var currentOpacity: Double    = 0.6
+
+    enum CodingKeys: String, CodingKey {
+        case isEnabled, strokes, symmetry, blendMode, opacity, softness
+        case currentHue, currentSaturation, currentBrightness, currentBrushSize, currentOpacity
+    }
+
+    init() {}
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        isEnabled         = c.decodeSafe(Bool.self,             forKey: .isEnabled,         default: false)
+        strokes           = c.decodeSafe([SprayStroke].self,    forKey: .strokes,           default: [])
+        symmetry          = c.decodeSafe(Int.self,              forKey: .symmetry,          default: 1)
+        blendMode         = c.decodeSafe(LayerBlendMode.self,   forKey: .blendMode,         default: .screen)
+        opacity           = c.decodeSafe(Double.self,           forKey: .opacity,           default: 1.0)
+        softness          = c.decodeSafe(Double.self,           forKey: .softness,          default: 0.7)
+        currentHue        = c.decodeSafe(Double.self,           forKey: .currentHue,        default: 0.5)
+        currentSaturation = c.decodeSafe(Double.self,           forKey: .currentSaturation, default: 0.8)
+        currentBrightness = c.decodeSafe(Double.self,           forKey: .currentBrightness, default: 0.9)
+        currentBrushSize  = c.decodeSafe(Double.self,           forKey: .currentBrushSize,  default: 0.05)
+        currentOpacity    = c.decodeSafe(Double.self,           forKey: .currentOpacity,    default: 0.6)
+    }
+
+    // Tool-state fields (current*) do not affect rendering — exclude from equality.
+    static func == (lhs: GraffitiLayerSettings, rhs: GraffitiLayerSettings) -> Bool {
+        lhs.isEnabled == rhs.isEnabled &&
+        lhs.strokes   == rhs.strokes &&
+        lhs.symmetry  == rhs.symmetry &&
+        lhs.blendMode == rhs.blendMode &&
+        lhs.opacity   == rhs.opacity &&
+        lhs.softness  == rhs.softness
     }
 }
 
@@ -513,6 +611,7 @@ struct MandalaParameters: Equatable, Codable {
     var layers: [StyleLayer] = [StyleLayer()]
     var baseLayer: BaseLayerSettings = BaseLayerSettings()
     var effectsLayer: EffectsLayerSettings = EffectsLayerSettings()
+    var graffitiLayer: GraffitiLayerSettings = GraffitiLayerSettings()
     var drawingLayer: DrawingLayerSettings = DrawingLayerSettings()
     var textLayer: TextLayerSettings = TextLayerSettings()
 
@@ -547,7 +646,7 @@ struct MandalaParameters: Equatable, Codable {
     }
 
     enum CodingKeys: String, CodingKey {
-        case layers, baseLayer, effectsLayer, drawingLayer, textLayer
+        case layers, baseLayer, effectsLayer, graffitiLayer, drawingLayer, textLayer
         case seed, previewSize, outputSize, outputSizeCustom, outputFormat, outputShape
         case symmetry, complexity, density, glowIntensity, colorDrift, ripple, wash, abstractLevel, paletteIndex
     }
@@ -556,11 +655,12 @@ struct MandalaParameters: Equatable, Codable {
 
     init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
-        layers          = c.decodeSafe([StyleLayer].self,          forKey: .layers,          default: [StyleLayer()])
-        baseLayer       = c.decodeSafe(BaseLayerSettings.self,     forKey: .baseLayer,       default: BaseLayerSettings())
-        effectsLayer    = c.decodeSafe(EffectsLayerSettings.self,  forKey: .effectsLayer,    default: EffectsLayerSettings())
-        drawingLayer    = c.decodeSafe(DrawingLayerSettings.self,  forKey: .drawingLayer,    default: DrawingLayerSettings())
-        textLayer       = c.decodeSafe(TextLayerSettings.self,     forKey: .textLayer,       default: TextLayerSettings())
+        layers          = c.decodeSafe([StyleLayer].self,              forKey: .layers,          default: [StyleLayer()])
+        baseLayer       = c.decodeSafe(BaseLayerSettings.self,         forKey: .baseLayer,       default: BaseLayerSettings())
+        effectsLayer    = c.decodeSafe(EffectsLayerSettings.self,      forKey: .effectsLayer,    default: EffectsLayerSettings())
+        graffitiLayer   = c.decodeSafe(GraffitiLayerSettings.self,     forKey: .graffitiLayer,   default: GraffitiLayerSettings())
+        drawingLayer    = c.decodeSafe(DrawingLayerSettings.self,       forKey: .drawingLayer,    default: DrawingLayerSettings())
+        textLayer       = c.decodeSafe(TextLayerSettings.self,         forKey: .textLayer,       default: TextLayerSettings())
         seed            = c.decodeSafe(UInt64.self,                forKey: .seed,            default: 42)
         previewSize     = c.decodeSafe(Int.self,                   forKey: .previewSize,     default: 800)
         outputSize      = c.decodeSafe(Int.self,                   forKey: .outputSize,      default: 1024)
@@ -584,6 +684,7 @@ extension MandalaParameters {
         lhs.layers == rhs.layers &&
         lhs.baseLayer == rhs.baseLayer &&
         lhs.effectsLayer == rhs.effectsLayer &&
+        lhs.graffitiLayer == rhs.graffitiLayer &&
         lhs.drawingLayer == rhs.drawingLayer &&
         lhs.textLayer == rhs.textLayer &&
         lhs.seed == rhs.seed &&

@@ -48,12 +48,6 @@ struct MandalaGeneratorApp: App {
                 .keyboardShortcut("c", modifiers: [.command, .shift])
             }
 
-            CommandMenu("Experimental") {
-                Button(action: { appState.showDrawingPanel.toggle() }) {
-                    Text(appState.showDrawingPanel ? "Hide Drawing Layer" : "Show Drawing Layer")
-                }
-            }
-
             CommandMenu("Image") {
                 Button("Generate") {
                     Task { await appState.generate() }

@@ -117,10 +117,16 @@ struct PalettePanel: View {
                         }
 
                     case "manual":
-                        DrawingCard(
-                            settings: $appState.parameters.drawingLayer,
-                            isDrawingMode: $appState.isDrawingMode
-                        )
+                        VStack(spacing: 8) {
+                            GraffitiCard(
+                                settings: $appState.parameters.graffitiLayer,
+                                isGraffitiMode: $appState.isGraffitiMode
+                            )
+                            DrawingCard(
+                                settings: $appState.parameters.drawingLayer,
+                                isDrawingMode: $appState.isDrawingMode
+                            )
+                        }
                         .padding(.horizontal, 8)
                         .padding(.top, 4)
 
@@ -173,9 +179,17 @@ private struct LayerCard: View {
     let onCopy: () -> Void
     let onPaste: () -> Void
     let hasCopied: Bool
-    @State private var isExpanded = true
     @State private var showPaletteEditor = false
     @State private var editingPaletteId: String? = nil
+
+    private var isExpanded: Bool {
+        appState.cardExpandedStates["layer_\(index)"] ?? true
+    }
+    private func toggleExpanded() {
+        withAnimation(.easeInOut(duration: 0.18)) {
+            appState.cardExpandedStates["layer_\(index)"] = !isExpanded
+        }
+    }
 
     private var palette: ColorPalette {
         let all = appState.allPalettes
@@ -241,7 +255,7 @@ private struct LayerCard: View {
                     .help("Duplicate layer")
                 }
 
-                Button(action: { withAnimation(.easeInOut(duration: 0.18)) { isExpanded.toggle() } }) {
+                Button(action: toggleExpanded) {
                     Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
                         .font(.system(size: 10))
                         .foregroundColor(.secondary)
@@ -444,9 +458,34 @@ private struct StyleSettingsMenu: View {
 // MARK: - Drawing Card
 
 private struct DrawingCard: View {
+    @EnvironmentObject private var appState: AppState
     @Binding var settings: DrawingLayerSettings
     @Binding var isDrawingMode: Bool
-    @State private var isExpanded = true
+
+    private var isExpanded: Bool {
+        appState.cardExpandedStates["drawing"] ?? true
+    }
+    private func toggleExpanded() {
+        withAnimation(.easeInOut(duration: 0.18)) {
+            appState.cardExpandedStates["drawing"] = !isExpanded
+        }
+    }
+
+    private var currentColorBinding: Binding<Color> {
+        Binding(
+            get: { Color(hue: settings.currentHue, saturation: settings.currentSaturation, brightness: settings.currentBrightness) },
+            set: { newColor in
+                let nsColor = NSColor(newColor)
+                if let rgb = nsColor.usingColorSpace(.deviceRGB) {
+                    var h: CGFloat = 0, s: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
+                    rgb.getHue(&h, saturation: &s, brightness: &b, alpha: &a)
+                    settings.currentHue = Double(h)
+                    settings.currentSaturation = Double(s)
+                    settings.currentBrightness = Double(b)
+                }
+            }
+        )
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -458,6 +497,9 @@ private struct DrawingCard: View {
                     .frame(width: 16)
                 Toggle("", isOn: $settings.isEnabled)
                     .toggleStyle(.switch).scaleEffect(0.7).labelsHidden()
+                    .onChange(of: settings.isEnabled) { _, enabled in
+                        if !enabled { isDrawingMode = false }
+                    }
                 Text("Drawing")
                     .font(.caption.weight(.medium))
                     .foregroundColor(settings.isEnabled ? .primary : .secondary)
@@ -474,7 +516,7 @@ private struct DrawingCard: View {
                     }
                     .buttonStyle(.plain).help("Clear all strokes")
                 }
-                Button(action: { withAnimation(.easeInOut(duration: 0.18)) { isExpanded.toggle() } }) {
+                Button(action: toggleExpanded) {
                     Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
                         .font(.system(size: 9)).foregroundColor(.secondary)
                 }
@@ -499,16 +541,14 @@ private struct DrawingCard: View {
 
                     Divider()
 
-                    // Palette
-                    Text("PALETTE")
-                        .font(.system(size: 9, weight: .semibold))
-                        .foregroundColor(.secondary).kerning(1.0)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                    LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 3), spacing: 4) {
-                        ForEach(Array(ColorPalettes.all.enumerated()), id: \.offset) { idx, pal in
-                            PaletteSwatch(palette: pal, isSelected: settings.paletteIndex == idx)
-                                .onTapGesture { settings.paletteIndex = idx }
-                        }
+                    // Color picker
+                    HStack(spacing: 8) {
+                        Text("Stroke Color")
+                            .font(.system(size: 10)).foregroundColor(.secondary)
+                        Spacer()
+                        ColorPicker("", selection: currentColorBinding, supportsOpacity: false)
+                            .labelsHidden()
+                            .frame(width: 44, height: 26)
                     }
 
                     Divider()
@@ -525,16 +565,9 @@ private struct DrawingCard: View {
                         Spacer()
                     }
 
-                    CardSlider(label: "Opacity",     value: $settings.opacity,       range: 0...1, color: .white)
-
-                    Divider()
-
-                    CardSlider(label: "Weight",      value: $settings.strokeWeight,  range: 0...1,   color: .white)
-                    CardSlider(label: "Scale",       value: $settings.scale,         range: 0.1...3, color: .cyan)
-                    CardSlider(label: "Glow",        value: $settings.glowIntensity, range: 0...1,   color: .yellow)
-                    CardSlider(label: "Color Drift", value: $settings.colorDrift,    range: 0...1, color: .purple)
-                    CardSlider(label: "Saturation",  value: $settings.saturation,    range: 0...1, color: .pink)
-                    CardSlider(label: "Brightness",  value: $settings.brightness,    range: 0...1, color: .yellow)
+                    CardSlider(label: "Opacity", value: $settings.opacity,       range: 0...1,   color: .white)
+                    CardSlider(label: "Weight",  value: $settings.strokeWeight,  range: 0...1,   color: .white)
+                    CardSlider(label: "Glow",    value: $settings.glowIntensity, range: 0...1,   color: .yellow)
 
                     Divider()
 
@@ -547,7 +580,6 @@ private struct DrawingCard: View {
                     .buttonStyle(.bordered)
                     .tint(isDrawingMode ? .green : .accentColor)
 
-                    // Stroke count
                     if !settings.strokes.isEmpty {
                         Text("\(settings.strokes.count) stroke\(settings.strokes.count == 1 ? "" : "s")")
                             .font(.system(size: 9)).foregroundColor(.secondary)
@@ -563,6 +595,151 @@ private struct DrawingCard: View {
             RoundedRectangle(cornerRadius: 8)
                 .stroke(isDrawingMode ? Color.green.opacity(0.5) : Color.accentColor.opacity(settings.isEnabled ? 0.35 : 0.08),
                         lineWidth: isDrawingMode ? 1.5 : 1)
+        )
+    }
+}
+
+// MARK: - Graffiti Card
+
+private struct GraffitiCard: View {
+    @EnvironmentObject private var appState: AppState
+    @Binding var settings: GraffitiLayerSettings
+    @Binding var isGraffitiMode: Bool
+
+    private var isExpanded: Bool {
+        appState.cardExpandedStates["graffiti"] ?? true
+    }
+    private func toggleExpanded() {
+        withAnimation(.easeInOut(duration: 0.18)) {
+            appState.cardExpandedStates["graffiti"] = !isExpanded
+        }
+    }
+
+    private var currentColorBinding: Binding<Color> {
+        Binding(
+            get: { Color(hue: settings.currentHue, saturation: settings.currentSaturation, brightness: settings.currentBrightness) },
+            set: { newColor in
+                let nsColor = NSColor(newColor)
+                if let rgb = nsColor.usingColorSpace(.deviceRGB) {
+                    var h: CGFloat = 0, s: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
+                    rgb.getHue(&h, saturation: &s, brightness: &b, alpha: &a)
+                    settings.currentHue = Double(h)
+                    settings.currentSaturation = Double(s)
+                    settings.currentBrightness = Double(b)
+                }
+            }
+        )
+    }
+
+    var body: some View {
+        VStack(spacing: 0) {
+            // Header
+            HStack(spacing: 8) {
+                Image(systemName: settings.isEnabled ? "paintbrush.fill" : "paintbrush")
+                    .font(.system(size: 12))
+                    .foregroundColor(settings.isEnabled ? .purple : .secondary)
+                    .frame(width: 16)
+                Toggle("", isOn: $settings.isEnabled)
+                    .toggleStyle(.switch).scaleEffect(0.7).labelsHidden()
+                    .onChange(of: settings.isEnabled) { _, enabled in
+                        if !enabled { isGraffitiMode = false }
+                    }
+                Text("Spray")
+                    .font(.caption.weight(.medium))
+                    .foregroundColor(settings.isEnabled ? .primary : .secondary)
+                Spacer()
+                if !settings.strokes.isEmpty {
+                    Button(action: { settings.strokes.removeLast() }) {
+                        Image(systemName: "arrow.uturn.backward")
+                            .font(.system(size: 9)).foregroundColor(.orange)
+                    }
+                    .buttonStyle(.plain).help("Undo last stroke")
+                    Button(action: { settings.strokes.removeAll() }) {
+                        Image(systemName: "trash")
+                            .font(.system(size: 9)).foregroundColor(.red.opacity(0.7))
+                    }
+                    .buttonStyle(.plain).help("Clear all strokes")
+                }
+                Button(action: toggleExpanded) {
+                    Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
+                        .font(.system(size: 9)).foregroundColor(.secondary)
+                }
+                .buttonStyle(.plain)
+            }
+            .padding(.horizontal, 10).padding(.vertical, 8)
+            .background(Color(NSColor.windowBackgroundColor))
+            .cornerRadius(isExpanded ? 0 : 8)
+            .cornerRadius(8, corners: [.topLeft, .topRight])
+
+            if isExpanded {
+                VStack(spacing: 8) {
+                    // Symmetry
+                    HStack(spacing: 6) {
+                        Text("Symmetry")
+                            .font(.system(size: 10)).foregroundColor(.secondary)
+                            .frame(width: 70, alignment: .leading)
+                        Spacer()
+                        Stepper("\(settings.symmetry)×", value: $settings.symmetry, in: 1...16)
+                            .font(.system(size: 10)).fixedSize()
+                    }
+
+                    Divider()
+
+                    // Color picker
+                    HStack(spacing: 8) {
+                        Text("Spray Color")
+                            .font(.system(size: 10)).foregroundColor(.secondary)
+                        Spacer()
+                        ColorPicker("", selection: currentColorBinding, supportsOpacity: false)
+                            .labelsHidden()
+                            .frame(width: 44, height: 26)
+                    }
+
+                    // Brush size
+                    CardSlider(label: "Brush Size", value: $settings.currentBrushSize, range: 0.01...0.20, color: .purple)
+                    CardSlider(label: "Opacity",    value: $settings.currentOpacity,   range: 0...1,      color: .white)
+                    CardSlider(label: "Softness",   value: $settings.softness,          range: 0...1,      color: .cyan)
+
+                    Divider()
+
+                    // Blend mode + layer opacity
+                    HStack(spacing: 6) {
+                        Picker("", selection: $settings.blendMode) {
+                            ForEach(LayerBlendMode.allCases) { m in
+                                Text(m.displayName).tag(m)
+                            }
+                        }
+                        .pickerStyle(.menu).labelsHidden()
+                        .frame(width: 90)
+                        Spacer()
+                    }
+                    CardSlider(label: "Layer Opacity", value: $settings.opacity, range: 0...1, color: .white)
+
+                    Divider()
+
+                    Button(action: { isGraffitiMode.toggle() }) {
+                        Label(isGraffitiMode ? "Exit Spray Mode" : "Spray on Canvas",
+                              systemImage: isGraffitiMode ? "checkmark.circle.fill" : "paintbrush.pointed")
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.bordered)
+                    .tint(isGraffitiMode ? .green : .purple)
+
+                    if !settings.strokes.isEmpty {
+                        Text("\(settings.strokes.count) spray stroke\(settings.strokes.count == 1 ? "" : "s")")
+                            .font(.system(size: 9)).foregroundColor(.secondary)
+                    }
+                }
+                .padding(10)
+                .background(Color(NSColor.controlBackgroundColor).opacity(0.7))
+                .cornerRadius(8, corners: [.bottomLeft, .bottomRight])
+            }
+        }
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .overlay(
+            RoundedRectangle(cornerRadius: 8)
+                .stroke(isGraffitiMode ? Color.purple.opacity(0.6) : Color.purple.opacity(settings.isEnabled ? 0.25 : 0.08),
+                        lineWidth: isGraffitiMode ? 1.5 : 1)
         )
     }
 }

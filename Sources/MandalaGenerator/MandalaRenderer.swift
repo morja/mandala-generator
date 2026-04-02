@@ -170,30 +170,92 @@ struct MandalaRenderer {
             }
         }
 
+        // ── GRAFFITI LAYER ──
+        let gl = params.graffitiLayer
+        if gl.isEnabled && !gl.strokes.isEmpty {
+            let gsym = max(1, gl.symmetry)
+            let colorSpace = CGColorSpaceCreateDeviceRGB()
+            let bitmapInfo = CGBitmapInfo(rawValue: CGImageAlphaInfo.premultipliedLast.rawValue)
+            if let gctx = CGContext(data: nil, width: bufferSize, height: bufferSize,
+                                    bitsPerComponent: 8, bytesPerRow: bufferSize * 4,
+                                    space: colorSpace, bitmapInfo: bitmapInfo.rawValue) {
+                // Flip Y so (0,0) is top-left, matching normalised coordinates
+                gctx.translateBy(x: 0, y: CGFloat(bufferSize))
+                gctx.scaleBy(x: 1, y: -1)
+                gctx.setLineCap(.round)
+                gctx.setLineJoin(.round)
+
+                for stroke in gl.strokes {
+                    guard stroke.xs.count >= 1, stroke.xs.count == stroke.ys.count else { continue }
+                    let brushWidth = CGFloat(max(0.005, stroke.brushSize)) * CGFloat(bufferSize)
+                    let alpha = CGFloat(stroke.opacity) * CGFloat(gl.opacity)
+                    let nsColor = NSColor(hue: CGFloat(stroke.hue), saturation: CGFloat(stroke.saturation),
+                                          brightness: CGFloat(stroke.brightness), alpha: alpha)
+                    guard let rgb = nsColor.usingColorSpace(.deviceRGB) else { continue }
+                    gctx.setStrokeColor(rgb.cgColor)
+                    gctx.setFillColor(rgb.cgColor)
+                    gctx.setLineWidth(brushWidth)
+
+                    for s in 0..<gsym {
+                        let angle = Double(s) * .pi * 2.0 / Double(gsym)
+                        let ca = cos(angle), sa = sin(angle)
+                        gctx.beginPath()
+                        var started = false
+                        for (nx, ny) in zip(stroke.xs, stroke.ys) {
+                            let bx = nx * Double(bufferSize)
+                            let by = ny * Double(bufferSize)
+                            let dx = bx - Double(cx), dy = by - Double(cy)
+                            let rpx = Double(cx) + dx * ca - dy * sa
+                            let rpy = Double(cy) + dx * sa + dy * ca
+                            let pt = CGPoint(x: rpx, y: rpy)
+                            if !started { gctx.move(to: pt); started = true }
+                            else { gctx.addLine(to: pt) }
+                        }
+                        // Single-point stroke → draw as filled circle
+                        if stroke.xs.count == 1 {
+                            let px = stroke.xs[0] * Double(bufferSize)
+                            let py = stroke.ys[0] * Double(bufferSize)
+                            let r = Double(brushWidth) * 0.5
+                            gctx.fillEllipse(in: CGRect(x: px - r, y: py - r, width: r*2, height: r*2))
+                        } else {
+                            gctx.strokePath()
+                        }
+                    }
+                }
+
+                if var graffitiImage = gctx.makeImage() {
+                    // Blur for softness: softness 0 = sharp, 1 = very diffuse
+                    let blurPx = CGFloat(gl.softness) * CGFloat(bufferSize) * 0.012
+                    if blurPx > 0.5, let blurred = simpleGaussianBlur(image: graffitiImage, radius: blurPx) {
+                        graffitiImage = blurred
+                    }
+                    let blendFilter: String
+                    switch gl.blendMode {
+                    case .normal:   blendFilter = "CISourceOverCompositing"
+                    case .screen:   blendFilter = "CIScreenBlendMode"
+                    case .add:      blendFilter = "CIAdditionCompositing"
+                    case .multiply: blendFilter = "CIMultiplyBlendMode"
+                    }
+                    compositeImage = blendComposite(base: compositeImage, overlay: graffitiImage, mode: blendFilter)
+                }
+            }
+        }
+
         // ── DRAWING LAYER ──
         let dl = params.drawingLayer
         if dl.isEnabled && !dl.strokes.isEmpty {
-            let palette = palettes[max(0, min(palettes.count - 1, dl.paletteIndex))]
             let drawBuffer = PixelBuffer(width: bufferSize, height: bufferSize)
             let sym = max(1, dl.symmetry)
             let lineThickness = max(1, Int(Float(dl.strokeWeight) * Float(bufferSize) * 0.015 + 1.5))
-            let drawScale = Float(max(0.1, dl.scale))
 
-            for (si, stroke) in dl.strokes.enumerated() {
+            for stroke in dl.strokes {
                 guard stroke.xs.count >= 2, stroke.xs.count == stroke.ys.count else { continue }
-                let t: Double
-                if dl.strokes.count > 1 {
-                    t = (Double(si) / Double(dl.strokes.count - 1) * dl.colorDrift)
-                        .truncatingRemainder(dividingBy: 1.0)
-                } else { t = 0.0 }
-                let nsColor = palette.color(at: t)
-                let col = (r: Float(nsColor.redComponent),
-                           g: Float(nsColor.greenComponent),
-                           b: Float(nsColor.blueComponent))
+                let nsColor = NSColor(hue: CGFloat(stroke.hue), saturation: CGFloat(stroke.saturation),
+                                      brightness: CGFloat(stroke.brightness), alpha: 1.0)
+                guard let rgb = nsColor.usingColorSpace(.deviceRGB) else { continue }
+                let col = (r: Float(rgb.redComponent), g: Float(rgb.greenComponent), b: Float(rgb.blueComponent))
                 let pts: [(Float, Float)] = zip(stroke.xs, stroke.ys).map { (nx, ny) in
-                    let sx = (Float(nx) - 0.5) * drawScale + 0.5
-                    let sy = (Float(ny) - 0.5) * drawScale + 0.5
-                    return (sx * Float(bufferSize), sy * Float(bufferSize))
+                    (Float(nx) * Float(bufferSize), Float(ny) * Float(bufferSize))
                 }
                 for s in 0..<sym {
                     let angle = Float(s) * .pi * 2.0 / Float(sym)
@@ -215,9 +277,6 @@ struct MandalaRenderer {
 
             if var drawImage = drawBuffer.toCGImage() {
                 drawImage = applyGlow(image: drawImage, intensity: dl.glowIntensity)
-                drawImage = applyColourGrade(image: drawImage,
-                                              saturation: dl.saturation,
-                                              brightness: dl.brightness)
                 if dl.opacity < 0.999 {
                     drawImage = applyLayerOpacity(image: drawImage, opacity: dl.opacity)
                 }
@@ -228,8 +287,7 @@ struct MandalaRenderer {
                 case .normal:   blendFilter = "CILightenBlendMode"
                 case .multiply: blendFilter = "CIMultiplyBlendMode"
                 }
-                compositeImage = blendComposite(base: compositeImage, overlay: drawImage,
-                                                mode: blendFilter)
+                compositeImage = blendComposite(base: compositeImage, overlay: drawImage, mode: blendFilter)
             }
         }
 
