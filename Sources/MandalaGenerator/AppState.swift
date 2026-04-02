@@ -107,6 +107,9 @@ class AppState: ObservableObject {
             .dropFirst()
             .sink { [weak self] _ in
                 guard let self, !self.isNavigatingHistory else { return }
+                // Stroke/spray edits are committed all at once when exiting edit mode,
+                // so skip auto-generation while the user is actively drawing/spraying.
+                guard !self.isDrawingMode && !self.isGraffitiMode else { return }
                 self.debounceTask?.cancel()
                 self.debounceTask = Task {
                     try? await Task.sleep(nanoseconds: 400_000_000)

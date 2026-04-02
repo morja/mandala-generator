@@ -462,55 +462,64 @@ struct GraffitiOverlay: View {
         }
     }
 
-    private func drawSprayStroke(ctx: GraphicsContext, xs: [Double], ys: [Double],
-                                  brushSize: Double, color: Color, opacity: Double, size: CGSize) {
-        guard xs.count >= 1 else { return }
+    /// Returns a context with softness blur applied — used for spray stroke drawing only.
+    private func blurredContext(_ ctx: GraphicsContext, size: CGSize) -> GraphicsContext {
+        let blurRadius = settings.softness * min(size.width, size.height) * 0.012
+        guard blurRadius > 0.5 else { return ctx }
+        var blurred = ctx
+        blurred.addFilter(.blur(radius: blurRadius, options: .dithersResult))
+        return blurred
+    }
+
+    private func drawSprayPath(in drawCtx: GraphicsContext, xs: [Double], ys: [Double],
+                                brushSize: Double, color: Color, opacity: Double, size: CGSize) {
         let sym = max(1, settings.symmetry)
         let lineWidth = brushSize * min(size.width, size.height)
-        let strokeColor = color.opacity(opacity * 0.85)
+        let strokeColor = color.opacity(opacity)
+        let cx = size.width * 0.5, cy = size.height * 0.5
 
         for s in 0..<sym {
             let angle = Double(s) * .pi * 2.0 / Double(sym)
             let ca = cos(angle), sa = sin(angle)
-            let cx = size.width * 0.5, cy = size.height * 0.5
-
             if xs.count == 1 {
                 let pt = symPoints(x: xs[0], y: ys[0], s: s, sym: sym, size: size)
                 let r = lineWidth * 0.5
-                ctx.fill(Path(ellipseIn: CGRect(x: pt.x - r, y: pt.y - r, width: r * 2, height: r * 2)),
-                         with: .color(strokeColor))
+                drawCtx.fill(Path(ellipseIn: CGRect(x: pt.x - r, y: pt.y - r, width: r * 2, height: r * 2)),
+                             with: .color(strokeColor))
             } else {
                 var path = Path()
                 var started = false
                 for (nx, ny) in zip(xs, ys) {
-                    let dx = nx * size.width - cx
-                    let dy = ny * size.height - cy
+                    let dx = nx * size.width - cx, dy = ny * size.height - cy
                     let pt = CGPoint(x: cx + dx * ca - dy * sa, y: cy + dx * sa + dy * ca)
-                    if !started { path.move(to: pt); started = true }
-                    else { path.addLine(to: pt) }
+                    if !started { path.move(to: pt); started = true } else { path.addLine(to: pt) }
                 }
-                ctx.stroke(path, with: .color(strokeColor),
-                           style: StrokeStyle(lineWidth: lineWidth, lineCap: .round, lineJoin: .round))
+                drawCtx.stroke(path, with: .color(strokeColor),
+                               style: StrokeStyle(lineWidth: lineWidth, lineCap: .round, lineJoin: .round))
             }
         }
     }
 
     private func drawStoredSpray(ctx: GraphicsContext, size: CGSize) {
         guard settings.isEnabled else { return }
+        let drawCtx = blurredContext(ctx, size: size)
         for stroke in settings.strokes {
             guard !stroke.xs.isEmpty else { continue }
             let color = Color(hue: stroke.hue, saturation: stroke.saturation, brightness: stroke.brightness)
-            drawSprayStroke(ctx: ctx, xs: stroke.xs, ys: stroke.ys,
-                            brushSize: stroke.brushSize, color: color, opacity: stroke.opacity, size: size)
+            drawSprayPath(in: drawCtx, xs: stroke.xs, ys: stroke.ys,
+                          brushSize: stroke.brushSize, color: color, opacity: stroke.opacity, size: size)
         }
     }
 
     private func drawCurrentSpray(ctx: GraphicsContext, size: CGSize) {
         guard !currentXs.isEmpty else { return }
-        let color = Color(hue: settings.currentHue, saturation: settings.currentSaturation, brightness: settings.currentBrightness)
-        drawSprayStroke(ctx: ctx, xs: currentXs, ys: currentYs,
-                        brushSize: settings.currentBrushSize, color: color, opacity: settings.currentOpacity, size: size)
-        // Brush size indicator at last point
+        let drawCtx = blurredContext(ctx, size: size)
+        let color = Color(hue: settings.currentHue, saturation: settings.currentSaturation,
+                          brightness: settings.currentBrightness)
+        drawSprayPath(in: drawCtx, xs: currentXs, ys: currentYs,
+                      brushSize: settings.currentBrushSize, color: color,
+                      opacity: settings.currentOpacity, size: size)
+        // Brush size indicator drawn on unblurred ctx
         if let lx = currentXs.last, let ly = currentYs.last {
             let sym = max(1, settings.symmetry)
             let r = settings.currentBrushSize * min(size.width, size.height) * 0.5

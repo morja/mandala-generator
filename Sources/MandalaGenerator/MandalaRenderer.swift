@@ -4270,61 +4270,81 @@ struct MandalaRenderer {
             }
         }
 
-        // ── Shadow: NSShadow rendered to a temp bitmap, composited N times for strength ──
-        // NSShadow composites the shadow under the text in a single pass, so anti-aliased
-        // text edges blend correctly with no coloured fringe. Repeating the temp bitmap
-        // builds up shadow opacity while leaving fully-opaque text pixels unchanged.
+        // ── Shadow: CIFilter-based drop shadow (no streak artifacts) ─────────────
+        // 1. Render text mask (white text, transparent bg) at the shadow offset position
+        // 2. Gaussian blur → soft shadow shape
+        // 3. CIColorMatrix → tint to shadow color with correct alpha
+        // 4. Composite into main context; text is drawn on top afterwards
         if settings.shadowOpacity > 0.01 {
             let blurPx  = max(1.0, CGFloat(settings.shadowBlur) * resolvedFontSize * 1.2)
-            // Offset is in units of blurPx, scaled by the user sliders.
-            // In the bitmap context y increases upward, so positive offsetY = upward on screen.
-            // Default: offsetX +0.3 (right), offsetY -0.3 → negative = downward on screen.
+            // shadowOffsetY: negative = down (y-up bitmap space); positive = up
             let offsetX = CGFloat(settings.shadowOffsetX) * blurPx
             let offsetY = CGFloat(settings.shadowOffsetY) * blurPx
 
-            let nsShadow = NSShadow()
-            nsShadow.shadowOffset     = NSSize(width: offsetX, height: offsetY)
-            nsShadow.shadowBlurRadius = blurPx
-            nsShadow.shadowColor      = (NSColor(hue: CGFloat(settings.shadowHue),
-                                                  saturation: CGFloat(settings.shadowSaturation),
-                                                  brightness: CGFloat(settings.shadowBrightness),
-                                                  alpha: CGFloat(settings.shadowOpacity))
-                                         .usingColorSpace(.deviceRGB)) ?? NSColor.black
+            // Convert shadow HSB → RGB for CIColorMatrix
+            let shadowNSColor = (NSColor(hue: CGFloat(settings.shadowHue),
+                                          saturation: CGFloat(settings.shadowSaturation),
+                                          brightness: CGFloat(settings.shadowBrightness),
+                                          alpha: 1.0)
+                                 .usingColorSpace(.deviceRGB)) ?? NSColor.black
+            let sR = shadowNSColor.redComponent
+            let sG = shadowNSColor.greenComponent
+            let sB = shadowNSColor.blueComponent
+            let sA = CGFloat(settings.shadowOpacity)
 
-            var shadowAttrs = attrs
-            shadowAttrs[.shadow] = nsShadow
-
-            if let tempRep = NSBitmapImageRep(
+            // Step 1: render white text at the offset position into a transparent mask bitmap
+            if let maskRep = NSBitmapImageRep(
                 bitmapDataPlanes: nil, pixelsWide: size, pixelsHigh: size,
                 bitsPerSample: 8, samplesPerPixel: 4, hasAlpha: true, isPlanar: false,
                 colorSpaceName: .deviceRGB, bytesPerRow: 0, bitsPerPixel: 0
-            ), let tempCtx = NSGraphicsContext(bitmapImageRep: tempRep) {
-                NSGraphicsContext.current = tempCtx
-                tempCtx.imageInterpolation = .high
+            ), let maskCtx = NSGraphicsContext(bitmapImageRep: maskRep) {
+                NSGraphicsContext.current = maskCtx
+                maskCtx.imageInterpolation = .high
 
-                NSAttributedString(string: settings.text, attributes: shadowAttrs)
-                    .draw(with: NSRect(x: drawX, y: quoteY,
+                var maskAttrs = attrs
+                maskAttrs[.foregroundColor] = NSColor.white
+
+                NSAttributedString(string: settings.text, attributes: maskAttrs)
+                    .draw(with: NSRect(x: drawX + offsetX, y: quoteY + offsetY,
                                        width: maxWidth, height: quoteBounds.height + resolvedFontSize * 0.3),
                           options: [.usesLineFragmentOrigin, .usesFontLeading])
 
                 if let authorStr = authorAttrString,
                    let authorFont = authorStr.attribute(.font, at: 0, effectiveRange: nil) as? NSFont {
-                    var aAttrs = shadowAttrs
+                    var aAttrs = maskAttrs
                     aAttrs[.font] = authorFont
                     NSAttributedString(string: authorStr.string, attributes: aAttrs)
-                        .draw(with: NSRect(x: drawX, y: blockBottom,
+                        .draw(with: NSRect(x: drawX + offsetX, y: blockBottom + offsetY,
                                            width: maxWidth, height: authorBounds.height + resolvedFontSize * 0.2),
                               options: [.usesLineFragmentOrigin, .usesFontLeading])
                 }
 
                 NSGraphicsContext.current = nsCtx
 
-                if let tempCG = tempRep.cgImage {
-                    let tempImg = NSImage(cgImage: tempCG, size: NSSize(width: size, height: size))
-                    // More passes = deeper shadow; text pixels are already fully opaque so they don't change
-                    let passes = max(1, Int(settings.shadowOpacity * 5 + 0.5))
-                    for _ in 0..<passes {
-                        tempImg.draw(in: NSRect(x: 0, y: 0, width: size, height: size))
+                // Step 2: Gaussian blur → soft shadow footprint
+                if let maskCG = maskRep.cgImage,
+                   let blurred = simpleGaussianBlur(image: maskCG, radius: blurPx) {
+
+                    // Step 3: tint with shadow color via CIColorMatrix
+                    // Transforms white-alpha mask → shadow-color image (premultiplied-correct)
+                    // outputR = inputA * sR, outputG = inputA * sG, etc.
+                    let blurredCI = CIImage(cgImage: blurred)
+                    if let tintFilter = CIFilter(name: "CIColorMatrix") {
+                        tintFilter.setValue(blurredCI,                        forKey: kCIInputImageKey)
+                        tintFilter.setValue(CIVector(x: 0, y: 0, z: 0, w: sR), forKey: "inputRVector")
+                        tintFilter.setValue(CIVector(x: 0, y: 0, z: 0, w: sG), forKey: "inputGVector")
+                        tintFilter.setValue(CIVector(x: 0, y: 0, z: 0, w: sB), forKey: "inputBVector")
+                        tintFilter.setValue(CIVector(x: 0, y: 0, z: 0, w: sA), forKey: "inputAVector")
+                        tintFilter.setValue(CIVector(x: 0, y: 0, z: 0, w: 0),  forKey: "inputBiasVector")
+
+                        if let tintedCI = tintFilter.outputImage {
+                            let ciCtx = CIContext()
+                            // Step 4: draw the tinted shadow under the text
+                            if let shadowCG = ciCtx.createCGImage(tintedCI, from: tintedCI.extent) {
+                                NSImage(cgImage: shadowCG, size: NSSize(width: size, height: size))
+                                    .draw(in: NSRect(x: 0, y: 0, width: size, height: size))
+                            }
+                        }
                     }
                 }
             }
