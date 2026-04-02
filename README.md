@@ -2,6 +2,17 @@
 
 A native macOS app for generating neon light-painting mandala images. Every parameter is controllable in real time, with instant auto-generation on change.
 
+## Download
+
+1. Go to the [latest release](https://github.com/morja/mandala-generator/releases/latest)
+2. Download **Mandala-Generator.zip** and unzip it
+3. Move **Mandala Generator.app** to your Applications folder
+4. On first launch, right-click → **Open** to bypass Gatekeeper (the app is not notarised)
+
+Requires macOS 14 or later.
+
+---
+
 ![Mandala Generator](sample-image.jpg)
 
 ![Mandala Generator](samples/sample-image-2.png)
@@ -50,7 +61,8 @@ Find more samples [here](samples/).
 - **Batch export** (⌘⇧E) — render many seed/palette variations in parallel to a folder
 - **Animated export** (⌘⌥E) — export a looping MOV (HEVC) or GIF with rotating layers; configurable frame count, FPS, and format; non-blocking with a live progress bar; background expanded so corners never appear during rotation
 - **Pan & zoom** — scroll to zoom, drag to pan the canvas preview
-- **Experimental drawing layer** — draw symmetrical shapes directly on the canvas with mouse/trackpad (enable via Experimental menu)
+- **Drawing layer** — draw symmetrical freehand strokes directly on the canvas; each stroke has its own color (color picker), weight, glow, blend mode, and symmetry
+- **Graffiti / spray layer** — paint soft airbrush strokes below the drawing layer; configurable brush size, opacity, and softness for smooth blended areas
 
 ## Building
 
@@ -208,7 +220,7 @@ Each layer has its own palette grid. You can select from the 18 built-in palette
 
 | File | Purpose |
 |---|---|
-| `MandalaParameters.swift` | All model structs (`StyleLayer`, `BaseLayerSettings`, `EffectsLayerSettings`, `DrawingLayerSettings`, `MandalaParameters`) — fully `Codable` with backward-compatible `decodeSafe` fallbacks |
+| `MandalaParameters.swift` | All model structs (`StyleLayer`, `BaseLayerSettings`, `EffectsLayerSettings`, `DrawingLayerSettings`, `GraffitiLayerSettings`, `MandalaParameters`) — fully `Codable` with backward-compatible `decodeSafe` fallbacks |
 | `MandalaRenderer.swift` | Core renderer — 33 curve styles including 3D (hyperboloid, torus, nautilus, torus knot, sphere grid, tesseract), Strange Attractor, Superformula, Universe and Symbols styles, base/effects layers, CIFilter post-processing, layer preview thumbnails |
 | `PixelBuffer.swift` | Float32 additive pixel buffer with Wu anti-aliased line drawing, `vDSP`-accelerated merge/scale/clear, and filmic tone-mapping |
 | `ColorPalettes.swift` | 18 built-in named colour palettes |
@@ -225,7 +237,8 @@ Each layer has its own palette grid. You can select from the 18 built-in palette
 1. **Base layer** — solid colour (tone-map bypassed, exact RGB) / gradient / pattern / grain / image / auto (palette-derived gradient + grass fibers)
 2. **Per mandala layer** — curves collected into `CurveDrawTask` structs, drawn in parallel via `DispatchQueue.concurrentPerform` into per-thread sub-buffers, merged with `vDSP_vadd`, then brightness-scaled by `bufferSize / 1600`, then glow → wash → abstract → colour grade applied; 3D styles use perspective projection with depth-shaded weights
 3. **Blend composite** — each layer blended onto the running composite using the chosen blend mode (Screen, Add, Normal/Lighten, or Multiply); optional 2D rotation via `CIAffineTransform`; optional opacity via `CIColorMatrix`
-4. **Drawing layer** (experimental) — user strokes composited with a chosen blend mode and symmetry
+4. **Graffiti layer** — airbrush strokes rendered into a CGContext with Gaussian blur for softness, composited via CISourceOverCompositing
+5. **Drawing layer** — freehand strokes with per-stroke color, composited with a chosen blend mode and symmetry
 5. **Solid background** (when type = Color) — merged in after all layers using `CILightenBlendMode`; dark areas become the background colour, bright mandala content is unaffected
 6. **Effects layer** — wash → sepia → fade → bloom → local contrast → grain applied as CIFilter passes; brightness/contrast, 3D relief (hard-light emboss), vignette, chromatic aberration; dimming, erasure, highlights, stars, glitter drawn into PixelBuffers and screen-composited
 7. **Downscale** — Lanczos downscale from 2× render buffer to output size
