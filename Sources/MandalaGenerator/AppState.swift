@@ -144,11 +144,11 @@ class AppState: ObservableObject {
         return strip(parameters) != strip(previous)
     }
 
-    func generate() async {
+    func generate(force: Bool = false) async {
         let navigating = isNavigatingHistory
         defer { isNavigatingHistory = false }
         guard !isGenerating else { return }
-        guard needsRender(from: lastRenderedParams) else { return }
+        guard force || needsRender(from: lastRenderedParams) else { return }
         debounceTask?.cancel()
         debounceTask = nil
         isGenerating = true

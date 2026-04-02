@@ -427,7 +427,9 @@ enum MandalaStyle: String, CaseIterable, Identifiable, Codable {
     case spiderWeb, weave, radialMesh, moire
     // ── Organic & Flow ─────────────────────────────────────────────
     case flowField, tendril, voronoi, strangeAttractor
-    case constellationWeb
+    case constellationWeb, deepNebula
+    // ── Optical & Interference ────────────────────────────────────
+    case interferenceBloom
     // ── 3D ────────────────────────────────────────────────────────
     case hyperboloid, torus, nautilus, sphereGrid, torusKnot, tesseract
     // ── Special ───────────────────────────────────────────────────
@@ -469,6 +471,8 @@ enum MandalaStyle: String, CaseIterable, Identifiable, Codable {
         case .voronoi:          return "Voronoi"
         case .strangeAttractor: return "Strange Attractor"
         case .constellationWeb: return "Constellation Web"
+        case .deepNebula:       return "Deep Nebula"
+        case .interferenceBloom:return "Interference Bloom"
         // 3D
         case .hyperboloid:      return "Hyperboloid"
         case .torus:            return "Torus"
@@ -512,6 +516,8 @@ enum MandalaStyle: String, CaseIterable, Identifiable, Codable {
         case .voronoi:          return "rectangle.split.3x3"
         case .strangeAttractor: return "scribble"
         case .constellationWeb: return "point.3.connected.trianglepath.dotted"
+        case .deepNebula:       return "sparkles.tv"
+        case .interferenceBloom:return "circle.hexagongrid"
         // 3D
         case .hyperboloid:      return "cylinder.split.1x2"
         case .torus:            return "circle.dotted"

@@ -106,7 +106,8 @@ struct MandalaRenderer {
             var layerRng = SeededRNG(seed: layer.seed == 0 ? params.seed &+ UInt64(li + 1) &* 0x9e3779b97f4a7c15 : layer.seed)
 
             let layerSymmetry = max(1, min(8, layer.symmetry))
-            let layerRadius = baseRadius * max(0.1, min(1.0, layer.scale))
+            let scaleMax = layer.style == .deepNebula ? 1.6 : 1.0
+            let layerRadius = baseRadius * max(0.1, min(1.0, layer.scale)) * scaleMax
             let layerCount  = max(2, Int(layer.complexity * 8) + 1)
 
             // Build a params copy with this layer's values for renderer internals
@@ -329,7 +330,8 @@ struct MandalaRenderer {
         let baseRadius = Double(bufferSize) * 0.72
 
         let layerSymmetry = max(1, min(8, layer.symmetry))
-        let layerRadius   = baseRadius * max(0.1, min(1.0, layer.scale))
+        let scaleMax = layer.style == .deepNebula ? 1.6 : 1.0
+        let layerRadius   = baseRadius * max(0.1, min(1.0, layer.scale)) * scaleMax
         let layerCount    = max(2, Int(layer.complexity * 8) + 1)
         let palette       = palettes[max(0, min(palettes.count - 1, layer.paletteIndex))]
 
@@ -496,6 +498,16 @@ struct MandalaRenderer {
                                        params: params, palette: palette, rng: &rng,
                                        colorOffset: colorOffset, symmetry: symmetry)
             return
+        case .deepNebula:
+            DeepNebulaStyle.draw(buffer: buffer, cx: cx, cy: cy, radius: baseRadius,
+                                 params: params, palette: palette, rng: &rng,
+                                 colorOffset: colorOffset, symmetry: symmetry)
+            return
+        case .interferenceBloom:
+            InterferenceBloomStyle.draw(buffer: buffer, cx: cx, cy: cy, radius: baseRadius,
+                                        params: params, palette: palette, rng: &rng,
+                                        colorOffset: colorOffset, symmetry: symmetry)
+            return
         case .superformula:
             collectSuperformulaTasks(into: &tasks, cx: cx, cy: cy, radius: baseRadius,
                                      params: params, rng: &rng, layerCount: layerCount,
@@ -528,7 +540,8 @@ struct MandalaRenderer {
                                               .phyllotaxis, .hypocycloid, .waveInterference, .spiderWeb,
                                               .weave, .sacredGeometry, .radialMesh, .flowField, .tendril,
                                               .moire, .voronoi, .torusKnot, .sphereGrid, .tesseract, .starBurst,
-                                              .universe, .symbols, .strangeAttractor, .constellationWeb, .superformula,
+                                              .universe, .symbols, .strangeAttractor, .constellationWeb, .deepNebula,
+                                              .interferenceBloom, .superformula,
                                               .hyperboloid, .torus, .nautilus]
             let radii: [Double] = [1.0, 0.72, 0.45]
             let sub = max(2, layerCount / 3)
@@ -653,6 +666,14 @@ struct MandalaRenderer {
                     drawConstellationWebLayers(buffer: buffer, cx: cx, cy: cy, radius: scaled,
                                                params: params, palette: palette, rng: &rng,
                                                colorOffset: 0, symmetry: symmetry)
+                case .deepNebula:
+                    DeepNebulaStyle.draw(buffer: buffer, cx: cx, cy: cy, radius: scaled * 1.5,
+                                         params: params, palette: palette, rng: &rng,
+                                         colorOffset: 0, symmetry: symmetry)
+                case .interferenceBloom:
+                    InterferenceBloomStyle.draw(buffer: buffer, cx: cx, cy: cy, radius: scaled,
+                                                params: params, palette: palette, rng: &rng,
+                                                colorOffset: 0, symmetry: symmetry)
                 case .superformula:
                     collectSuperformulaTasks(into: &tasks, cx: cx, cy: cy, radius: scaled,
                                              params: params, rng: &rng, layerCount: sub,

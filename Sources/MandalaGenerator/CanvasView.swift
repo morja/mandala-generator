@@ -58,7 +58,7 @@ struct CanvasView: View {
             if appState.isDrawingMode {
                 Button(action: {
                     appState.isDrawingMode = false
-                    Task { await appState.generate() }
+                    Task { await appState.generate(force: true) }
                 }) {
                     Label("Done Drawing", systemImage: "checkmark.circle.fill")
                 }
@@ -80,7 +80,7 @@ struct CanvasView: View {
             } else if appState.isGraffitiMode {
                 Button(action: {
                     appState.isGraffitiMode = false
-                    Task { await appState.generate() }
+                    Task { await appState.generate(force: true) }
                 }) {
                     Label("Done Spraying", systemImage: "checkmark.circle.fill")
                 }
