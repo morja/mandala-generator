@@ -2,21 +2,16 @@ name: Build & Release
 
 on:
   push:
-    branches: [main]
+    tags:
+      - 'v*'
 
 jobs:
   build:
     name: Build macOS App
     runs-on: macos-latest
 
-    # Trigger only on conventional commit prefixes
-    if: |
-      startsWith(github.event.head_commit.message, 'fix:') ||
-      startsWith(github.event.head_commit.message, 'feat:') ||
-      startsWith(github.event.head_commit.message, 'release:')
-
     permissions:
-      contents: write   # needed to create releases and tags
+      contents: write
 
     steps:
       - name: Checkout
@@ -31,47 +26,18 @@ jobs:
           ./build_app.sh
 
       - name: Package app bundle
-        # ditto preserves macOS metadata and resource forks correctly
         run: |
-          APP="Mandala Generator.app"
-          ditto -c -k --sequesterRsrc --keepParent "$APP" "Mandala-Generator.zip"
-
-      - name: Upload build artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: Mandala-Generator-${{ github.sha }}
-          path: Mandala-Generator.zip
-          retention-days: 30
-
-      # ── Release (only for "release: x.y.z" commits) ────────────────────────
-
-      - name: Extract version from commit message
-        if: startsWith(github.event.head_commit.message, 'release:')
-        id: version
-        run: |
-          MSG="${{ github.event.head_commit.message }}"
-          # Grab everything after "release:" and strip whitespace
-          VERSION=$(echo "$MSG" | sed 's/^release:[[:space:]]*//' | awk '{print $1}')
-          # Ensure the tag starts with "v"
-          [[ "$VERSION" == v* ]] || VERSION="v${VERSION}"
-          echo "tag=${VERSION}" >> "$GITHUB_OUTPUT"
-          echo "Resolved release tag: ${VERSION}"
+          ditto -c -k --sequesterRsrc --keepParent "Mandala Generator.app" "Mandala-Generator.zip"
 
       - name: Create GitHub Release
-        if: startsWith(github.event.head_commit.message, 'release:')
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ steps.version.outputs.tag }}
-          name: Mandala Generator ${{ steps.version.outputs.tag }}
+          name: Mandala Generator ${{ github.ref_name }}
           body: |
-            ## Download
+            ## Install
 
             1. Download **Mandala-Generator.zip** below and unzip it.
             2. Move **Mandala Generator.app** to your Applications folder.
-            3. On first launch, right-click → Open to bypass Gatekeeper
-               (the app is not notarised).
-
-            ---
-            ${{ github.event.head_commit.message }}
+            3. On first launch, right-click → Open to bypass Gatekeeper.
           files: Mandala-Generator.zip
           fail_on_unmatched_files: true
