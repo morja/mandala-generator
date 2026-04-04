@@ -4092,7 +4092,7 @@ struct MandalaRenderer {
 
         var overlayImage: CGImage = textImage
 
-        // Blur the whole text layer
+        // Blur (text only)
         if settings.blur > 0.005 {
             let blurRadius = CGFloat(settings.blur * settings.blur) * CGFloat(size) * 0.025
             if let blurred = simpleGaussianBlur(image: overlayImage, radius: blurRadius) {
@@ -4100,13 +4100,30 @@ struct MandalaRenderer {
             }
         }
 
-        // Glow (screen-blended soft copy of the text) — must run before brightness boost
-        // so the glow source has valid premultiplied alpha (RGB ≤ alpha)
+        // Glow — applied to pure text (cloud and shadow are separate) so they don't
+        // corrupt the glow source. Uses wider radii than the mandala-layer glow for a
+        // soft luminous bloom rather than an unsharp-mask look.
         if settings.glow > 0.005 {
-            overlayImage = applyGlow(image: overlayImage, intensity: settings.glow)
+            let ciImage = CIImage(cgImage: overlayImage)
+            let ctx = CIContext(options: [.workingColorSpace: CGColorSpace(name: CGColorSpace.displayP3) as Any])
+            let iF = CGFloat(settings.glow)
+            let passes: [(radius: CGFloat, strength: CGFloat)] = [
+                (10.0 * iF * 3.0, 0.9 * iF),
+                (35.0 * iF * 3.0, 0.5 * iF),
+                (70.0 * iF * 3.0, 0.2 * iF),
+            ]
+            if let glow = referenceBlurOverlay(source: ciImage, passes: passes),
+               let screen = CIFilter(name: "CIScreenBlendMode") {
+                screen.setValue(ciImage, forKey: kCIInputBackgroundImageKey)
+                screen.setValue(glow,    forKey: kCIInputImageKey)
+                if let composited = screen.outputImage?.cropped(to: ciImage.extent),
+                   let result = ctx.createCGImage(composited, from: ciImage.extent) {
+                    overlayImage = result
+                }
+            }
         }
 
-        // Extra brightness boost when brightness > 1.0 (applied after glow to avoid corrupting premultiplied alpha)
+        // Extra brightness boost when brightness > 1.0
         if settings.brightness > 1.005 {
             let boost = CGFloat(settings.brightness) - 1.0
             let s = 1.0 + boost
@@ -4132,7 +4149,6 @@ struct MandalaRenderer {
             overlayImage = applyLayerOpacity(image: overlayImage, opacity: settings.opacity)
         }
 
-        // Composite onto the main image
         let blendFilter: String
         switch settings.blendMode {
         case .screen:   blendFilter = "CIScreenBlendMode"
@@ -4140,7 +4156,29 @@ struct MandalaRenderer {
         case .normal:   blendFilter = "CISourceOverCompositing"
         case .multiply: blendFilter = "CIMultiplyBlendMode"
         }
-        return blendComposite(base: image, overlay: overlayImage, mode: blendFilter)
+
+        // Build the final result: main → cloud → shadow (N passes) → glowed text
+        var result = image
+        let ciCtx = CIContext(options: [.workingColorSpace: CGColorSpace(name: CGColorSpace.displayP3) as Any])
+
+        if let cloud = renderCloudCGImage(settings: settings, size: size) {
+            result = blendComposite(base: result, overlay: cloud, mode: "CISourceOverCompositing")
+        }
+
+        if let shadowImg = renderShadowCGImage(settings: settings, size: size) {
+            let shadowCI = CIImage(cgImage: shadowImg)
+            let passes = max(1, Int(settings.shadowOpacity * 4 + 0.5))
+            for _ in 0..<passes {
+                if let f = CIFilter(name: "CISourceOverCompositing") {
+                    f.setValue(shadowCI, forKey: kCIInputImageKey)
+                    f.setValue(CIImage(cgImage: result), forKey: kCIInputBackgroundImageKey)
+                    if let out = f.outputImage?.cropped(to: shadowCI.extent),
+                       let r = ciCtx.createCGImage(out, from: out.extent) { result = r }
+                }
+            }
+        }
+
+        return blendComposite(base: result, overlay: overlayImage, mode: blendFilter)
     }
 
     private static func renderTextToCGImage(settings: TextLayerSettings, size: Int) -> CGImage? {
@@ -4190,7 +4228,7 @@ struct MandalaRenderer {
 
         // ── Quote text ────────────────────────────────────────────────────────
         let quoteString = NSAttributedString(string: settings.text, attributes: attrs)
-        let maxWidth = CGFloat(size) * 0.82
+        let maxWidth = CGFloat(size) * max(0.05, CGFloat(settings.fontWidth))
         let quoteBounds = quoteString.boundingRect(
             with: NSSize(width: maxWidth, height: .greatestFiniteMagnitude),
             options: [.usesLineFragmentOrigin, .usesFontLeading]
@@ -4237,139 +4275,6 @@ struct MandalaRenderer {
         // In y-up coords, higher Y = higher on screen.
         let quoteY = blockBottom + authorBounds.height + lineGap
 
-        // ── Cloud / halo behind text ──────────────────────────────────────────
-        // Always circular: gradient drawn in a SQUARE rect so the inscribed ellipse
-        // is a circle regardless of text block aspect ratio.
-        // cloudRadius 0 → tight halo around text; 1 → fills the whole canvas.
-        if settings.cloudOpacity > 0.01 {
-            let r = CGFloat(settings.cloudRadius)
-            let textCX = drawX + maxWidth / 2
-            let textCY = blockBottom + totalHeight / 2
-
-            // Radius grows from "snug around text" to "covers full canvas corners"
-            let textHalf   = max(maxWidth, totalHeight) * 0.6
-            let fullRadius = CGFloat(size) * 0.78   // just beyond canvas corner at sqrt(2)/2
-            let circRadius = textHalf + r * (fullRadius - textHalf)
-
-            let squareRect = NSRect(x: textCX - circRadius, y: textCY - circRadius,
-                                    width: circRadius * 2, height: circRadius * 2)
-
-            if let cloudRep = NSBitmapImageRep(
-                bitmapDataPlanes: nil,
-                pixelsWide: size, pixelsHigh: size,
-                bitsPerSample: 8, samplesPerPixel: 4,
-                hasAlpha: true, isPlanar: false,
-                colorSpaceName: .deviceRGB,
-                bytesPerRow: 0, bitsPerPixel: 0
-            ), let cloudCtx = NSGraphicsContext(bitmapImageRep: cloudRep) {
-                NSGraphicsContext.current = cloudCtx
-
-                let cloudColor = NSColor(hue: CGFloat(settings.cloudHue),
-                                         saturation: CGFloat(settings.cloudSaturation),
-                                         brightness: CGFloat(settings.cloudBrightness),
-                                         alpha: CGFloat(settings.cloudOpacity))
-                let clearColor = cloudColor.withAlphaComponent(0)
-
-                // Square rect → inscribed circle gradient (always round)
-                if let gradient = NSGradient(colors: [cloudColor, cloudColor, clearColor],
-                                              atLocations: [0.0, 0.5, 1.0],
-                                              colorSpace: .deviceRGB) {
-                    gradient.draw(in: squareRect, relativeCenterPosition: NSPoint(x: 0.5, y: 0.5))
-                }
-
-                NSGraphicsContext.current = nsCtx
-
-                // Blur scales with cloudRadius: small = crisp circle, large = full-screen wash
-                let blurRadius = CGFloat(size) * r * r * 0.25 + resolvedFontSize * 0.3
-                if let cloudCGImage = cloudRep.cgImage,
-                   let blurred = simpleGaussianBlur(image: cloudCGImage, radius: blurRadius) {
-                    NSImage(cgImage: blurred, size: NSSize(width: size, height: size))
-                        .draw(in: NSRect(x: 0, y: 0, width: size, height: size))
-                }
-            }
-        }
-
-        // ── Shadow: CIFilter-based drop shadow (no streak artifacts) ─────────────
-        // 1. Render text mask (white text, transparent bg) at the shadow offset position
-        // 2. Gaussian blur → soft shadow shape
-        // 3. CIColorMatrix → tint to shadow color with correct alpha
-        // 4. Composite into main context; text is drawn on top afterwards
-        if settings.shadowOpacity > 0.01 {
-            let blurPx  = max(1.0, CGFloat(settings.shadowBlur) * resolvedFontSize * 1.2)
-            // shadowOffsetY: negative = down (y-up bitmap space); positive = up
-            let offsetX = CGFloat(settings.shadowOffsetX) * blurPx
-            let offsetY = CGFloat(settings.shadowOffsetY) * blurPx
-
-            // Convert shadow HSB → RGB for CIColorMatrix
-            let shadowNSColor = (NSColor(hue: CGFloat(settings.shadowHue),
-                                          saturation: CGFloat(settings.shadowSaturation),
-                                          brightness: CGFloat(settings.shadowBrightness),
-                                          alpha: 1.0)
-                                 .usingColorSpace(.deviceRGB)) ?? NSColor.black
-            let sR = shadowNSColor.redComponent
-            let sG = shadowNSColor.greenComponent
-            let sB = shadowNSColor.blueComponent
-            let sA = CGFloat(settings.shadowOpacity)
-
-            // Step 1: render white text at the offset position into a transparent mask bitmap
-            if let maskRep = NSBitmapImageRep(
-                bitmapDataPlanes: nil, pixelsWide: size, pixelsHigh: size,
-                bitsPerSample: 8, samplesPerPixel: 4, hasAlpha: true, isPlanar: false,
-                colorSpaceName: .deviceRGB, bytesPerRow: 0, bitsPerPixel: 0
-            ), let maskCtx = NSGraphicsContext(bitmapImageRep: maskRep) {
-                NSGraphicsContext.current = maskCtx
-                maskCtx.imageInterpolation = .high
-
-                var maskAttrs = attrs
-                maskAttrs[.foregroundColor] = NSColor.white
-
-                NSAttributedString(string: settings.text, attributes: maskAttrs)
-                    .draw(with: NSRect(x: drawX + offsetX, y: quoteY + offsetY,
-                                       width: maxWidth, height: quoteBounds.height + resolvedFontSize * 0.3),
-                          options: [.usesLineFragmentOrigin, .usesFontLeading])
-
-                if let authorStr = authorAttrString,
-                   let authorFont = authorStr.attribute(.font, at: 0, effectiveRange: nil) as? NSFont {
-                    var aAttrs = maskAttrs
-                    aAttrs[.font] = authorFont
-                    NSAttributedString(string: authorStr.string, attributes: aAttrs)
-                        .draw(with: NSRect(x: drawX + offsetX, y: blockBottom + offsetY,
-                                           width: maxWidth, height: authorBounds.height + resolvedFontSize * 0.2),
-                              options: [.usesLineFragmentOrigin, .usesFontLeading])
-                }
-
-                NSGraphicsContext.current = nsCtx
-
-                // Step 2: Gaussian blur → soft shadow footprint
-                if let maskCG = maskRep.cgImage,
-                   let blurred = simpleGaussianBlur(image: maskCG, radius: blurPx) {
-
-                    // Step 3: tint with shadow color via CIColorMatrix
-                    // Transforms white-alpha mask → shadow-color image (premultiplied-correct)
-                    // outputR = inputA * sR, outputG = inputA * sG, etc.
-                    let blurredCI = CIImage(cgImage: blurred)
-                    if let tintFilter = CIFilter(name: "CIColorMatrix") {
-                        tintFilter.setValue(blurredCI,                        forKey: kCIInputImageKey)
-                        tintFilter.setValue(CIVector(x: 0, y: 0, z: 0, w: sR), forKey: "inputRVector")
-                        tintFilter.setValue(CIVector(x: 0, y: 0, z: 0, w: sG), forKey: "inputGVector")
-                        tintFilter.setValue(CIVector(x: 0, y: 0, z: 0, w: sB), forKey: "inputBVector")
-                        tintFilter.setValue(CIVector(x: 0, y: 0, z: 0, w: sA), forKey: "inputAVector")
-                        tintFilter.setValue(CIVector(x: 0, y: 0, z: 0, w: 0),  forKey: "inputBiasVector")
-
-                        if let tintedCI = tintFilter.outputImage {
-                            let ciCtx = CIContext()
-                            // Step 4: draw the tinted shadow under the text
-                            if let shadowCG = ciCtx.createCGImage(tintedCI, from: tintedCI.extent) {
-                                NSImage(cgImage: shadowCG, size: NSSize(width: size, height: size))
-                                    .draw(in: NSRect(x: 0, y: 0, width: size, height: size))
-                            }
-                        }
-                    }
-                }
-            }
-            NSGraphicsContext.current = nsCtx
-        }
-
         // Draw quote (top of block, higher y)
         quoteString.draw(with: NSRect(x: drawX, y: quoteY,
                                       width: maxWidth, height: quoteBounds.height + resolvedFontSize * 0.3),
@@ -4384,6 +4289,186 @@ struct MandalaRenderer {
 
         // rep stores pixels top→bottom (row 0 = visual top), matching PixelBuffer convention
         return rep.cgImage
+    }
+
+    /// Renders only the cloud/halo behind the text. Kept separate so it is
+    /// composited BEFORE glow in applyTextLayer and doesn't corrupt the glow.
+    private static func renderCloudCGImage(settings: TextLayerSettings, size: Int) -> CGImage? {
+        guard settings.cloudOpacity > 0.01 else { return nil }
+
+        let resolvedFontSize = CGFloat(settings.fontSize * Double(size))
+        let nsFont = NSFont(name: settings.fontName, size: resolvedFontSize)
+            ?? NSFont(name: "Georgia", size: resolvedFontSize)
+            ?? NSFont.systemFont(ofSize: resolvedFontSize)
+        let paraStyle = NSMutableParagraphStyle()
+        paraStyle.alignment = .center
+        paraStyle.lineSpacing = resolvedFontSize * 0.18
+        let kern = CGFloat(settings.tracking) * resolvedFontSize * 0.12
+        let attrs: [NSAttributedString.Key: Any] = [.font: nsFont, .foregroundColor: NSColor.white,
+                                                    .paragraphStyle: paraStyle, .kern: kern]
+        let maxWidth = CGFloat(size) * max(0.05, CGFloat(settings.fontWidth))
+        let quoteBounds = NSAttributedString(string: settings.text, attributes: attrs)
+            .boundingRect(with: NSSize(width: maxWidth, height: .greatestFiniteMagnitude),
+                          options: [.usesLineFragmentOrigin, .usesFontLeading])
+
+        let resolvedAuthor: String? = {
+            guard settings.showAuthor else { return nil }
+            if !settings.customAuthor.isEmpty { return settings.customAuthor }
+            return QuoteDatabase.quotes.first(where: {
+                $0.text == settings.text || settings.text.hasSuffix($0.text)
+            })?.author
+        }()
+        let authorFontSize = resolvedFontSize * CGFloat(settings.authorScale)
+        let authorBounds: CGRect = resolvedAuthor.map { _ in
+            let aFont = NSFont(name: settings.fontName, size: authorFontSize)
+                ?? NSFont.systemFont(ofSize: authorFontSize)
+            var aAttrs = attrs; aAttrs[.font] = aFont
+            return NSAttributedString(string: "— x", attributes: aAttrs)
+                .boundingRect(with: NSSize(width: maxWidth, height: .greatestFiniteMagnitude),
+                              options: [.usesLineFragmentOrigin, .usesFontLeading])
+        } ?? .zero
+
+        let lineGap = resolvedAuthor != nil ? resolvedFontSize * 0.75 : 0
+        let totalHeight = quoteBounds.height + lineGap + authorBounds.height
+        let drawX = (CGFloat(size) - maxWidth) / 2.0
+        let centerY = CGFloat(settings.offsetY) * CGFloat(size)
+        let blockBottom = centerY - totalHeight / 2.0
+
+        let scale = CGFloat(settings.cloudScale)   // controls circle size
+        let blur  = CGFloat(settings.cloudRadius)   // controls softness
+        let textCX = drawX + maxWidth / 2
+        let textCY = blockBottom + totalHeight / 2
+        let textHalf = resolvedFontSize * 0.8
+        let fullRadius = CGFloat(size) * 0.78
+        let circRadius = textHalf + scale * (fullRadius - textHalf)
+
+        guard let rep = NSBitmapImageRep(
+            bitmapDataPlanes: nil, pixelsWide: size, pixelsHigh: size,
+            bitsPerSample: 8, samplesPerPixel: 4, hasAlpha: true, isPlanar: false,
+            colorSpaceName: .deviceRGB, bytesPerRow: 0, bitsPerPixel: 0
+        ), let ctx = NSGraphicsContext(bitmapImageRep: rep) else { return nil }
+
+        NSGraphicsContext.saveGraphicsState()
+        defer { NSGraphicsContext.restoreGraphicsState() }
+        NSGraphicsContext.current = ctx
+
+        let cloudColor = NSColor(hue: CGFloat(settings.cloudHue),
+                                  saturation: CGFloat(settings.cloudSaturation),
+                                  brightness: CGFloat(settings.cloudBrightness),
+                                  alpha: CGFloat(settings.cloudOpacity))
+        let squareRect = NSRect(x: textCX - circRadius, y: textCY - circRadius,
+                                width: circRadius * 2, height: circRadius * 2)
+        if let gradient = NSGradient(colors: [cloudColor, cloudColor, cloudColor.withAlphaComponent(0)],
+                                      atLocations: [0.0, 0.5, 1.0], colorSpace: .deviceRGB) {
+            gradient.draw(in: squareRect, relativeCenterPosition: NSPoint(x: 0.5, y: 0.5))
+        }
+
+        guard let raw = rep.cgImage else { return nil }
+        let blurRadius = circRadius * blur * 0.35 + resolvedFontSize * 0.3
+        return simpleGaussianBlur(image: raw, radius: blurRadius) ?? raw
+    }
+
+    /// Renders the blurred shadow blob for the text layer. Kept separate so it
+    /// is composited AFTER glow and doesn't pollute the glow source image.
+    private static func renderShadowCGImage(settings: TextLayerSettings, size: Int) -> CGImage? {
+        guard settings.shadowOpacity > 0.01 else { return nil }
+
+        let resolvedFontSize = CGFloat(settings.fontSize * Double(size))
+        let nsFont = NSFont(name: settings.fontName, size: resolvedFontSize)
+            ?? NSFont(name: "Georgia", size: resolvedFontSize)
+            ?? NSFont.systemFont(ofSize: resolvedFontSize)
+        let paraStyle = NSMutableParagraphStyle()
+        paraStyle.alignment = .center
+        paraStyle.lineSpacing = resolvedFontSize * 0.18
+        let kern = CGFloat(settings.tracking) * resolvedFontSize * 0.12
+        let attrs: [NSAttributedString.Key: Any] = [.font: nsFont, .foregroundColor: NSColor.white,
+                                                    .paragraphStyle: paraStyle, .kern: kern]
+        let maxWidth = CGFloat(size) * max(0.05, CGFloat(settings.fontWidth))
+        let quoteBounds = NSAttributedString(string: settings.text, attributes: attrs)
+            .boundingRect(with: NSSize(width: maxWidth, height: .greatestFiniteMagnitude),
+                          options: [.usesLineFragmentOrigin, .usesFontLeading])
+
+        let resolvedAuthor: String? = {
+            guard settings.showAuthor else { return nil }
+            if !settings.customAuthor.isEmpty { return settings.customAuthor }
+            return QuoteDatabase.quotes.first(where: {
+                $0.text == settings.text || settings.text.hasSuffix($0.text)
+            })?.author
+        }()
+        let authorFontSize = resolvedFontSize * CGFloat(settings.authorScale)
+        let authorAttrString: NSAttributedString? = resolvedAuthor.map { match in
+            let baseFont = NSFont(name: settings.fontName, size: authorFontSize)
+                ?? NSFont.systemFont(ofSize: authorFontSize)
+            let aFont: NSFont = settings.authorItalic
+                ? NSFontManager.shared.convert(baseFont, toHaveTrait: .italicFontMask)
+                : baseFont
+            var aAttrs = attrs; aAttrs[.font] = aFont
+            return NSAttributedString(string: "\u{2014} " + match, attributes: aAttrs)
+        }
+        let authorBounds: CGRect = authorAttrString?.boundingRect(
+            with: NSSize(width: maxWidth, height: .greatestFiniteMagnitude),
+            options: [.usesLineFragmentOrigin, .usesFontLeading]) ?? .zero
+
+        let lineGap = authorAttrString != nil ? resolvedFontSize * 0.75 : 0
+        let totalHeight = quoteBounds.height + lineGap + authorBounds.height
+        let drawX = (CGFloat(size) - maxWidth) / 2.0
+        let centerY = CGFloat(settings.offsetY) * CGFloat(size)
+        let blockBottom = centerY - totalHeight / 2.0
+        let quoteY = blockBottom + authorBounds.height + lineGap
+
+        // Blur and offset are independent so changing one doesn't shift the other.
+        let blurPx  = max(0.5, CGFloat(settings.shadowBlur) * resolvedFontSize * 0.4)
+        let offsetX = CGFloat(settings.shadowOffsetX) * resolvedFontSize * 0.75
+        let offsetY = CGFloat(settings.shadowOffsetY) * resolvedFontSize * 0.75
+
+        guard let maskRep = NSBitmapImageRep(
+            bitmapDataPlanes: nil, pixelsWide: size, pixelsHigh: size,
+            bitsPerSample: 8, samplesPerPixel: 4, hasAlpha: true, isPlanar: false,
+            colorSpaceName: .deviceRGB, bytesPerRow: 0, bitsPerPixel: 0
+        ), let maskCtx = NSGraphicsContext(bitmapImageRep: maskRep) else { return nil }
+
+        NSGraphicsContext.saveGraphicsState()
+        defer { NSGraphicsContext.restoreGraphicsState() }
+        NSGraphicsContext.current = maskCtx
+        maskCtx.imageInterpolation = .high
+
+        NSAttributedString(string: settings.text, attributes: attrs)
+            .draw(with: NSRect(x: drawX + offsetX, y: quoteY + offsetY,
+                               width: maxWidth, height: quoteBounds.height + resolvedFontSize * 0.3),
+                  options: [.usesLineFragmentOrigin, .usesFontLeading])
+        if let authorStr = authorAttrString,
+           let aFont = authorStr.attribute(.font, at: 0, effectiveRange: nil) as? NSFont {
+            var aAttrs = attrs; aAttrs[.font] = aFont
+            NSAttributedString(string: authorStr.string, attributes: aAttrs)
+                .draw(with: NSRect(x: drawX + offsetX, y: blockBottom + offsetY,
+                                   width: maxWidth, height: authorBounds.height + resolvedFontSize * 0.2),
+                      options: [.usesLineFragmentOrigin, .usesFontLeading])
+        }
+
+        guard let maskCG = maskRep.cgImage,
+              let blurred = simpleGaussianBlur(image: maskCG, radius: blurPx) else { return nil }
+
+        // Tint blurred white mask → shadow color (premultiplied-correct via alpha channel)
+        let shadowColor = (NSColor(hue: CGFloat(settings.shadowHue),
+                                    saturation: CGFloat(settings.shadowSaturation),
+                                    brightness: CGFloat(settings.shadowBrightness),
+                                    alpha: 1.0)
+                           .usingColorSpace(.deviceRGB)) ?? NSColor.black
+        let sR = shadowColor.redComponent
+        let sG = shadowColor.greenComponent
+        let sB = shadowColor.blueComponent
+
+        let ci = CIImage(cgImage: blurred)
+        guard let tint = CIFilter(name: "CIColorMatrix") else { return blurred }
+        tint.setValue(ci, forKey: kCIInputImageKey)
+        tint.setValue(CIVector(x: 0, y: 0, z: 0, w: sR), forKey: "inputRVector")
+        tint.setValue(CIVector(x: 0, y: 0, z: 0, w: sG), forKey: "inputGVector")
+        tint.setValue(CIVector(x: 0, y: 0, z: 0, w: sB), forKey: "inputBVector")
+        tint.setValue(CIVector(x: 0, y: 0, z: 0, w: 1),  forKey: "inputAVector")
+        tint.setValue(CIVector(x: 0, y: 0, z: 0, w: 0),  forKey: "inputBiasVector")
+        guard let out = tint.outputImage else { return blurred }
+        let ciCtx = CIContext(options: [.workingColorSpace: CGColorSpace(name: CGColorSpace.displayP3) as Any])
+        return ciCtx.createCGImage(out, from: out.extent) ?? blurred
     }
 
     private static func simpleGaussianBlur(image: CGImage, radius: CGFloat) -> CGImage? {

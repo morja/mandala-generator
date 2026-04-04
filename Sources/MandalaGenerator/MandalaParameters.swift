@@ -331,7 +331,8 @@ struct TextLayerSettings: Equatable, Codable {
     var shadowSaturation: Double = 0.0  // 0 = black/grey shadow
     var shadowBrightness: Double = 0.0  // 0 = dark shadow, 1 = white/bright shadow
     var cloudOpacity: Double = 0.0      // diffuse halo/cloud drawn behind text
-    var cloudRadius: Double = 0.5       // cloud blur radius and padding (relative to font size)
+    var cloudScale: Double  = 0.5       // cloud circle size (0 = tight around text, 1 = fills canvas)
+    var cloudRadius: Double = 0.5       // cloud blur softness (relative to circle size)
     var cloudHue: Double = 0.0          // cloud color hue
     var cloudSaturation: Double = 0.0   // 0 = black/white cloud
     var cloudBrightness: Double = 0.0   // 0 = dark cloud, 1 = white/bright cloud
@@ -341,8 +342,9 @@ struct TextLayerSettings: Equatable, Codable {
     var saturation: Double = 0.0    // 0 = white/grey, 1 = saturated
     var brightness: Double = 1.0
     var tracking: Double   = 0.0    // letter spacing (−1 tight … 1 loose)
+    var fontWidth: Double  = 0.82   // text box width as fraction of canvas (0.1 narrow … 1.0 full)
     var offsetX: Double    = 0.5    // 0–1, 0.5 = horizontal center
-    var offsetY: Double    = 0.38   // 0–1, 0=bottom 1=top; slightly below center
+    var offsetY: Double    = 0.44   // 0–1, 0=bottom 1=top; slightly below center
     var blendMode: LayerBlendMode = .normal
     var showAuthor: Bool   = true   // append "— Author" line for quotes
     var customAuthor: String = ""  // if non-empty, overrides database lookup for author
@@ -353,8 +355,8 @@ struct TextLayerSettings: Equatable, Codable {
         case isEnabled, text, fontName, fontSize, glow
         case shadowOpacity, shadowBlur, shadowOffsetX, shadowOffsetY
         case shadowHue, shadowSaturation, shadowBrightness
-        case cloudOpacity, cloudRadius, cloudHue, cloudSaturation, cloudBrightness, blur, opacity
-        case hue, saturation, brightness, tracking
+        case cloudOpacity, cloudScale, cloudRadius, cloudHue, cloudSaturation, cloudBrightness, blur, opacity
+        case hue, saturation, brightness, tracking, fontWidth
         case offsetX, offsetY, blendMode, showAuthor, customAuthor, authorScale, authorItalic
     }
 
@@ -375,6 +377,7 @@ struct TextLayerSettings: Equatable, Codable {
         shadowSaturation = c.decodeSafe(Double.self,      forKey: .shadowSaturation, default: 0.0)
         shadowBrightness = c.decodeSafe(Double.self,      forKey: .shadowBrightness, default: 0.0)
         cloudOpacity      = c.decodeSafe(Double.self, forKey: .cloudOpacity,      default: 0.0)
+        cloudScale        = c.decodeSafe(Double.self, forKey: .cloudScale,        default: 0.5)
         cloudRadius       = c.decodeSafe(Double.self, forKey: .cloudRadius,       default: 0.5)
         cloudHue          = c.decodeSafe(Double.self, forKey: .cloudHue,          default: 0.0)
         cloudSaturation   = c.decodeSafe(Double.self, forKey: .cloudSaturation,   default: 0.0)
@@ -385,6 +388,7 @@ struct TextLayerSettings: Equatable, Codable {
         saturation    = c.decodeSafe(Double.self,         forKey: .saturation,    default: 0.0)
         brightness    = c.decodeSafe(Double.self,         forKey: .brightness,    default: 1.0)
         tracking      = c.decodeSafe(Double.self,         forKey: .tracking,      default: 0.0)
+        fontWidth     = c.decodeSafe(Double.self,         forKey: .fontWidth,     default: 0.82)
         offsetX       = c.decodeSafe(Double.self,         forKey: .offsetX,       default: 0.5)
         offsetY       = c.decodeSafe(Double.self,         forKey: .offsetY,       default: 0.38)
         blendMode     = c.decodeSafe(LayerBlendMode.self, forKey: .blendMode,     default: .normal)

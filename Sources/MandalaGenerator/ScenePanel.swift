@@ -518,6 +518,8 @@ private struct AnimationOptionsSheet: View {
 struct TextLayerCard: View {
     @Binding var settings: TextLayerSettings
     @State private var isExpanded = true
+    @State private var shadowExpanded = false
+    @State private var cloudExpanded = false
 
     private var selectedFontDisplay: String {
         QuoteDatabase.availableFonts.first { $0.name == settings.fontName }?.display ?? settings.fontName
@@ -612,8 +614,9 @@ struct TextLayerCard: View {
 
                     // ── Typography ────────────────────────────────────────
                     sectionLabel("TYPOGRAPHY")
-                    SceneSlider(label: "Size",    value: $settings.fontSize, range: 0.02...0.105, color: .cyan)
-                    SceneSlider(label: "Tracking",value: $settings.tracking, range: -0.5...1.0,  color: .mint)
+                    SceneSlider(label: "Size",    value: $settings.fontSize,  range: 0.02...0.105, color: .cyan)
+                    SceneSlider(label: "Width",   value: $settings.fontWidth, range: 0.1...1.0,    color: .cyan)
+                    SceneSlider(label: "Tracking",value: $settings.tracking,  range: -0.5...1.0,   color: .mint)
 
                     // ── Position ──────────────────────────────────────────
                     sectionLabel("POSITION")
@@ -628,9 +631,21 @@ struct TextLayerCard: View {
                     SceneSlider(label: "Glow",   value: $settings.glow,    color: .purple)
 
                     // ── Shadow ────────────────────────────────────────────
-                    sectionLabel("SHADOW")
-                    SceneSlider(label: "Opacity", value: $settings.shadowOpacity, color: .gray)
-                    if settings.shadowOpacity > 0.01 {
+                    Button(action: { withAnimation(.easeInOut(duration: 0.18)) { shadowExpanded.toggle() } }) {
+                        HStack(spacing: 4) {
+                            Text("SHADOW")
+                                .font(.system(size: 9, weight: .semibold))
+                                .foregroundColor(.secondary).kerning(1.1)
+                            Spacer()
+                            Image(systemName: shadowExpanded ? "chevron.up" : "chevron.down")
+                                .font(.system(size: 8)).foregroundColor(.secondary)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.top, 4)
+                    }
+                    .buttonStyle(.plain)
+                    if shadowExpanded {
+                        SceneSlider(label: "Opacity", value: $settings.shadowOpacity, color: .gray)
                         SceneSlider(label: "Blur",    value: $settings.shadowBlur,       color: .secondary)
                         SceneSlider(label: "X",       value: $settings.shadowOffsetX,    range: -2...2, color: .orange)
                         SceneSlider(label: "Y",       value: $settings.shadowOffsetY,    range: -2...2, color: .orange)
@@ -640,10 +655,23 @@ struct TextLayerCard: View {
                     }
 
                     // ── Cloud ─────────────────────────────────────────────
-                    sectionLabel("CLOUD")
-                    SceneSlider(label: "Opacity", value: $settings.cloudOpacity, color: .teal)
-                    if settings.cloudOpacity > 0.01 {
-                        SceneSlider(label: "Blur",    value: $settings.cloudRadius,      range: 0.1...2.0, color: .cyan)
+                    Button(action: { withAnimation(.easeInOut(duration: 0.18)) { cloudExpanded.toggle() } }) {
+                        HStack(spacing: 4) {
+                            Text("CLOUD")
+                                .font(.system(size: 9, weight: .semibold))
+                                .foregroundColor(.secondary).kerning(1.1)
+                            Spacer()
+                            Image(systemName: cloudExpanded ? "chevron.up" : "chevron.down")
+                                .font(.system(size: 8)).foregroundColor(.secondary)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.top, 4)
+                    }
+                    .buttonStyle(.plain)
+                    if cloudExpanded {
+                        SceneSlider(label: "Opacity", value: $settings.cloudOpacity, color: .teal)
+                        SceneSlider(label: "Size",    value: $settings.cloudScale,       color: .teal)
+                        SceneSlider(label: "Blur",    value: $settings.cloudRadius,      color: .cyan)
                         HueSlider(value: $settings.cloudHue)
                         SceneSlider(label: "Sat",     value: $settings.cloudSaturation,  color: .pink)
                         SceneSlider(label: "Bri",     value: $settings.cloudBrightness,  color: .white)
