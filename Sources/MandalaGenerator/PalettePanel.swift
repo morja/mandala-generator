@@ -396,7 +396,7 @@ private struct LayerCard: View {
                     Divider()
 
                     // Sliders
-                    CardSlider(label: "Scale",       value: $layer.scale,        range: 0.1...1.1, color: .blue)
+                    CardSlider(label: "Scale",       value: $layer.scale,        range: 0...1,     color: .blue)
                     CardSlider(label: "Complexity",  value: $layer.complexity,   range: 0...1,     color: .indigo)
                     CardSlider(label: "Density",     value: $layer.density,      range: 0...1,     color: .blue)
                     CardSlider(label: "Glow",        value: $layer.glowIntensity,range: 0...1,     color: .yellow)
