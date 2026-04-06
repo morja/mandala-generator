@@ -106,7 +106,7 @@ struct MandalaRenderer {
             var layerRng = SeededRNG(seed: layer.seed == 0 ? params.seed &+ UInt64(li + 1) &* 0x9e3779b97f4a7c15 : layer.seed)
 
             let layerSymmetry = max(1, min(8, layer.symmetry))
-            let layerRadius = baseRadius * max(0.1, min(1.0, layer.scale))
+            let layerRadius = baseRadius * max(0.1, min(1.0, layer.scale)) * 1.15
             let layerCount  = max(2, Int(layer.complexity * 8) + 1)
 
             // Build a params copy with this layer's values for renderer internals
@@ -329,7 +329,7 @@ struct MandalaRenderer {
         let baseRadius = Double(bufferSize) * 0.72
 
         let layerSymmetry = max(1, min(8, layer.symmetry))
-        let layerRadius   = baseRadius * max(0.1, min(1.0, layer.scale))
+        let layerRadius   = baseRadius * max(0.1, min(1.0, layer.scale)) * 1.1
         let layerCount    = max(2, Int(layer.complexity * 8) + 1)
         let palette       = palettes[max(0, min(palettes.count - 1, layer.paletteIndex))]
 
