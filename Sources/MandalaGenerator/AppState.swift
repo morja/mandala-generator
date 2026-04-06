@@ -289,7 +289,7 @@ class AppState: ObservableObject {
             usedPalettes.insert(palIdx)
             newLayers.append(StyleLayer(
                 style: s,
-                scale: li == 0 ? Double.random(in: 0.75...1.0) : Double.random(in: 0.3...0.75),
+                scale: li == 0 ? Double.random(in: 0.65...0.85) : Double.random(in: 0.3...0.65),
                 paletteIndex: palIdx,
                 colorOffset: Double.random(in: 0...1),
                 complexity: Double.random(in: 0.2...1.0),
