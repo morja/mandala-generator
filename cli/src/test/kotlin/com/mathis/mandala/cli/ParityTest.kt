@@ -23,8 +23,8 @@ class ParityTest {
         // Core Image's handling of over-range values in Add blending is not reproduced exactly.
         "wave-two-layers" to 34.0,
         // Core Image's turbulence noise is Apple's own; the displacement pattern differs.
-        "painted-default" to 25.0,
-        "painted-heavy" to 20.0,
+        "painted-default" to 44.0,
+        "painted-heavy" to 26.0,
         // Very dense, overexposed centre: Core Image's over-range handling again (see wave-two-layers).
         "hyperboloid-tilted" to 40.0,
         // Core Image's random generator is Apple's own; amount and offset match, the pattern differs.

@@ -127,7 +127,9 @@ internal class LayerEffects(private val par: Parallel) {
     }
 
     /**
-     * Turbulent displacement plus blur; above 0.3 also colour bleed and grain.
+     * Blur; above 0.3 also colour bleed and grain. The macOS code first asks for a CITurbulence
+     * displacement, but Core Image has no filter of that name, so `CIFilter(name:)` returns nil and
+     * the step is skipped there. The port skips it as well.
      *
      * Computed in horizontal strips so only one strip is held as floats. Each strip carries an
      * overlap as tall as displacement and all blurs reach, so its core rows come out as if the
@@ -139,10 +141,6 @@ internal class LayerEffects(private val par: Parallel) {
         val scale = effectWidth / 1600.0
         val level = abstractLevel
 
-        val displacement = (level * 30.0 * scale).toFloat()
-        val size = effectWidth * (0.1 + level * 0.45)
-        val nx = NoiseField(effectWidth, size, level * 3.0, 3, salt = 17)
-        val ny = NoiseField(effectWidth, size, level * 3.0, 3, salt = 9001)
         val softBlur = level * 3.0 * scale
         val heavyFactor = max(0.0, (level - 0.3) / 0.7)
         val heavyBlur = heavyFactor * level * 8.0 * scale
@@ -151,7 +149,7 @@ internal class LayerEffects(private val par: Parallel) {
         val grain = (heavyFactor * level * 0.12).toFloat()
 
         fun reach(sigma: Double) = if (sigma < 0.05) 0 else ceil(sigma * 3.0).toInt() + 3
-        val overlap = ceil(displacement / 2.0).toInt() + 2 + reach(softBlur) +
+        val overlap = reach(softBlur) +
             (if (heavy) reach(heavyBlur) + reach(bleedBlur) else 0)
 
         // Strips read the input around them, so the result goes into a separate image.
@@ -163,16 +161,10 @@ internal class LayerEffects(private val par: Parallel) {
             val bottom = minOf(h, y1 + overlap)
             val strip = FloatImage(w, bottom - top)
             par.forRange(bottom - top) { from, until ->
-                val tmp = FloatArray(3)
+                val row = FloatArray(n)
                 for (r in from until until) {
-                    val y = top + r
-                    for (x in 0 until w) {
-                        val vx = x + offset
-                        val vy = y + offset
-                        val sx = x + (nx.sample(vx, vy) - 0.5f) * displacement
-                        val sy = y + (ny.sample(vx, vy) - 0.5f) * displacement
-                        Filters.sampleBilinear(image, sx, sy, strip.data, (r * w + x) * 3, tmp)
-                    }
+                    WorkingSpace.readRow(image, top + r, row)
+                    System.arraycopy(row, 0, strip.data, r * n, n)
                 }
             }
 
