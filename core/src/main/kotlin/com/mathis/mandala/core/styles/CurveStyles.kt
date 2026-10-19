@@ -25,6 +25,8 @@ class StyleContext(
     val density: Double,
     val colorDrift: Double,
     val seed: ULong,
+    /** Radial Mesh only: brightness of the spokes. */
+    val spokes: Double = 1.0,
 )
 
 /** Ports of the curve-collecting styles from MandalaRenderer.swift. */
@@ -273,7 +275,7 @@ object CurveStyles {
     // ── Curve generators ─────────────────────────────────────────────────
 
     /** Hypotrochoid points; the spirograph and hypocycloid styles share this formula. */
-    private fun spiroPoints(bigR: Double, r: Double, d: Double, steps: Int): Pair<FloatArray, FloatArray> {
+    internal fun spiroPoints(bigR: Double, r: Double, d: Double, steps: Int): Pair<FloatArray, FloatArray> {
         val xs = FloatArray(steps + 1)
         val ys = FloatArray(steps + 1)
         val diff = bigR - r
@@ -288,7 +290,7 @@ object CurveStyles {
         return xs to ys
     }
 
-    private fun rosePoints(k: Int, radius: Double, steps: Int): Pair<FloatArray, FloatArray> {
+    internal fun rosePoints(k: Int, radius: Double, steps: Int): Pair<FloatArray, FloatArray> {
         val xs = FloatArray(steps + 1)
         val ys = FloatArray(steps + 1)
         val period = if (k % 2 == 0) 2.0 * PI else PI
@@ -302,8 +304,24 @@ object CurveStyles {
         return xs to ys
     }
 
+    /** Epitrochoid points (circle rolling outside). */
+    internal fun epitrochoidPoints(bigR: Double, r: Double, d: Double, steps: Int): Pair<FloatArray, FloatArray> {
+        val xs = FloatArray(steps + 1)
+        val ys = FloatArray(steps + 1)
+        val sum = bigR + r
+        val ratio = if (r == 0.0) 0.0 else sum / r
+        val tMax = lcmPeriod(bigR, r) * 2.0 * PI
+        val dt = tMax / steps
+        for (i in 0..steps) {
+            val t = i * dt
+            xs[i] = (sum * cos(t) - d * cos(ratio * t)).toFloat()
+            ys[i] = (sum * sin(t) - d * sin(ratio * t)).toFloat()
+        }
+        return xs to ys
+    }
+
     /** Smallest p in 1..20 with p * R / r nearly integer, else 10. */
-    private fun lcmPeriod(bigR: Double, r: Double): Double {
+    internal fun lcmPeriod(bigR: Double, r: Double): Double {
         if (r <= 0) return 1.0
         val ratio = bigR / r
         for (p in 1..20) {
@@ -314,10 +332,10 @@ object CurveStyles {
     }
 
     // Swift's Double.rounded() rounds half away from zero; Kotlin's round() rounds half to even.
-    private fun roundHalfAwayFromZero(v: Double): Double =
+    internal fun roundHalfAwayFromZero(v: Double): Double =
         if (v >= 0) (v + 0.5).toLong().toDouble() else -((-v + 0.5).toLong().toDouble())
 
-    private fun rotated(xs: FloatArray, ys: FloatArray, cx: Float, cy: Float, angle: Double): Pair<FloatArray, FloatArray> {
+    internal fun rotated(xs: FloatArray, ys: FloatArray, cx: Float, cy: Float, angle: Double): Pair<FloatArray, FloatArray> {
         val cosA = cos(angle).toFloat()
         val sinA = sin(angle).toFloat()
         val rxs = FloatArray(xs.size)
@@ -330,7 +348,7 @@ object CurveStyles {
     }
 
     /** Multi-frequency sine ripple on absolute coordinates. */
-    private fun applyRipple(xs: FloatArray, ys: FloatArray, amount: Float, seed: ULong) {
+    internal fun applyRipple(xs: FloatArray, ys: FloatArray, amount: Float, seed: ULong) {
         val n = xs.size
         if (n <= 1) return
         val f1 = 3.0f + (seed and 0x7uL).toFloat() * 0.5f

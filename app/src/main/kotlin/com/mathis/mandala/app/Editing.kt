@@ -5,6 +5,7 @@ import com.mathis.mandala.core.BaseLayerType
 import com.mathis.mandala.core.BuiltInPalettes
 import com.mathis.mandala.core.EffectsLayerSettings
 import com.mathis.mandala.core.MandalaParameters
+import com.mathis.mandala.core.MandalaRenderer
 import com.mathis.mandala.core.MandalaStyle
 import com.mathis.mandala.core.SettingsJson
 import com.mathis.mandala.core.StyleLayer
@@ -14,18 +15,30 @@ import com.mathis.mandala.core.StyleLayer
  * are unit-tested on the JVM. Layers are drawn in list order: the first one lies at the bottom.
  */
 object Editing {
-    /** Styles the renderer has ported so far, in the order the macOS app lists them. */
-    val styles = listOf(
-        MandalaStyle.SPIROGRAPH,
-        MandalaStyle.ROSE_CURVES,
-        MandalaStyle.HYPOCYCLOID,
-        MandalaStyle.PHYLLOTAXIS,
-        MandalaStyle.FRACTAL,
-        MandalaStyle.WAVE_INTERFERENCE,
-        MandalaStyle.STAR_BURST,
-        MandalaStyle.HYPERBOLOID,
-        MandalaStyle.UNIVERSE,
-    )
+    /** Style groups as in the macOS app; only styles the renderer has ported are offered. */
+    val styleGroups: List<Pair<String, List<MandalaStyle>>> = listOf(
+        "Parametric curves" to listOf(
+            MandalaStyle.SPIROGRAPH, MandalaStyle.ROSE_CURVES, MandalaStyle.FLORAL, MandalaStyle.BUTTERFLY,
+            MandalaStyle.EPITROCHOID, MandalaStyle.LISSAJOUS, MandalaStyle.HYPOCYCLOID, MandalaStyle.PHYLLOTAXIS,
+            MandalaStyle.FRACTAL, MandalaStyle.SUPERFORMULA, MandalaStyle.WAVE_INTERFERENCE,
+        ),
+        "Geometric and pattern" to listOf(
+            MandalaStyle.GEOMETRIC, MandalaStyle.SACRED_GEOMETRY, MandalaStyle.SUNBURST, MandalaStyle.STAR_BURST,
+            MandalaStyle.STRING_ART, MandalaStyle.SPIDER_WEB, MandalaStyle.WEAVE, MandalaStyle.RADIAL_MESH, MandalaStyle.MOIRE,
+        ),
+        "Organic and flow" to listOf(
+            MandalaStyle.FLOW_FIELD, MandalaStyle.TENDRIL, MandalaStyle.VORONOI, MandalaStyle.STRANGE_ATTRACTOR,
+            MandalaStyle.CONSTELLATION_WEB, MandalaStyle.DEEP_NEBULA, MandalaStyle.INTERFERENCE_BLOOM,
+        ),
+        "3D" to listOf(
+            MandalaStyle.HYPERBOLOID, MandalaStyle.TORUS, MandalaStyle.NAUTILUS, MandalaStyle.SPHERE_GRID,
+            MandalaStyle.TORUS_KNOT, MandalaStyle.TESSERACT,
+        ),
+        "Special" to listOf(MandalaStyle.UNIVERSE, MandalaStyle.SYMBOLS, MandalaStyle.MIXED),
+    ).map { (name, list) -> name to list.filter { it in MandalaRenderer.supportedStyles } }.filter { it.second.isNotEmpty() }
+
+    /** All offered styles in macOS order. */
+    val styles: List<MandalaStyle> = MandalaStyle.entries.filter { it in MandalaRenderer.supportedStyles }
 
     /** Background types the renderer can draw; "off" is a disabled base layer. */
     val backgrounds = listOf(BaseLayerType.COLOR, BaseLayerType.GRADIENT, BaseLayerType.SUNBURST)

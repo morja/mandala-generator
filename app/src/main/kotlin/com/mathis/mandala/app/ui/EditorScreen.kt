@@ -515,13 +515,17 @@ private fun LayerRow(
 @Composable
 private fun LayerControls(layer: StyleLayer, update: ((StyleLayer) -> StyleLayer) -> Unit) {
     SubTitle("Style")
-    FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
-        for (style in Editing.styles) {
-            FilterChip(
-                selected = layer.style == style,
-                onClick = { update { it.copy(style = style) } },
-                label = { Text(style.displayName) },
-            )
+    for ((group, styles) in Editing.styleGroups) {
+        Text(group, style = MaterialTheme.typography.bodySmall, color = LocalTokens.current.textMuted,
+            modifier = Modifier.padding(top = Spacing.xs))
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+            for (style in styles) {
+                FilterChip(
+                    selected = layer.style == style,
+                    onClick = { update { it.copy(style = style) } },
+                    label = { Text(style.displayName) },
+                )
+            }
         }
     }
 

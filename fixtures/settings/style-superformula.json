@@ -1,0 +1,26 @@
+{
+  "layers": [
+    {
+      "isEnabled": true,
+      "style": "superformula",
+      "scale": 0.75,
+      "paletteIndex": 5,
+      "complexity": 0.6,
+      "density": 0.7,
+      "glowIntensity": 0.6,
+      "colorDrift": 0.4,
+      "ripple": 0.0,
+      "abstractLevel": 0.0,
+      "symmetry": 4,
+      "seed": 1357
+    }
+  ],
+  "baseLayer": {
+    "isEnabled": false
+  },
+  "effectsLayer": {
+    "isEnabled": false
+  },
+  "seed": 8642,
+  "outputSize": 512
+}

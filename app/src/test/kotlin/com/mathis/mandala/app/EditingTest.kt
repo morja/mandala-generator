@@ -27,6 +27,7 @@ class EditingTest {
     @Test
     fun offeredStylesAreAllPorted() {
         assertTrue(MandalaRenderer.supportedStyles.containsAll(Editing.styles))
+        assertEquals(Editing.styles.toSet(), Editing.styleGroups.flatMap { it.second }.toSet())
         assertTrue(start.layers.single().style in Editing.styles)
         Editing.backgrounds.forEach { assertTrue(it.name, com.mathis.mandala.core.MandalaRenderer.supportsBackground(it)) }
     }

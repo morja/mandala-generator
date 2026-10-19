@@ -4,6 +4,8 @@ import com.mathis.mandala.core.styles.CurveStyles
 import com.mathis.mandala.core.styles.CurveTask
 import com.mathis.mandala.core.styles.DirectStyles
 import com.mathis.mandala.core.styles.LineList
+import com.mathis.mandala.core.styles.ParametricStyles
+import com.mathis.mandala.core.styles.PatternStyles
 import com.mathis.mandala.core.styles.StyleContext
 import kotlin.math.abs
 import kotlin.math.ceil
@@ -36,6 +38,20 @@ object MandalaRenderer {
         MandalaStyle.HYPERBOLOID,
         MandalaStyle.STAR_BURST,
         MandalaStyle.UNIVERSE,
+        MandalaStyle.EPITROCHOID,
+        MandalaStyle.FLORAL,
+        MandalaStyle.LISSAJOUS,
+        MandalaStyle.BUTTERFLY,
+        MandalaStyle.GEOMETRIC,
+        MandalaStyle.SUPERFORMULA,
+        MandalaStyle.SPIDER_WEB,
+        MandalaStyle.WEAVE,
+        MandalaStyle.SACRED_GEOMETRY,
+        MandalaStyle.RADIAL_MESH,
+        MandalaStyle.FLOW_FIELD,
+        MandalaStyle.TENDRIL,
+        MandalaStyle.MOIRE,
+        MandalaStyle.VORONOI,
     )
 
     /** Whether the renderer draws this background type (a solid colour or one computed per pixel). */
@@ -101,7 +117,7 @@ object MandalaRenderer {
                 val offset = (effectWidth - size) / 2
                 val c = size * 0.5f
 
-                val ctx = StyleContext(layer.complexity, layer.density, layer.colorDrift, params.seed)
+                val ctx = StyleContext(layer.complexity, layer.density, layer.colorDrift, params.seed, layer.spokes)
                 val tasks = ArrayList<CurveTask>()
                 val lines = LineList()
                 collectStyle(
@@ -185,6 +201,20 @@ object MandalaRenderer {
             MandalaStyle.PHYLLOTAXIS -> CurveStyles.phyllotaxis(tasks, cx, cy, radius, ctx, rng, symmetry, ripple, 1f)
             MandalaStyle.WAVE_INTERFERENCE -> CurveStyles.waveInterference(tasks, cx, cy, radius, ctx, rng, symmetry, ripple, 1f)
             MandalaStyle.FRACTAL -> CurveStyles.fractal(tasks, cx, cy, radius, ctx, rng, symmetry, ripple, 1f)
+            MandalaStyle.EPITROCHOID -> ParametricStyles.epitrochoid(tasks, cx, cy, radius, ctx, rng, layerCount, symmetry, ripple, 1f)
+            MandalaStyle.FLORAL -> ParametricStyles.floral(tasks, cx, cy, radius, ctx, rng, symmetry, ripple, 1f)
+            MandalaStyle.LISSAJOUS -> ParametricStyles.lissajous(tasks, cx, cy, radius, ctx, rng, layerCount, symmetry, ripple, 1f)
+            MandalaStyle.BUTTERFLY -> ParametricStyles.butterfly(tasks, cx, cy, radius, ctx, rng, layerCount, symmetry, ripple, 1f)
+            MandalaStyle.GEOMETRIC -> ParametricStyles.geometric(tasks, cx, cy, radius, ctx, rng, layerCount, symmetry, ripple, 1f)
+            MandalaStyle.SUPERFORMULA -> ParametricStyles.superformula(tasks, cx, cy, radius, ctx, rng, layerCount, symmetry, ripple, 1f)
+            MandalaStyle.SPIDER_WEB -> PatternStyles.spiderWeb(tasks, cx, cy, radius, ctx, rng, symmetry, ripple, 1f)
+            MandalaStyle.WEAVE -> PatternStyles.weave(tasks, cx, cy, radius, ctx, rng, symmetry, ripple, 1f)
+            MandalaStyle.SACRED_GEOMETRY -> PatternStyles.sacredGeometry(tasks, cx, cy, radius, ctx, rng, symmetry, 1f)
+            MandalaStyle.RADIAL_MESH -> PatternStyles.radialMesh(tasks, cx, cy, radius, ctx, rng, symmetry, ripple, 1f)
+            MandalaStyle.FLOW_FIELD -> PatternStyles.flowField(tasks, cx, cy, radius, ctx, rng, symmetry, ripple, 1f)
+            MandalaStyle.TENDRIL -> PatternStyles.tendril(tasks, cx, cy, radius, ctx, rng, symmetry, ripple, 1f)
+            MandalaStyle.MOIRE -> PatternStyles.moire(tasks, cx, cy, radius, ctx, rng, symmetry, ripple, 1f)
+            MandalaStyle.VORONOI -> PatternStyles.voronoi(tasks, cx, cy, radius, ctx, rng, symmetry, ripple, 1f)
             MandalaStyle.STAR_BURST -> DirectStyles.starBurst(lines, cx, cy, radius, ctx, palette, rng)
             MandalaStyle.HYPERBOLOID -> DirectStyles.hyperboloid(lines, cx, cy, radius, ctx, palette, rng, layerCount, symmetry, colorOffset)
             MandalaStyle.UNIVERSE -> DirectStyles.universe(lines, cx, cy, radius, ctx, palette, rng, colorOffset, symmetry)
