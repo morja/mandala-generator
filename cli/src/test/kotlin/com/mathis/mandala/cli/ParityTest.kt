@@ -38,6 +38,8 @@ class ParityTest {
         "style-strange-attractor" to 15.0,
         // A few connection lines flip where a random keep-or-skip decision sits on a rounding edge.
         "style-constellation-web" to 35.0,
+        // Very large, thin ellipses (three times the layer radius): last-bit differences shift fine lines.
+        "style-deep-nebula" to 33.0,
     )
 
     @Test

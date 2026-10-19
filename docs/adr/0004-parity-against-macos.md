@@ -19,6 +19,7 @@ Status: proposed, 19 October 2026
 | Effects: relief border | The emboss alpha at the outermost pixel row. | `fx-relief`: 38 dB overall, 54 dB inside. |
 | Strange Attractor | Chaotic iteration amplifies the last-bit differences between Apple's and Java's sin/cos. | `style-strange-attractor`: about 19 dB per pixel, same shape and density. |
 | Constellation Web | A few random keep-or-skip decisions sit on a rounding edge. | `style-constellation-web`: about 37 dB, a handful of lines differ. |
+| Deep Nebula | Very large thin ellipses (three times the layer radius) magnify last-bit differences. | `style-deep-nebula`: about 35 dB, same look. |
 | Lanczos and blur kernels | Own implementations (Gaussian ≤ σ 6, three box passes above). | ≤ 1/255 on average. |
 
 ## macOS behaviour reproduced on purpose
@@ -29,6 +30,7 @@ These look like accidents in the macOS app but define how its images look, so th
 - **Clarity darkens.** Its high pass is the sum of two opaque images (alpha 2); the colour matrix then scales half the value and soft light blends with alpha 2.
 - **Effects brightness is added after contrast** (CIColorControls order), not before.
 - **CIVignette and CISepiaTone** have no documented formula; both are tabulated from measurements.
+- **Symbols** picks its type with `% 20`, so the last three symbols of the macOS library (Eye of Horus, Star of Ishtar, Caduceus) never appear; they are not ported.
 
 ## Consequences
 

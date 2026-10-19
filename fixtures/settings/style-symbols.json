@@ -1,0 +1,26 @@
+{
+  "layers": [
+    {
+      "isEnabled": true,
+      "style": "symbols",
+      "scale": 0.75,
+      "paletteIndex": 17,
+      "complexity": 0.7,
+      "density": 0.5,
+      "glowIntensity": 0.6,
+      "colorDrift": 0.4,
+      "ripple": 0.0,
+      "abstractLevel": 0.0,
+      "symmetry": 6,
+      "seed": 4711
+    }
+  ],
+  "baseLayer": {
+    "isEnabled": false
+  },
+  "effectsLayer": {
+    "isEnabled": false
+  },
+  "seed": 1618,
+  "outputSize": 512
+}

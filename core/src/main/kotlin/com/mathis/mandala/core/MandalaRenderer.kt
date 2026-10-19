@@ -7,6 +7,9 @@ import com.mathis.mandala.core.styles.LineList
 import com.mathis.mandala.core.styles.ParametricStyles
 import com.mathis.mandala.core.styles.PatternStyles
 import com.mathis.mandala.core.styles.SolidStyles
+import com.mathis.mandala.core.styles.SymbolStyles
+import com.mathis.mandala.core.styles.ThreeDStyles
+import com.mathis.mandala.core.styles.CosmicStyles
 import com.mathis.mandala.core.styles.StyleContext
 import kotlin.math.abs
 import kotlin.math.ceil
@@ -29,37 +32,8 @@ data class RenderResult(val image: Image8, val warnings: List<String>, val milli
 /** Port of the macOS MandalaRenderer.render pipeline (proof-of-concept subset, see warnings). */
 object MandalaRenderer {
 
-    val supportedStyles = setOf(
-        MandalaStyle.SPIROGRAPH,
-        MandalaStyle.ROSE_CURVES,
-        MandalaStyle.HYPOCYCLOID,
-        MandalaStyle.PHYLLOTAXIS,
-        MandalaStyle.WAVE_INTERFERENCE,
-        MandalaStyle.FRACTAL,
-        MandalaStyle.HYPERBOLOID,
-        MandalaStyle.STAR_BURST,
-        MandalaStyle.UNIVERSE,
-        MandalaStyle.EPITROCHOID,
-        MandalaStyle.FLORAL,
-        MandalaStyle.LISSAJOUS,
-        MandalaStyle.BUTTERFLY,
-        MandalaStyle.GEOMETRIC,
-        MandalaStyle.SUPERFORMULA,
-        MandalaStyle.SPIDER_WEB,
-        MandalaStyle.WEAVE,
-        MandalaStyle.SACRED_GEOMETRY,
-        MandalaStyle.RADIAL_MESH,
-        MandalaStyle.FLOW_FIELD,
-        MandalaStyle.TENDRIL,
-        MandalaStyle.MOIRE,
-        MandalaStyle.VORONOI,
-        MandalaStyle.STRING_ART,
-        MandalaStyle.SUNBURST,
-        MandalaStyle.TORUS,
-        MandalaStyle.NAUTILUS,
-        MandalaStyle.CONSTELLATION_WEB,
-        MandalaStyle.STRANGE_ATTRACTOR,
-    )
+    /** Every style of the macOS app is ported. */
+    val supportedStyles: Set<MandalaStyle> = MandalaStyle.entries.toSet()
 
     /** Whether the renderer draws this background type (a solid colour or one computed per pixel). */
     fun supportsBackground(type: BaseLayerType): Boolean = type == BaseLayerType.COLOR || Background.supports(type)
@@ -199,34 +173,38 @@ object MandalaRenderer {
 
     /**
      * Curve styles fill `tasks`; styles the macOS renderer draws directly fill `lines`; point styles
-     * (Strange Attractor) draw straight into `buffer`.
+     * (Strange Attractor) draw straight into `buffer`. Mixed calls this again for three zones.
      */
     private fun collectStyle(
         style: MandalaStyle, tasks: MutableList<CurveTask>, lines: LineList, buffer: PixelBuffer, cx: Float, cy: Float, radius: Double,
         ctx: StyleContext, palette: ColorPalette, rng: SeededRng, layerCount: Int, symmetry: Int, ripple: Float,
-        colorOffset: Double,
+        colorOffset: Double, weightMul: Float = 1f,
     ) {
+        val w = weightMul
         when (style) {
-            MandalaStyle.SPIROGRAPH -> CurveStyles.spirograph(tasks, cx, cy, radius, ctx, rng, layerCount, symmetry, ripple, 1f)
-            MandalaStyle.ROSE_CURVES -> CurveStyles.roseCurves(tasks, cx, cy, radius, ctx, rng, layerCount, symmetry, ripple, 1f)
-            MandalaStyle.HYPOCYCLOID -> CurveStyles.hypocycloid(tasks, cx, cy, radius, ctx, rng, layerCount, symmetry, ripple, 1f)
-            MandalaStyle.PHYLLOTAXIS -> CurveStyles.phyllotaxis(tasks, cx, cy, radius, ctx, rng, symmetry, ripple, 1f)
-            MandalaStyle.WAVE_INTERFERENCE -> CurveStyles.waveInterference(tasks, cx, cy, radius, ctx, rng, symmetry, ripple, 1f)
-            MandalaStyle.FRACTAL -> CurveStyles.fractal(tasks, cx, cy, radius, ctx, rng, symmetry, ripple, 1f)
-            MandalaStyle.EPITROCHOID -> ParametricStyles.epitrochoid(tasks, cx, cy, radius, ctx, rng, layerCount, symmetry, ripple, 1f)
-            MandalaStyle.FLORAL -> ParametricStyles.floral(tasks, cx, cy, radius, ctx, rng, symmetry, ripple, 1f)
-            MandalaStyle.LISSAJOUS -> ParametricStyles.lissajous(tasks, cx, cy, radius, ctx, rng, layerCount, symmetry, ripple, 1f)
-            MandalaStyle.BUTTERFLY -> ParametricStyles.butterfly(tasks, cx, cy, radius, ctx, rng, layerCount, symmetry, ripple, 1f)
-            MandalaStyle.GEOMETRIC -> ParametricStyles.geometric(tasks, cx, cy, radius, ctx, rng, layerCount, symmetry, ripple, 1f)
-            MandalaStyle.SUPERFORMULA -> ParametricStyles.superformula(tasks, cx, cy, radius, ctx, rng, layerCount, symmetry, ripple, 1f)
-            MandalaStyle.SPIDER_WEB -> PatternStyles.spiderWeb(tasks, cx, cy, radius, ctx, rng, symmetry, ripple, 1f)
-            MandalaStyle.WEAVE -> PatternStyles.weave(tasks, cx, cy, radius, ctx, rng, symmetry, ripple, 1f)
-            MandalaStyle.SACRED_GEOMETRY -> PatternStyles.sacredGeometry(tasks, cx, cy, radius, ctx, rng, symmetry, 1f)
-            MandalaStyle.RADIAL_MESH -> PatternStyles.radialMesh(tasks, cx, cy, radius, ctx, rng, symmetry, ripple, 1f)
-            MandalaStyle.FLOW_FIELD -> PatternStyles.flowField(tasks, cx, cy, radius, ctx, rng, symmetry, ripple, 1f)
-            MandalaStyle.TENDRIL -> PatternStyles.tendril(tasks, cx, cy, radius, ctx, rng, symmetry, ripple, 1f)
-            MandalaStyle.MOIRE -> PatternStyles.moire(tasks, cx, cy, radius, ctx, rng, symmetry, ripple, 1f)
-            MandalaStyle.VORONOI -> PatternStyles.voronoi(tasks, cx, cy, radius, ctx, rng, symmetry, ripple, 1f)
+            MandalaStyle.SPIROGRAPH -> CurveStyles.spirograph(tasks, cx, cy, radius, ctx, rng, layerCount, symmetry, ripple, w)
+            MandalaStyle.ROSE_CURVES -> CurveStyles.roseCurves(tasks, cx, cy, radius, ctx, rng, layerCount, symmetry, ripple, w)
+            MandalaStyle.HYPOCYCLOID -> CurveStyles.hypocycloid(tasks, cx, cy, radius, ctx, rng, layerCount, symmetry, ripple, w)
+            MandalaStyle.PHYLLOTAXIS -> CurveStyles.phyllotaxis(tasks, cx, cy, radius, ctx, rng, symmetry, ripple, w)
+            MandalaStyle.WAVE_INTERFERENCE -> CurveStyles.waveInterference(tasks, cx, cy, radius, ctx, rng, symmetry, ripple, w)
+            MandalaStyle.FRACTAL -> CurveStyles.fractal(tasks, cx, cy, radius, ctx, rng, symmetry, ripple, w)
+            MandalaStyle.EPITROCHOID -> ParametricStyles.epitrochoid(tasks, cx, cy, radius, ctx, rng, layerCount, symmetry, ripple, w)
+            MandalaStyle.FLORAL -> ParametricStyles.floral(tasks, cx, cy, radius, ctx, rng, symmetry, ripple, w)
+            MandalaStyle.LISSAJOUS -> ParametricStyles.lissajous(tasks, cx, cy, radius, ctx, rng, layerCount, symmetry, ripple, w)
+            MandalaStyle.BUTTERFLY -> ParametricStyles.butterfly(tasks, cx, cy, radius, ctx, rng, layerCount, symmetry, ripple, w)
+            MandalaStyle.GEOMETRIC -> ParametricStyles.geometric(tasks, cx, cy, radius, ctx, rng, layerCount, symmetry, ripple, w)
+            MandalaStyle.SUPERFORMULA -> ParametricStyles.superformula(tasks, cx, cy, radius, ctx, rng, layerCount, symmetry, ripple, w)
+            MandalaStyle.SPIDER_WEB -> PatternStyles.spiderWeb(tasks, cx, cy, radius, ctx, rng, symmetry, ripple, w)
+            MandalaStyle.WEAVE -> PatternStyles.weave(tasks, cx, cy, radius, ctx, rng, symmetry, ripple, w)
+            MandalaStyle.SACRED_GEOMETRY -> PatternStyles.sacredGeometry(tasks, cx, cy, radius, ctx, rng, symmetry, w)
+            MandalaStyle.RADIAL_MESH -> PatternStyles.radialMesh(tasks, cx, cy, radius, ctx, rng, symmetry, ripple, w)
+            MandalaStyle.FLOW_FIELD -> PatternStyles.flowField(tasks, cx, cy, radius, ctx, rng, symmetry, ripple, w)
+            MandalaStyle.TENDRIL -> PatternStyles.tendril(tasks, cx, cy, radius, ctx, rng, symmetry, ripple, w)
+            MandalaStyle.MOIRE -> PatternStyles.moire(tasks, cx, cy, radius, ctx, rng, symmetry, ripple, w)
+            MandalaStyle.VORONOI -> PatternStyles.voronoi(tasks, cx, cy, radius, ctx, rng, symmetry, ripple, w)
+            MandalaStyle.TORUS_KNOT -> ThreeDStyles.torusKnot(tasks, cx, cy, radius, ctx, rng, symmetry, ripple, w)
+            MandalaStyle.SPHERE_GRID -> ThreeDStyles.sphereGrid(tasks, cx, cy, radius, ctx, rng, symmetry, ripple, w)
+            MandalaStyle.TESSERACT -> ThreeDStyles.tesseract(tasks, cx, cy, radius, ctx, rng, symmetry, ripple, w)
             MandalaStyle.STRING_ART -> SolidStyles.stringArt(lines, cx, cy, radius, ctx, palette, rng, layerCount, symmetry)
             MandalaStyle.SUNBURST -> SolidStyles.sunburst(lines, cx, cy, radius, ctx, palette, rng, layerCount, symmetry)
             MandalaStyle.TORUS -> SolidStyles.torus(lines, cx, cy, radius, ctx, palette, rng, layerCount, symmetry, colorOffset)
@@ -236,9 +214,38 @@ object MandalaRenderer {
             MandalaStyle.STAR_BURST -> DirectStyles.starBurst(lines, cx, cy, radius, ctx, palette, rng)
             MandalaStyle.HYPERBOLOID -> DirectStyles.hyperboloid(lines, cx, cy, radius, ctx, palette, rng, layerCount, symmetry, colorOffset)
             MandalaStyle.UNIVERSE -> DirectStyles.universe(lines, cx, cy, radius, ctx, palette, rng, colorOffset, symmetry)
-            else -> Unit
+            MandalaStyle.SYMBOLS -> SymbolStyles.symbols(lines, cx, cy, radius, ctx, palette, rng, colorOffset, symmetry)
+            MandalaStyle.DEEP_NEBULA -> CosmicStyles.deepNebula(lines, cx, cy, radius * 3.0, ctx, palette, rng, colorOffset, symmetry)
+            MandalaStyle.INTERFERENCE_BLOOM -> CosmicStyles.interferenceBloom(lines, cx, cy, radius, ctx, palette, rng, colorOffset, symmetry)
+            MandalaStyle.MIXED -> {
+                // Three zones, each with a style picked by its own generator from the global seed.
+                val zoneRng = SeededRng(ctx.seed + 0xbeef1234uL)
+                val sub = max(2, layerCount / 3)
+                for (zRadius in doubleArrayOf(1.0, 0.72, 0.45)) {
+                    val pick = mixedZoneStyles[(zoneRng.nextDouble() * mixedZoneStyles.size).toInt() % mixedZoneStyles.size]
+                    val zoneWeight = weightMul * (0.7 + zoneRng.nextDouble() * 0.6).toFloat()
+                    collectStyle(
+                        if (pick == MandalaStyle.MIXED) MandalaStyle.SPIROGRAPH else pick,
+                        tasks, lines, buffer, cx, cy, radius * zRadius, ctx, palette, rng, sub, symmetry, ripple,
+                        colorOffset = 0.0, weightMul = zoneWeight,
+                    )
+                }
+            }
         }
     }
+
+    /** The styles Mixed chooses from, in the macOS order (the index comes from the random generator). */
+    private val mixedZoneStyles = listOf(
+        MandalaStyle.SPIROGRAPH, MandalaStyle.ROSE_CURVES, MandalaStyle.EPITROCHOID, MandalaStyle.LISSAJOUS,
+        MandalaStyle.BUTTERFLY, MandalaStyle.FLORAL, MandalaStyle.STRING_ART, MandalaStyle.SUNBURST, MandalaStyle.GEOMETRIC,
+        MandalaStyle.FRACTAL, MandalaStyle.PHYLLOTAXIS, MandalaStyle.HYPOCYCLOID, MandalaStyle.WAVE_INTERFERENCE,
+        MandalaStyle.SPIDER_WEB, MandalaStyle.WEAVE, MandalaStyle.SACRED_GEOMETRY, MandalaStyle.RADIAL_MESH,
+        MandalaStyle.FLOW_FIELD, MandalaStyle.TENDRIL, MandalaStyle.MOIRE, MandalaStyle.VORONOI, MandalaStyle.TORUS_KNOT,
+        MandalaStyle.SPHERE_GRID, MandalaStyle.TESSERACT, MandalaStyle.STAR_BURST, MandalaStyle.UNIVERSE, MandalaStyle.SYMBOLS,
+        MandalaStyle.STRANGE_ATTRACTOR, MandalaStyle.CONSTELLATION_WEB, MandalaStyle.DEEP_NEBULA,
+        MandalaStyle.INTERFERENCE_BLOOM, MandalaStyle.SUPERFORMULA, MandalaStyle.HYPERBOLOID, MandalaStyle.TORUS,
+        MandalaStyle.NAUTILUS,
+    )
 
     /**
      * Draws tasks in parallel. The buffer is split into horizontal bands; each thread draws every
