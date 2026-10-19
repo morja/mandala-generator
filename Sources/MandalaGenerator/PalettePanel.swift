@@ -399,6 +399,9 @@ private struct LayerCard: View {
                     CardSlider(label: "Scale",       value: $layer.scale,        range: 0...1,     color: .blue)
                     CardSlider(label: "Complexity",  value: $layer.complexity,   range: 0...1,     color: .indigo)
                     CardSlider(label: "Density",     value: $layer.density,      range: 0...1,     color: .blue)
+                    if layer.style == .radialMesh {
+                        CardSlider(label: "Spokes",  value: $layer.spokes,       range: 0...1,     color: .blue)
+                    }
                     CardSlider(label: "Glow",        value: $layer.glowIntensity,range: 0...1,     color: .yellow)
                     CardSlider(label: "Color Drift", value: $layer.colorDrift,   range: 0...1,     color: .purple)
                     CardSlider(label: "Ripple",      value: $layer.ripple,       range: 0...1,     color: .cyan)

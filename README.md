@@ -206,6 +206,7 @@ Each layer is an independent drawing pass composited on top of previous layers. 
 | **Scale** | Radius of the pattern (0.1–1.0) |
 | **Complexity** | Number / intricacy of curves |
 | **Density** | Stroke weight and line count |
+| **Spokes** | Radial Mesh only: brightness of the radial spokes (0 = rings only, 1 = default) |
 | **Glow** | Bloom/glow halo intensity |
 | **Color Drift** | How far colours shift along the palette per curve |
 | **Ripple** | Radial displacement noise |

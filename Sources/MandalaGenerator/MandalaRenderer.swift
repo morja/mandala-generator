@@ -119,6 +119,7 @@ struct MandalaRenderer {
             lp.ripple        = layer.ripple
             lp.wash          = layer.wash
             lp.abstractLevel = layer.abstractLevel
+            lp.spokes        = layer.spokes
             lp.paletteIndex  = layer.paletteIndex
 
             // Always render into an expanded buffer large enough to hold the full mandala
@@ -342,6 +343,7 @@ struct MandalaRenderer {
         lp.ripple        = layer.ripple
         lp.wash          = layer.wash
         lp.paletteIndex  = layer.paletteIndex
+        lp.spokes        = layer.spokes
 
         let buffer = PixelBuffer(width: bufferSize, height: bufferSize)
         var rng = SeededRNG(seed: layer.seed == 0
@@ -3144,7 +3146,9 @@ struct MandalaRenderer {
             }
         }
 
-        // Radial spokes
+        // Radial spokes; `spokes` scales their brightness, 0 leaves only the rings
+        let spokeWeight = Float(max(0, min(1, params.spokes)))
+        guard spokeWeight > 0 else { return }
         for spoke in 0..<nSpokes {
             let a = Float(spoke) / Float(nSpokes) * Float.pi * 2
             let xs: [Float] = [0, cos(a) * R]; let ys: [Float] = [0, sin(a) * R]
@@ -3159,7 +3163,7 @@ struct MandalaRenderer {
                 }
                 tasks.append(CurveDrawTask(xs: rxs, ys: rys,
                                            tOffset: tOffset + Double(spoke) / Double(nSpokes) * params.colorDrift,
-                                           drift: params.colorDrift, weight: weight * 0.5, thickness: 1))
+                                           drift: params.colorDrift, weight: weight * 0.5 * spokeWeight, thickness: 1))
             }
         }
     }

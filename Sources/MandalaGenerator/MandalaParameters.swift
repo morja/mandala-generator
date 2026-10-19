@@ -558,11 +558,12 @@ struct StyleLayer: Equatable, Codable {
     var blendMode: LayerBlendMode = .screen
     var symmetry: Int = 6
     var seed: UInt64 = 42
+    var spokes: Double = 1.0     // Radial Mesh only: spoke brightness, 0 = rings only
 
     enum CodingKeys: String, CodingKey {
         case isEnabled, style, scale, paletteIndex, colorOffset, complexity, density
         case glowIntensity, colorDrift, ripple, wash, abstractLevel
-        case saturation, brightness, rotation, opacity, blendMode, symmetry, seed
+        case saturation, brightness, rotation, opacity, blendMode, symmetry, seed, spokes
     }
 
     init(isEnabled: Bool = true, style: MandalaStyle = .mixed, scale: Double = 1.0,
@@ -571,7 +572,7 @@ struct StyleLayer: Equatable, Codable {
          ripple: Double = 0.0, wash: Double = 0.0, abstractLevel: Double = 0.3,
          saturation: Double = 0.7, brightness: Double = 0.5, rotation: Double = 0.0,
          opacity: Double = 1.0, blendMode: LayerBlendMode = .screen,
-         symmetry: Int = 6, seed: UInt64 = 42) {
+         symmetry: Int = 6, seed: UInt64 = 42, spokes: Double = 1.0) {
         self.isEnabled = isEnabled
         self.style = style
         self.scale = scale
@@ -591,6 +592,7 @@ struct StyleLayer: Equatable, Codable {
         self.blendMode = blendMode
         self.symmetry = symmetry
         self.seed = seed
+        self.spokes = spokes
     }
 
     init(from decoder: Decoder) throws {
@@ -614,6 +616,7 @@ struct StyleLayer: Equatable, Codable {
         blendMode     = c.decodeSafe(LayerBlendMode.self, forKey: .blendMode,     default: .screen)
         symmetry      = c.decodeSafe(Int.self,            forKey: .symmetry,      default: 6)
         seed          = c.decodeSafe(UInt64.self,         forKey: .seed,          default: 42)
+        spokes        = c.decodeSafe(Double.self,         forKey: .spokes,        default: 1.0)
     }
 }
 
@@ -646,6 +649,7 @@ struct MandalaParameters: Equatable, Codable {
     var wash: Double = 0.0
     var abstractLevel: Double = 0.3
     var paletteIndex: Int = 0
+    var spokes: Double = 1.0
 
     var style: MandalaStyle {
         get { layers.first?.style ?? .mixed }

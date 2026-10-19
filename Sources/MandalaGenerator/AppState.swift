@@ -200,6 +200,8 @@ class AppState: ObservableObject {
             mix(UInt64(Int(layer.ripple        * 1000)))
             mix(UInt64(Int(layer.wash          * 1000)))
             mix(UInt64(Int(layer.abstractLevel * 1000)))
+            // Only when changed, so file names of older settings stay the same.
+            if layer.spokes != 1.0 { mix(UInt64(Int(layer.spokes * 1000))) }
             mix(UInt64(Int(layer.saturation    * 1000)))
             mix(UInt64(Int(layer.brightness    * 1000)))
             mix(UInt64(layer.symmetry))
