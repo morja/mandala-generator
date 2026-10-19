@@ -7,6 +7,9 @@ Status: proposed, 19 October 2026
 - **minSdk 29 (Android 10), targetSdk 36.** From Android 10 on, saving to the shared gallery through MediaStore needs no storage permission.
 - **One activity, one Compose screen** for now: canvas, "New variation", "Save to gallery", the layer list and the controls of the selected layer (style, palette, blend mode, opacity, symmetry, scale, complexity, density, ripple, glow, colour drift, painted, saturation, brightness).
 - **Layers** follow the macOS app: at most 5; a new layer gets the next style, a palette three further on, scale 0.65; duplicates get a new seed; "New variation" re-seeds every layer. The list shows the top layer first (it is drawn last); each row can hide the layer and move it up or down; add, duplicate and delete act on the selected layer.
+- **Favourites** (star in the top bar): a bottom sheet with thumbnails; tap applies (with "Undo"), long press deletes, "Add current" stores the current settings with a 128 px JPEG thumbnail. Stored in `favorites.json` in the macOS app's format (ADR-0003), so the Mac file can be imported as is.
+- **Files** (menu in the top bar): "Open file…" reads a settings file or the Mac favourites file (`~/Library/Application Support/MandalaGenerator/favorites.json`; favourites with a known id are skipped); "Save settings…" writes a settings file the Mac app can open; "Share image" renders 1024 px and opens the share sheet (FileProvider, cache folder).
+- **Warnings** under the canvas name what the Android renderer cannot draw yet (for example a layer in an unported style, or the effects layer).
 - **Last state** is saved 400 ms after each change to `last-settings.json` in the app's private files (the macOS settings format, ADR-0003) and restored on start. A broken or empty file is ignored.
 - **Layering:** `Editing.kt` holds pure editing rules (unit-tested on the JVM); `EditorViewModel` holds the settings as `MandalaParameters`, renders the preview and exports; `core` renders. The screen only shows state and forwards input.
 - **Preview** at 512 px, rendered 150 ms after the last change on a background thread. A newer change cancels a running preview (`RenderOptions.isCancelled`).
@@ -27,5 +30,5 @@ Debug builds are much slower on Android; judge speed with `assembleRelease`.
 ## Open
 
 - Tried on a Galaxy S23 (Android 16) on 19 October 2026: speed feels fine (user feedback); no timings measured on the phone yet.
-- No favourites, history, or loading Mac settings files yet. The selected layer is not restored (the first one is selected after a restart).
+- No history. The selected layer is not restored (the first one is selected after a restart).
 - The release build is signed with the local debug key; no store signing.

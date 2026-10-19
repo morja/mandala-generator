@@ -1,5 +1,23 @@
 package com.mathis.mandala.app.ui
 
+import android.content.Intent
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.SnackbarResult
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
+import com.mathis.mandala.app.EditorEvent
+import com.mathis.mandala.app.Thumbnails
+import com.mathis.mandala.core.Favorite
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -57,8 +75,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mathis.mandala.app.EditorViewModel
 import com.mathis.mandala.app.Editing
-import com.mathis.mandala.app.ExportState
-import com.mathis.mandala.app.GalleryExport
 import com.mathis.mandala.app.PreviewState
 import com.mathis.mandala.app.ui.theme.LocalTokens
 import com.mathis.mandala.app.ui.theme.Radius
@@ -77,29 +93,67 @@ import kotlin.math.roundToInt
 fun EditorScreen(vm: EditorViewModel) {
     val params by vm.params.collectAsStateWithLifecycle()
     val preview by vm.preview.collectAsStateWithLifecycle()
-    val export by vm.export.collectAsStateWithLifecycle()
+    val busy by vm.busy.collectAsStateWithLifecycle()
     val selected by vm.selected.collectAsStateWithLifecycle()
+    val favorites by vm.favorites.collectAsStateWithLifecycle()
     val snackbar = remember { SnackbarHostState() }
+    val context = LocalContext.current
+    var showFavorites by remember { mutableStateOf(false) }
 
-    LaunchedEffect(export) {
-        val message = when (val e = export) {
-            is ExportState.Saved -> "Saved to Pictures/${GalleryExport.FOLDER} as ${e.fileName}"
-            is ExportState.Failed -> "Could not save: ${e.message}"
-            else -> null
-        }
-        if (message != null) {
-            snackbar.showSnackbar(message)
-            vm.exportMessageShown()
+    val openFile = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri -> uri?.let(vm::openFile) }
+    val saveSettings = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri ->
+        uri?.let(vm::saveSettingsTo)
+    }
+
+    LaunchedEffect(vm) {
+        vm.events.collect { event ->
+            when (event) {
+                is EditorEvent.Message -> {
+                    val result = snackbar.showSnackbar(event.text, actionLabel = if (event.canUndo) "Undo" else null)
+                    if (result == SnackbarResult.ActionPerformed) vm.undo()
+                }
+                is EditorEvent.ShareImage -> {
+                    val send = Intent(Intent.ACTION_SEND)
+                        .setType("image/png")
+                        .putExtra(Intent.EXTRA_STREAM, event.uri)
+                        .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                    context.startActivity(Intent.createChooser(send, null))
+                }
+            }
         }
     }
 
+    if (showFavorites) {
+        FavoritesSheet(
+            favorites = favorites,
+            canAdd = preview.image != null,
+            onAdd = vm::addFavorite,
+            onApply = { vm.applyFavorite(it); showFavorites = false },
+            onDelete = { vm.removeFavorite(it.id) },
+            onDismiss = { showFavorites = false },
+        )
+    }
+
     Scaffold(
-        topBar = { TopAppBar(title = { Text("Mandala") }) },
+        topBar = {
+            TopAppBar(
+                title = { Text("Mandala") },
+                actions = {
+                    IconButton(onClick = { showFavorites = true }) { Icon(EditorIcons.Star, contentDescription = "Favourites") }
+                    MoreMenu(
+                        busy = busy,
+                        onOpen = { openFile.launch(arrayOf("application/json", "text/plain", "application/octet-stream")) },
+                        onSaveSettings = { saveSettings.launch(vm.suggestedSettingsName()) },
+                        onShare = vm::shareImage,
+                    )
+                },
+            )
+        },
         snackbarHost = { SnackbarHost(snackbar) },
     ) { padding ->
         BoxWithConstraints(Modifier.padding(padding).fillMaxSize()) {
             val actions: @Composable () -> Unit = {
-                Actions(saving = export == ExportState.Saving, onVariation = vm::newVariation, onSave = vm::exportToGallery)
+                Actions(saving = busy, onVariation = vm::newVariation, onSave = vm::exportToGallery)
             }
             if (maxWidth >= Spacing.twoPaneMinWidth) {
                 Row(Modifier.fillMaxSize().padding(Spacing.lg), horizontalArrangement = Arrangement.spacedBy(Spacing.xl)) {
@@ -155,6 +209,87 @@ private fun Canvas(preview: PreviewState, modifier: Modifier) {
             else -> ""
         }
         Text(status, style = MaterialTheme.typography.bodySmall, color = if (preview.error != null) t.error else t.textMuted)
+        for (warning in preview.warnings) {
+            Text(warning, style = MaterialTheme.typography.bodySmall, color = t.error)
+        }
+    }
+}
+
+@Composable
+private fun MoreMenu(busy: Boolean, onOpen: () -> Unit, onSaveSettings: () -> Unit, onShare: () -> Unit) {
+    var open by remember { mutableStateOf(false) }
+    Box {
+        IconButton(onClick = { open = true }) { Icon(EditorIcons.More, contentDescription = "More") }
+        DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
+            DropdownMenuItem(text = { Text("Open file…") }, onClick = { open = false; onOpen() })
+            DropdownMenuItem(text = { Text("Save settings…") }, onClick = { open = false; onSaveSettings() })
+            DropdownMenuItem(text = { Text("Share image") }, enabled = !busy, onClick = { open = false; onShare() })
+        }
+    }
+}
+
+/** Favourites as a grid of thumbnails: tap applies, long press offers delete. */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun FavoritesSheet(
+    favorites: List<Favorite>,
+    canAdd: Boolean,
+    onAdd: () -> Unit,
+    onApply: (Favorite) -> Unit,
+    onDelete: (Favorite) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    val t = LocalTokens.current
+    ModalBottomSheet(onDismissRequest = onDismiss) {
+        Column(Modifier.padding(horizontal = Spacing.lg).padding(bottom = Spacing.xl)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text("Favourites", style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
+                Button(onClick = onAdd, enabled = canAdd) { Text("Add current") }
+            }
+            if (favorites.isEmpty()) {
+                Text(
+                    "No favourites yet. Add the current mandala, or open the favourites file of the Mac app " +
+                        "(favorites.json) with Open file.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = t.textMuted,
+                    modifier = Modifier.padding(top = Spacing.md),
+                )
+            } else {
+                Text("Tap to use, long press to delete.", style = MaterialTheme.typography.bodySmall, color = t.textMuted,
+                    modifier = Modifier.padding(top = Spacing.sm, bottom = Spacing.sm))
+                LazyVerticalGrid(
+                    columns = GridCells.Adaptive(Sizes.favourite),
+                    horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
+                    verticalArrangement = Arrangement.spacedBy(Spacing.sm),
+                ) {
+                    items(favorites, key = { it.id }) { fav -> FavoriteTile(fav, onApply, onDelete) }
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun FavoriteTile(fav: Favorite, onApply: (Favorite) -> Unit, onDelete: (Favorite) -> Unit) {
+    val t = LocalTokens.current
+    val thumb = remember(fav.id) { Thumbnails.decode(fav.thumbnailData) }
+    var menu by remember { mutableStateOf(false) }
+    val styles = fav.parameters.layers.joinToString(", ") { it.style.displayName }
+    Box {
+        Box(
+            Modifier
+                .aspectRatio(1f)
+                .clip(RoundedCornerShape(Radius.sm))
+                .background(t.canvas)
+                .combinedClickable(onClick = { onApply(fav) }, onLongClick = { menu = true })
+                .semantics { contentDescription = "Favourite: $styles" },
+        ) {
+            thumb?.let { Image(it, contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize()) }
+        }
+        DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
+            DropdownMenuItem(text = { Text("Delete") }, onClick = { menu = false; onDelete(fav) })
+        }
     }
 }
 

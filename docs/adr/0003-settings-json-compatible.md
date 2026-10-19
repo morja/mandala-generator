@@ -12,6 +12,8 @@ The Android app reads and writes the same settings JSON as the macOS app (`Manda
 - 64-bit seeds are unsigned (`ULong`); values above `Long.MAX_VALUE` occur in real files;
 - layers not ported yet (text, graffiti, drawing) are kept as raw JSON so a round trip loses nothing.
 
+The favourites file uses the macOS `Favorite` format as well: a list of `{id, parameters, thumbnailData, name, createdAt}`, with the thumbnail as base64 JPEG and `createdAt` in seconds since 1 January 2001 (Swift's `Date` encoding).
+
 ## Reasons
 
 Favourites and settings can move between Mac and phone, and the parity tests (ADR-0004) can use files saved by the Mac app.

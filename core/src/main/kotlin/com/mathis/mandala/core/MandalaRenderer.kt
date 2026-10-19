@@ -57,7 +57,7 @@ object MandalaRenderer {
             // ── Background ──
             val base = params.baseLayer
             if (base.isEnabled && base.type != BaseLayerType.COLOR) {
-                warnings += "Background type ${base.type.name.lowercase()} is not ported yet; drawn black."
+                warnings += "Background \"${base.type.name.lowercase()}\" is not available yet; drawn black."
             }
             var composite = Image8(bufferSize, bufferSize, Encoding.SRGB)
             val solidBackground = if (base.isEnabled && base.type == BaseLayerType.COLOR) solidColor(base) else null
@@ -69,7 +69,7 @@ object MandalaRenderer {
                 checkpoint()
                 if (!layer.isEnabled) continue
                 if (layer.style !in supportedStyles) {
-                    warnings += "Layer ${li + 1}: style ${layer.style.name.lowercase()} is not ported yet; skipped."
+                    warnings += "Layer ${li + 1} (${layer.style.displayName}) is not available yet; skipped."
                     continue
                 }
                 val palette = palettes[layer.paletteIndex.coerceIn(0, palettes.size - 1)]
@@ -126,16 +126,16 @@ object MandalaRenderer {
                 composite = fx.composite(composite, img, op)
             }
 
-            if (params.graffitiLayer.isEnabledLayer()) warnings += "Graffiti layer is not ported yet; skipped."
-            if (params.drawingLayer.isEnabledLayer()) warnings += "Drawing layer is not ported yet; skipped."
+            if (params.graffitiLayer.isEnabledLayer()) warnings += "Graffiti layer is not available yet; skipped."
+            if (params.drawingLayer.isEnabledLayer()) warnings += "Drawing layer is not available yet; skipped."
 
             // Solid background goes in after all layers (lighten) so layer blend modes don't tint it.
             if (solidBackground != null) {
                 composite = fx.compositeSolid(composite, solidBackground[0], solidBackground[1], solidBackground[2], BlendOp.LIGHTEN)
             }
 
-            if (params.textLayer.isEnabledLayer()) warnings += "Text layer is not ported yet; skipped."
-            if (params.effectsLayer.isEnabled) warnings += "Effects layer is not ported yet; skipped."
+            if (params.textLayer.isEnabledLayer()) warnings += "Text layer is not available yet; skipped."
+            if (params.effectsLayer.isEnabled) warnings += "Effects layer is not available yet; skipped."
 
             checkpoint()
             val result = fx.downscale(composite, resolvedSize)

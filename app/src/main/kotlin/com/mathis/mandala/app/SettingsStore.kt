@@ -17,13 +17,5 @@ class SettingsStore(private val file: File) {
         null
     }
 
-    fun save(params: MandalaParameters) {
-        file.parentFile?.mkdirs()
-        val tmp = File(file.parentFile, file.name + ".tmp")
-        tmp.writeText(SettingsJson.encode(params))
-        if (!tmp.renameTo(file)) {
-            file.delete()
-            tmp.renameTo(file)
-        }
-    }
+    fun save(params: MandalaParameters) = writeAtomically(file, SettingsJson.encode(params))
 }
