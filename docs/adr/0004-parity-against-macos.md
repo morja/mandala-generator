@@ -20,6 +20,7 @@ Status: proposed, 19 October 2026
 | Strange Attractor | Chaotic iteration amplifies the last-bit differences between Apple's and Java's sin/cos. | `style-strange-attractor`: about 19 dB per pixel, same shape and density. |
 | Constellation Web | A few random keep-or-skip decisions sit on a rounding edge. | `style-constellation-web`: about 37 dB, a handful of lines differ. |
 | Deep Nebula | Very large thin ellipses (three times the layer radius) magnify last-bit differences. | `style-deep-nebula`: about 35 dB, same look. |
+| Text layer | Glyphs come from the platform: Java2D in the command (same macOS fonts, other rasteriser and kerning), Android system families in the app. Layout, cloud, shadow, glow and blending follow the macOS code. | Not in the parity fixtures. Mac favourites with text: 17–21 dB overall, same line breaks and placement, visually near-identical with Java2D. |
 | Lanczos and blur kernels | Own implementations (Gaussian ≤ σ 6, three box passes above). | ≤ 1/255 on average. |
 
 ## macOS behaviour reproduced on purpose

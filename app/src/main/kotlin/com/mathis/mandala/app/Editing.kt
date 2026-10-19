@@ -8,7 +8,9 @@ import com.mathis.mandala.core.MandalaParameters
 import com.mathis.mandala.core.MandalaRenderer
 import com.mathis.mandala.core.MandalaStyle
 import com.mathis.mandala.core.SettingsJson
+import com.mathis.mandala.core.Quote
 import com.mathis.mandala.core.StyleLayer
+import com.mathis.mandala.core.TextLayerSettings
 
 /**
  * Editing rules of the editor, following the macOS app where it has rules. Pure functions, so they
@@ -110,6 +112,13 @@ object Editing {
         dimmingSeed = nextSeed(), erasureSeed = nextSeed(), highlightsSeed = nextSeed(),
         starsSeed = nextSeed(), glitterSeed = nextSeed(),
     )
+
+    fun MandalaParameters.updateText(change: (TextLayerSettings) -> TextLayerSettings): MandalaParameters =
+        copy(textLayer = change(textLayer))
+
+    /** Puts a quote in and shows the text layer, like "Random quote" on the Mac. */
+    fun TextLayerSettings.withQuote(quote: Quote): TextLayerSettings =
+        copy(text = quote.text, customAuthor = quote.author, isEnabled = true)
 
     /** Same settings, new random arrangement for every layer (like "Randomize Seed" on the Mac). */
     fun MandalaParameters.newVariation(nextSeed: () -> ULong): MandalaParameters =

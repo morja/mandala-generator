@@ -156,15 +156,55 @@ data class EffectsLayerSettings(
     val glitterSeed: ULong = 55uL,
 )
 
+/** Text over the mandala (quotes), as in the macOS TextLayerSettings. Defaults match its decoder. */
+@Serializable
+data class TextLayerSettings(
+    val isEnabled: Boolean = false,
+    val text: String = "",
+    val fontName: String = "Georgia",
+    /** Fraction of the canvas width. */
+    val fontSize: Double = 0.07,
+    val glow: Double = 0.0,
+    val shadowOpacity: Double = 0.0,
+    val shadowBlur: Double = 0.5,
+    val shadowOffsetX: Double = 0.3,
+    val shadowOffsetY: Double = -0.3,
+    val shadowHue: Double = 0.0,
+    val shadowSaturation: Double = 0.0,
+    val shadowBrightness: Double = 0.0,
+    val cloudOpacity: Double = 0.0,
+    val cloudScale: Double = 0.5,
+    val cloudRadius: Double = 0.5,
+    val cloudHue: Double = 0.0,
+    val cloudSaturation: Double = 0.0,
+    val cloudBrightness: Double = 0.0,
+    val blur: Double = 0.0,
+    val opacity: Double = 1.0,
+    val hue: Double = 0.0,
+    val saturation: Double = 0.0,
+    val brightness: Double = 1.0,
+    val tracking: Double = 0.0,
+    /** Text box width as a fraction of the canvas. */
+    val fontWidth: Double = 0.82,
+    val offsetX: Double = 0.5,
+    /** Vertical centre of the text block, 0 = bottom, 1 = top. */
+    val offsetY: Double = 0.38,
+    val blendMode: LayerBlendMode = LayerBlendMode.NORMAL,
+    val showAuthor: Boolean = true,
+    val customAuthor: String = "",
+    val authorScale: Double = 0.667,
+    val authorItalic: Boolean = true,
+)
+
 @Serializable
 data class MandalaParameters(
     val layers: List<StyleLayer> = listOf(StyleLayer()),
     val baseLayer: BaseLayerSettings = BaseLayerSettings(),
     val effectsLayer: EffectsLayerSettings = EffectsLayerSettings(),
-    // Not rendered yet; kept as raw JSON so loading and saving preserves them.
+    // Not rendered yet (no drawing UI); kept as raw JSON so loading and saving preserves them.
     val graffitiLayer: JsonObject? = null,
     val drawingLayer: JsonObject? = null,
-    val textLayer: JsonObject? = null,
+    val textLayer: TextLayerSettings = TextLayerSettings(),
     val seed: ULong = 42uL,
     val previewSize: Int = 800,
     val outputSize: Int = 1024,

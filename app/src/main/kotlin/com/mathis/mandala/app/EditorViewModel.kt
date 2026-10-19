@@ -15,11 +15,16 @@ import com.mathis.mandala.app.Editing.newPattern
 import com.mathis.mandala.app.Editing.updateBackground
 import com.mathis.mandala.app.Editing.updateEffects
 import com.mathis.mandala.app.Editing.updateLayer
+import com.mathis.mandala.app.Editing.updateText
+import com.mathis.mandala.app.Editing.withQuote
 import com.mathis.mandala.core.BaseLayerSettings
 import com.mathis.mandala.core.EffectsLayerSettings
 import com.mathis.mandala.core.Favorite
 import com.mathis.mandala.core.Image8
 import com.mathis.mandala.core.MacFile
+import com.mathis.mandala.core.Quote
+import com.mathis.mandala.core.Quotes
+import com.mathis.mandala.core.TextLayerSettings
 import com.mathis.mandala.core.MandalaParameters
 import com.mathis.mandala.core.MandalaRenderer
 import com.mathis.mandala.core.RenderCancelledException
@@ -92,6 +97,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
     private var beforeReplace: MandalaParameters? = null
 
     private val threads = Runtime.getRuntime().availableProcessors()
+    private val textRenderer = AndroidTextRenderer()
 
     init {
         viewModelScope.launch {
@@ -132,6 +138,12 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
     fun updateEffects(change: (EffectsLayerSettings) -> EffectsLayerSettings) = _params.update { it.updateEffects(change) }
 
     fun newEffectsPattern() = updateEffects { it.newPattern(::randomSeed) }
+
+    fun updateText(change: (TextLayerSettings) -> TextLayerSettings) = _params.update { it.updateText(change) }
+
+    fun useQuote(quote: Quote) = updateText { it.withQuote(quote) }
+
+    fun randomQuote() = useQuote(Quotes.all.random())
 
     /** Applies a layer operation and selects the layer it returns. */
     private fun applyLayerOperation(operation: (MandalaParameters) -> Pair<MandalaParameters, Int>) {
@@ -242,7 +254,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         viewModelScope.launch {
             try {
                 val image = withContext(Dispatchers.Default) {
-                    MandalaRenderer.render(snapshot, RenderOptions(outputSize = Editing.EXPORT_SIZE, threads = threads)).image
+                    MandalaRenderer.render(snapshot, RenderOptions(outputSize = Editing.EXPORT_SIZE, threads = threads, textRenderer = textRenderer)).image
                 }
                 then(image, Editing.fileName(snapshot))
             } catch (e: OutOfMemoryError) {
@@ -266,7 +278,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
                 val job = coroutineContext.job
                 MandalaRenderer.render(
                     params,
-                    RenderOptions(outputSize = Editing.PREVIEW_SIZE, threads = threads, isCancelled = { !job.isActive }),
+                    RenderOptions(outputSize = Editing.PREVIEW_SIZE, threads = threads, textRenderer = textRenderer, isCancelled = { !job.isActive }),
                 )
             }
             val bitmap = result.image.toBitmap().asImageBitmap()

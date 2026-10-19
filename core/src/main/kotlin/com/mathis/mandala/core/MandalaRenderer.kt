@@ -21,6 +21,8 @@ data class RenderOptions(
     val outputSize: Int? = null,
     /** Threads for drawing and filters. The image does not depend on it. */
     val threads: Int = Runtime.getRuntime().availableProcessors(),
+    /** Draws text for the text layer; supplied by the platform (fonts are not part of the core). */
+    val textRenderer: TextRenderer? = null,
     /** Polled between steps; when it returns true the render stops with [RenderCancelledException]. */
     val isCancelled: () -> Boolean = { false },
 )
@@ -145,7 +147,15 @@ object MandalaRenderer {
                 composite = fx.compositeSolid(composite, solidBackground[0], solidBackground[1], solidBackground[2], BlendOp.LIGHTEN)
             }
 
-            if (params.textLayer.isEnabledLayer()) warnings += "Text layer is not available yet; skipped."
+            if (params.textLayer.isEnabled && params.textLayer.text.isNotEmpty()) {
+                val textRenderer = options.textRenderer
+                if (textRenderer == null) {
+                    warnings += "Text needs a text renderer; skipped."
+                } else {
+                    checkpoint()
+                    composite = TextLayer(par, textRenderer).apply(composite, params.textLayer)
+                }
+            }
             if (params.effectsLayer.isEnabled) {
                 checkpoint()
                 composite = EffectsLayer(par, fx).apply(composite, params.effectsLayer)

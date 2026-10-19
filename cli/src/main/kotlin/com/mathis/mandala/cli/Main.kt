@@ -64,6 +64,7 @@ private fun render(raw: List<String>): Int {
     val options = RenderOptions(
         outputSize = args.int("size"),
         threads = args.int("threads") ?: Runtime.getRuntime().availableProcessors(),
+        textRenderer = AwtTextRenderer(),
     )
     val result = MandalaRenderer.render(params, options)
     Png.write(result.image, File(output))

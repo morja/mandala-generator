@@ -1,5 +1,11 @@
 package com.mathis.mandala.app.ui
 
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.OutlinedTextField
+import com.mathis.mandala.core.Quote
+import com.mathis.mandala.core.Quotes
+import com.mathis.mandala.core.TextLayerSettings
 import android.content.Intent
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -8,6 +14,7 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ModalBottomSheet
@@ -315,6 +322,7 @@ private fun Controls(params: MandalaParameters, selected: Int, vm: EditorViewMod
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.xs)) {
         BackgroundSection(params.baseLayer, vm::updateBackground)
         EffectsSection(params.effectsLayer, vm::updateEffects, vm::newEffectsPattern)
+        TextSection(params.textLayer, vm::updateText, vm::randomQuote, vm::useQuote)
         LayersSection(params, index, vm)
         SectionTitle("Layer ${index + 1} · ${params.layers[index].style.displayName}")
         LayerControls(params.layers[index], vm::updateSelected)
@@ -441,6 +449,85 @@ private fun EffectsSection(
     ValueSlider("Stars", fx.stars) { v -> update { it.copy(stars = v) } }
     ValueSlider("Glitter", fx.glitter) { v -> update { it.copy(glitter = v) } }
     TextButton(onClick = newPattern) { Text("New pattern") }
+}
+
+/** Text over the mandala: quotes from the macOS app's collection or own text, with font and light. */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun TextSection(
+    text: TextLayerSettings,
+    update: ((TextLayerSettings) -> TextLayerSettings) -> Unit,
+    randomQuote: () -> Unit,
+    useQuote: (Quote) -> Unit,
+) {
+    var expanded by rememberSaveable { mutableStateOf(false) }
+    var choosing by remember { mutableStateOf(false) }
+    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(top = Spacing.md)) {
+        Text("Text", style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
+        if (text.isEnabled) {
+            TextButton(onClick = { expanded = !expanded }) { Text(if (expanded) "Hide sliders" else "Show sliders") }
+        }
+        Switch(checked = text.isEnabled, onCheckedChange = { on ->
+            if (on && text.text.isEmpty()) randomQuote() else update { it.copy(isEnabled = on) }
+        })
+    }
+    if (!text.isEnabled) return
+    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+        OutlinedButton(onClick = randomQuote) { Text("Random quote") }
+        OutlinedButton(onClick = { choosing = true }) { Text("Choose quote") }
+    }
+    OutlinedTextField(
+        value = text.text,
+        onValueChange = { v -> update { it.copy(text = v, customAuthor = if (v == it.text) it.customAuthor else Quotes.authorOf(v) ?: "") } },
+        label = { Text("Text") },
+        maxLines = 4,
+        modifier = Modifier.fillMaxWidth().padding(top = Spacing.sm),
+    )
+    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+        Text("Show author", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
+        Switch(checked = text.showAuthor, onCheckedChange = { a -> update { it.copy(showAuthor = a) } })
+    }
+    if (choosing) QuoteDialog(onPick = { useQuote(it); choosing = false }, onDismiss = { choosing = false })
+    if (!expanded) return
+
+    SubTitle("Font")
+    FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+        for ((name, display) in Quotes.fonts) {
+            FilterChip(selected = text.fontName == name, onClick = { update { it.copy(fontName = name) } }, label = { Text(display) })
+        }
+    }
+    ValueSlider("Size", text.fontSize, 0.02f..0.2f) { v -> update { it.copy(fontSize = v) } }
+    ValueSlider("Width", text.fontWidth, 0.1f..1f) { v -> update { it.copy(fontWidth = v) } }
+    ValueSlider("Height on image", text.offsetY) { v -> update { it.copy(offsetY = v) } }
+    SubTitle("Light")
+    ValueSlider("Glow", text.glow) { v -> update { it.copy(glow = v) } }
+    ValueSlider("Cloud", text.cloudOpacity) { v -> update { it.copy(cloudOpacity = v) } }
+    ValueSlider("Cloud size", text.cloudScale) { v -> update { it.copy(cloudScale = v) } }
+    ValueSlider("Shadow", text.shadowOpacity) { v -> update { it.copy(shadowOpacity = v) } }
+    SubTitle("Colour")
+    ValueSlider("Hue", text.hue) { v -> update { it.copy(hue = v) } }
+    ValueSlider("Saturation", text.saturation) { v -> update { it.copy(saturation = v) } }
+    ValueSlider("Brightness", text.brightness, 0f..1.5f) { v -> update { it.copy(brightness = v) } }
+}
+
+@Composable
+private fun QuoteDialog(onPick: (Quote) -> Unit, onDismiss: () -> Unit) {
+    val t = LocalTokens.current
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = { TextButton(onClick = onDismiss) { Text("Close") } },
+        title = { Text("Quotes") },
+        text = {
+            LazyColumn {
+                items(Quotes.all) { q ->
+                    Column(Modifier.fillMaxWidth().clickable { onPick(q) }.padding(vertical = Spacing.sm)) {
+                        Text(q.text, style = MaterialTheme.typography.bodyMedium)
+                        Text(q.author, style = MaterialTheme.typography.bodySmall, color = t.textMuted)
+                    }
+                }
+            }
+        },
+    )
 }
 
 /** The layer list, top layer first (it is drawn last, on top), plus add, duplicate and delete. */
