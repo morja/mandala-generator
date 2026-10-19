@@ -19,7 +19,7 @@ import kotlin.math.sin
  */
 internal class LayerEffects(private val par: Parallel) {
 
-    private data class BlurPass(val radius: Double, val strength: Double)
+    data class BlurPass(val radius: Double, val strength: Double)
 
     private companion object {
         /** Core height of one strip of the painted effect; the overlap comes on top. */
@@ -43,12 +43,15 @@ internal class LayerEffects(private val par: Parallel) {
      * looks the same at every resolution. Returned at reference size; `prepare` may modify the
      * reference copy of the source before blurring (it is linear, so this equals doing it first).
      */
-    private fun referenceBlurOverlay(source: Image8, effectWidth: Int, passes: List<BlurPass>, extra: ((FloatImage) -> FloatImage?)? = null): FloatImage? {
+    private fun referenceBlurOverlay(source: Image8, effectWidth: Int, passes: List<BlurPass>, extra: ((FloatImage) -> FloatImage?)? = null): FloatImage? =
+        referenceBlurOverlay(source.asRowSource(), effectWidth, passes, extra)
+
+    fun referenceBlurOverlay(source: RowSource, effectWidth: Int, passes: List<BlurPass>, extra: ((FloatImage) -> FloatImage?)? = null): FloatImage? {
         val sf = 1600.0 / effectWidth
         val scaled = abs(sf - 1.0) > 0.005
         val refW = if (scaled) (source.width * sf).roundToInt() else source.width
         val refH = if (scaled) (source.height * sf).roundToInt() else source.height
-        val work = Filters.resampleToFloat(source.asRowSource(), refW, refH, par)
+        val work = Filters.resampleToFloat(source, refW, refH, par)
         val active = passes.filter { it.radius >= 0.5 }
         var overlay: FloatImage? = null
         for ((index, pass) in active.withIndex()) {

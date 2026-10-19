@@ -27,6 +27,12 @@ class ParityTest {
         "painted-heavy" to 20.0,
         // Very dense, overexposed centre: Core Image's over-range handling again (see wave-two-layers).
         "hyperboloid-tilted" to 40.0,
+        // Core Image's random generator is Apple's own; amount and offset match, the pattern differs.
+        "fx-grain" to 35.0,
+        // Two additions leave alpha 3, which Core Image's final colour conversion takes into account.
+        "fx-chromatic" to 42.0,
+        // The emboss alpha at the outermost pixel row differs; inside about 54 dB.
+        "fx-relief" to 37.0,
     )
 
     @Test

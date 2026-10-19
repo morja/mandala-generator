@@ -13,6 +13,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import com.mathis.mandala.app.EditorEvent
@@ -86,6 +87,7 @@ import com.mathis.mandala.core.BuiltInPalettes
 import com.mathis.mandala.core.ColorPalette
 import com.mathis.mandala.core.BaseLayerSettings
 import com.mathis.mandala.core.BaseLayerType
+import com.mathis.mandala.core.EffectsLayerSettings
 import com.mathis.mandala.core.LayerBlendMode
 import com.mathis.mandala.core.MandalaParameters
 import com.mathis.mandala.core.StyleLayer
@@ -312,6 +314,7 @@ private fun Controls(params: MandalaParameters, selected: Int, vm: EditorViewMod
     val index = selected.coerceIn(0, params.layers.lastIndex)
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.xs)) {
         BackgroundSection(params.baseLayer, vm::updateBackground)
+        EffectsSection(params.effectsLayer, vm::updateEffects, vm::newEffectsPattern)
         LayersSection(params, index, vm)
         SectionTitle("Layer ${index + 1} · ${params.layers[index].style.displayName}")
         LayerControls(params.layers[index], vm::updateSelected)
@@ -383,6 +386,53 @@ private fun backgroundName(type: BaseLayerType) = when (type) {
     BaseLayerType.GRADIENT -> "Gradient"
     BaseLayerType.SUNBURST -> "Sunburst"
     else -> type.name.lowercase()
+}
+
+/**
+ * The effects layer over the whole image. Off by default; when on, its sliders can be folded away
+ * so the page stays short.
+ */
+@Composable
+private fun EffectsSection(
+    fx: EffectsLayerSettings,
+    update: ((EffectsLayerSettings) -> EffectsLayerSettings) -> Unit,
+    newPattern: () -> Unit,
+) {
+    var expanded by rememberSaveable { mutableStateOf(false) }
+    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(top = Spacing.md)) {
+        Text("Effects", style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
+        if (fx.isEnabled) {
+            TextButton(onClick = { expanded = !expanded }) { Text(if (expanded) "Hide sliders" else "Show sliders") }
+        }
+        Switch(checked = fx.isEnabled, onCheckedChange = { on -> update { it.copy(isEnabled = on) }; if (on) expanded = true })
+    }
+    if (!fx.isEnabled || !expanded) return
+
+    SubTitle("Light")
+    ValueSlider("Brightness", fx.brightness) { v -> update { it.copy(brightness = v) } }
+    ValueSlider("Contrast", fx.contrast) { v -> update { it.copy(contrast = v) } }
+    ValueSlider("Vignette", fx.vignette) { v -> update { it.copy(vignette = v) } }
+    ValueSlider("Bloom", fx.bloom) { v -> update { it.copy(bloom = v) } }
+    ValueSlider("Highlights", fx.highlights) { v -> update { it.copy(highlights = v) } }
+
+    SubTitle("Tone")
+    ValueSlider("Wash", fx.wash) { v -> update { it.copy(wash = v) } }
+    ValueSlider("Sepia", fx.sepia) { v -> update { it.copy(sepia = v) } }
+    ValueSlider("Fade", fx.fade) { v -> update { it.copy(fade = v) } }
+
+    SubTitle("Texture")
+    ValueSlider("Grain", fx.grain) { v -> update { it.copy(grain = v) } }
+    ValueSlider("Clarity", fx.localContrast) { v -> update { it.copy(localContrast = v) } }
+    ValueSlider("Relief", fx.relief) { v -> update { it.copy(relief = v) } }
+    if (fx.relief > 0) ValueSlider("Relief angle", fx.reliefAngle) { v -> update { it.copy(reliefAngle = v) } }
+    ValueSlider("Chromatic", fx.chromatic) { v -> update { it.copy(chromatic = v) } }
+
+    SubTitle("Spots and sparkle")
+    ValueSlider("Dimming", fx.dimming) { v -> update { it.copy(dimming = v) } }
+    ValueSlider("Erasure", fx.erasure) { v -> update { it.copy(erasure = v) } }
+    ValueSlider("Stars", fx.stars) { v -> update { it.copy(stars = v) } }
+    ValueSlider("Glitter", fx.glitter) { v -> update { it.copy(glitter = v) } }
+    TextButton(onClick = newPattern) { Text("New pattern") }
 }
 
 /** The layer list, top layer first (it is drawn last, on top), plus add, duplicate and delete. */

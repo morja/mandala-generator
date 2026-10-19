@@ -3,6 +3,7 @@ package com.mathis.mandala.app
 import com.mathis.mandala.core.BaseLayerSettings
 import com.mathis.mandala.core.BaseLayerType
 import com.mathis.mandala.core.BuiltInPalettes
+import com.mathis.mandala.core.EffectsLayerSettings
 import com.mathis.mandala.core.MandalaParameters
 import com.mathis.mandala.core.MandalaStyle
 import com.mathis.mandala.core.SettingsJson
@@ -87,6 +88,15 @@ object Editing {
 
     fun MandalaParameters.updateBackground(change: (BaseLayerSettings) -> BaseLayerSettings): MandalaParameters =
         copy(baseLayer = change(baseLayer))
+
+    fun MandalaParameters.updateEffects(change: (EffectsLayerSettings) -> EffectsLayerSettings): MandalaParameters =
+        copy(effectsLayer = change(effectsLayer))
+
+    /** New random positions for spots, highlights, stars and glitter; strengths stay. */
+    fun EffectsLayerSettings.newPattern(nextSeed: () -> ULong): EffectsLayerSettings = copy(
+        dimmingSeed = nextSeed(), erasureSeed = nextSeed(), highlightsSeed = nextSeed(),
+        starsSeed = nextSeed(), glitterSeed = nextSeed(),
+    )
 
     /** Same settings, new random arrangement for every layer (like "Randomize Seed" on the Mac). */
     fun MandalaParameters.newVariation(nextSeed: () -> ULong): MandalaParameters =

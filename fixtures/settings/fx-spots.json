@@ -1,0 +1,36 @@
+{
+  "layers": [
+    {
+      "isEnabled": true,
+      "style": "spirograph",
+      "scale": 0.7,
+      "paletteIndex": 4,
+      "complexity": 0.6,
+      "density": 0.5,
+      "glowIntensity": 0.6,
+      "colorDrift": 0.4,
+      "abstractLevel": 0.0,
+      "saturation": 0.7,
+      "brightness": 0.5,
+      "symmetry": 6,
+      "seed": 97531
+    }
+  ],
+  "baseLayer": {
+    "isEnabled": true,
+    "type": "gradient",
+    "brightness": 0.35,
+    "brightness2": 0.08
+  },
+  "effectsLayer": {
+    "isEnabled": true,
+    "vignette": 0.0,
+    "brightness": 0.5,
+    "contrast": 0.5,
+    "dimming": 0.44,
+    "erasure": 0.22,
+    "highlights": 0.2
+  },
+  "seed": 4242,
+  "outputSize": 512
+}

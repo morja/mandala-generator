@@ -247,7 +247,7 @@ internal object Filters {
 
     // ── Per-pixel operations on rows ─────────────────────────────────────
 
-    /** CIColorControls: saturation around Rec. 709 luma, then additive brightness, then contrast around 0.5. */
+    /** CIColorControls: saturation around Rec. 709 luma, then contrast around 0.5, then additive brightness (measured order). */
     fun colorControls(d: FloatArray, from: Int, until: Int, saturation: Double, brightness: Double, contrast: Double) {
         val s = saturation.toFloat()
         val br = brightness.toFloat()
@@ -256,8 +256,8 @@ internal object Filters {
         while (i < until) {
             val lum = 0.2125f * d[i] + 0.7154f * d[i + 1] + 0.0721f * d[i + 2]
             for (k in 0 until 3) {
-                val v = lum + (d[i + k] - lum) * s + br
-                d[i + k] = (v - 0.5f) * c + 0.5f
+                val v = lum + (d[i + k] - lum) * s
+                d[i + k] = (v - 0.5f) * c + 0.5f + br
             }
             i += 3
         }

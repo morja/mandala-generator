@@ -14,7 +14,19 @@ Status: proposed, 19 October 2026
 | Overexposed dense areas | Same over-range handling as above, where many lines pile up (Hyperboloid centre). | `hyperboloid-tilted`: about 42 dB, slightly brighter in the white centre. Geometry identical. |
 | Painted effect (`abstractLevel`) | CITurbulence and CIRandomGenerator are Apple's own; Kotlin uses its own value noise and hash grain. | Same character, different displacement pattern: 21–27 dB. Matters in practice: the macOS app gives every new layer 0.3, so most Mac favourites are affected (a 3-layer example: 22 dB with the effect, 45 dB without). Candidate for a closer reproduction. |
 | Layer buffer size | macOS always enlarges each layer buffer to the full radius. Kotlin does so only for rotated layers and otherwise adds a margin as wide as the effects reach (ADR-0002). | Light from lines far outside the frame (beyond three sigma of the stronger glow passes) is missing at the outermost pixels. Not measurable in the fixtures. |
+| Effects: grain | CIRandomGenerator is Apple's own; amount and offset match. | `fx-grain`: about 36 dB, same look. |
+| Effects: chromatic | Core Image's two additions leave alpha 3, which its final colour conversion takes into account. Not reproduced (no favourite uses chromatic). | `fx-chromatic`: about 43 dB, slightly darker. |
+| Effects: relief border | The emboss alpha at the outermost pixel row. | `fx-relief`: 38 dB overall, 54 dB inside. |
 | Lanczos and blur kernels | Own implementations (Gaussian ≤ σ 6, three box passes above). | ≤ 1/255 on average. |
+
+## macOS behaviour reproduced on purpose
+
+These look like accidents in the macOS app but define how its images look, so the port keeps them (measured with Core Image, see `EffectsLayer.kt` and `MeasuredCurves.kt`):
+
+- **Relief turns the image light grey.** CIConvolution3X3 adds its bias of 0.5 to alpha too, so the emboss layer is half transparent and lifts everything towards white. No Mac favourite uses relief.
+- **Clarity darkens.** Its high pass is the sum of two opaque images (alpha 2); the colour matrix then scales half the value and soft light blends with alpha 2.
+- **Effects brightness is added after contrast** (CIColorControls order), not before.
+- **CIVignette and CISepiaTone** have no documented formula; both are tabulated from measurements.
 
 ## Consequences
 

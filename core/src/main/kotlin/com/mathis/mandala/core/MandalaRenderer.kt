@@ -147,7 +147,10 @@ object MandalaRenderer {
             }
 
             if (params.textLayer.isEnabledLayer()) warnings += "Text layer is not available yet; skipped."
-            if (params.effectsLayer.isEnabled) warnings += "Effects layer is not available yet; skipped."
+            if (params.effectsLayer.isEnabled) {
+                checkpoint()
+                composite = EffectsLayer(par, fx).apply(composite, params.effectsLayer)
+            }
 
             checkpoint()
             val result = fx.downscale(composite, resolvedSize)

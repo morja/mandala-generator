@@ -98,6 +98,17 @@ class EditingTest {
     }
 
     @Test
+    fun newPatternChangesOnlyTheEffectSeeds() {
+        val fx = com.mathis.mandala.core.EffectsLayerSettings(isEnabled = true, stars = 0.3)
+        var next = 500uL
+        val renewed = with(Editing) { fx.newPattern { next++ } }
+        assertEquals(listOf(500uL, 501uL, 502uL, 503uL, 504uL),
+            listOf(renewed.dimmingSeed, renewed.erasureSeed, renewed.highlightsSeed, renewed.starsSeed, renewed.glitterSeed))
+        assertEquals(fx.copy(dimmingSeed = 0uL, erasureSeed = 0uL, highlightsSeed = 0uL, starsSeed = 0uL, glitterSeed = 0uL),
+            renewed.copy(dimmingSeed = 0uL, erasureSeed = 0uL, highlightsSeed = 0uL, starsSeed = 0uL, glitterSeed = 0uL))
+    }
+
+    @Test
     fun fileNameFollowsTheMacScheme() {
         val p = start.updateLayer(0) { it.copy(style = MandalaStyle.ROSE_CURVES, paletteIndex = 5, symmetry = 6) }
         assertTrue(Editing.fileName(p), Regex("mandala-rose-p5-x6-[0-9a-f]{8}\\.png").matches(Editing.fileName(p)))
