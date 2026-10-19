@@ -60,7 +60,7 @@ Scene of the memory test (two layers, full-size wave with glow and painted effec
 | 1024 px | 128–192 MB | more than 512 MB |
 | 2048 px | 640–768 MB | more than 3 GB with 12 threads |
 
-`MemoryBudgetTest` renders this scene at 1024 px under a hard 256 MB heap limit and runs in the fast check. The parity results are unchanged (table above).
+`MemoryBudgetTest` runs in the fast check under a hard 256 MB heap limit. Since the app got layers it renders the worst case the app allows: five layers with strong glow, wash and painted effect at 1024 px. That needed one more step: the painted effect now works in strips of 512 rows (bit-identical output). The parity results are unchanged (table above).
 
 ## Conclusion and next step
 

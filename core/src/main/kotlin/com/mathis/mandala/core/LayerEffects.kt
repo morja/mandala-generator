@@ -1,6 +1,7 @@
 package com.mathis.mandala.core
 
 import kotlin.math.abs
+import kotlin.math.ceil
 import kotlin.math.cos
 import kotlin.math.max
 import kotlin.math.roundToInt
@@ -19,6 +20,11 @@ import kotlin.math.sin
 internal class LayerEffects(private val par: Parallel) {
 
     private data class BlurPass(val radius: Double, val strength: Double)
+
+    private companion object {
+        /** Core height of one strip of the painted effect; the overlap comes on top. */
+        const val STRIP_ROWS = 512
+    }
 
     private val rowScratch = ThreadLocal<FloatArray>()
 
@@ -117,7 +123,13 @@ internal class LayerEffects(private val par: Parallel) {
         return combineWithOverlay(image, overlay, BlendOp.ADD)
     }
 
-    /** Turbulent displacement plus blur; above 0.3 also colour bleed and grain. */
+    /**
+     * Turbulent displacement plus blur; above 0.3 also colour bleed and grain.
+     *
+     * Computed in horizontal strips so only one strip is held as floats. Each strip carries an
+     * overlap as tall as displacement and all blurs reach, so its core rows come out as if the
+     * whole image had been processed at once.
+     */
     fun painted(image: Image8, abstractLevel: Double, effectWidth: Int, offset: Int): Image8 {
         val w = image.width
         val h = image.height
@@ -128,55 +140,71 @@ internal class LayerEffects(private val par: Parallel) {
         val size = effectWidth * (0.1 + level * 0.45)
         val nx = NoiseField(effectWidth, size, level * 3.0, 3, salt = 17)
         val ny = NoiseField(effectWidth, size, level * 3.0, 3, salt = 9001)
-        val result = FloatImage(w, h)
-        par.forRange(h) { from, until ->
-            val tmp = FloatArray(3)
-            for (y in from until until) {
-                for (x in 0 until w) {
-                    val vx = x + offset
-                    val vy = y + offset
-                    val sx = x + (nx.sample(vx, vy) - 0.5f) * displacement
-                    val sy = y + (ny.sample(vx, vy) - 0.5f) * displacement
-                    Filters.sampleBilinear(image, sx, sy, result.data, (y * w + x) * 3, tmp)
-                }
-            }
-        }
-
-        Filters.blurInPlace(result, level * 3.0 * scale, par)
-
+        val softBlur = level * 3.0 * scale
         val heavyFactor = max(0.0, (level - 0.3) / 0.7)
         val heavyBlur = heavyFactor * level * 8.0 * scale
-        if (heavyBlur > 0.5) {
-            Filters.blurInPlace(result, heavyBlur, par)
-            run {
-                val bleed = result.copy()
-                Filters.colorControls(bleed.data, 0, bleed.data.size, 1.0 + heavyFactor, 0.1 * heavyFactor, 1.0)
-                Filters.blurInPlace(bleed, heavyBlur * 1.5, par)
-                Filters.blend(result.data, bleed.data, result.data.size, BlendOp.SCREEN)
-            }
+        val heavy = heavyBlur > 0.5
+        val bleedBlur = heavyBlur * 1.5
+        val grain = (heavyFactor * level * 0.12).toFloat()
 
-            val grain = (heavyFactor * level * 0.12).toFloat()
-            val d = result.data
-            par.forRange(h) { from, until ->
-                for (y in from until until) {
+        fun reach(sigma: Double) = if (sigma < 0.05) 0 else ceil(sigma * 3.0).toInt() + 3
+        val overlap = ceil(displacement / 2.0).toInt() + 2 + reach(softBlur) +
+            (if (heavy) reach(heavyBlur) + reach(bleedBlur) else 0)
+
+        // Strips read the input around them, so the result goes into a separate image.
+        val out = Image8(w, h, Encoding.SRGB)
+        val n = w * 3
+        for (y0 in 0 until h step STRIP_ROWS) {
+            val y1 = minOf(h, y0 + STRIP_ROWS)
+            val top = max(0, y0 - overlap)
+            val bottom = minOf(h, y1 + overlap)
+            val strip = FloatImage(w, bottom - top)
+            par.forRange(bottom - top) { from, until ->
+                val tmp = FloatArray(3)
+                for (r in from until until) {
+                    val y = top + r
                     for (x in 0 until w) {
-                        val p = (y * w + x) * 3
                         val vx = x + offset
                         val vy = y + offset
-                        d[p] += Filters.hash01(vx, vy, 1).toFloat() * grain
-                        d[p + 1] += Filters.hash01(vx, vy, 2).toFloat() * grain
-                        d[p + 2] += Filters.hash01(vx, vy, 3).toFloat() * grain
+                        val sx = x + (nx.sample(vx, vy) - 0.5f) * displacement
+                        val sy = y + (ny.sample(vx, vy) - 0.5f) * displacement
+                        Filters.sampleBilinear(image, sx, sy, strip.data, (r * w + x) * 3, tmp)
                     }
                 }
             }
-        }
-        val out = target(image)
-        val n = w * 3
-        par.forRange(h) { from, until ->
-            val row = FloatArray(n)
-            for (y in from until until) {
-                System.arraycopy(result.data, y * n, row, 0, n)
-                WorkingSpace.writeRow(row, out, y)
+
+            Filters.blurInPlace(strip, softBlur, par)
+
+            if (heavy) {
+                Filters.blurInPlace(strip, heavyBlur, par)
+                run {
+                    val bleed = strip.copy()
+                    Filters.colorControls(bleed.data, 0, bleed.data.size, 1.0 + heavyFactor, 0.1 * heavyFactor, 1.0)
+                    Filters.blurInPlace(bleed, bleedBlur, par)
+                    Filters.blend(strip.data, bleed.data, strip.data.size, BlendOp.SCREEN)
+                }
+                val d = strip.data
+                par.forRange(bottom - top) { from, until ->
+                    for (r in from until until) {
+                        val vy = top + r + offset
+                        for (x in 0 until w) {
+                            val p = (r * w + x) * 3
+                            val vx = x + offset
+                            d[p] += Filters.hash01(vx, vy, 1).toFloat() * grain
+                            d[p + 1] += Filters.hash01(vx, vy, 2).toFloat() * grain
+                            d[p + 2] += Filters.hash01(vx, vy, 3).toFloat() * grain
+                        }
+                    }
+                }
+            }
+
+            par.forRange(y1 - y0) { from, until ->
+                val row = FloatArray(n)
+                for (k in from until until) {
+                    val y = y0 + k
+                    System.arraycopy(strip.data, (y - top) * n, row, 0, n)
+                    WorkingSpace.writeRow(row, out, y)
+                }
             }
         }
         return out

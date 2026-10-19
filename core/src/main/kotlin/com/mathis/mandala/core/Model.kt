@@ -62,12 +62,13 @@ enum class MandalaStyle(val displayName: String) {
     ;
 }
 
+/** How a layer is combined with the layers below; `displayName` as in the macOS app. */
 @Serializable
-enum class LayerBlendMode {
-    @SerialName("screen") SCREEN,
-    @SerialName("add") ADD,
-    @SerialName("normal") NORMAL,
-    @SerialName("multiply") MULTIPLY,
+enum class LayerBlendMode(val displayName: String) {
+    @SerialName("screen") SCREEN("Screen"),
+    @SerialName("add") ADD("Add"),
+    @SerialName("normal") NORMAL("Normal"),
+    @SerialName("multiply") MULTIPLY("Multiply"),
 }
 
 @Serializable

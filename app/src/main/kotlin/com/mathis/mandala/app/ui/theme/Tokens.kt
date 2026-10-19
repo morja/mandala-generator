@@ -27,6 +27,8 @@ object Radius {
 
 object Sizes {
     val swatch = 36.dp
+    val swatchSmall = 24.dp
+    val icon = 24.dp
     val swatchRing = 2.dp
     val progress = 3.dp
 

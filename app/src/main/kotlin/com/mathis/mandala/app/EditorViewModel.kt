@@ -5,7 +5,11 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.mathis.mandala.app.Editing.addLayer
+import com.mathis.mandala.app.Editing.duplicateLayer
+import com.mathis.mandala.app.Editing.moveLayer
 import com.mathis.mandala.app.Editing.newVariation
+import com.mathis.mandala.app.Editing.removeLayer
 import com.mathis.mandala.app.Editing.updateLayer
 import com.mathis.mandala.core.MandalaParameters
 import com.mathis.mandala.core.MandalaRenderer
@@ -23,6 +27,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.io.File
 import kotlin.random.Random
 
 data class PreviewState(
@@ -39,10 +44,19 @@ sealed interface ExportState {
     data class Failed(val message: String) : ExportState
 }
 
-/** Holds the settings, renders the preview after each change and exports to the gallery. */
+/**
+ * Holds the settings and the selected layer, renders the preview after each change, keeps the
+ * last state across restarts and exports to the gallery.
+ */
 class EditorViewModel(application: Application) : AndroidViewModel(application) {
-    private val _params = MutableStateFlow(Editing.initial(Random.nextLong().toULong()))
+    // A few kilobytes; reading it here keeps the first preview from showing anything else.
+    private val store = SettingsStore(File(application.filesDir, "last-settings.json"))
+
+    private val _params = MutableStateFlow(store.load() ?: Editing.initial(randomSeed()))
     val params: StateFlow<MandalaParameters> = _params.asStateFlow()
+
+    private val _selected = MutableStateFlow(0)
+    val selected: StateFlow<Int> = _selected.asStateFlow()
 
     private val _preview = MutableStateFlow(PreviewState())
     val preview: StateFlow<PreviewState> = _preview.asStateFlow()
@@ -57,11 +71,36 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
             @OptIn(FlowPreview::class)
             _params.debounce(DEBOUNCE_MS).collectLatest { renderPreview(it) }
         }
+        viewModelScope.launch {
+            @OptIn(FlowPreview::class)
+            _params.debounce(SAVE_DELAY_MS).collectLatest { p -> withContext(Dispatchers.IO) { runCatching { store.save(p) } } }
+        }
     }
 
-    fun updateLayer(change: (StyleLayer) -> StyleLayer) = _params.update { it.updateLayer(change) }
+    fun select(index: Int) {
+        _selected.value = index.coerceIn(0, _params.value.layers.lastIndex)
+    }
 
-    fun newVariation() = _params.update { it.newVariation(Random.nextLong().toULong()) }
+    fun updateSelected(change: (StyleLayer) -> StyleLayer) = _params.update { it.updateLayer(_selected.value, change) }
+
+    fun updateLayer(index: Int, change: (StyleLayer) -> StyleLayer) = _params.update { it.updateLayer(index, change) }
+
+    fun addLayer() = applyLayerOperation { it.addLayer(randomSeed()) }
+
+    fun duplicateSelected() = applyLayerOperation { it.duplicateLayer(_selected.value, randomSeed()) }
+
+    fun removeSelected() = applyLayerOperation { it.removeLayer(_selected.value) }
+
+    fun moveLayer(index: Int, delta: Int) = applyLayerOperation { it.moveLayer(index, delta) }
+
+    fun newVariation() = _params.update { it.newVariation(::randomSeed) }
+
+    /** Applies a layer operation and selects the layer it returns. */
+    private fun applyLayerOperation(operation: (MandalaParameters) -> Pair<MandalaParameters, Int>) {
+        val (next, index) = operation(_params.value)
+        _params.value = next
+        _selected.value = index
+    }
 
     fun exportToGallery() {
         if (_export.value == ExportState.Saving) return
@@ -108,5 +147,8 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
 
     private companion object {
         const val DEBOUNCE_MS = 150L
+        const val SAVE_DELAY_MS = 400L
+
+        fun randomSeed(): ULong = Random.nextLong().toULong()
     }
 }

@@ -5,7 +5,9 @@ Status: proposed, 19 October 2026
 ## Decision
 
 - **minSdk 29 (Android 10), targetSdk 36.** From Android 10 on, saving to the shared gallery through MediaStore needs no storage permission.
-- **One activity, one Compose screen** for now: canvas, "New variation", "Save to gallery", and the controls of one layer (style, palette, symmetry, scale, complexity, density, ripple, glow, colour drift, painted, saturation, brightness).
+- **One activity, one Compose screen** for now: canvas, "New variation", "Save to gallery", the layer list and the controls of the selected layer (style, palette, blend mode, opacity, symmetry, scale, complexity, density, ripple, glow, colour drift, painted, saturation, brightness).
+- **Layers** follow the macOS app: at most 5; a new layer gets the next style, a palette three further on, scale 0.65; duplicates get a new seed; "New variation" re-seeds every layer. The list shows the top layer first (it is drawn last); each row can hide the layer and move it up or down; add, duplicate and delete act on the selected layer.
+- **Last state** is saved 400 ms after each change to `last-settings.json` in the app's private files (the macOS settings format, ADR-0003) and restored on start. A broken or empty file is ignored.
 - **Layering:** `Editing.kt` holds pure editing rules (unit-tested on the JVM); `EditorViewModel` holds the settings as `MandalaParameters`, renders the preview and exports; `core` renders. The screen only shows state and forwards input.
 - **Preview** at 512 px, rendered 150 ms after the last change on a background thread. A newer change cancels a running preview (`RenderOptions.isCancelled`).
 - **Export** at 1024 px as PNG to `Pictures/Mandala`, file names in the scheme of the macOS app (`mandala-<style>-p<palette>-x<symmetry>-<hash>.png`).
@@ -18,11 +20,12 @@ Status: proposed, 19 October 2026
 |---|---|---|
 | release | 1.1–1.2 s | about 3–4 s |
 | debug | 2.8 s | — |
+| release, 3 layers (2 visible) | 1.9–2.5 s | — |
 
 Debug builds are much slower on Android; judge speed with `assembleRelease`.
 
 ## Open
 
 - Real phone not tested yet.
-- Settings are not kept across app restarts; no favourites, history, or loading Mac settings files yet.
+- No favourites, history, or loading Mac settings files yet. The selected layer is not restored (the first one is selected after a restart).
 - The release build is signed with the local debug key; no store signing.

@@ -20,9 +20,10 @@ A phone app gets 256–512 MB of heap. The renderer therefore:
 - keeps images between steps as 8-bit `Image8`, float only inside a step;
 - enlarges a layer buffer to the full radius only for rotated layers, otherwise by the effect margin;
 - draws with threads in bands of one shared buffer, never one buffer per thread;
-- blurs in place and resamples row by row.
+- blurs in place and resamples row by row;
+- computes the painted effect in strips of 512 rows with an overlap as tall as displacement and blurs reach (bit-identical to the whole-image result).
 
-`MemoryBudgetTest` (fast check) renders two demanding layers at 1024 px under a 256 MB heap limit.
+`MemoryBudgetTest` (fast check) renders the worst case the app allows, five layers with strong glow, wash and painted effect, at 1024 px under a 256 MB heap limit.
 
 ## Consequences
 

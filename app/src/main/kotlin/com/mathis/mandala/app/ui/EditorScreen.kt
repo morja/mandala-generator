@@ -26,6 +26,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -34,6 +36,7 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -54,7 +57,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mathis.mandala.app.EditorViewModel
 import com.mathis.mandala.app.Editing
-import com.mathis.mandala.app.Editing.layer
 import com.mathis.mandala.app.ExportState
 import com.mathis.mandala.app.GalleryExport
 import com.mathis.mandala.app.PreviewState
@@ -64,6 +66,8 @@ import com.mathis.mandala.app.ui.theme.Sizes
 import com.mathis.mandala.app.ui.theme.Spacing
 import com.mathis.mandala.core.BuiltInPalettes
 import com.mathis.mandala.core.ColorPalette
+import com.mathis.mandala.core.LayerBlendMode
+import com.mathis.mandala.core.MandalaParameters
 import com.mathis.mandala.core.StyleLayer
 import java.util.Locale
 import kotlin.math.roundToInt
@@ -74,6 +78,7 @@ fun EditorScreen(vm: EditorViewModel) {
     val params by vm.params.collectAsStateWithLifecycle()
     val preview by vm.preview.collectAsStateWithLifecycle()
     val export by vm.export.collectAsStateWithLifecycle()
+    val selected by vm.selected.collectAsStateWithLifecycle()
     val snackbar = remember { SnackbarHostState() }
 
     LaunchedEffect(export) {
@@ -93,7 +98,6 @@ fun EditorScreen(vm: EditorViewModel) {
         snackbarHost = { SnackbarHost(snackbar) },
     ) { padding ->
         BoxWithConstraints(Modifier.padding(padding).fillMaxSize()) {
-            val layer = params.layer
             val actions: @Composable () -> Unit = {
                 Actions(saving = export == ExportState.Saving, onVariation = vm::newVariation, onSave = vm::exportToGallery)
             }
@@ -108,7 +112,7 @@ fun EditorScreen(vm: EditorViewModel) {
                         actions()
                     }
                     Column(Modifier.width(Spacing.controlsWidth).verticalScroll(rememberScrollState())) {
-                        Controls(layer, vm::updateLayer)
+                        Controls(params, selected, vm)
                     }
                 }
             } else {
@@ -121,7 +125,7 @@ fun EditorScreen(vm: EditorViewModel) {
                     Canvas(preview, Modifier.widthIn(max = canvasMax).fillMaxWidth().align(Alignment.CenterHorizontally))
                     actions()
                     Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(bottom = Spacing.lg)) {
-                        Controls(layer, vm::updateLayer)
+                        Controls(params, selected, vm)
                     }
                 }
             }
@@ -164,45 +168,147 @@ private fun Actions(saving: Boolean, onVariation: () -> Unit, onSave: () -> Unit
     }
 }
 
+@Composable
+private fun Controls(params: MandalaParameters, selected: Int, vm: EditorViewModel) {
+    val index = selected.coerceIn(0, params.layers.lastIndex)
+    Column(verticalArrangement = Arrangement.spacedBy(Spacing.xs)) {
+        LayersSection(params, index, vm)
+        SectionTitle("Layer ${index + 1} · ${params.layers[index].style.displayName}")
+        LayerControls(params.layers[index], vm::updateSelected)
+    }
+}
+
+/** The layer list, top layer first (it is drawn last, on top), plus add, duplicate and delete. */
+@Composable
+private fun LayersSection(params: MandalaParameters, selected: Int, vm: EditorViewModel) {
+    val t = LocalTokens.current
+    val layers = params.layers
+    SectionTitle("Layers")
+    Text("The top layer is drawn over the ones below.", style = MaterialTheme.typography.bodySmall, color = t.textMuted)
+    Column(verticalArrangement = Arrangement.spacedBy(Spacing.xs), modifier = Modifier.padding(top = Spacing.sm)) {
+        for (i in layers.indices.reversed()) {
+            LayerRow(
+                number = i + 1,
+                layer = layers[i],
+                selected = i == selected,
+                canMoveUp = i < layers.lastIndex,
+                canMoveDown = i > 0,
+                onSelect = { vm.select(i) },
+                onToggle = { vm.updateLayer(i) { it.copy(isEnabled = !it.isEnabled) } },
+                onMoveUp = { vm.moveLayer(i, +1) },
+                onMoveDown = { vm.moveLayer(i, -1) },
+            )
+        }
+    }
+    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.xs)) {
+        TextButton(onClick = vm::addLayer, enabled = layers.size < Editing.MAX_LAYERS) { Text("Add layer") }
+        TextButton(onClick = vm::duplicateSelected, enabled = layers.size < Editing.MAX_LAYERS) { Text("Duplicate") }
+        TextButton(onClick = vm::removeSelected, enabled = layers.size > 1) { Text("Delete") }
+    }
+}
+
+@Composable
+private fun LayerRow(
+    number: Int,
+    layer: StyleLayer,
+    selected: Boolean,
+    canMoveUp: Boolean,
+    canMoveDown: Boolean,
+    onSelect: () -> Unit,
+    onToggle: () -> Unit,
+    onMoveUp: () -> Unit,
+    onMoveDown: () -> Unit,
+) {
+    val t = LocalTokens.current
+    val palette = BuiltInPalettes.all[layer.paletteIndex.coerceIn(0, BuiltInPalettes.all.lastIndex)]
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(Radius.sm))
+            .background(if (selected) t.accentSoft else t.surface)
+            .clickable(onClick = onSelect)
+            .semantics { this.selected = selected }
+            .padding(start = Spacing.md),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Box(Modifier.size(Sizes.swatchSmall).clip(CircleShape).background(paletteBrush(palette)))
+        Column(Modifier.weight(1f).padding(horizontal = Spacing.md, vertical = Spacing.sm)) {
+            Text("$number · ${layer.style.displayName}", style = MaterialTheme.typography.bodyMedium,
+                color = if (layer.isEnabled) t.text else t.textMuted)
+            Text("${layer.blendMode.displayName} · ${(layer.opacity * 100).roundToInt()} %",
+                style = MaterialTheme.typography.bodySmall, color = t.textMuted)
+        }
+        IconButton(onClick = onToggle) {
+            Icon(
+                if (layer.isEnabled) EditorIcons.Visible else EditorIcons.Hidden,
+                contentDescription = if (layer.isEnabled) "Hide layer $number" else "Show layer $number",
+                tint = if (layer.isEnabled) t.text else t.textMuted,
+            )
+        }
+        IconButton(onClick = onMoveUp, enabled = canMoveUp) {
+            Icon(EditorIcons.MoveUp, contentDescription = "Move layer $number up")
+        }
+        IconButton(onClick = onMoveDown, enabled = canMoveDown) {
+            Icon(EditorIcons.MoveDown, contentDescription = "Move layer $number down")
+        }
+    }
+}
+
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun Controls(layer: StyleLayer, update: ((StyleLayer) -> StyleLayer) -> Unit) {
-    Column(verticalArrangement = Arrangement.spacedBy(Spacing.xs)) {
-        SectionTitle("Style")
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
-            for (style in Editing.styles) {
-                FilterChip(
-                    selected = layer.style == style,
-                    onClick = { update { it.copy(style = style) } },
-                    label = { Text(style.displayName) },
-                )
-            }
+private fun LayerControls(layer: StyleLayer, update: ((StyleLayer) -> StyleLayer) -> Unit) {
+    SubTitle("Style")
+    FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+        for (style in Editing.styles) {
+            FilterChip(
+                selected = layer.style == style,
+                onClick = { update { it.copy(style = style) } },
+                label = { Text(style.displayName) },
+            )
         }
-
-        SectionTitle("Palette")
-        FlowRow(
-            horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
-            verticalArrangement = Arrangement.spacedBy(Spacing.sm),
-        ) {
-            BuiltInPalettes.all.forEachIndexed { index, palette ->
-                Swatch(palette, selected = layer.paletteIndex == index) { update { it.copy(paletteIndex = index) } }
-            }
-        }
-
-        SectionTitle("Shape")
-        SteppedSlider("Symmetry", layer.symmetry, 1..8) { v -> update { it.copy(symmetry = v) } }
-        ValueSlider("Scale", layer.scale, 0.1f..1.2f) { v -> update { it.copy(scale = v) } }
-        ValueSlider("Complexity", layer.complexity) { v -> update { it.copy(complexity = v) } }
-        ValueSlider("Density", layer.density) { v -> update { it.copy(density = v) } }
-        ValueSlider("Ripple", layer.ripple) { v -> update { it.copy(ripple = v) } }
-
-        SectionTitle("Light and colour")
-        ValueSlider("Glow", layer.glowIntensity) { v -> update { it.copy(glowIntensity = v) } }
-        ValueSlider("Colour drift", layer.colorDrift) { v -> update { it.copy(colorDrift = v) } }
-        ValueSlider("Painted", layer.abstractLevel) { v -> update { it.copy(abstractLevel = v) } }
-        ValueSlider("Saturation", layer.saturation) { v -> update { it.copy(saturation = v) } }
-        ValueSlider("Brightness", layer.brightness) { v -> update { it.copy(brightness = v) } }
     }
+
+    SubTitle("Palette")
+    FlowRow(
+        horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
+        verticalArrangement = Arrangement.spacedBy(Spacing.sm),
+    ) {
+        BuiltInPalettes.all.forEachIndexed { index, palette ->
+            Swatch(palette, selected = layer.paletteIndex == index) { update { it.copy(paletteIndex = index) } }
+        }
+    }
+
+    SubTitle("Blending")
+    FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+        for (mode in LayerBlendMode.entries) {
+            FilterChip(
+                selected = layer.blendMode == mode,
+                onClick = { update { it.copy(blendMode = mode) } },
+                label = { Text(mode.displayName) },
+            )
+        }
+    }
+    ValueSlider("Opacity", layer.opacity) { v -> update { it.copy(opacity = v) } }
+
+    SubTitle("Shape")
+    SteppedSlider("Symmetry", layer.symmetry, 1..8) { v -> update { it.copy(symmetry = v) } }
+    ValueSlider("Scale", layer.scale, 0.1f..1.2f) { v -> update { it.copy(scale = v) } }
+    ValueSlider("Complexity", layer.complexity) { v -> update { it.copy(complexity = v) } }
+    ValueSlider("Density", layer.density) { v -> update { it.copy(density = v) } }
+    ValueSlider("Ripple", layer.ripple) { v -> update { it.copy(ripple = v) } }
+
+    SubTitle("Light and colour")
+    ValueSlider("Glow", layer.glowIntensity) { v -> update { it.copy(glowIntensity = v) } }
+    ValueSlider("Colour drift", layer.colorDrift) { v -> update { it.copy(colorDrift = v) } }
+    ValueSlider("Painted", layer.abstractLevel) { v -> update { it.copy(abstractLevel = v) } }
+    ValueSlider("Saturation", layer.saturation) { v -> update { it.copy(saturation = v) } }
+    ValueSlider("Brightness", layer.brightness) { v -> update { it.copy(brightness = v) } }
+}
+
+@Composable
+private fun SubTitle(text: String) {
+    Text(text, style = MaterialTheme.typography.labelLarge, color = LocalTokens.current.textMuted,
+        modifier = Modifier.padding(top = Spacing.md, bottom = Spacing.xs))
 }
 
 @Composable
@@ -213,14 +319,13 @@ private fun SectionTitle(text: String) {
 @Composable
 private fun Swatch(palette: ColorPalette, selected: Boolean, onClick: () -> Unit) {
     val t = LocalTokens.current
-    val colors = palette.stops.map { Color(it.color.r.toFloat(), it.color.g.toFloat(), it.color.b.toFloat(), 1f, ColorSpaces.DisplayP3) }
     Box(
         Modifier
             .size(Sizes.swatch)
             .border(Sizes.swatchRing, if (selected) t.accent else Color.Transparent, CircleShape)
             .padding(Sizes.swatchRing * 2)
             .clip(CircleShape)
-            .background(Brush.sweepGradient(colors))
+            .background(paletteBrush(palette))
             .clickable(role = Role.RadioButton, onClick = onClick)
             .semantics {
                 contentDescription = palette.name
@@ -259,5 +364,8 @@ private fun SliderRow(label: String, value: String, slider: @Composable () -> Un
         slider()
     }
 }
+
+private fun paletteBrush(palette: ColorPalette): Brush =
+    Brush.sweepGradient(palette.stops.map { Color(it.color.r.toFloat(), it.color.g.toFloat(), it.color.b.toFloat(), 1f, ColorSpaces.DisplayP3) })
 
 private fun seconds(millis: Long): String = String.format(Locale.US, "%.1f", millis / 1000.0)
