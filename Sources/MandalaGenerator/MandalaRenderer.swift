@@ -719,7 +719,8 @@ struct MandalaRenderer {
         }
         DispatchQueue.concurrentPerform(iterations: nThreads) { tid in
             let start = tid * chunk
-            let end   = min(start + chunk, tasks.count)
+            // Last thread also takes the remainder so no task is dropped.
+            let end   = tid == nThreads - 1 ? tasks.count : min(start + chunk, tasks.count)
             guard start < end else { return }
             let sub = subBuffers[tid]
             for i in start..<end {
@@ -1420,7 +1421,8 @@ struct MandalaRenderer {
 
         DispatchQueue.concurrentPerform(iterations: nThreads) { tid in
             let start = tid * chunk
-            let end = min(start + chunk, nLines)
+            // Last thread also takes the remainder so no line is dropped.
+            let end = tid == nThreads - 1 ? nLines : min(start + chunk, nLines)
             guard start < end else { return }
             var local = SeededRNG(seed: params.seed &+ UInt64(tid) &* 6364136223846793005 &+ 1)
             let sub = subBuffers[tid]
