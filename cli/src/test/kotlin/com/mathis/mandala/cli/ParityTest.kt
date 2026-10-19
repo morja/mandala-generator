@@ -56,7 +56,7 @@ class ParityTest {
             val reference = File(root, "fixtures/reference/$name.png")
             if (!reference.exists()) { failures += "$name: reference image missing"; continue }
             val params = SettingsJson.decode(file.readText())
-            val result = MandalaRenderer.render(params, RenderOptions(threads = 4, textRenderer = AwtTextRenderer()))
+            val result = MandalaRenderer.render(params, RenderOptions(threads = 4, textRenderer = AwtTextRenderer(), imageLoader = FileImageLoader(root)))
             val diff = ImageDiff.of(Png.read(reference), result.image)
             val min = minPsnr[name] ?: 45.0
             println("$name: $diff (min ${"%.0f".format(min)} dB)")

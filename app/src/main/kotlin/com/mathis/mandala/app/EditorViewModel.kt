@@ -27,6 +27,7 @@ import com.mathis.mandala.app.Editing.updateLayer
 import com.mathis.mandala.app.Editing.updateText
 import com.mathis.mandala.app.Editing.withQuote
 import com.mathis.mandala.core.BaseLayerSettings
+import com.mathis.mandala.core.BaseLayerType
 import com.mathis.mandala.core.DrawingLayerSettings
 import com.mathis.mandala.core.EffectsLayerSettings
 import com.mathis.mandala.core.GraffitiLayerSettings
@@ -116,6 +117,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
 
     private val threads = Runtime.getRuntime().availableProcessors()
     private val textRenderer = AndroidTextRenderer()
+    private val imageLoader = AndroidImageLoader()
 
     init {
         viewModelScope.launch {
@@ -167,6 +169,18 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
     fun useQuote(quote: Quote) = updateText { it.withQuote(quote) }
 
     fun randomQuote() = useQuote(Quotes.all.random())
+
+    /** Uses a picked photo as the background (copied into the app's files). */
+    fun useBackgroundImage(uri: Uri) {
+        viewModelScope.launch {
+            try {
+                val url = withContext(Dispatchers.IO) { BackgroundImages.import(getApplication(), uri) }
+                updateBackground { it.copy(isEnabled = true, type = BaseLayerType.IMAGE, imageURL = url) }
+            } catch (e: Exception) {
+                message("Could not open the picture: ${e.message ?: e.javaClass.simpleName}")
+            }
+        }
+    }
 
     // ── History and dice ──
 
@@ -338,7 +352,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         viewModelScope.launch {
             try {
                 val image = withContext(Dispatchers.Default) {
-                    MandalaRenderer.render(snapshot, RenderOptions(outputSize = Editing.EXPORT_SIZE, threads = threads, textRenderer = textRenderer)).image
+                    MandalaRenderer.render(snapshot, RenderOptions(outputSize = Editing.EXPORT_SIZE, threads = threads, textRenderer = textRenderer, imageLoader = imageLoader)).image
                 }
                 then(image, Editing.fileName(snapshot))
             } catch (e: OutOfMemoryError) {
@@ -362,7 +376,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
                 val job = coroutineContext.job
                 MandalaRenderer.render(
                     params,
-                    RenderOptions(outputSize = Editing.PREVIEW_SIZE, threads = threads, textRenderer = textRenderer, isCancelled = { !job.isActive }),
+                    RenderOptions(outputSize = Editing.PREVIEW_SIZE, threads = threads, textRenderer = textRenderer, imageLoader = imageLoader, isCancelled = { !job.isActive }),
                 )
             }
             val bitmap = result.image.toBitmap().asImageBitmap()

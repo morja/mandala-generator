@@ -1,5 +1,7 @@
 package com.mathis.mandala.app.ui
 
+import android.net.Uri
+import androidx.activity.result.PickVisualMediaRequest
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.material3.Button
@@ -453,7 +455,7 @@ private fun Actions(saving: Boolean, onSurprise: () -> Unit, onVariation: () -> 
 private fun Controls(params: MandalaParameters, selected: Int, vm: EditorViewModel) {
     val index = selected.coerceIn(0, params.layers.lastIndex)
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.xs)) {
-        BackgroundSection(params.baseLayer, vm::updateBackground)
+        BackgroundSection(params.baseLayer, vm::updateBackground, vm::useBackgroundImage)
         EffectsSection(params.effectsLayer, vm::updateEffects, vm::newEffectsPattern)
         TextSection(params.textLayer, vm::updateText, vm::randomQuote, vm::useQuote)
         DrawingSection(params, vm)
@@ -466,19 +468,45 @@ private fun Controls(params: MandalaParameters, selected: Int, vm: EditorViewMod
 /** Background behind all layers: off, a colour, a gradient or sunburst rays, with fitting sliders. */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun BackgroundSection(base: BaseLayerSettings, update: ((BaseLayerSettings) -> BaseLayerSettings) -> Unit) {
+private fun BackgroundSection(
+    base: BaseLayerSettings,
+    update: ((BaseLayerSettings) -> BaseLayerSettings) -> Unit,
+    useImage: (Uri) -> Unit,
+) {
+    val pickImage = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri -> uri?.let(useImage) }
+    fun choose() = pickImage.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
     SectionTitle("Background")
     FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
         FilterChip(selected = !base.isEnabled, onClick = { update { it.copy(isEnabled = false) } }, label = { Text("Off") })
         for (type in Editing.backgrounds) {
             FilterChip(
                 selected = base.isEnabled && base.type == type,
-                onClick = { update { it.copy(isEnabled = true, type = type) } },
+                onClick = {
+                    if (type == BaseLayerType.IMAGE && base.imageURL == null) choose()
+                    else update { it.copy(isEnabled = true, type = type) }
+                },
                 label = { Text(backgroundName(type)) },
             )
         }
     }
     if (!base.isEnabled || base.type !in Editing.backgrounds) return
+    when (base.type) {
+        BaseLayerType.AUTO -> {
+            Text(
+                "A dark glow and fine fibres in the colours of the bottom layer.",
+                style = MaterialTheme.typography.bodySmall,
+                color = LocalTokens.current.textMuted,
+            )
+            return
+        }
+        BaseLayerType.IMAGE -> {
+            OutlinedButton(onClick = ::choose) { Text("Choose picture") }
+            ValueSlider("Picture strength", base.imageBlend) { v -> update { it.copy(imageBlend = v) } }
+            ValueSlider("Background opacity", base.opacity) { v -> update { it.copy(opacity = v) } }
+            return
+        }
+        else -> Unit
+    }
 
     val twoColours = base.type != BaseLayerType.COLOR && base.type != BaseLayerType.GRAIN
     ColourSliders(if (twoColours) "Colour 1" else "Colour", base.hue, base.saturation, base.brightness) { h, s, b ->
@@ -531,6 +559,8 @@ private fun ColourSliders(title: String, hue: Double, saturation: Double, bright
 }
 
 private fun backgroundName(type: BaseLayerType) = when (type) {
+    BaseLayerType.AUTO -> "Auto"
+    BaseLayerType.IMAGE -> "Picture"
     BaseLayerType.COLOR -> "Colour"
     BaseLayerType.GRADIENT -> "Gradient"
     BaseLayerType.SUNBURST -> "Sunburst"

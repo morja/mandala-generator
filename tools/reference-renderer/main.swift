@@ -9,6 +9,10 @@ guard args.count >= 3 else { print("usage: mandala-ref in.json out.png [size]");
 let data = try Data(contentsOf: URL(fileURLWithPath: args[1]))
 var params = try JSONDecoder().decode(MandalaParameters.self, from: data)
 params.resolvedPalettes = ColorPalettes.all
+// Fixtures name background images relative to the repository root; the app stores file URLs.
+if let url = params.baseLayer.imageURL, url.scheme == nil {
+    params.baseLayer.imageURL = URL(fileURLWithPath: url.relativeString)
+}
 if args.count >= 4, let s = Int(args[3]) { params.outputSize = s }
 let start = Date()
 let img = MandalaRenderer.render(params: params)

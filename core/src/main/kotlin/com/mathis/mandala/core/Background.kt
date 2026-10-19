@@ -15,7 +15,8 @@ import kotlin.math.sqrt
 internal object Background {
 
     fun supports(type: BaseLayerType) =
-        type == BaseLayerType.GRADIENT || type == BaseLayerType.SUNBURST || type == BaseLayerType.GRAIN
+        type == BaseLayerType.GRADIENT || type == BaseLayerType.SUNBURST || type == BaseLayerType.GRAIN ||
+            type == BaseLayerType.AUTO || type == BaseLayerType.IMAGE
 
     fun render(settings: BaseLayerSettings, size: Int, par: Parallel): Image8 {
         val c1 = hsbToRgb(settings.hue, settings.saturation, settings.brightness)
@@ -41,6 +42,99 @@ internal object Background {
             }
         }
         return out
+    }
+
+    // ── Image (drawBaseLayer .image in the macOS app) ──
+    // The picture is stretched to the square, scaled by strength and opacity and tone-mapped like
+    // the lines, so it sits darker behind the mandala. Without a picture: colour 1.
+
+    fun renderImage(settings: BaseLayerSettings, picture: Image8?, size: Int, par: Parallel): Image8 {
+        val strength = (settings.imageBlend * settings.opacity).toFloat()
+        val out = Image8(size, size, Encoding.DISPLAY_P3)
+        val c1 = hsbToRgb(settings.hue, settings.saturation, settings.brightness)
+        val fallback = floatArrayOf(c1.r.toFloat(), c1.g.toFloat(), c1.b.toFloat())
+        par.forRange(size) { from, until ->
+            for (y in from until until) {
+                for (x in 0 until size) {
+                    val o = (y * size + x) * 3
+                    for (k in 0..2) {
+                        val v = (if (picture != null) picture.get(o + k) / 255f else fallback[k]) * strength
+                        out.data[o + k] = WorkingSpace.quantize(v / (v + 0.55f))
+                    }
+                }
+            }
+        }
+        return out
+    }
+
+    // ── Auto (drawBackground plus drawGrassFibers in the macOS app) ──
+    // A dark radial gradient tinted by the first layer's palette, a faint wash of its middle colour,
+    // and thousands of short "grass" strokes around the centre, all tone-mapped like the lines.
+
+    /** Threads the macOS app splits the fibres over; each draws from its own random stream. */
+    private const val MAC_FIBRE_THREADS = 12
+
+    fun renderAuto(params: MandalaParameters, palettes: List<ColorPalette>, size: Int, par: Parallel): Image8 {
+        val first = params.layers.firstOrNull()
+        val palette = palettes[(first?.paletteIndex ?: 0).coerceIn(0, palettes.size - 1)]
+        val col0 = FloatArray(3).also { palette.colorAt(0.0, it) }
+        val col1 = FloatArray(3).also { palette.colorAt(0.5, it) }
+        val buffer = PixelBuffer(size, size)
+
+        // Core Image blends and adds in linear light and hands back 8-bit sRGB values, which the
+        // macOS app copies into its float buffer as they are.
+        val inner = DoubleArray(3) { ColorSpaces.decode(col0[it] * 0.12) }
+        val wash = DoubleArray(3) { ColorSpaces.decode(col1[it] * 0.06) }
+        val centre = size / 2.0
+        val r0 = size * 0.55
+        val r1 = size * 0.85
+        par.forRange(size) { from, until ->
+            for (y in from until until) {
+                for (x in 0 until size) {
+                    val dx = x + 0.5 - centre
+                    val dy = y + 0.5 - centre
+                    val t = ((sqrt(dx * dx + dy * dy) - r0) / (r1 - r0)).coerceIn(0.0, 1.0)
+                    val o = (y * size + x) * 3
+                    for (k in 0..2) {
+                        val enc = ColorSpaces.encode(inner[k] * (1 - t) + wash[k])
+                        buffer.data[o + k] = (min(255.0, max(0.0, enc * 255 + 0.5)).toInt() / 255.0).toFloat()
+                    }
+                }
+            }
+        }
+        if (first != null) grassFibres(buffer, params.seed, first, palette)
+        return buffer.toImage()
+    }
+
+    private fun grassFibres(buffer: PixelBuffer, seed: ULong, layer: StyleLayer, palette: ColorPalette) {
+        val w = buffer.width.toFloat()
+        val c = w * 0.5f
+        val maxRadius = w * 0.48f
+        val lines = (15000.0 * layer.density + 500).toInt()
+        val symmetry = layer.symmetry.coerceIn(1, 8)
+        val chunk = max(1, lines / MAC_FIBRE_THREADS)
+        val col = FloatArray(3)
+        for (tid in 0 until MAC_FIBRE_THREADS) {
+            val start = tid * chunk
+            val end = if (tid == MAC_FIBRE_THREADS - 1) lines else min(start + chunk, lines)
+            if (start >= end) continue
+            val rng = SeededRng(seed + tid.toULong() * 6364136223846793005uL + 1uL)
+            for (i in start until end) {
+                val angle = rng.nextDouble() * Math.PI * 2.0
+                val startR = rng.nextDouble().toFloat() * maxRadius * 0.95f
+                val length = rng.nextDouble(3.0, 18.0).toFloat() * (1.0f + layer.complexity.toFloat() * 1.5f)
+                val wobble = rng.nextDouble(-0.15, 0.15).toFloat()
+                palette.colorAt(rng.nextDouble(), col)
+                val weight = rng.nextDouble(0.03, 0.25).toFloat() * layer.density.toFloat()
+                for (k in 0 until symmetry) {
+                    val sa = (angle + k * Math.PI * 2.0 / symmetry).toFloat()
+                    val x0 = c + cos(sa) * startR
+                    val y0 = c + sin(sa) * startR
+                    val ea = sa + wobble
+                    buffer.addLine(x0, y0, x0 + cos(ea) * length, y0 + sin(ea) * length, col[0], col[1], col[2], weight)
+                }
+            }
+        }
     }
 
     // ── Gradients (CIRadialGradient / CISmoothLinearGradient in the macOS app) ──

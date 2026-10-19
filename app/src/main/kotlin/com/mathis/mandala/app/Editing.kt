@@ -47,7 +47,9 @@ object Editing {
     val styles: List<MandalaStyle> = MandalaStyle.entries.filter { it in MandalaRenderer.supportedStyles }
 
     /** Background types the renderer can draw; "off" is a disabled base layer. */
-    val backgrounds = listOf(BaseLayerType.COLOR, BaseLayerType.GRADIENT, BaseLayerType.SUNBURST, BaseLayerType.GRAIN)
+    val backgrounds = listOf(
+        BaseLayerType.AUTO, BaseLayerType.COLOR, BaseLayerType.GRADIENT, BaseLayerType.SUNBURST, BaseLayerType.GRAIN, BaseLayerType.IMAGE,
+    )
 
     const val PREVIEW_SIZE = 512
     const val EXPORT_SIZE = 1024

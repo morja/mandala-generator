@@ -23,9 +23,16 @@ data class RenderOptions(
     val threads: Int = Runtime.getRuntime().availableProcessors(),
     /** Draws text for the text layer; supplied by the platform (fonts are not part of the core). */
     val textRenderer: TextRenderer? = null,
+    /** Loads the image of an image background, stretched to a square of the given size (sRGB). */
+    val imageLoader: ImageLoader? = null,
     /** Polled between steps; when it returns true the render stops with [RenderCancelledException]. */
     val isCancelled: () -> Boolean = { false },
 )
+
+fun interface ImageLoader {
+    /** Returns the image at `url` as a `size` x `size` sRGB image, or null if it cannot be read. */
+    fun load(url: String, size: Int): Image8?
+}
 
 class RenderCancelledException : RuntimeException("Render cancelled")
 
@@ -61,7 +68,13 @@ object MandalaRenderer {
             if (base.isEnabled && base.type != BaseLayerType.COLOR && !Background.supports(base.type)) {
                 warnings += "Background \"${base.type.name.lowercase()}\" is not available yet; drawn black."
             }
-            var composite = if (base.isEnabled && Background.supports(base.type)) {
+            var composite = if (base.isEnabled && base.type == BaseLayerType.AUTO) {
+                Background.renderAuto(params, palettes, bufferSize, par)
+            } else if (base.isEnabled && base.type == BaseLayerType.IMAGE) {
+                val picture = base.imageURL?.let { url -> options.imageLoader?.load(url, bufferSize) }
+                if (picture == null) warnings += "Background image not found; drawn in colour 1."
+                Background.renderImage(base, picture, bufferSize, par)
+            } else if (base.isEnabled && Background.supports(base.type)) {
                 Background.render(base, bufferSize, par)
             } else {
                 Image8(bufferSize, bufferSize, Encoding.SRGB)

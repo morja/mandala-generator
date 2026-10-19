@@ -1,5 +1,6 @@
 package com.mathis.mandala.app
 
+import com.mathis.mandala.core.BaseLayerType
 import com.mathis.mandala.core.BuiltInPalettes
 import com.mathis.mandala.core.MandalaParameters
 import com.mathis.mandala.core.MandalaStyle
@@ -27,7 +28,8 @@ object Randomize {
 
     fun MandalaParameters.randomAll(random: Random): MandalaParameters {
         val next = randomLayers(random)
-        val types = Editing.backgrounds
+        // The macOS dice leave out auto and image.
+        val types = listOf(BaseLayerType.COLOR, BaseLayerType.GRADIENT, BaseLayerType.SUNBURST, BaseLayerType.GRAIN)
         return next.copy(
             baseLayer = baseLayer.copy(
                 isEnabled = random.nextBoolean(),
