@@ -1,6 +1,6 @@
 # Stack rules (binding, set up 19 October 2026)
 
-Mandala Generator for Android: a port of the macOS app in `../Mandala-Generator`. Reasons and details are in `docs/adr/`. Read the affected ADRs before building; do not reinvent decisions already made.
+Mandala Generator for Android: a port of the macOS app ([morja/mandala-generator](https://github.com/morja/mandala-generator), checked out next to this repository at `../Mandala-Generator`). Reasons and details are in `docs/adr/`. Read the affected ADRs before building; do not reinvent decisions already made.
 
 - **Kotlin, native Android with Jetpack Compose** for the app (ADR-0001), module `app`, minSdk 29 (ADR-0005). The app holds no rendering or file-format logic: editing rules in `Editing.kt`, state in `EditorViewModel`, rendering in `core`.
 - **Renderer in `core`, plain Kotlin:** no `android.*`, `java.awt`, `javax.*` or coroutines there; only Kotlin stdlib, `java.util.concurrent` and kotlinx.serialization. The JVM command and the Android app call `core`; rendering logic lives nowhere else (ADR-0002). Enforced by `ArchitectureTest`.

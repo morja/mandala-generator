@@ -1,10 +1,12 @@
 # Mandala Generator for Android
 
-Android port of the macOS [Mandala Generator](../Mandala-Generator). Current state: the renderer in plain Kotlin (five of the 36 styles), a command-line tool, and a first Android app with up to five layers, live preview, export to the gallery, and the last state kept across restarts.
+Android port of the macOS [Mandala Generator](https://github.com/morja/mandala-generator). Current state: the renderer in plain Kotlin (five of the 36 styles), a command-line tool, and a first Android app with up to five layers, live preview, export to the gallery, and the last state kept across restarts.
 
 Results so far: [POC-1](docs/POC-1-results.md). Decisions: [docs/adr](docs/adr/README.md). Rules for agents: [AGENTS.md](AGENTS.md).
 
 ## Requirements
+
+The tools and examples expect a checkout of the macOS app next to this one, at `../Mandala-Generator` (its Swift package in `MandalaGenerator/`).
 
 JDK 21 (via jenv), the Android SDK (`local.properties` with `sdk.dir`, or `ANDROID_HOME`), and macOS for the reference renderer. Gradle comes with the wrapper.
 

@@ -26,6 +26,6 @@ Debug builds are much slower on Android; judge speed with `assembleRelease`.
 
 ## Open
 
-- Real phone not tested yet.
+- Tried on a Galaxy S23 (Android 16) on 19 October 2026: speed feels fine (user feedback); no timings measured on the phone yet.
 - No favourites, history, or loading Mac settings files yet. The selected layer is not restored (the first one is selected after a restart).
 - The release build is signed with the local debug key; no store signing.
