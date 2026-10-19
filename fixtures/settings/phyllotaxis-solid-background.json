@@ -1,0 +1,38 @@
+{
+  "layers": [
+    {
+      "isEnabled": true,
+      "style": "phyllotaxis",
+      "scale": 0.6,
+      "paletteIndex": 15,
+      "colorOffset": 0.0,
+      "complexity": 0.4,
+      "density": 0.7,
+      "glowIntensity": 0.6,
+      "colorDrift": 0.4,
+      "ripple": 0.0,
+      "wash": 0.0,
+      "abstractLevel": 0.0,
+      "saturation": 0.7,
+      "brightness": 0.5,
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "blendMode": "screen",
+      "symmetry": 3,
+      "seed": 1234567
+    }
+  ],
+  "baseLayer": {
+    "isEnabled": true,
+    "type": "color",
+    "hue": 0.62,
+    "saturation": 0.7,
+    "brightness": 0.18,
+    "opacity": 1.0
+  },
+  "effectsLayer": {
+    "isEnabled": false
+  },
+  "seed": 13730275572896771193,
+  "outputSize": 512
+}

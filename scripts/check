@@ -1,0 +1,4 @@
+#!/bin/sh
+# Fast check (pre-commit): compile everything and run the unit and rule tests.
+set -eu
+./gradlew --quiet :core:test :cli:compileTestKotlin :cli:installDist

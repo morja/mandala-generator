@@ -1,0 +1,5 @@
+#!/bin/sh
+# Full check (before merging into main): fast check plus parity against the macOS reference images.
+set -eu
+scripts/check
+./gradlew --quiet :cli:test -Pparity --rerun-tasks
