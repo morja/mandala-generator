@@ -2,6 +2,8 @@ package com.mathis.mandala.core
 
 import com.mathis.mandala.core.styles.CurveStyles
 import com.mathis.mandala.core.styles.CurveTask
+import com.mathis.mandala.core.styles.DirectStyles
+import com.mathis.mandala.core.styles.LineList
 import com.mathis.mandala.core.styles.StyleContext
 import kotlin.math.abs
 import kotlin.math.ceil
@@ -30,7 +32,14 @@ object MandalaRenderer {
         MandalaStyle.HYPOCYCLOID,
         MandalaStyle.PHYLLOTAXIS,
         MandalaStyle.WAVE_INTERFERENCE,
+        MandalaStyle.FRACTAL,
+        MandalaStyle.HYPERBOLOID,
+        MandalaStyle.STAR_BURST,
+        MandalaStyle.UNIVERSE,
     )
+
+    /** Whether the renderer draws this background type (a solid colour or one computed per pixel). */
+    fun supportsBackground(type: BaseLayerType): Boolean = type == BaseLayerType.COLOR || Background.supports(type)
 
     fun render(
         params: MandalaParameters,
@@ -50,10 +59,14 @@ object MandalaRenderer {
 
             // ── Background ──
             val base = params.baseLayer
-            if (base.isEnabled && base.type != BaseLayerType.COLOR) {
+            if (base.isEnabled && base.type != BaseLayerType.COLOR && !Background.supports(base.type)) {
                 warnings += "Background \"${base.type.name.lowercase()}\" is not available yet; drawn black."
             }
-            var composite = Image8(bufferSize, bufferSize, Encoding.SRGB)
+            var composite = if (base.isEnabled && Background.supports(base.type)) {
+                Background.render(base, bufferSize, par)
+            } else {
+                Image8(bufferSize, bufferSize, Encoding.SRGB)
+            }
             val solidBackground = if (base.isEnabled && base.type == BaseLayerType.COLOR) solidColor(base) else null
 
             // ── Layers ──
@@ -90,11 +103,16 @@ object MandalaRenderer {
 
                 val ctx = StyleContext(layer.complexity, layer.density, layer.colorDrift, params.seed)
                 val tasks = ArrayList<CurveTask>()
-                collectTasks(layer.style, tasks, c, c, layerRadius, ctx, rng, layerCount, symmetry, layer.ripple.toFloat())
+                val lines = LineList()
+                collectStyle(
+                    layer.style, tasks, lines, c, c, layerRadius, ctx, palette, rng,
+                    layerCount, symmetry, layer.ripple.toFloat(), layer.colorOffset,
+                )
 
                 var img = run {
                     val buffer = PixelBuffer(size, size)
                     drawTasks(tasks, buffer, palette, layer.colorOffset, par)
+                    lines.drawInto(buffer, par)
                     tasks.clear()
                     buffer.scale(brightnessScale)
                     buffer.toImage()
@@ -151,9 +169,11 @@ object MandalaRenderer {
         return m + (m and 1)
     }
 
-    private fun collectTasks(
-        style: MandalaStyle, tasks: MutableList<CurveTask>, cx: Float, cy: Float, radius: Double,
-        ctx: StyleContext, rng: SeededRng, layerCount: Int, symmetry: Int, ripple: Float,
+    /** Curve styles fill `tasks`; styles the macOS renderer draws directly fill `lines`. */
+    private fun collectStyle(
+        style: MandalaStyle, tasks: MutableList<CurveTask>, lines: LineList, cx: Float, cy: Float, radius: Double,
+        ctx: StyleContext, palette: ColorPalette, rng: SeededRng, layerCount: Int, symmetry: Int, ripple: Float,
+        colorOffset: Double,
     ) {
         when (style) {
             MandalaStyle.SPIROGRAPH -> CurveStyles.spirograph(tasks, cx, cy, radius, ctx, rng, layerCount, symmetry, ripple, 1f)
@@ -161,6 +181,10 @@ object MandalaRenderer {
             MandalaStyle.HYPOCYCLOID -> CurveStyles.hypocycloid(tasks, cx, cy, radius, ctx, rng, layerCount, symmetry, ripple, 1f)
             MandalaStyle.PHYLLOTAXIS -> CurveStyles.phyllotaxis(tasks, cx, cy, radius, ctx, rng, symmetry, ripple, 1f)
             MandalaStyle.WAVE_INTERFERENCE -> CurveStyles.waveInterference(tasks, cx, cy, radius, ctx, rng, symmetry, ripple, 1f)
+            MandalaStyle.FRACTAL -> CurveStyles.fractal(tasks, cx, cy, radius, ctx, rng, symmetry, ripple, 1f)
+            MandalaStyle.STAR_BURST -> DirectStyles.starBurst(lines, cx, cy, radius, ctx, palette, rng)
+            MandalaStyle.HYPERBOLOID -> DirectStyles.hyperboloid(lines, cx, cy, radius, ctx, palette, rng, layerCount, symmetry, colorOffset)
+            MandalaStyle.UNIVERSE -> DirectStyles.universe(lines, cx, cy, radius, ctx, palette, rng, colorOffset, symmetry)
             else -> Unit
         }
     }

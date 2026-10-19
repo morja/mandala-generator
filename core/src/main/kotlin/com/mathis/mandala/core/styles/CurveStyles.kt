@@ -200,6 +200,76 @@ object CurveStyles {
         }
     }
 
+    private class LSystem(val axiom: String, val rules: Map<Char, String>, val angleDeg: Double, val maxIter: Int)
+
+    // Six L-systems; the density slider steps through them.
+    private val lSystems = listOf(
+        LSystem("F--F--F", mapOf('F' to "F+F--F+F"), 60.0, 5), // Koch snowflake
+        LSystem("F", mapOf('F' to "F+G++G-F--FF-G+", 'G' to "-F+GG++G+F--F-G"), 60.0, 4), // Gosper curve
+        LSystem("FX", mapOf('X' to "X+YF+", 'Y' to "-FX-Y"), 90.0, 14), // Dragon curve
+        LSystem("F", mapOf('F' to "G-F-G", 'G' to "F+G+F"), 60.0, 8), // Sierpinski arrowhead
+        LSystem("A", mapOf('A' to "+BF-AFA-FB+", 'B' to "-AF+BFB+FA-"), 90.0, 6), // Hilbert curve
+        LSystem("F+F+F+F", mapOf('F' to "F+F-F-FF+F+F-F"), 90.0, 3), // Quadratic Koch island
+    )
+
+    /** L-system curve walked by a turtle, fitted into the radius, with symmetry copies. */
+    fun fractal(
+        tasks: MutableList<CurveTask>, cx: Float, cy: Float, radius: Double, ctx: StyleContext,
+        rng: SeededRng, symmetry: Int, rippleAmount: Float, weightMul: Float,
+    ) {
+        val ls = lSystems[minOf(lSystems.size - 1, (ctx.density * lSystems.size).toInt())]
+        val iters = max(1, (ctx.complexity * ls.maxIter + 0.5).toInt())
+        val turnRad = ls.angleDeg * PI / 180.0
+
+        var str = ls.axiom
+        for (n in 0 until iters) {
+            val buf = StringBuilder(minOf(str.length * 8, 1_000_000))
+            for (ch in str) buf.append(ls.rules[ch] ?: ch.toString())
+            str = buf.toString()
+            if (str.length > 800_000) break
+        }
+
+        // Turtle walk; these systems have no branches, so the walk is one polyline.
+        var tx = 0.0
+        var ty = 0.0
+        var dir = 0.0
+        val xs = ArrayList<Float>().apply { add(0f) }
+        val ys = ArrayList<Float>().apply { add(0f) }
+        var mnX = 0.0; var mxX = 0.0; var mnY = 0.0; var mxY = 0.0
+        for (ch in str) {
+            when (ch) {
+                'F', 'G' -> {
+                    tx += cos(dir); ty += sin(dir)
+                    xs += tx.toFloat(); ys += ty.toFloat()
+                    if (tx < mnX) mnX = tx; if (tx > mxX) mxX = tx
+                    if (ty < mnY) mnY = ty; if (ty > mxY) mxY = ty
+                }
+                '+' -> dir += turnRad
+                '-' -> dir -= turnRad
+            }
+        }
+        if (xs.size < 2) return
+
+        val range = maxOf(mxX - mnX, mxY - mnY, 1e-6)
+        val fscale = (radius * 1.8 / range).toFloat()
+        val offX = (-(mnX + mxX) * 0.5).toFloat() * fscale
+        val offY = (-(mnY + mxY) * 0.5).toFloat() * fscale
+        val weight = max(0.2f, (0.8 - ctx.density * 0.3).toFloat()) * weightMul
+
+        val sx = FloatArray(xs.size) { xs[it] * fscale + offX }
+        val sy = FloatArray(ys.size) { ys[it] * fscale + offY }
+        if (rippleAmount > 0) applyRipple(sx, sy, rippleAmount, rng.next())
+
+        for (s in 0 until symmetry) {
+            val ang = s.toFloat() * PI.toFloat() * 2.0f / symmetry
+            val cosA = cos(ang)
+            val sinA = sin(ang)
+            val rxs = FloatArray(sx.size) { cosA * sx[it] - sinA * sy[it] + cx }
+            val rys = FloatArray(sx.size) { sinA * sx[it] + cosA * sy[it] + cy }
+            tasks += CurveTask(rxs, rys, tOffset = 0.0, drift = ctx.colorDrift, weight = weight, thickness = 1)
+        }
+    }
+
     // ── Curve generators ─────────────────────────────────────────────────
 
     /** Hypotrochoid points; the spirograph and hypocycloid styles share this formula. */

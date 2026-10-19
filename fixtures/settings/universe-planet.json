@@ -1,0 +1,33 @@
+{
+  "layers": [
+    {
+      "isEnabled": true,
+      "style": "universe",
+      "scale": 0.7,
+      "paletteIndex": 2,
+      "colorOffset": 0.0,
+      "complexity": 0.6,
+      "density": 0.08,
+      "glowIntensity": 0.6,
+      "colorDrift": 0.4,
+      "ripple": 0.0,
+      "wash": 0.0,
+      "abstractLevel": 0.0,
+      "saturation": 0.7,
+      "brightness": 0.5,
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "blendMode": "screen",
+      "symmetry": 3,
+      "seed": 2468
+    }
+  ],
+  "baseLayer": {
+    "isEnabled": false
+  },
+  "effectsLayer": {
+    "isEnabled": false
+  },
+  "seed": 13730275572896771193,
+  "outputSize": 512
+}

@@ -11,7 +11,9 @@ import com.mathis.mandala.app.Editing.duplicateLayer
 import com.mathis.mandala.app.Editing.moveLayer
 import com.mathis.mandala.app.Editing.newVariation
 import com.mathis.mandala.app.Editing.removeLayer
+import com.mathis.mandala.app.Editing.updateBackground
 import com.mathis.mandala.app.Editing.updateLayer
+import com.mathis.mandala.core.BaseLayerSettings
 import com.mathis.mandala.core.Favorite
 import com.mathis.mandala.core.Image8
 import com.mathis.mandala.core.MacFile
@@ -121,6 +123,8 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
     fun moveLayer(index: Int, delta: Int) = applyLayerOperation { it.moveLayer(index, delta) }
 
     fun newVariation() = _params.update { it.newVariation(::randomSeed) }
+
+    fun updateBackground(change: (BaseLayerSettings) -> BaseLayerSettings) = _params.update { it.updateBackground(change) }
 
     /** Applies a layer operation and selects the layer it returns. */
     private fun applyLayerOperation(operation: (MandalaParameters) -> Pair<MandalaParameters, Int>) {

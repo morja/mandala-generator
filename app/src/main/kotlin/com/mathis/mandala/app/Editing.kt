@@ -1,5 +1,7 @@
 package com.mathis.mandala.app
 
+import com.mathis.mandala.core.BaseLayerSettings
+import com.mathis.mandala.core.BaseLayerType
 import com.mathis.mandala.core.BuiltInPalettes
 import com.mathis.mandala.core.MandalaParameters
 import com.mathis.mandala.core.MandalaStyle
@@ -17,8 +19,15 @@ object Editing {
         MandalaStyle.ROSE_CURVES,
         MandalaStyle.HYPOCYCLOID,
         MandalaStyle.PHYLLOTAXIS,
+        MandalaStyle.FRACTAL,
         MandalaStyle.WAVE_INTERFERENCE,
+        MandalaStyle.STAR_BURST,
+        MandalaStyle.HYPERBOLOID,
+        MandalaStyle.UNIVERSE,
     )
+
+    /** Background types the renderer can draw; "off" is a disabled base layer. */
+    val backgrounds = listOf(BaseLayerType.COLOR, BaseLayerType.GRADIENT, BaseLayerType.SUNBURST)
 
     const val PREVIEW_SIZE = 512
     const val EXPORT_SIZE = 1024
@@ -75,6 +84,9 @@ object Editing {
         list.add(target, moved)
         return copy(layers = list) to target
     }
+
+    fun MandalaParameters.updateBackground(change: (BaseLayerSettings) -> BaseLayerSettings): MandalaParameters =
+        copy(baseLayer = change(baseLayer))
 
     /** Same settings, new random arrangement for every layer (like "Randomize Seed" on the Mac). */
     fun MandalaParameters.newVariation(nextSeed: () -> ULong): MandalaParameters =

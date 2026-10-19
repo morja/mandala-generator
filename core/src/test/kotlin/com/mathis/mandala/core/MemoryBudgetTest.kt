@@ -7,16 +7,16 @@ import kotlin.test.assertTrue
 /**
  * Runs in the `memoryTest` task with a 256 MB heap, the budget of a typical Android app.
  * Worst case the app allows: five layers (its maximum), the bottom one full size, all with strong
- * glow, wash and the heavy painted effect.
+ * glow, wash and the heavy painted effect, the line-heaviest styles and a gradient background.
  */
 class MemoryBudgetTest {
     private val fiveHeavyLayers = run {
-        val styles = listOf("waveInterference", "spirograph", "roseCurves", "hypocycloid", "phyllotaxis")
+        val styles = listOf("waveInterference", "hyperboloid", "universe", "fractal", "starBurst")
         val layers = styles.mapIndexed { i, style ->
             """{"style":"$style","scale":${if (i == 0) 1.0 else 0.7},"complexity":0.8,"glowIntensity":0.9,
                "wash":0.3,"abstractLevel":0.8,"blendMode":"${if (i % 2 == 1) "add" else "screen"}","seed":${i + 1}}"""
         }
-        """{"layers":[${layers.joinToString(",")}],"baseLayer":{"isEnabled":false},"effectsLayer":{"isEnabled":false}}"""
+        """{"layers":[${layers.joinToString(",")}],"baseLayer":{"isEnabled":true,"type":"gradient"},"effectsLayer":{"isEnabled":false}}"""
     }
 
     @Test

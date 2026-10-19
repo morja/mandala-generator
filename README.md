@@ -1,6 +1,6 @@
 # Mandala Generator for Android
 
-Android port of the macOS [Mandala Generator](https://github.com/morja/mandala-generator). Current state: the renderer in plain Kotlin (five of the 36 styles), a command-line tool, and a first Android app with up to five layers, live preview, favourites, opening and saving the Mac app's settings and favourites files, export to the gallery, sharing, and the last state kept across restarts.
+Android port of the macOS [Mandala Generator](https://github.com/morja/mandala-generator). Current state: the renderer in plain Kotlin (nine of the 36 styles, plus colour, gradient and sunburst backgrounds), a command-line tool, and a first Android app with up to five layers, live preview, favourites, opening and saving the Mac app's settings and favourites files, export to the gallery, sharing, and the last state kept across restarts.
 
 Results so far: [POC-1](docs/POC-1-results.md). Decisions: [docs/adr](docs/adr/README.md). Rules for agents: [AGENTS.md](AGENTS.md).
 
@@ -27,7 +27,7 @@ The release build is signed with the local debug key (no store signing yet). Deb
 cli/build/install/mandala/bin/mandala render ../Mandala-Generator/generated/mandala-wave-p15-x4-fx-22ae9a7c.json out.png --size 1024
 ```
 
-Ported so far: Spirograph, Rose Curves, Hypocycloid, Phyllotaxis and Wave Interference layers, with glow, wash, painted effect, colour grade, rotation, opacity and blend modes, plus the solid colour background. Anything else is skipped with a warning.
+Ported so far: Spirograph, Rose Curves, Hypocycloid, Phyllotaxis, Fractal, Wave Interference, Star Burst, Hyperboloid and Universe layers, with glow, wash, painted effect, colour grade, rotation, opacity and blend modes, plus the colour, gradient and sunburst backgrounds. Anything else is skipped with a warning.
 
 Compare two images:
 

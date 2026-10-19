@@ -29,6 +29,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -53,6 +54,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -82,6 +84,8 @@ import com.mathis.mandala.app.ui.theme.Sizes
 import com.mathis.mandala.app.ui.theme.Spacing
 import com.mathis.mandala.core.BuiltInPalettes
 import com.mathis.mandala.core.ColorPalette
+import com.mathis.mandala.core.BaseLayerSettings
+import com.mathis.mandala.core.BaseLayerType
 import com.mathis.mandala.core.LayerBlendMode
 import com.mathis.mandala.core.MandalaParameters
 import com.mathis.mandala.core.StyleLayer
@@ -307,10 +311,78 @@ private fun Actions(saving: Boolean, onVariation: () -> Unit, onSave: () -> Unit
 private fun Controls(params: MandalaParameters, selected: Int, vm: EditorViewModel) {
     val index = selected.coerceIn(0, params.layers.lastIndex)
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.xs)) {
+        BackgroundSection(params.baseLayer, vm::updateBackground)
         LayersSection(params, index, vm)
         SectionTitle("Layer ${index + 1} · ${params.layers[index].style.displayName}")
         LayerControls(params.layers[index], vm::updateSelected)
     }
+}
+
+/** Background behind all layers: off, a colour, a gradient or sunburst rays, with fitting sliders. */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun BackgroundSection(base: BaseLayerSettings, update: ((BaseLayerSettings) -> BaseLayerSettings) -> Unit) {
+    SectionTitle("Background")
+    FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+        FilterChip(selected = !base.isEnabled, onClick = { update { it.copy(isEnabled = false) } }, label = { Text("Off") })
+        for (type in Editing.backgrounds) {
+            FilterChip(
+                selected = base.isEnabled && base.type == type,
+                onClick = { update { it.copy(isEnabled = true, type = type) } },
+                label = { Text(backgroundName(type)) },
+            )
+        }
+    }
+    if (!base.isEnabled || base.type !in Editing.backgrounds) return
+
+    val twoColours = base.type != BaseLayerType.COLOR
+    ColourSliders(if (twoColours) "Colour 1" else "Colour", base.hue, base.saturation, base.brightness) { h, s, b ->
+        update { it.copy(hue = h, saturation = s, brightness = b) }
+    }
+    if (twoColours) {
+        ColourSliders("Colour 2", base.hue2, base.saturation2, base.brightness2) { h, s, b ->
+            update { it.copy(hue2 = h, saturation2 = s, brightness2 = b) }
+        }
+    }
+    when (base.type) {
+        BaseLayerType.GRADIENT -> {
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                Text("Radial", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
+                Switch(checked = base.isRadial, onCheckedChange = { r -> update { it.copy(isRadial = r) } })
+            }
+            if (!base.isRadial) ValueSlider("Angle", base.gradientAngle) { v -> update { it.copy(gradientAngle = v) } }
+        }
+        BaseLayerType.SUNBURST -> {
+            ValueSlider("Rays", base.patternScale) { v -> update { it.copy(patternScale = v) } }
+            ValueSlider("Sharpness", base.patternSharpness) { v -> update { it.copy(patternSharpness = v) } }
+        }
+        else -> Unit
+    }
+    ValueSlider("Background opacity", base.opacity) { v -> update { it.copy(opacity = v) } }
+}
+
+@Composable
+private fun ColourSliders(title: String, hue: Double, saturation: Double, brightness: Double, onChange: (Double, Double, Double) -> Unit) {
+    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = Spacing.sm)) {
+        Box(
+            Modifier
+                .size(Sizes.swatchSmall)
+                .clip(CircleShape)
+                .background(Color.hsv((hue * 360).toFloat().coerceIn(0f, 360f), saturation.toFloat(), brightness.toFloat())),
+        )
+        Spacer(Modifier.width(Spacing.sm))
+        SubTitle(title)
+    }
+    ValueSlider("Hue", hue) { v -> onChange(v, saturation, brightness) }
+    ValueSlider("Saturation", saturation) { v -> onChange(hue, v, brightness) }
+    ValueSlider("Brightness", brightness) { v -> onChange(hue, saturation, v) }
+}
+
+private fun backgroundName(type: BaseLayerType) = when (type) {
+    BaseLayerType.COLOR -> "Colour"
+    BaseLayerType.GRADIENT -> "Gradient"
+    BaseLayerType.SUNBURST -> "Sunburst"
+    else -> type.name.lowercase()
 }
 
 /** The layer list, top layer first (it is drawn last, on top), plus add, duplicate and delete. */

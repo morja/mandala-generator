@@ -25,6 +25,8 @@ class ParityTest {
         // Core Image's turbulence noise is Apple's own; the displacement pattern differs.
         "painted-default" to 25.0,
         "painted-heavy" to 20.0,
+        // Very dense, overexposed centre: Core Image's over-range handling again (see wave-two-layers).
+        "hyperboloid-tilted" to 40.0,
     )
 
     @Test
