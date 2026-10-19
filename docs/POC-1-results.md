@@ -70,4 +70,4 @@ Next: the Android app shell (Compose canvas with preview, layer list, export to 
 
 ## Found in the macOS app
 
-`executeTasksParallel` in `MandalaRenderer.swift` splits the curves into `count / cores` chunks and never draws the remainder. Depending on the Mac, up to `cores − 1` curves per layer are missing, so the same settings can give slightly different images on different Macs. Fix: let the last chunk run to `tasks.count`.
+Curves dropped depending on the Mac's core count: fixed in the macOS app (morja/mandala-generator 4492043); the references were re-rendered and the emulation removed.

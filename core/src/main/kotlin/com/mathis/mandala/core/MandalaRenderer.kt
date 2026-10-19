@@ -13,12 +13,6 @@ data class RenderOptions(
     val outputSize: Int? = null,
     /** Threads for drawing and filters. The image does not depend on it. */
     val threads: Int = Runtime.getRuntime().availableProcessors(),
-    /**
-     * Reproduces a quirk of the macOS renderer: it splits curves into `n` equal chunks and drops
-     * the remainder, so its output depends on the Mac's core count. Set to that core count to
-     * compare against macOS output; leave null to draw every curve.
-     */
-    val macCoreCountForChunking: Int? = null,
     /** Polled between steps; when it returns true the render stops with [RenderCancelledException]. */
     val isCancelled: () -> Boolean = { false },
 )
@@ -100,7 +94,7 @@ object MandalaRenderer {
 
                 var img = run {
                     val buffer = PixelBuffer(size, size)
-                    drawTasks(tasks, buffer, palette, layer.colorOffset, par, options.macCoreCountForChunking)
+                    drawTasks(tasks, buffer, palette, layer.colorOffset, par)
                     tasks.clear()
                     buffer.scale(brightnessScale)
                     buffer.toImage()
@@ -176,17 +170,9 @@ object MandalaRenderer {
      * task clipped to its band, so no extra buffers are needed and the result is thread-count independent.
      */
     private fun drawTasks(
-        allTasks: List<CurveTask>, buffer: PixelBuffer, palette: ColorPalette, colorOffset: Double,
-        par: Parallel, macCores: Int?,
+        tasks: List<CurveTask>, buffer: PixelBuffer, palette: ColorPalette, colorOffset: Double, par: Parallel,
     ) {
-        if (allTasks.isEmpty()) return
-        val tasks = if (macCores != null) {
-            val n = max(1, min(allTasks.size, macCores))
-            val chunk = max(1, allTasks.size / n)
-            allTasks.take(min(allTasks.size, n * chunk))
-        } else {
-            allTasks
-        }
+        if (tasks.isEmpty()) return
         val yMin = FloatArray(tasks.size)
         val yMax = FloatArray(tasks.size)
         for ((i, t) in tasks.withIndex()) {

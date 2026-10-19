@@ -9,13 +9,12 @@ import java.lang.management.MemoryType
 import kotlin.system.exitProcess
 
 private const val USAGE = """Usage:
-  mandala render <settings.json> <out.png> [--size N] [--threads N] [--mac-cores N]
+  mandala render <settings.json> <out.png> [--size N] [--threads N]
   mandala compare <a.png> <b.png> [--diff diff.png]
 
 render   Renders a settings file saved by the macOS app to a PNG.
          --size       output size in pixels (default: the size stored in the file)
          --threads    drawing/filter threads (default: all cores; each holds a full buffer)
-         --mac-cores  reproduce the macOS app's curve chunking for that core count (for comparisons)
 compare  Prints how far two images of equal size differ (mean/max error, PSNR)."""
 
 fun main(args: Array<String>) {
@@ -65,7 +64,6 @@ private fun render(raw: List<String>): Int {
     val options = RenderOptions(
         outputSize = args.int("size"),
         threads = args.int("threads") ?: Runtime.getRuntime().availableProcessors(),
-        macCoreCountForChunking = args.int("mac-cores"),
     )
     val result = MandalaRenderer.render(params, options)
     Png.write(result.image, File(output))
