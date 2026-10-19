@@ -1,7 +1,6 @@
 package com.mathis.mandala.core
 
 import kotlin.math.abs
-import kotlin.math.roundToInt
 import kotlin.test.Test
 import kotlin.test.assertTrue
 
@@ -13,9 +12,9 @@ class CoreImageParityTest {
     private val a = listOf(intArrayOf(0, 0, 0), intArrayOf(50, 50, 50), intArrayOf(100, 100, 100), intArrayOf(200, 40, 10), intArrayOf(10, 120, 240))
     private val b = listOf(intArrayOf(128, 128, 128), intArrayOf(50, 50, 50), intArrayOf(100, 100, 100), intArrayOf(30, 30, 30), intArrayOf(60, 10, 5))
 
-    private fun image(px: List<IntArray>): FloatImage {
-        val img = FloatImage(px.size, 1)
-        px.forEachIndexed { i, p -> for (c in 0..2) img.data[i * 3 + c] = p[c] / 255f }
+    private fun image(px: List<IntArray>): Image8 {
+        val img = Image8(px.size, 1, Encoding.SRGB)
+        px.forEachIndexed { i, p -> for (c in 0..2) img.data[i * 3 + c] = p[c].toByte() }
         return img
     }
 
@@ -23,7 +22,7 @@ class CoreImageParityTest {
         val out = Parallel(1).use { LayerEffects(it).composite(image(a), image(b), op) }
         expected.forEachIndexed { i, e ->
             for (c in 0..2) {
-                val got = (out.data[i * 3 + c] * 255).roundToInt()
+                val got = out.get(i * 3 + c)
                 assertTrue(abs(got - e[c]) <= 2, "$op pixel $i channel $c: expected ${e[c]}, got $got")
             }
         }

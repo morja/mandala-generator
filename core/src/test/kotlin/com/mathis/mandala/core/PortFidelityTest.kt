@@ -83,8 +83,6 @@ class PortFidelityTest {
         val p = SettingsJson.decode("""{"layers":[{"style":"spirograph","abstractLevel":0.5}],"outputSize":96}""")
         val a = MandalaRenderer.render(p, RenderOptions(threads = 3)).image.data
         val b = MandalaRenderer.render(p, RenderOptions(threads = 1)).image.data
-        var maxDiff = 0f
-        for (i in a.indices) maxDiff = maxOf(maxDiff, abs(a[i] - b[i]))
-        assertTrue(maxDiff <= 1f / 255f + 1e-6f, "thread count changed the image by $maxDiff")
+        assertTrue(a.contentEquals(b), "the thread count changed the image")
     }
 }

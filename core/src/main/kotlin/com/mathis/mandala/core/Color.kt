@@ -22,12 +22,12 @@ data class Rgb(val r: Double, val g: Double, val b: Double) {
  */
 object ColorSpaces {
     // Linear-light primaries conversion matrices (D65).
-    private val SRGB_TO_P3 = doubleArrayOf(
+    val SRGB_TO_P3 = doubleArrayOf(
         0.8224621, 0.1775380, 0.0000000,
         0.0331941, 0.9668058, 0.0000000,
         0.0170827, 0.0723974, 0.9105199,
     )
-    private val P3_TO_SRGB = doubleArrayOf(
+    val P3_TO_SRGB = doubleArrayOf(
         1.2249401, -0.2249404, 0.0000000,
         -0.0420569, 1.0420571, 0.0000000,
         -0.0196376, -0.0786361, 1.0982735,
@@ -72,8 +72,6 @@ object ColorSpaces {
 
     fun srgbToP3(r: Double, g: Double, b: Double, out: DoubleArray) = convert(SRGB_TO_P3, r, g, b, out)
 
-    fun p3ToSrgb(r: Double, g: Double, b: Double, out: DoubleArray) = convert(P3_TO_SRGB, r, g, b, out)
-
     private fun convert(m: DoubleArray, r: Double, g: Double, b: Double, out: DoubleArray) {
         val lr = decode(r)
         val lg = decode(g)
@@ -81,24 +79,6 @@ object ColorSpaces {
         out[0] = encode(m[0] * lr + m[1] * lg + m[2] * lb)
         out[1] = encode(m[3] * lr + m[4] * lg + m[5] * lb)
         out[2] = encode(m[6] * lr + m[7] * lg + m[8] * lb)
-    }
-
-    /** In-place conversion of interleaved RGB floats; `toP3` selects the direction. */
-    fun convertInPlace(data: FloatArray, toP3: Boolean) {
-        val m = if (toP3) SRGB_TO_P3 else P3_TO_SRGB
-        val m0 = m[0].toFloat(); val m1 = m[1].toFloat(); val m2 = m[2].toFloat()
-        val m3 = m[3].toFloat(); val m4 = m[4].toFloat(); val m5 = m[5].toFloat()
-        val m6 = m[6].toFloat(); val m7 = m[7].toFloat(); val m8 = m[8].toFloat()
-        var i = 0
-        while (i < data.size) {
-            val lr = decodeFast(data[i])
-            val lg = decodeFast(data[i + 1])
-            val lb = decodeFast(data[i + 2])
-            data[i] = encodeFast(m0 * lr + m1 * lg + m2 * lb)
-            data[i + 1] = encodeFast(m3 * lr + m4 * lg + m5 * lb)
-            data[i + 2] = encodeFast(m6 * lr + m7 * lg + m8 * lb)
-            i += 3
-        }
     }
 }
 

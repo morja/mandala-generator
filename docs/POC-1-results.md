@@ -26,47 +26,47 @@ Not ported yet: the other 33 styles, background types other than solid colour, t
 
 Above about 40 dB the difference is invisible. The two lower groups have known causes (ADR-0004): Core Image's over-range handling with Add, and Apple's own turbulence noise. Side by side, the painted images have the same character.
 
-## Speed: comparable to the Mac
+## Speed: comparable to the Mac, often faster
 
-MacBook (12 cores), JVM 21, single layer unless noted:
+MacBook (12 cores), JVM 21, single layer unless noted. "Kotlin, first port" is the 1:1 port; "after memory pass" is the current state (see below).
 
-| Fixture | Size | macOS (Swift + Core Image) | Kotlin (4 threads) |
-|---|---|---|---|
-| spirograph-basic | 1024 | 1.0 s | 1.1 s |
-| spirograph-basic | 2048 | 2.4 s | 2.9 s |
-| wave-two-layers (2 layers) | 1024 | 2.8 s | 1.9 s |
-| painted-heavy | 1024 | 0.8 s | 1.3 s |
-| painted-heavy | 2048 | 2.0 s | 4.5 s |
+| Fixture | Size | macOS (Swift + Core Image) | Kotlin, first port (4 threads) | Kotlin after memory pass (4 threads) |
+|---|---|---|---|---|
+| spirograph-basic | 1024 | 1.0 s | 1.1 s | 0.7 s |
+| spirograph-basic | 2048 | 2.4 s | 2.9 s | 1.4 s |
+| wave-two-layers (2 layers) | 1024 | 2.8 s | 1.9 s | 1.3 s |
+| wave-two-layers (2 layers) | 2048 | 6.7 s | 5.3 s | 2.5 s |
+| painted-heavy | 1024 | 0.8 s | 1.3 s | 0.9 s |
+| painted-heavy | 2048 | 2.0 s | 4.5 s | 2.2 s |
 
-Phone CPUs are roughly 2–4× slower than this Mac. A 512 px preview of a typical layer would take about 1–3 s on a phone; that is acceptable with a debounce, a progress indicator and a smaller first preview.
+Phone CPUs are roughly 2–4× slower than this Mac. A 512 px preview of a typical layer should take well under 2 s on a phone; with a debounce and a progress indicator that is fine.
 
-## Memory: the real problem
+## Memory: solved for 1024 px
 
-A 1:1 port needs far more memory than an Android app gets (typically 256–512 MB with `largeHeap`):
+The first, 1:1 port needed far more memory than an Android app gets (typically 256–512 MB with `largeHeap`): a 512 px preview of two layers needed about 490 MB, 1024 px did not fit in 512 MB. The causes came from the macOS design: rendering at twice the output size, each layer buffer enlarged to the full radius even without rotation, one full float buffer per drawing thread, and new full float copies in every filter step.
 
-| Case | Result |
-|---|---|
-| wave-two-layers, 512 px, heap limit 512 MB | works (peak about 490 MB) |
-| wave-two-layers, 512 px, heap limit 256 MB | out of memory |
-| wave-two-layers, 1024 px, heap limit 512 MB | out of memory |
-| wave-two-layers, 2048 px, 12 threads, heap limit 3 GB | out of memory |
+Memory pass (same day), without changing the look:
 
-Causes, all inherited from the macOS design:
-1. Rendering at twice the output size (4× the pixels).
-2. Each layer is drawn into a buffer enlarged to the full radius (up to 1.44 × that size) even without rotation.
-3. One full-size float buffer per drawing thread.
-4. Every filter step creates new full-size float copies (12 bytes per pixel), although the values between steps are only 8 bit.
+1. **8-bit intermediates.** Images between two former Core Image steps are stored as bytes (`Image8`, 3 bytes per pixel instead of 12). Exact, since macOS quantises there too.
+2. **Layer buffer enlarged only when rotated.** Other layers get a margin as wide as glow, wash and painting reach, so light from just outside the frame still bleeds in. Size-dependent effects keep using the enlarged width, so their scale does not change.
+3. **No buffer per thread.** Threads draw into horizontal bands of one shared buffer. The result no longer depends on the thread count (it is bit-identical for 1 or 4 threads).
+4. **Filters in place and streaming.** Blurs run in place, resampling streams row by row, noise is sampled on demand, combined effects write back into their input.
+
+Scene of the memory test (two layers, full-size wave with glow and painted effect, spirograph with wash and heavy painted effect, Add blend):
+
+| Output size | Heap needed now | Before |
+|---|---|---|
+| 512 px (preview) | ≤ 128 MB | about 490 MB |
+| 1024 px | 128–192 MB | more than 512 MB |
+| 2048 px | 640–768 MB | more than 3 GB with 12 threads |
+
+`MemoryBudgetTest` renders this scene at 1024 px under a hard 256 MB heap limit and runs in the fast check. The parity results are unchanged (table above).
 
 ## Conclusion and next step
 
-The port is feasible: the look matches, the speed is fine. Before an Android app, the renderer needs a memory pass, without changing the look:
+The port is feasible: the look matches, speed and memory fit a phone up to 1024 px. 2048 px exports still need about 700 MB. The remaining large items there are the float pixel buffer (12 bytes per pixel at twice the output size) and the two float images of the painted effect. Options: process the painted effect in bands, or move the pixel buffer into native memory (NDK). This can wait until the app runs; a 1024 px export may be enough for phone wallpapers at first.
 
-- keep images between steps as 8-bit (4 bytes per pixel instead of 12; exact, since the Mac quantises there anyway);
-- enlarge the layer buffer only when the layer is rotated;
-- draw with fewer sub-buffers (or row bands) and run filters in place or in tiles;
-- on the phone, allow 1× supersampling for the preview.
-
-Target: a 1024 px export of two layers under 256 MB of heap, checked by a test with a fixed heap limit. Then the Android app shell (Compose canvas, layer list, export) and the remaining styles.
+Next: the Android app shell (Compose canvas with preview, layer list, export to the gallery), then the remaining styles.
 
 ## Found in the macOS app
 

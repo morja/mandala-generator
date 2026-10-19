@@ -1,4 +1,4 @@
 #!/bin/sh
-# Fast check (pre-commit): compile everything and run the unit and rule tests.
+# Fast check (pre-commit): compile everything, run the unit and rule tests and the 256 MB memory test.
 set -eu
-./gradlew --quiet :core:test :cli:compileTestKotlin :cli:installDist
+./gradlew --quiet :core:test :core:memoryTest :cli:compileTestKotlin :cli:installDist

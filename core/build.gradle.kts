@@ -22,4 +22,20 @@ dependencies {
 
 tasks.test {
     useJUnitPlatform()
+    exclude("**/MemoryBudgetTest*")
+}
+
+// Renders with the heap an Android app typically gets, so memory regressions fail the build.
+val memoryTest by tasks.registering(Test::class) {
+    description = "Renders under a 256 MB heap limit."
+    group = "verification"
+    useJUnitPlatform()
+    testClassesDirs = sourceSets["test"].output.classesDirs
+    classpath = sourceSets["test"].runtimeClasspath
+    include("**/MemoryBudgetTest*")
+    maxHeapSize = "256m"
+}
+
+tasks.check {
+    dependsOn(memoryTest)
 }

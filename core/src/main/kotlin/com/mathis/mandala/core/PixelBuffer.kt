@@ -9,23 +9,32 @@ import kotlin.math.sqrt
 /**
  * Float RGB buffer with additive blending (the light-painting look). Values grow beyond 1
  * and are tone-mapped when converted to an image. Port of the macOS PixelBuffer.
+ *
+ * A buffer can hand out band views (`band`) that share its data but only write rows
+ * [bandLo, bandHi). Threads draw through their own bands, so no thread needs a full buffer
+ * of its own, and every pixel receives its lines in the same order whatever the thread count.
  */
-class PixelBuffer(val width: Int, val height: Int) {
-    val data = FloatArray(width * height * 3)
+class PixelBuffer private constructor(
+    val width: Int,
+    val height: Int,
+    val data: FloatArray,
+    private val bandLo: Int,
+    private val bandHi: Int,
+) {
+    constructor(width: Int, height: Int) : this(width, height, FloatArray(width * height * 3), 0, height)
+
+    fun band(from: Int, until: Int): PixelBuffer = PixelBuffer(width, height, data, max(0, from), min(height, until))
+
+    /** True when a vertical span [yMin, yMax] can touch this view's rows. */
+    fun touchesRows(yMin: Float, yMax: Float): Boolean = yMax >= bandLo - 2 && yMin <= bandHi + 1
 
     fun scale(factor: Float) {
         if (factor == 1f) return
         for (i in data.indices) data[i] *= factor
     }
 
-    fun mergeAdding(other: PixelBuffer) {
-        if (other.data.size != data.size) return
-        val src = other.data
-        for (i in data.indices) data[i] += src[i]
-    }
-
     fun addPixel(x: Int, y: Int, r: Float, g: Float, b: Float, weight: Float) {
-        if (x < 0 || y < 0 || x >= width || y >= height) return
+        if (x < 0 || y < bandLo || x >= width || y >= bandHi) return
         val base = (y * width + x) * 3
         data[base] += r * weight
         data[base + 1] += g * weight
@@ -39,6 +48,7 @@ class PixelBuffer(val width: Int, val height: Int) {
         if (x0In <= -limit || x0In >= limit || y0In <= -limit || y0In >= limit ||
             x1In <= -limit || x1In >= limit || y1In <= -limit || y1In >= limit
         ) return
+        if (!touchesRows(min(y0In, y1In), max(y0In, y1In))) return
 
         var x0 = x0In; var y0 = y0In; var x1 = x1In; var y1 = y1In
         val steep = abs(y1 - y0) > abs(x1 - x0)
@@ -130,17 +140,15 @@ class PixelBuffer(val width: Int, val height: Int) {
     }
 
     /** Filmic tone map x / (x + 0.55) to 8-bit values. The macOS renderer tags them as Display P3. */
-    fun toImage(): FloatImage {
-        val out = FloatImage(width, height, encoding = Encoding.DISPLAY_P3)
+    fun toImage(): Image8 {
+        val out = Image8(width, height, Encoding.DISPLAY_P3)
         val dst = out.data
         for (i in data.indices) {
             val v = data[i]
-            dst[i] = quantize(v / (v + 0.55f))
+            dst[i] = WorkingSpace.quantize(v / (v + 0.55f))
         }
         return out
     }
-
-    private fun quantize(v: Float): Float = min(255, max(0, (v * 255f + 0.5f).toInt())) / 255f
 
     // Float to Int clamped so it never overflows; truncates toward zero like Swift's Int(Float).
     private fun toInt(x: Float): Int = x.coerceIn(Int.MIN_VALUE / 2f, Int.MAX_VALUE / 2f).toInt()

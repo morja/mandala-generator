@@ -14,6 +14,16 @@ Core Image filters of the macOS app are rebuilt on the CPU in `Filters.kt` and `
 - Unit tests run in seconds without an emulator.
 - A later move of hot paths to C++ (NDK) stays possible behind the same API.
 
+## Memory rules
+
+A phone app gets 256–512 MB of heap. The renderer therefore:
+- keeps images between steps as 8-bit `Image8`, float only inside a step;
+- enlarges a layer buffer to the full radius only for rotated layers, otherwise by the effect margin;
+- draws with threads in bands of one shared buffer, never one buffer per thread;
+- blurs in place and resamples row by row.
+
+`MemoryBudgetTest` (fast check) renders two demanding layers at 1024 px under a 256 MB heap limit.
+
 ## Consequences
 
 - `ArchitectureTest` fails on forbidden imports.

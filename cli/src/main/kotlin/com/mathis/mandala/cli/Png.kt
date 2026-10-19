@@ -1,6 +1,7 @@
 package com.mathis.mandala.cli
 
-import com.mathis.mandala.core.FloatImage
+import com.mathis.mandala.core.Encoding
+import com.mathis.mandala.core.Image8
 import java.awt.image.BufferedImage
 import java.io.File
 import javax.imageio.ImageIO
@@ -8,29 +9,28 @@ import kotlin.math.log10
 
 /** PNG input/output for the JVM command. Output is 8-bit sRGB. */
 object Png {
-    fun write(image: FloatImage, file: File) {
-        val img = image.copy().toSrgbInPlace()
-        val bi = BufferedImage(img.width, img.height, BufferedImage.TYPE_INT_RGB)
-        bi.setRGB(0, 0, img.width, img.height, img.toArgbPixels(), 0, img.width)
+    fun write(image: Image8, file: File) {
+        val bi = BufferedImage(image.width, image.height, BufferedImage.TYPE_INT_RGB)
+        bi.setRGB(0, 0, image.width, image.height, image.toArgbPixels(), 0, image.width)
         file.absoluteFile.parentFile?.mkdirs()
         ImageIO.write(bi, "png", file)
     }
 
     /** Reads raw 8-bit pixel values, ignoring any embedded colour profile. */
-    fun read(file: File): FloatImage {
+    fun read(file: File): Image8 {
         val bi = ImageIO.read(file) ?: error("Cannot read image: $file")
         val w = bi.width
         val h = bi.height
-        val out = FloatImage(w, h)
+        val out = Image8(w, h, Encoding.SRGB)
         val raster = bi.raster
         val px = IntArray(raster.numBands)
         for (y in 0 until h) {
             for (x in 0 until w) {
                 raster.getPixel(x, y, px)
                 val o = (y * w + x) * 3
-                out.data[o] = px[0] / 255f
-                out.data[o + 1] = px[1] / 255f
-                out.data[o + 2] = px[2] / 255f
+                out.data[o] = px[0].toByte()
+                out.data[o + 1] = px[1].toByte()
+                out.data[o + 2] = px[2].toByte()
             }
         }
         return out
@@ -38,12 +38,12 @@ object Png {
 }
 
 /** Difference between two images in 8-bit units. */
-class ImageDiff(val meanAbs: Double, val meanSigned: Double, val max: Int, val psnr: Double, val heatmap: FloatImage) {
+class ImageDiff(val meanAbs: Double, val meanSigned: Double, val max: Int, val psnr: Double, val heatmap: Image8) {
     override fun toString() =
         "mean abs error %.3f /255 (signed %+.3f), max %d /255, PSNR %.2f dB".format(meanAbs, meanSigned, max, psnr)
 
     companion object {
-        fun of(a: FloatImage, b: FloatImage): ImageDiff {
+        fun of(a: Image8, b: Image8): ImageDiff {
             require(a.width == b.width && a.height == b.height) {
                 "Sizes differ: ${a.width}x${a.height} vs ${b.width}x${b.height}"
             }
@@ -51,12 +51,12 @@ class ImageDiff(val meanAbs: Double, val meanSigned: Double, val max: Int, val p
             var sumSigned = 0.0
             var sumSq = 0.0
             var maxDiff = 0
-            val heat = FloatImage(a.width, a.height)
+            val heat = Image8(a.width, a.height, Encoding.SRGB)
             for (p in 0 until a.width * a.height) {
                 var pixelMax = 0
                 for (c in 0 until 3) {
                     val i = p * 3 + c
-                    val signed = Math.round(b.data[i] * 255) - Math.round(a.data[i] * 255)
+                    val signed = b.get(i) - a.get(i)
                     val d = Math.abs(signed)
                     sumSigned += signed
                     sumAbs += d
@@ -65,7 +65,7 @@ class ImageDiff(val meanAbs: Double, val meanSigned: Double, val max: Int, val p
                 }
                 if (pixelMax > maxDiff) maxDiff = pixelMax
                 // Grey = equal, brighter = larger difference (x4 so small errors show).
-                val v = minOf(1f, pixelMax * 4 / 255f)
+                val v = minOf(255, pixelMax * 4).toByte()
                 heat.data[p * 3] = v; heat.data[p * 3 + 1] = v; heat.data[p * 3 + 2] = v
             }
             val n = a.width * a.height * 3.0
