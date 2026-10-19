@@ -59,6 +59,7 @@ class PortFidelityTest {
         assertEquals(MandalaStyle.WAVE_INTERFERENCE, p.layers[0].style)
         assertEquals(17463462634133840693uL, p.layers[0].seed)
         assertEquals(0.6, p.layers[0].complexity, "missing fields use the Swift defaults")
+        assertEquals(1.0, p.layers[0].spokes, "spokes default to the macOS default")
         assertTrue(p.effectsLayer.isEnabled)
     }
 
@@ -71,11 +72,12 @@ class PortFidelityTest {
 
     @Test
     fun settingsSurviveARoundTrip() {
-        val json = """{"layers":[{"style":"roseCurves","seed":18446744073709551615}],"textLayer":{"isEnabled":true,"text":"Om"}}"""
+        val json = """{"layers":[{"style":"radialMesh","seed":18446744073709551615,"spokes":0}],"textLayer":{"isEnabled":true,"text":"Om"}}"""
         val p = SettingsJson.decode(json)
         val again = SettingsJson.decode(SettingsJson.encode(p))
         assertEquals(p, again)
         assertEquals(ULong.MAX_VALUE, again.layers[0].seed)
+        assertEquals(0.0, again.layers[0].spokes)
     }
 
     @Test

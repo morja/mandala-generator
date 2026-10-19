@@ -101,6 +101,8 @@ data class StyleLayer(
     val blendMode: LayerBlendMode = LayerBlendMode.SCREEN,
     val symmetry: Int = 6,
     val seed: ULong = 42uL,
+    /** Radial Mesh only: brightness of the spokes, 0 = rings only. */
+    val spokes: Double = 1.0,
 )
 
 @Serializable
