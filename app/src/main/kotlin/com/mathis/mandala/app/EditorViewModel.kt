@@ -110,9 +110,10 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
     /** Settings before the last replace (favourite or file), for "Undo". */
     private var beforeReplace: MandalaParameters? = null
 
-    private val history = History<MandalaParameters>()
+    private val historyStore = HistoryStore(File(application.filesDir, "history.json"))
+    private val history = History<MandalaParameters>().apply { restore(historyStore.load()) }
 
-    private val _historyState = MutableStateFlow(HistoryState(canGoBack = false, canGoForward = false))
+    private val _historyState = MutableStateFlow(HistoryState(history.canGoBack, history.canGoForward))
     val historyState: StateFlow<HistoryState> = _historyState.asStateFlow()
 
     private val threads = Runtime.getRuntime().availableProcessors()
@@ -131,7 +132,11 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         viewModelScope.launch {
             // Like the macOS app, every state that settles goes into the history.
             @OptIn(FlowPreview::class)
-            _params.debounce(HISTORY_DELAY_MS).collect { record(it) }
+            _params.debounce(HISTORY_DELAY_MS).collect {
+                record(it)
+                val snapshot = history.entries
+                withContext(Dispatchers.IO) { runCatching { historyStore.save(snapshot) } }
+            }
         }
         viewModelScope.launch {
             _favorites.drop(1).collectLatest { f -> withContext(Dispatchers.IO) { runCatching { favoritesStore.save(f) } } }

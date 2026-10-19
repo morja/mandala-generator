@@ -19,3 +19,14 @@ class SettingsStore(private val file: File) {
 
     fun save(params: MandalaParameters) = writeAtomically(file, SettingsJson.encode(params))
 }
+
+/** The history (back and forward) across restarts, in the format of the macOS app's history.json. */
+class HistoryStore(private val file: File) {
+    fun load(): List<MandalaParameters> = try {
+        if (file.isFile) SettingsJson.decodeList(file.readText()) else emptyList()
+    } catch (e: Exception) {
+        emptyList()
+    }
+
+    fun save(history: List<MandalaParameters>) = writeAtomically(file, SettingsJson.encodeList(history))
+}

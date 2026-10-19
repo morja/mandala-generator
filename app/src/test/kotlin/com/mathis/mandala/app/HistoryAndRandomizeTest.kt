@@ -30,6 +30,15 @@ class HistoryAndRandomizeTest {
     }
 
     @Test
+    fun restoresSavedStatesAtTheNewest() {
+        val h = History<Int>()
+        h.restore(listOf(1, 2, 3))
+        assertFalse(h.canGoForward)
+        assertEquals(2, h.back())
+        assertEquals(listOf(1, 2, 3), h.entries)
+    }
+
+    @Test
     fun keepsAtMostTheLimit() {
         val h = History<Int>(limit = 3)
         for (i in 1..5) h.record(i)

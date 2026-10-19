@@ -26,6 +26,13 @@ object SettingsJson {
 
     fun encode(params: MandalaParameters): String = json.encodeToString(MandalaParameters.serializer(), params)
 
+    /** A list of settings, as the macOS app's history.json holds it. */
+    fun decodeList(text: String): List<MandalaParameters> = json.decodeFromString(paramsListSerializer, text)
+
+    fun encodeList(list: List<MandalaParameters>): String = json.encodeToString(paramsListSerializer, list)
+
+    private val paramsListSerializer = ListSerializer(MandalaParameters.serializer())
+
     private val favoritesSerializer = ListSerializer(Favorite.serializer())
 
     /** The macOS favourites file (`~/Library/Application Support/MandalaGenerator/favorites.json`). */
