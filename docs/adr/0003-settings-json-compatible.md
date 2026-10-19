@@ -10,7 +10,7 @@ The Android app reads and writes the same settings JSON as the macOS app (`Manda
 - unknown enum values fall back to the default (style → `mixed`, blend → `screen`, background → `gradient`);
 - unknown fields are ignored;
 - 64-bit seeds are unsigned (`ULong`); values above `Long.MAX_VALUE` occur in real files;
-- layers not ported yet (text, graffiti, drawing) are kept as raw JSON so a round trip loses nothing.
+- layers not ported yet would be kept as raw JSON so a round trip loses nothing (text, graffiti and drawing were, until they were ported on 19 October 2026; all layers are typed now).
 
 The favourites file uses the macOS `Favorite` format as well: a list of `{id, parameters, thumbnailData, name, createdAt}`, with the thumbnail as base64 JPEG and `createdAt` in seconds since 1 January 2001 (Swift's `Date` encoding).
 

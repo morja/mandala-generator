@@ -1,6 +1,10 @@
 package com.mathis.mandala.app
 
 import com.mathis.mandala.app.Editing.addLayer
+import com.mathis.mandala.app.Editing.addStroke
+import com.mathis.mandala.app.Editing.clearStrokes
+import com.mathis.mandala.app.Editing.removeLastStroke
+import com.mathis.mandala.app.Editing.updateDrawing
 import com.mathis.mandala.app.Editing.duplicateLayer
 import com.mathis.mandala.app.Editing.moveLayer
 import com.mathis.mandala.app.Editing.newVariation
@@ -116,5 +120,39 @@ class EditingTest {
         val two = p.addLayer(1uL).first
         assertTrue(Editing.fileName(two), Editing.fileName(two).startsWith("mandala-rose+rose-p5-x6-"))
         assertNotEquals(Editing.fileName(p), Editing.fileName(p.newVariation { 1uL }))
+    }
+
+    @Test
+    fun strokesTakeTheToolColourAndSwitchTheLayerOn() {
+        val p = MandalaParameters().updateDrawing { it.copy(isEnabled = false, currentHue = 0.25) }
+        val drawn = p.addStroke(DrawTool.LINES, listOf(0.1, 0.2), listOf(0.3, 0.4))
+        assertTrue(drawn.drawingLayer.isEnabled)
+        assertEquals(0.25, drawn.drawingLayer.strokes.single().hue, 0.0)
+
+        val sprayed = drawn.addStroke(DrawTool.SPRAY, listOf(0.5), listOf(0.5))
+        assertTrue(sprayed.graffitiLayer.isEnabled)
+        assertEquals(1, sprayed.graffitiLayer.strokes.size)
+        assertEquals(sprayed.graffitiLayer.currentBrushSize, sprayed.graffitiLayer.strokes.single().brushSize, 0.0)
+    }
+
+    @Test
+    fun singleTapsMakeNoLineButASprayDot() {
+        val p = MandalaParameters()
+        assertEquals(p, p.addStroke(DrawTool.LINES, listOf(0.5), listOf(0.5)))
+        assertEquals(1, p.addStroke(DrawTool.SPRAY, listOf(0.5), listOf(0.5)).graffitiLayer.strokes.size)
+    }
+
+    @Test
+    fun undoAndClearOnlyTouchTheirTool() {
+        val p = MandalaParameters()
+            .addStroke(DrawTool.LINES, listOf(0.1, 0.2), listOf(0.1, 0.2))
+            .addStroke(DrawTool.LINES, listOf(0.3, 0.4), listOf(0.3, 0.4))
+            .addStroke(DrawTool.SPRAY, listOf(0.5), listOf(0.5))
+        val undone = p.removeLastStroke(DrawTool.LINES)
+        assertEquals(listOf(0.1, 0.2), undone.drawingLayer.strokes.single().xs)
+        assertEquals(1, undone.graffitiLayer.strokes.size)
+        val cleared = p.clearStrokes(DrawTool.SPRAY)
+        assertTrue(cleared.graffitiLayer.strokes.isEmpty())
+        assertEquals(2, cleared.drawingLayer.strokes.size)
     }
 }

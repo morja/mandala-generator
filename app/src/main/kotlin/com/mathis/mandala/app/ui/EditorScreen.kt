@@ -1,5 +1,24 @@
 package com.mathis.mandala.app.ui
 
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.material3.Button
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.StrokeJoin
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.positionChanged
+import com.mathis.mandala.app.DrawTool
+import com.mathis.mandala.app.Editing.strokeCount
+import kotlin.math.PI
+import kotlin.math.cos
+import kotlin.math.max
+import kotlin.math.sin
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.OutlinedTextField
@@ -109,6 +128,7 @@ fun EditorScreen(vm: EditorViewModel) {
     val busy by vm.busy.collectAsStateWithLifecycle()
     val selected by vm.selected.collectAsStateWithLifecycle()
     val favorites by vm.favorites.collectAsStateWithLifecycle()
+    val drawTool by vm.drawTool.collectAsStateWithLifecycle()
     val snackbar = remember { SnackbarHostState() }
     val context = LocalContext.current
     var showFavorites by remember { mutableStateOf(false) }
@@ -174,7 +194,7 @@ fun EditorScreen(vm: EditorViewModel) {
                         // The square canvas takes the smaller of width and remaining height.
                         BoxWithConstraints(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.TopCenter) {
                             val side = minOf(maxWidth, maxHeight - Sizes.statusLine)
-                            Canvas(preview, Modifier.width(side))
+                            Canvas(preview, Modifier.width(side), drawing(params, drawTool, vm))
                         }
                         actions()
                     }
@@ -189,7 +209,11 @@ fun EditorScreen(vm: EditorViewModel) {
                     Modifier.fillMaxSize().padding(horizontal = Spacing.lg),
                     verticalArrangement = Arrangement.spacedBy(Spacing.sm),
                 ) {
-                    Canvas(preview, Modifier.widthIn(max = canvasMax).fillMaxWidth().align(Alignment.CenterHorizontally))
+                    Canvas(
+                        preview,
+                        Modifier.widthIn(max = canvasMax).fillMaxWidth().align(Alignment.CenterHorizontally),
+                        drawing(params, drawTool, vm),
+                    )
                     actions()
                     Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(bottom = Spacing.lg)) {
                         Controls(params, selected, vm)
@@ -200,8 +224,44 @@ fun EditorScreen(vm: EditorViewModel) {
     }
 }
 
+/** What the canvas needs while a drawing tool is active: the tool's look and where strokes go. */
+private class DrawingInput(
+    val symmetry: Int,
+    val colour: Color,
+    /** Line width (lines) or brush diameter (spray) as a fraction of the canvas width. */
+    val width: Float,
+    val spray: Boolean,
+    val onStroke: (List<Double>, List<Double>) -> Unit,
+)
+
+private fun drawing(params: MandalaParameters, tool: DrawTool?, vm: EditorViewModel): DrawingInput? = when (tool) {
+    null -> null
+    DrawTool.LINES -> params.drawingLayer.let { d ->
+        DrawingInput(
+            symmetry = max(1, d.symmetry),
+            colour = hsbColour(d.currentHue, d.currentSaturation, d.currentBrightness),
+            // Same width as the macOS overlay: strokeWeight * 1.5 % of the canvas, at least a hairline.
+            width = (d.strokeWeight * 0.015).toFloat(),
+            spray = false,
+            onStroke = vm::addStroke,
+        )
+    }
+    DrawTool.SPRAY -> params.graffitiLayer.let { g ->
+        DrawingInput(
+            symmetry = max(1, g.symmetry),
+            colour = hsbColour(g.currentHue, g.currentSaturation, g.currentBrightness).copy(alpha = g.currentOpacity.toFloat()),
+            width = g.currentBrushSize.toFloat(),
+            spray = true,
+            onStroke = vm::addStroke,
+        )
+    }
+}
+
+private fun hsbColour(h: Double, s: Double, b: Double): Color =
+    Color.hsv((h * 360).toFloat().coerceIn(0f, 360f), s.toFloat().coerceIn(0f, 1f), b.toFloat().coerceIn(0f, 1f))
+
 @Composable
-private fun Canvas(preview: PreviewState, modifier: Modifier) {
+private fun Canvas(preview: PreviewState, modifier: Modifier, drawing: DrawingInput? = null) {
     val t = LocalTokens.current
     Column(modifier, verticalArrangement = Arrangement.spacedBy(Spacing.xs)) {
         Box(
@@ -211,12 +271,14 @@ private fun Canvas(preview: PreviewState, modifier: Modifier) {
             preview.image?.let {
                 Image(it, contentDescription = "Mandala preview", contentScale = ContentScale.Fit, modifier = Modifier.fillMaxSize())
             }
+            if (drawing != null) DrawingOverlay(drawing, t.accent)
             if (preview.rendering) {
                 LinearProgressIndicator(Modifier.fillMaxWidth().height(Sizes.progress))
             }
         }
         val status = when {
             preview.error != null -> preview.error
+            drawing != null && !preview.rendering -> "Drag on the image to draw"
             preview.rendering -> "Rendering…"
             preview.millis != null -> "Preview rendered in ${seconds(preview.millis)} s"
             else -> ""
@@ -224,6 +286,71 @@ private fun Canvas(preview: PreviewState, modifier: Modifier) {
         Text(status, style = MaterialTheme.typography.bodySmall, color = if (preview.error != null) t.error else t.textMuted)
         for (warning in preview.warnings) {
             Text(warning, style = MaterialTheme.typography.bodySmall, color = t.error)
+        }
+    }
+}
+
+/**
+ * Catches finger strokes on the canvas and shows the one in progress with its rotated copies, like
+ * the macOS drawing overlay. The finished stroke goes to the settings and appears in the next preview.
+ */
+@Composable
+private fun DrawingOverlay(input: DrawingInput, guide: Color) {
+    val xs = remember { mutableStateListOf<Double>() }
+    val ys = remember { mutableStateListOf<Double>() }
+    val current by rememberUpdatedState(input)
+    androidx.compose.foundation.Canvas(
+        Modifier
+            .fillMaxSize()
+            .pointerInput(Unit) {
+                awaitEachGesture {
+                    val down = awaitFirstDown()
+                    fun add(p: Offset) {
+                        xs.add((p.x / size.width).toDouble().coerceIn(0.0, 1.0))
+                        ys.add((p.y / size.height).toDouble().coerceIn(0.0, 1.0))
+                    }
+                    add(down.position)
+                    down.consume()
+                    while (true) {
+                        val event = awaitPointerEvent()
+                        val change = event.changes.firstOrNull { it.id == down.id } ?: break
+                        if (!change.pressed) break
+                        if (change.positionChanged()) add(change.position)
+                        change.consume()
+                    }
+                    current.onStroke(xs.toList(), ys.toList())
+                    xs.clear()
+                    ys.clear()
+                }
+            },
+    ) {
+        val c = Offset(size.width / 2, size.height / 2)
+        val sym = current.symmetry
+        // Guides: one ray per copy.
+        for (k in 0 until sym) {
+            val a = k * 2 * PI / sym
+            drawLine(guide.copy(alpha = 0.35f), c, c + Offset(cos(a).toFloat(), sin(a).toFloat()) * size.maxDimension, strokeWidth = 1f)
+        }
+        if (xs.isEmpty()) return@Canvas
+        val width = max(1f, current.width * size.width)
+        for (k in 0 until sym) {
+            val a = k * 2 * PI / sym
+            val ca = cos(a).toFloat()
+            val sa = sin(a).toFloat()
+            fun at(i: Int): Offset {
+                val dx = xs[i].toFloat() * size.width - c.x
+                val dy = ys[i].toFloat() * size.height - c.y
+                return Offset(c.x + dx * ca - dy * sa, c.y + dx * sa + dy * ca)
+            }
+            if (xs.size == 1) {
+                drawCircle(current.colour, width / 2, at(0))
+            } else {
+                val path = Path().apply {
+                    moveTo(at(0).x, at(0).y)
+                    for (i in 1 until xs.size) at(i).let { lineTo(it.x, it.y) }
+                }
+                drawPath(path, current.colour, style = Stroke(width, cap = StrokeCap.Round, join = StrokeJoin.Round))
+            }
         }
     }
 }
@@ -323,6 +450,7 @@ private fun Controls(params: MandalaParameters, selected: Int, vm: EditorViewMod
         BackgroundSection(params.baseLayer, vm::updateBackground)
         EffectsSection(params.effectsLayer, vm::updateEffects, vm::newEffectsPattern)
         TextSection(params.textLayer, vm::updateText, vm::randomQuote, vm::useQuote)
+        DrawingSection(params, vm)
         LayersSection(params, index, vm)
         SectionTitle("Layer ${index + 1} · ${params.layers[index].style.displayName}")
         LayerControls(params.layers[index], vm::updateSelected)
@@ -449,6 +577,93 @@ private fun EffectsSection(
     ValueSlider("Stars", fx.stars) { v -> update { it.copy(stars = v) } }
     ValueSlider("Glitter", fx.glitter) { v -> update { it.copy(glitter = v) } }
     TextButton(onClick = newPattern) { Text("New pattern") }
+}
+
+/**
+ * Drawing by hand, as on the Mac: glowing lines (drawing layer) or soft spray paint (graffiti layer),
+ * each repeated around the centre. "Draw on image" turns drags on the canvas into strokes.
+ */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun DrawingSection(params: MandalaParameters, vm: EditorViewModel) {
+    val active by vm.drawTool.collectAsStateWithLifecycle()
+    var tool by rememberSaveable { mutableStateOf(DrawTool.LINES) }
+    var expanded by rememberSaveable { mutableStateOf(false) }
+    val count = params.strokeCount(tool)
+    val lines = params.drawingLayer
+    val spray = params.graffitiLayer
+
+    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(top = Spacing.md)) {
+        Text("Drawing", style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
+        TextButton(onClick = { expanded = !expanded }) { Text(if (expanded) "Hide sliders" else "Show sliders") }
+    }
+    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.sm), verticalAlignment = Alignment.CenterVertically) {
+        for (option in DrawTool.entries) {
+            FilterChip(
+                selected = tool == option,
+                onClick = {
+                    tool = option
+                    if (active != null) vm.setDrawTool(option)
+                },
+                label = { Text("${option.label} (${params.strokeCount(option)})") },
+            )
+        }
+    }
+    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.sm), modifier = Modifier.padding(top = Spacing.xs)) {
+        if (active == null) {
+            Button(onClick = { vm.setDrawTool(tool) }) { Text("Draw on image") }
+        } else {
+            FilledTonalButton(onClick = { vm.setDrawTool(null) }) { Text("Done drawing") }
+        }
+        OutlinedButton(onClick = { vm.removeLastStroke(tool) }, enabled = count > 0) { Text("Undo") }
+        OutlinedButton(onClick = { vm.clearStrokes(tool) }, enabled = count > 0) { Text("Clear") }
+    }
+    val enabled = if (tool == DrawTool.LINES) lines.isEnabled else spray.isEnabled
+    if (count > 0) {
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+            Text("Show ${tool.label.lowercase()}", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
+            Switch(checked = enabled, onCheckedChange = { on ->
+                if (tool == DrawTool.LINES) vm.updateDrawing { it.copy(isEnabled = on) } else vm.updateGraffiti { it.copy(isEnabled = on) }
+            })
+        }
+    }
+
+    when (tool) {
+        DrawTool.LINES -> {
+            SteppedSlider("Symmetry", lines.symmetry.coerceIn(1, 16), 1..16) { v -> vm.updateDrawing { it.copy(symmetry = v) } }
+            ColourSliders("Line colour", lines.currentHue, lines.currentSaturation, lines.currentBrightness) { h, sa, b ->
+                vm.updateDrawing { it.copy(currentHue = h, currentSaturation = sa, currentBrightness = b) }
+            }
+            if (!expanded) return
+            ValueSlider("Weight", lines.strokeWeight) { v -> vm.updateDrawing { it.copy(strokeWeight = v) } }
+            ValueSlider("Glow", lines.glowIntensity) { v -> vm.updateDrawing { it.copy(glowIntensity = v) } }
+            ValueSlider("Opacity", lines.opacity) { v -> vm.updateDrawing { it.copy(opacity = v) } }
+            BlendChips(lines.blendMode) { m -> vm.updateDrawing { it.copy(blendMode = m) } }
+        }
+        DrawTool.SPRAY -> {
+            SteppedSlider("Symmetry", spray.symmetry.coerceIn(1, 16), 1..16) { v -> vm.updateGraffiti { it.copy(symmetry = v) } }
+            ColourSliders("Spray colour", spray.currentHue, spray.currentSaturation, spray.currentBrightness) { h, sa, b ->
+                vm.updateGraffiti { it.copy(currentHue = h, currentSaturation = sa, currentBrightness = b) }
+            }
+            ValueSlider("Brush size", spray.currentBrushSize, 0.01f..0.2f) { v -> vm.updateGraffiti { it.copy(currentBrushSize = v) } }
+            ValueSlider("Paint opacity", spray.currentOpacity) { v -> vm.updateGraffiti { it.copy(currentOpacity = v) } }
+            if (!expanded) return
+            ValueSlider("Softness", spray.softness) { v -> vm.updateGraffiti { it.copy(softness = v) } }
+            ValueSlider("Layer opacity", spray.opacity) { v -> vm.updateGraffiti { it.copy(opacity = v) } }
+            BlendChips(spray.blendMode) { m -> vm.updateGraffiti { it.copy(blendMode = m) } }
+        }
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun BlendChips(mode: LayerBlendMode, onChange: (LayerBlendMode) -> Unit) {
+    SubTitle("Blending")
+    FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+        for (m in LayerBlendMode.entries) {
+            FilterChip(selected = mode == m, onClick = { onChange(m) }, label = { Text(m.displayName) })
+        }
+    }
 }
 
 /** Text over the mandala: quotes from the macOS app's collection or own text, with font and light. */

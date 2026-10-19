@@ -2,10 +2,6 @@ package com.mathis.mandala.core
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.JsonArray
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.booleanOrNull
-import kotlinx.serialization.json.jsonPrimitive
 
 // Settings model, field for field compatible with the macOS app's MandalaParameters.swift.
 // Defaults mirror the Swift `decodeSafe` defaults so partial or older files load the same way.
@@ -156,6 +152,62 @@ data class EffectsLayerSettings(
     val glitterSeed: ULong = 55uL,
 )
 
+/** A line drawn by hand; points are normalised to the canvas (0.5 = centre, y downwards). */
+@Serializable
+data class DrawStroke(
+    val xs: List<Double> = emptyList(),
+    val ys: List<Double> = emptyList(),
+    val hue: Double = 0.6,
+    val saturation: Double = 1.0,
+    val brightness: Double = 0.9,
+)
+
+/** Hand-drawn glowing lines, repeated around the centre, as in the macOS DrawingLayerSettings. */
+@Serializable
+data class DrawingLayerSettings(
+    val isEnabled: Boolean = true,
+    val strokes: List<DrawStroke> = emptyList(),
+    val symmetry: Int = 6,
+    val glowIntensity: Double = 0.5,
+    val strokeWeight: Double = 0.4,
+    val blendMode: LayerBlendMode = LayerBlendMode.SCREEN,
+    val opacity: Double = 1.0,
+    // Colour for new strokes (tool state, not rendered).
+    val currentHue: Double = 0.6,
+    val currentSaturation: Double = 1.0,
+    val currentBrightness: Double = 0.9,
+)
+
+/** A spray-paint stroke; brush size is a fraction of the canvas width. */
+@Serializable
+data class SprayStroke(
+    val xs: List<Double> = emptyList(),
+    val ys: List<Double> = emptyList(),
+    val brushSize: Double = 0.05,
+    val hue: Double = 0.5,
+    val saturation: Double = 0.8,
+    val brightness: Double = 0.9,
+    val opacity: Double = 0.6,
+)
+
+/** Soft spray paint, as in the macOS GraffitiLayerSettings. */
+@Serializable
+data class GraffitiLayerSettings(
+    val isEnabled: Boolean = false,
+    val strokes: List<SprayStroke> = emptyList(),
+    val symmetry: Int = 1,
+    val blendMode: LayerBlendMode = LayerBlendMode.SCREEN,
+    val opacity: Double = 1.0,
+    /** 0 = hard edge, 1 = very soft. */
+    val softness: Double = 0.7,
+    // Tool state for new strokes (not rendered).
+    val currentHue: Double = 0.5,
+    val currentSaturation: Double = 0.8,
+    val currentBrightness: Double = 0.9,
+    val currentBrushSize: Double = 0.05,
+    val currentOpacity: Double = 0.6,
+)
+
 /** Text over the mandala (quotes), as in the macOS TextLayerSettings. Defaults match its decoder. */
 @Serializable
 data class TextLayerSettings(
@@ -201,9 +253,8 @@ data class MandalaParameters(
     val layers: List<StyleLayer> = listOf(StyleLayer()),
     val baseLayer: BaseLayerSettings = BaseLayerSettings(),
     val effectsLayer: EffectsLayerSettings = EffectsLayerSettings(),
-    // Not rendered yet (no drawing UI); kept as raw JSON so loading and saving preserves them.
-    val graffitiLayer: JsonObject? = null,
-    val drawingLayer: JsonObject? = null,
+    val graffitiLayer: GraffitiLayerSettings = GraffitiLayerSettings(),
+    val drawingLayer: DrawingLayerSettings = DrawingLayerSettings(),
     val textLayer: TextLayerSettings = TextLayerSettings(),
     val seed: ULong = 42uL,
     val previewSize: Int = 800,
@@ -226,10 +277,3 @@ data class MandalaParameters(
     val resolvedOutputSize: Int
         get() = if (outputSize == 0) outputSizeCustom.coerceIn(64, 8192) else outputSize
 }
-
-internal fun JsonObject?.isEnabledLayer(): Boolean =
-    this?.get("isEnabled")?.jsonPrimitive?.booleanOrNull == true
-
-/** Like the macOS renderer: a drawing or graffiti layer only counts when it has strokes. */
-internal fun JsonObject?.hasStrokes(): Boolean =
-    isEnabledLayer() && ((this?.get("strokes") as? JsonArray)?.isNotEmpty() == true)

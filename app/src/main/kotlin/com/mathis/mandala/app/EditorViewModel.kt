@@ -7,6 +7,12 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.mathis.mandala.app.Editing.addLayer
+import com.mathis.mandala.app.Editing.addStroke
+import com.mathis.mandala.app.Editing.clearStrokes
+import com.mathis.mandala.app.Editing.removeLastStroke
+import com.mathis.mandala.app.Editing.strokeCount
+import com.mathis.mandala.app.Editing.updateDrawing
+import com.mathis.mandala.app.Editing.updateGraffiti
 import com.mathis.mandala.app.Editing.duplicateLayer
 import com.mathis.mandala.app.Editing.moveLayer
 import com.mathis.mandala.app.Editing.newVariation
@@ -18,7 +24,9 @@ import com.mathis.mandala.app.Editing.updateLayer
 import com.mathis.mandala.app.Editing.updateText
 import com.mathis.mandala.app.Editing.withQuote
 import com.mathis.mandala.core.BaseLayerSettings
+import com.mathis.mandala.core.DrawingLayerSettings
 import com.mathis.mandala.core.EffectsLayerSettings
+import com.mathis.mandala.core.GraffitiLayerSettings
 import com.mathis.mandala.core.Favorite
 import com.mathis.mandala.core.Image8
 import com.mathis.mandala.core.MacFile
@@ -145,6 +153,34 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
 
     fun randomQuote() = useQuote(Quotes.all.random())
 
+    // ── Drawing by hand ──
+
+    private val _drawTool = MutableStateFlow<DrawTool?>(null)
+
+    /** The tool that turns drags on the canvas into strokes; null while the canvas is not for drawing. */
+    val drawTool: StateFlow<DrawTool?> = _drawTool.asStateFlow()
+
+    fun setDrawTool(tool: DrawTool?) {
+        _drawTool.value = tool
+    }
+
+    fun updateDrawing(change: (DrawingLayerSettings) -> DrawingLayerSettings) = _params.update { it.updateDrawing(change) }
+
+    fun updateGraffiti(change: (GraffitiLayerSettings) -> GraffitiLayerSettings) = _params.update { it.updateGraffiti(change) }
+
+    fun addStroke(xs: List<Double>, ys: List<Double>) {
+        val tool = _drawTool.value ?: return
+        _params.update { it.addStroke(tool, xs, ys) }
+    }
+
+    fun removeLastStroke(tool: DrawTool) = _params.update { it.removeLastStroke(tool) }
+
+    fun clearStrokes(tool: DrawTool) {
+        if (_params.value.strokeCount(tool) == 0) return
+        replace(_params.value.clearStrokes(tool), keepSelection = true)
+        message("${tool.label} cleared", canUndo = true)
+    }
+
     /** Applies a layer operation and selects the layer it returns. */
     private fun applyLayerOperation(operation: (MandalaParameters) -> Pair<MandalaParameters, Int>) {
         val (next, index) = operation(_params.value)
@@ -153,17 +189,17 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
     }
 
     /** Replaces all settings (favourite or file); the previous ones can be restored with [undo]. */
-    private fun replace(params: MandalaParameters) {
+    private fun replace(params: MandalaParameters, keepSelection: Boolean = false) {
         beforeReplace = _params.value
         _params.value = params
-        _selected.value = 0
+        if (!keepSelection) _selected.value = 0
     }
 
     fun undo() {
         val previous = beforeReplace ?: return
         beforeReplace = null
         _params.value = previous
-        _selected.value = 0
+        _selected.value = _selected.value.coerceIn(0, previous.layers.lastIndex)
     }
 
     // ── Favourites ──

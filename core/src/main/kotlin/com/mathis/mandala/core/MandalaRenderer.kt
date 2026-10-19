@@ -139,8 +139,16 @@ object MandalaRenderer {
                 composite = fx.composite(composite, img, op)
             }
 
-            if (params.graffitiLayer.hasStrokes()) warnings += "Graffiti layer is not available yet; skipped."
-            if (params.drawingLayer.hasStrokes()) warnings += "Drawing layer is not available yet; skipped."
+            // ── Hand-made layers ──
+            val hand = HandLayers(par, fx)
+            if (params.graffitiLayer.isEnabled && params.graffitiLayer.strokes.isNotEmpty()) {
+                checkpoint()
+                composite = hand.graffiti(composite, params.graffitiLayer)
+            }
+            if (params.drawingLayer.isEnabled && params.drawingLayer.strokes.isNotEmpty()) {
+                checkpoint()
+                composite = hand.drawing(composite, params.drawingLayer)
+            }
 
             // Solid background goes in after all layers (lighten) so layer blend modes don't tint it.
             if (solidBackground != null) {

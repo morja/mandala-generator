@@ -3,11 +3,15 @@ package com.mathis.mandala.app
 import com.mathis.mandala.core.BaseLayerSettings
 import com.mathis.mandala.core.BaseLayerType
 import com.mathis.mandala.core.BuiltInPalettes
+import com.mathis.mandala.core.DrawStroke
+import com.mathis.mandala.core.DrawingLayerSettings
 import com.mathis.mandala.core.EffectsLayerSettings
+import com.mathis.mandala.core.GraffitiLayerSettings
 import com.mathis.mandala.core.MandalaParameters
 import com.mathis.mandala.core.MandalaRenderer
 import com.mathis.mandala.core.MandalaStyle
 import com.mathis.mandala.core.SettingsJson
+import com.mathis.mandala.core.SprayStroke
 import com.mathis.mandala.core.Quote
 import com.mathis.mandala.core.StyleLayer
 import com.mathis.mandala.core.TextLayerSettings
@@ -120,6 +124,45 @@ object Editing {
     fun TextLayerSettings.withQuote(quote: Quote): TextLayerSettings =
         copy(text = quote.text, customAuthor = quote.author, isEnabled = true)
 
+    fun MandalaParameters.updateDrawing(change: (DrawingLayerSettings) -> DrawingLayerSettings): MandalaParameters =
+        copy(drawingLayer = change(drawingLayer))
+
+    fun MandalaParameters.updateGraffiti(change: (GraffitiLayerSettings) -> GraffitiLayerSettings): MandalaParameters =
+        copy(graffitiLayer = change(graffitiLayer))
+
+    /**
+     * Adds a finished finger stroke (points normalised to the canvas) in the tool's current colour and
+     * switches its layer on. Lines need two points, spray paints single dots too, as on the Mac.
+     */
+    fun MandalaParameters.addStroke(tool: DrawTool, xs: List<Double>, ys: List<Double>): MandalaParameters = when (tool) {
+        DrawTool.LINES -> if (xs.size < 2) this else updateDrawing {
+            it.copy(isEnabled = true, strokes = it.strokes + DrawStroke(xs, ys, it.currentHue, it.currentSaturation, it.currentBrightness))
+        }
+        DrawTool.SPRAY -> if (xs.isEmpty()) this else updateGraffiti {
+            it.copy(
+                isEnabled = true,
+                strokes = it.strokes + SprayStroke(
+                    xs, ys, it.currentBrushSize, it.currentHue, it.currentSaturation, it.currentBrightness, it.currentOpacity,
+                ),
+            )
+        }
+    }
+
+    fun MandalaParameters.removeLastStroke(tool: DrawTool): MandalaParameters = when (tool) {
+        DrawTool.LINES -> updateDrawing { it.copy(strokes = it.strokes.dropLast(1)) }
+        DrawTool.SPRAY -> updateGraffiti { it.copy(strokes = it.strokes.dropLast(1)) }
+    }
+
+    fun MandalaParameters.clearStrokes(tool: DrawTool): MandalaParameters = when (tool) {
+        DrawTool.LINES -> updateDrawing { it.copy(strokes = emptyList()) }
+        DrawTool.SPRAY -> updateGraffiti { it.copy(strokes = emptyList()) }
+    }
+
+    fun MandalaParameters.strokeCount(tool: DrawTool): Int = when (tool) {
+        DrawTool.LINES -> drawingLayer.strokes.size
+        DrawTool.SPRAY -> graffitiLayer.strokes.size
+    }
+
     /** Same settings, new random arrangement for every layer (like "Randomize Seed" on the Mac). */
     fun MandalaParameters.newVariation(nextSeed: () -> ULong): MandalaParameters =
         copy(seed = nextSeed(), layers = layers.map { it.copy(seed = nextSeed()) })
@@ -143,3 +186,6 @@ object Editing {
         return h.toString(16).padStart(16, '0').take(8)
     }
 }
+
+/** The two hand-drawing tools of the macOS app: glowing lines (drawing layer) and spray paint (graffiti layer). */
+enum class DrawTool(val label: String) { LINES("Lines"), SPRAY("Spray") }

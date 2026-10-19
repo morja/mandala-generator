@@ -42,6 +42,8 @@ class ParityTest {
         "style-deep-nebula" to 33.0,
         // CIRandomGenerator is Apple's own; mean level matches, the noise pattern differs.
         "background-grain" to 20.0,
+        "hand-graffiti" to 27.0,
+        "hand-both" to 30.0,
     )
 
     @Test

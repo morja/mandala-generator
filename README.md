@@ -1,6 +1,6 @@
 # Mandala Generator for Android
 
-Android port of the macOS [Mandala Generator](https://github.com/morja/mandala-generator). Current state: the renderer in plain Kotlin (all 36 styles, colour, gradient and sunburst backgrounds, the full effects layer and the text layer), a command-line tool, and a first Android app with up to five layers, live preview, favourites, opening and saving the Mac app's settings and favourites files, export to the gallery, sharing, and the last state kept across restarts.
+Android port of the macOS [Mandala Generator](https://github.com/morja/mandala-generator). Current state: the renderer in plain Kotlin (all 36 styles, colour, gradient and sunburst backgrounds, the full effects layer, the text layer and the drawing and graffiti layers), a command-line tool, and an Android app with up to five layers, drawing with the finger in rotated symmetry, live preview, favourites, opening and saving the Mac app's settings and favourites files, export to the gallery, sharing, and the last state kept across restarts.
 
 Results so far: [POC-1](docs/POC-1-results.md). Decisions: [docs/adr](docs/adr/README.md). Rules for agents: [AGENTS.md](AGENTS.md).
 
@@ -27,7 +27,7 @@ The release build is signed with the local debug key (no store signing yet). Deb
 cli/build/install/mandala/bin/mandala render ../Mandala-Generator/generated/mandala-wave-p15-x4-fx-22ae9a7c.json out.png --size 1024
 ```
 
-Ported so far: all 36 layer styles, with glow, wash, painted effect, colour grade, rotation, opacity and blend modes, plus the colour, gradient, sunburst and grain backgrounds, the text layer (quotes with cloud, shadow and glow) and the effects layer (vignette, brightness, contrast, bloom, highlights, wash, sepia, fade, grain, clarity, relief, chromatic, dimming, erasure, stars, glitter). Anything else is skipped with a warning.
+Ported so far: all 36 layer styles, with glow, wash, painted effect, colour grade, rotation, opacity and blend modes, plus the colour, gradient, sunburst and grain backgrounds, the text layer (quotes with cloud, shadow and glow), the drawing and graffiti layers and the effects layer (vignette, brightness, contrast, bloom, highlights, wash, sepia, fade, grain, clarity, relief, chromatic, dimming, erasure, stars, glitter). Anything else is skipped with a warning.
 
 Compare two images:
 

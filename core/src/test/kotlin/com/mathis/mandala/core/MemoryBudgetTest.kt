@@ -8,7 +8,8 @@ import kotlin.test.assertTrue
  * Runs in the `memoryTest` task with a 256 MB heap, the budget of a typical Android app.
  * Worst case the app allows: five layers (its maximum), the bottom one full size, all with strong
  * glow, wash and the heavy painted effect, the line-heaviest styles, a gradient background and the
- * most memory-hungry effects (bloom, clarity, relief, stars, glitter).
+ * most memory-hungry effects (bloom, clarity, relief, stars, glitter), plus hand-drawn lines and
+ * spray paint (the graffiti layer keeps a float colour and alpha plane at buffer size).
  */
 class MemoryBudgetTest {
     private val fiveHeavyLayers = run {
@@ -17,7 +18,10 @@ class MemoryBudgetTest {
             """{"style":"$style","scale":${if (i == 0) 1.0 else 0.7},"complexity":0.8,"glowIntensity":0.9,
                "wash":0.3,"abstractLevel":0.8,"blendMode":"${if (i % 2 == 1) "add" else "screen"}","seed":${i + 1}}"""
         }
-        """{"layers":[${layers.joinToString(",")}],"baseLayer":{"isEnabled":true,"type":"gradient"},"effectsLayer":{"isEnabled":true,"vignette":0.3,"bloom":0.5,"localContrast":0.3,"relief":0.4,"grain":0.3,"stars":0.3,"glitter":0.3,"dimming":0.3,"highlights":0.3}}"""
+        val stroke = """"xs":[0.1,0.5,0.9,0.5],"ys":[0.2,0.8,0.3,0.5]"""
+        val hand = """"drawingLayer":{"isEnabled":true,"symmetry":16,"glowIntensity":1,"strokeWeight":1,"strokes":[{$stroke}]},""" +
+            """"graffitiLayer":{"isEnabled":true,"symmetry":16,"softness":1,"strokes":[{$stroke,"brushSize":0.2}]}"""
+        """{"layers":[${layers.joinToString(",")}],"baseLayer":{"isEnabled":true,"type":"gradient"},"effectsLayer":{"isEnabled":true,"vignette":0.3,"bloom":0.5,"localContrast":0.3,"relief":0.4,"grain":0.3,"stars":0.3,"glitter":0.3,"dimming":0.3,"highlights":0.3},$hand}"""
     }
 
     @Test

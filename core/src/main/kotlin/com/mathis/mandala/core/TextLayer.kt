@@ -67,7 +67,7 @@ internal class TextLayer(private val par: Parallel, private val renderer: TextRe
                     else -> 1f - (t - 0.5f) / 0.5f
                 } * s.cloudOpacity.toFloat()
             }
-            blurMask(mask, size, (circR * s.cloudRadius.toFloat() * 0.35f + block.fontSize * 0.3f).toDouble())
+            MaskBlur.blur(mask, size, (circR * s.cloudRadius.toFloat() * 0.35f + block.fontSize * 0.3f).toDouble(), par)
             out = sourceOver(out, mask, hsbColour(s.cloudHue, s.cloudSaturation, s.cloudBrightness))
         }
 
@@ -76,13 +76,13 @@ internal class TextLayer(private val par: Parallel, private val renderer: TextRe
             val offY = (s.shadowOffsetY * block.fontSize * 0.75).toFloat()
             val shadow = layout(s, size, offX, -offY)
             val mask = renderer.drawLines(size, shadow.quote + shadow.author)
-            blurMask(mask, size, max(0.5, s.shadowBlur * block.fontSize * 0.4))
+            MaskBlur.blur(mask, size, max(0.5, s.shadowBlur * block.fontSize * 0.4), par)
             val colour = hsbColour(s.shadowHue, s.shadowSaturation, s.shadowBrightness)
             repeat(max(1, (s.shadowOpacity * 4 + 0.5).toInt())) { out = sourceOver(out, mask, colour) }
         }
 
         val text = renderer.drawLines(size, block.quote + block.author)
-        if (s.blur > 0.005) blurMask(text, size, s.blur * s.blur * size * 0.025)
+        if (s.blur > 0.005) MaskBlur.blur(text, size, s.blur * s.blur * size * 0.025, par)
         var glow: FloatArray? = null
         if (s.glow > 0.005) {
             // Glow radii are given at a 1600 px reference width.
@@ -90,7 +90,7 @@ internal class TextLayer(private val par: Parallel, private val renderer: TextRe
             val k = size / 1600.0
             for ((radius, strength) in listOf(30.0 * s.glow to 0.9 * s.glow, 105.0 * s.glow to 0.5 * s.glow, 210.0 * s.glow to 0.2 * s.glow)) {
                 val pass = text.copyOf()
-                blurMask(pass, size, radius * k)
+                MaskBlur.blur(pass, size, radius * k, par)
                 val st = strength.toFloat()
                 for (i in g.indices) g[i] += pass[i] * st
             }
@@ -206,49 +206,4 @@ internal class TextLayer(private val par: Parallel, private val renderer: TextRe
         return out
     }
 
-    /** Gaussian blur of a single-channel mask in place (three box passes for wide radii), zero outside. */
-    private fun blurMask(mask: FloatArray, size: Int, sigma: Double) {
-        if (sigma < 0.5) return
-        val radii = boxRadii(sigma)
-        par.forRange(size) { from, until ->
-            val a = FloatArray(size)
-            val b = FloatArray(size)
-            for (y in from until until) {
-                System.arraycopy(mask, y * size, a, 0, size)
-                for (r in radii) { box(a, b, size, r); System.arraycopy(b, 0, a, 0, size) }
-                System.arraycopy(a, 0, mask, y * size, size)
-            }
-        }
-        par.forRange(size) { from, until ->
-            val a = FloatArray(size)
-            val b = FloatArray(size)
-            for (x in from until until) {
-                for (y in 0 until size) a[y] = mask[y * size + x]
-                for (r in radii) { box(a, b, size, r); System.arraycopy(b, 0, a, 0, size) }
-                for (y in 0 until size) mask[y * size + x] = a[y]
-            }
-        }
-    }
-
-    private fun boxRadii(sigma: Double): IntArray {
-        val wIdeal = sqrt(12 * sigma * sigma / 3 + 1)
-        var wl = floor(wIdeal).toInt()
-        if (wl % 2 == 0) wl--
-        val m = ((12 * sigma * sigma - 3 * wl * wl - 12 * wl - 9) / (-4.0 * wl - 4)).let { kotlin.math.round(it).toInt() }
-        return IntArray(3) { if (it < m) max(0, (wl - 1) / 2) else (wl + 1) / 2 }
-    }
-
-    private fun box(src: FloatArray, dst: FloatArray, n: Int, r: Int) {
-        if (r <= 0) { System.arraycopy(src, 0, dst, 0, n); return }
-        val norm = 1f / (2 * r + 1)
-        var sum = 0f
-        for (i in 0..min(r, n - 1)) sum += src[i]
-        for (x in 0 until n) {
-            dst[x] = sum * norm
-            val add = x + r + 1
-            val remove = x - r
-            if (add < n) sum += src[add]
-            if (remove >= 0) sum -= src[remove]
-        }
-    }
 }
