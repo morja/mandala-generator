@@ -6,6 +6,7 @@ import com.mathis.mandala.core.styles.DirectStyles
 import com.mathis.mandala.core.styles.LineList
 import com.mathis.mandala.core.styles.ParametricStyles
 import com.mathis.mandala.core.styles.PatternStyles
+import com.mathis.mandala.core.styles.SolidStyles
 import com.mathis.mandala.core.styles.StyleContext
 import kotlin.math.abs
 import kotlin.math.ceil
@@ -52,6 +53,12 @@ object MandalaRenderer {
         MandalaStyle.TENDRIL,
         MandalaStyle.MOIRE,
         MandalaStyle.VORONOI,
+        MandalaStyle.STRING_ART,
+        MandalaStyle.SUNBURST,
+        MandalaStyle.TORUS,
+        MandalaStyle.NAUTILUS,
+        MandalaStyle.CONSTELLATION_WEB,
+        MandalaStyle.STRANGE_ATTRACTOR,
     )
 
     /** Whether the renderer draws this background type (a solid colour or one computed per pixel). */
@@ -117,16 +124,18 @@ object MandalaRenderer {
                 val offset = (effectWidth - size) / 2
                 val c = size * 0.5f
 
-                val ctx = StyleContext(layer.complexity, layer.density, layer.colorDrift, params.seed, layer.spokes)
-                val tasks = ArrayList<CurveTask>()
-                val lines = LineList()
-                collectStyle(
-                    layer.style, tasks, lines, c, c, layerRadius, ctx, palette, rng,
-                    layerCount, symmetry, layer.ripple.toFloat(), layer.colorOffset,
+                val ctx = StyleContext(
+                    layer.complexity, layer.density, layer.colorDrift, params.seed, layer.spokes,
+                    layer.abstractLevel, layer.glowIntensity,
                 )
-
                 var img = run {
                     val buffer = PixelBuffer(size, size)
+                    val tasks = ArrayList<CurveTask>()
+                    val lines = LineList()
+                    collectStyle(
+                        layer.style, tasks, lines, buffer, c, c, layerRadius, ctx, palette, rng,
+                        layerCount, symmetry, layer.ripple.toFloat(), layer.colorOffset,
+                    )
                     drawTasks(tasks, buffer, palette, layer.colorOffset, par)
                     lines.drawInto(buffer, par)
                     tasks.clear()
@@ -188,9 +197,12 @@ object MandalaRenderer {
         return m + (m and 1)
     }
 
-    /** Curve styles fill `tasks`; styles the macOS renderer draws directly fill `lines`. */
+    /**
+     * Curve styles fill `tasks`; styles the macOS renderer draws directly fill `lines`; point styles
+     * (Strange Attractor) draw straight into `buffer`.
+     */
     private fun collectStyle(
-        style: MandalaStyle, tasks: MutableList<CurveTask>, lines: LineList, cx: Float, cy: Float, radius: Double,
+        style: MandalaStyle, tasks: MutableList<CurveTask>, lines: LineList, buffer: PixelBuffer, cx: Float, cy: Float, radius: Double,
         ctx: StyleContext, palette: ColorPalette, rng: SeededRng, layerCount: Int, symmetry: Int, ripple: Float,
         colorOffset: Double,
     ) {
@@ -215,6 +227,12 @@ object MandalaRenderer {
             MandalaStyle.TENDRIL -> PatternStyles.tendril(tasks, cx, cy, radius, ctx, rng, symmetry, ripple, 1f)
             MandalaStyle.MOIRE -> PatternStyles.moire(tasks, cx, cy, radius, ctx, rng, symmetry, ripple, 1f)
             MandalaStyle.VORONOI -> PatternStyles.voronoi(tasks, cx, cy, radius, ctx, rng, symmetry, ripple, 1f)
+            MandalaStyle.STRING_ART -> SolidStyles.stringArt(lines, cx, cy, radius, ctx, palette, rng, layerCount, symmetry)
+            MandalaStyle.SUNBURST -> SolidStyles.sunburst(lines, cx, cy, radius, ctx, palette, rng, layerCount, symmetry)
+            MandalaStyle.TORUS -> SolidStyles.torus(lines, cx, cy, radius, ctx, palette, rng, layerCount, symmetry, colorOffset)
+            MandalaStyle.NAUTILUS -> SolidStyles.nautilus(lines, cx, cy, radius, ctx, palette, rng, layerCount, symmetry, colorOffset)
+            MandalaStyle.CONSTELLATION_WEB -> SolidStyles.constellationWeb(lines, cx, cy, radius, ctx, palette, rng, colorOffset, symmetry)
+            MandalaStyle.STRANGE_ATTRACTOR -> SolidStyles.strangeAttractor(buffer, cx, cy, radius, ctx, palette, rng, layerCount, symmetry, colorOffset)
             MandalaStyle.STAR_BURST -> DirectStyles.starBurst(lines, cx, cy, radius, ctx, palette, rng)
             MandalaStyle.HYPERBOLOID -> DirectStyles.hyperboloid(lines, cx, cy, radius, ctx, palette, rng, layerCount, symmetry, colorOffset)
             MandalaStyle.UNIVERSE -> DirectStyles.universe(lines, cx, cy, radius, ctx, palette, rng, colorOffset, symmetry)

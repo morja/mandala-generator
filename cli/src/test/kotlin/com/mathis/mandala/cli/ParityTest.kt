@@ -33,6 +33,11 @@ class ParityTest {
         "fx-chromatic" to 42.0,
         // The emboss alpha at the outermost pixel row differs; inside about 54 dB.
         "fx-relief" to 37.0,
+        // Chaotic map: tiny sin/cos differences between Apple's and Java's maths library grow with every
+        // iteration, so points land elsewhere; the attractor's shape and density are the same.
+        "style-strange-attractor" to 15.0,
+        // A few connection lines flip where a random keep-or-skip decision sits on a rounding edge.
+        "style-constellation-web" to 35.0,
     )
 
     @Test

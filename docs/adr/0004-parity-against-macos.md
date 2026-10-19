@@ -17,6 +17,8 @@ Status: proposed, 19 October 2026
 | Effects: grain | CIRandomGenerator is Apple's own; amount and offset match. | `fx-grain`: about 36 dB, same look. |
 | Effects: chromatic | Core Image's two additions leave alpha 3, which its final colour conversion takes into account. Not reproduced (no favourite uses chromatic). | `fx-chromatic`: about 43 dB, slightly darker. |
 | Effects: relief border | The emboss alpha at the outermost pixel row. | `fx-relief`: 38 dB overall, 54 dB inside. |
+| Strange Attractor | Chaotic iteration amplifies the last-bit differences between Apple's and Java's sin/cos. | `style-strange-attractor`: about 19 dB per pixel, same shape and density. |
+| Constellation Web | A few random keep-or-skip decisions sit on a rounding edge. | `style-constellation-web`: about 37 dB, a handful of lines differ. |
 | Lanczos and blur kernels | Own implementations (Gaussian ≤ σ 6, three box passes above). | ≤ 1/255 on average. |
 
 ## macOS behaviour reproduced on purpose

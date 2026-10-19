@@ -27,6 +27,9 @@ class StyleContext(
     val seed: ULong,
     /** Radial Mesh only: brightness of the spokes. */
     val spokes: Double = 1.0,
+    /** Layer values a few styles read besides the shape ones (Constellation Web). */
+    val abstractLevel: Double = 0.3,
+    val glowIntensity: Double = 0.6,
 )
 
 /** Ports of the curve-collecting styles from MandalaRenderer.swift. */
