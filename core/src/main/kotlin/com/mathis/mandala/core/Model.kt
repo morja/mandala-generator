@@ -2,6 +2,7 @@ package com.mathis.mandala.core
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.jsonPrimitive
@@ -188,3 +189,7 @@ data class MandalaParameters(
 
 internal fun JsonObject?.isEnabledLayer(): Boolean =
     this?.get("isEnabled")?.jsonPrimitive?.booleanOrNull == true
+
+/** Like the macOS renderer: a drawing or graffiti layer only counts when it has strokes. */
+internal fun JsonObject?.hasStrokes(): Boolean =
+    isEnabledLayer() && ((this?.get("strokes") as? JsonArray)?.isNotEmpty() == true)

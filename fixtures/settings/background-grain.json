@@ -1,0 +1,26 @@
+{
+  "layers": [
+    {
+      "isEnabled": true,
+      "style": "spirograph",
+      "scale": 0.7,
+      "paletteIndex": 8,
+      "abstractLevel": 0.0,
+      "seed": 11
+    }
+  ],
+  "baseLayer": {
+    "isEnabled": true,
+    "type": "grain",
+    "hue": 0.45,
+    "saturation": 0.6,
+    "brightness": 0.3,
+    "grainAmount": 0.4,
+    "grainColored": true
+  },
+  "effectsLayer": {
+    "isEnabled": false
+  },
+  "seed": 5,
+  "outputSize": 512
+}

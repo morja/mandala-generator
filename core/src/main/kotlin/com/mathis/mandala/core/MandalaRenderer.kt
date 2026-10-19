@@ -137,8 +137,8 @@ object MandalaRenderer {
                 composite = fx.composite(composite, img, op)
             }
 
-            if (params.graffitiLayer.isEnabledLayer()) warnings += "Graffiti layer is not available yet; skipped."
-            if (params.drawingLayer.isEnabledLayer()) warnings += "Drawing layer is not available yet; skipped."
+            if (params.graffitiLayer.hasStrokes()) warnings += "Graffiti layer is not available yet; skipped."
+            if (params.drawingLayer.hasStrokes()) warnings += "Drawing layer is not available yet; skipped."
 
             // Solid background goes in after all layers (lighten) so layer blend modes don't tint it.
             if (solidBackground != null) {

@@ -14,7 +14,8 @@ import kotlin.math.sqrt
  */
 internal object Background {
 
-    fun supports(type: BaseLayerType) = type == BaseLayerType.GRADIENT || type == BaseLayerType.SUNBURST
+    fun supports(type: BaseLayerType) =
+        type == BaseLayerType.GRADIENT || type == BaseLayerType.SUNBURST || type == BaseLayerType.GRAIN
 
     fun render(settings: BaseLayerSettings, size: Int, par: Parallel): Image8 {
         val c1 = hsbToRgb(settings.hue, settings.saturation, settings.brightness)
@@ -23,6 +24,7 @@ internal object Background {
         val opacity = settings.opacity.toFloat()
         val fill: (Int, Int, FloatArray) -> Unit = when (settings.type) {
             BaseLayerType.SUNBURST -> sunburst(settings, c1, c2, size)
+            BaseLayerType.GRAIN -> grain(settings, c1)
             else -> if (settings.isRadial) radialGradient(c1, c2, size) else linearGradient(settings, c1, c2, size)
         }
         par.forRange(size) { from, until ->
@@ -80,6 +82,28 @@ internal object Background {
         val lin = ColorSpaces.decode(a) + (ColorSpaces.decode(b) - ColorSpaces.decode(a)) * t
         val enc = ColorSpaces.encode(lin)
         return (min(255.0, max(0.0, enc * 255 + 0.5)).toInt() / 255.0).toFloat()
+    }
+
+    // ── Grain (CIRandomGenerator tinted by colour 1 in the macOS app) ──
+    // Core Image's random pattern is Apple's own; amount, tint and base level match.
+
+    private fun grain(settings: BaseLayerSettings, c1: Rgb): (Int, Int, FloatArray) -> Unit {
+        val ga = settings.grainAmount.toFloat()
+        val bd = (settings.brightness * 0.6).toFloat()
+        val tint = if (settings.grainColored) floatArrayOf(c1.r.toFloat(), c1.g.toFloat(), c1.b.toFloat()) else floatArrayOf(1f, 1f, 1f)
+        val base = floatArrayOf(c1.r.toFloat() * bd, c1.g.toFloat() * bd, c1.b.toFloat() * bd)
+        return { x, y, out ->
+            // The macOS app runs this colour matrix in a default Core Image context, i.e. in linear
+            // light, and copies the encoded 8-bit result into its buffer (matched by mean level).
+            for (k in 0..2) {
+                val n = Filters.hash01(x, y, 211 + k).toFloat()
+                val lin = (n * tint[k] * ga + base[k]).coerceIn(0f, 1f)
+                // CIRandomGenerator also randomises alpha, which acts as coverage when the result is
+                // drawn onto the black buffer.
+                val alpha = Filters.hash01(x, y, 214).toFloat()
+                out[k] = (ColorSpaces.encode(lin.toDouble() * alpha) * 255 + 0.5).toInt().coerceIn(0, 255) / 255f
+            }
+        }
     }
 
     // ── Sunburst (computed per pixel in the macOS app too) ──

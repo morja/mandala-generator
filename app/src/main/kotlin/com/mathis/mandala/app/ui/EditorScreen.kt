@@ -338,7 +338,7 @@ private fun BackgroundSection(base: BaseLayerSettings, update: ((BaseLayerSettin
     }
     if (!base.isEnabled || base.type !in Editing.backgrounds) return
 
-    val twoColours = base.type != BaseLayerType.COLOR
+    val twoColours = base.type != BaseLayerType.COLOR && base.type != BaseLayerType.GRAIN
     ColourSliders(if (twoColours) "Colour 1" else "Colour", base.hue, base.saturation, base.brightness) { h, s, b ->
         update { it.copy(hue = h, saturation = s, brightness = b) }
     }
@@ -358,6 +358,13 @@ private fun BackgroundSection(base: BaseLayerSettings, update: ((BaseLayerSettin
         BaseLayerType.SUNBURST -> {
             ValueSlider("Rays", base.patternScale) { v -> update { it.copy(patternScale = v) } }
             ValueSlider("Sharpness", base.patternSharpness) { v -> update { it.copy(patternSharpness = v) } }
+        }
+        BaseLayerType.GRAIN -> {
+            ValueSlider("Grain amount", base.grainAmount) { v -> update { it.copy(grainAmount = v) } }
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                Text("Coloured grain", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
+                Switch(checked = base.grainColored, onCheckedChange = { c -> update { it.copy(grainColored = c) } })
+            }
         }
         else -> Unit
     }
@@ -385,6 +392,7 @@ private fun backgroundName(type: BaseLayerType) = when (type) {
     BaseLayerType.COLOR -> "Colour"
     BaseLayerType.GRADIENT -> "Gradient"
     BaseLayerType.SUNBURST -> "Sunburst"
+    BaseLayerType.GRAIN -> "Grain"
     else -> type.name.lowercase()
 }
 

@@ -40,6 +40,8 @@ class ParityTest {
         "style-constellation-web" to 35.0,
         // Very large, thin ellipses (three times the layer radius): last-bit differences shift fine lines.
         "style-deep-nebula" to 33.0,
+        // CIRandomGenerator is Apple's own; mean level matches, the noise pattern differs.
+        "background-grain" to 20.0,
     )
 
     @Test
