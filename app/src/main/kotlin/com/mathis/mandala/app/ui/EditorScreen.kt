@@ -129,6 +129,7 @@ fun EditorScreen(vm: EditorViewModel) {
     val selected by vm.selected.collectAsStateWithLifecycle()
     val favorites by vm.favorites.collectAsStateWithLifecycle()
     val drawTool by vm.drawTool.collectAsStateWithLifecycle()
+    val history by vm.historyState.collectAsStateWithLifecycle()
     val snackbar = remember { SnackbarHostState() }
     val context = LocalContext.current
     var showFavorites by remember { mutableStateOf(false) }
@@ -172,6 +173,10 @@ fun EditorScreen(vm: EditorViewModel) {
             TopAppBar(
                 title = { Text("Mandala") },
                 actions = {
+                    IconButton(onClick = vm::goBack, enabled = history.canGoBack) { Icon(EditorIcons.Back, contentDescription = "Back") }
+                    IconButton(onClick = vm::goForward, enabled = history.canGoForward) {
+                        Icon(EditorIcons.Forward, contentDescription = "Forward")
+                    }
                     IconButton(onClick = { showFavorites = true }) { Icon(EditorIcons.Star, contentDescription = "Favourites") }
                     MoreMenu(
                         busy = busy,
@@ -186,7 +191,7 @@ fun EditorScreen(vm: EditorViewModel) {
     ) { padding ->
         BoxWithConstraints(Modifier.padding(padding).fillMaxSize()) {
             val actions: @Composable () -> Unit = {
-                Actions(saving = busy, onVariation = vm::newVariation, onSave = vm::exportToGallery)
+                Actions(saving = busy, onSurprise = vm::surprise, onVariation = vm::newVariation, onSave = vm::exportToGallery)
             }
             if (maxWidth >= Spacing.twoPaneMinWidth) {
                 Row(Modifier.fillMaxSize().padding(Spacing.lg), horizontalArrangement = Arrangement.spacedBy(Spacing.xl)) {
@@ -434,11 +439,12 @@ private fun FavoriteTile(fav: Favorite, onApply: (Favorite) -> Unit, onDelete: (
 }
 
 @Composable
-private fun Actions(saving: Boolean, onVariation: () -> Unit, onSave: () -> Unit) {
+private fun Actions(saving: Boolean, onSurprise: () -> Unit, onVariation: () -> Unit, onSave: () -> Unit) {
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
-        OutlinedButton(onClick = onVariation, modifier = Modifier.weight(1f)) { Text("New variation") }
+        OutlinedButton(onClick = onSurprise, modifier = Modifier.weight(1f)) { Text("Surprise", maxLines = 1) }
+        OutlinedButton(onClick = onVariation, modifier = Modifier.weight(1f)) { Text("Variation", maxLines = 1) }
         Button(onClick = onSave, enabled = !saving, modifier = Modifier.weight(1f)) {
-            Text(if (saving) "Saving…" else "Save to gallery")
+            Text(if (saving) "Saving…" else "Save", maxLines = 1)
         }
     }
 }
@@ -746,6 +752,7 @@ private fun QuoteDialog(onPick: (Quote) -> Unit, onDismiss: () -> Unit) {
 }
 
 /** The layer list, top layer first (it is drawn last, on top), plus add, duplicate and delete. */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun LayersSection(params: MandalaParameters, selected: Int, vm: EditorViewModel) {
     val t = LocalTokens.current
@@ -767,10 +774,12 @@ private fun LayersSection(params: MandalaParameters, selected: Int, vm: EditorVi
             )
         }
     }
-    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.xs)) {
+    FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.xs)) {
         TextButton(onClick = vm::addLayer, enabled = layers.size < Editing.MAX_LAYERS) { Text("Add layer") }
         TextButton(onClick = vm::duplicateSelected, enabled = layers.size < Editing.MAX_LAYERS) { Text("Duplicate") }
         TextButton(onClick = vm::removeSelected, enabled = layers.size > 1) { Text("Delete") }
+        TextButton(onClick = vm::randomizeSelected) { Text("Randomize layer") }
+        TextButton(onClick = vm::randomLayers) { Text("New layers") }
     }
 }
 

@@ -7,6 +7,9 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.mathis.mandala.app.Editing.addLayer
+import com.mathis.mandala.app.Randomize.randomAll
+import com.mathis.mandala.app.Randomize.randomLayer
+import com.mathis.mandala.app.Randomize.randomLayers
 import com.mathis.mandala.app.Editing.addStroke
 import com.mathis.mandala.app.Editing.clearStrokes
 import com.mathis.mandala.app.Editing.removeLastStroke
@@ -68,6 +71,8 @@ data class PreviewState(
 )
 
 /** One-off things for the screen to do. */
+data class HistoryState(val canGoBack: Boolean, val canGoForward: Boolean)
+
 sealed interface EditorEvent {
     data class Message(val text: String, val canUndo: Boolean = false) : EditorEvent
     data class ShareImage(val uri: Uri) : EditorEvent
@@ -104,6 +109,11 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
     /** Settings before the last replace (favourite or file), for "Undo". */
     private var beforeReplace: MandalaParameters? = null
 
+    private val history = History<MandalaParameters>()
+
+    private val _historyState = MutableStateFlow(HistoryState(canGoBack = false, canGoForward = false))
+    val historyState: StateFlow<HistoryState> = _historyState.asStateFlow()
+
     private val threads = Runtime.getRuntime().availableProcessors()
     private val textRenderer = AndroidTextRenderer()
 
@@ -115,6 +125,11 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         viewModelScope.launch {
             @OptIn(FlowPreview::class)
             _params.debounce(SAVE_DELAY_MS).collectLatest { p -> withContext(Dispatchers.IO) { runCatching { store.save(p) } } }
+        }
+        viewModelScope.launch {
+            // Like the macOS app, every state that settles goes into the history.
+            @OptIn(FlowPreview::class)
+            _params.debounce(HISTORY_DELAY_MS).collect { record(it) }
         }
         viewModelScope.launch {
             _favorites.drop(1).collectLatest { f -> withContext(Dispatchers.IO) { runCatching { favoritesStore.save(f) } } }
@@ -152,6 +167,39 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
     fun useQuote(quote: Quote) = updateText { it.withQuote(quote) }
 
     fun randomQuote() = useQuote(Quotes.all.random())
+
+    // ── History and dice ──
+
+    private fun record(params: MandalaParameters) {
+        history.record(params)
+        _historyState.value = HistoryState(history.canGoBack, history.canGoForward)
+    }
+
+    fun goBack() = navigate { history.back() }
+
+    fun goForward() = navigate { history.forward() }
+
+    private fun navigate(step: () -> MandalaParameters?) {
+        record(_params.value) // a change younger than the history delay is kept too
+        val target = step() ?: return
+        _params.value = target
+        _selected.value = _selected.value.coerceIn(0, target.layers.lastIndex)
+        _historyState.value = HistoryState(history.canGoBack, history.canGoForward)
+    }
+
+    /** New layers and background, like "Randomize All" on the Mac. */
+    fun surprise() {
+        _params.update { it.randomAll(Random) }
+        _selected.value = 0
+    }
+
+    /** New layers, like "Randomize Layers" on the Mac. */
+    fun randomLayers() {
+        _params.update { it.randomLayers(Random) }
+        _selected.value = 0
+    }
+
+    fun randomizeSelected() = _params.update { it.randomLayer(_selected.value, Random) }
 
     // ── Drawing by hand ──
 
@@ -329,6 +377,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
     private companion object {
         const val DEBOUNCE_MS = 150L
         const val SAVE_DELAY_MS = 400L
+        const val HISTORY_DELAY_MS = 700L
 
         fun randomSeed(): ULong = Random.nextLong().toULong()
     }
