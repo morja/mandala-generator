@@ -10,7 +10,6 @@ mkdir -p "$work/src"
 find "$src" -name '*.swift' ! -name main.swift -exec cp {} "$work/src/" \;
 cp "$here/main.swift" "$work/src/main.swift"
 swiftc -O -module-name MandalaRef -o "$work/mandala-ref" "$work"/src/*.swift
-echo "Cores on this Mac: $(sysctl -n hw.activecpu) (update macCores in ParityTest if it differs)"
 for f in fixtures/settings/*.json; do
     name="$(basename "$f" .json)"
     "$work/mandala-ref" "$f" "fixtures/reference/$name.png"

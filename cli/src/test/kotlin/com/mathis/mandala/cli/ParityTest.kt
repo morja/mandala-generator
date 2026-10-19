@@ -14,9 +14,6 @@ import kotlin.test.assertTrue
 class ParityTest {
     private val root = File(System.getProperty("mandala.root") ?: ".")
 
-    // The macOS reference images were rendered on a Mac with 12 cores (see RenderOptions).
-    private val macCores = 12
-
     /** Minimum PSNR per fixture. Lower values are known, documented deviations (ADR-0004). */
     private val minPsnr = mapOf(
         "spirograph-basic" to 50.0,
@@ -40,7 +37,7 @@ class ParityTest {
             val reference = File(root, "fixtures/reference/$name.png")
             if (!reference.exists()) { failures += "$name: reference image missing"; continue }
             val params = SettingsJson.decode(file.readText())
-            val result = MandalaRenderer.render(params, RenderOptions(threads = 4, macCoreCountForChunking = macCores))
+            val result = MandalaRenderer.render(params, RenderOptions(threads = 4))
             val diff = ImageDiff.of(Png.read(reference), result.image)
             val min = minPsnr[name] ?: 45.0
             println("$name: $diff (min ${"%.0f".format(min)} dB)")
