@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Window background until Compose draws; matches the dark background token. -->
+    <style name="Theme.Mandala" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/launch_background</item>
+    </style>
+    <color name="launch_background">#151413</color>
+    <color name="ic_launcher_background">#151413</color>
+</resources>

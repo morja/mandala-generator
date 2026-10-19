@@ -10,54 +10,56 @@ import kotlinx.serialization.json.jsonPrimitive
 // Defaults mirror the Swift `decodeSafe` defaults so partial or older files load the same way.
 
 @Serializable
-enum class MandalaStyle {
+/** Drawing styles; `displayName` is the label the macOS app shows. */
+enum class MandalaStyle(val displayName: String) {
     // Parametric curves
-    @SerialName("spirograph") SPIROGRAPH,
-    @SerialName("roseCurves") ROSE_CURVES,
-    @SerialName("floral") FLORAL,
-    @SerialName("butterfly") BUTTERFLY,
-    @SerialName("epitrochoid") EPITROCHOID,
-    @SerialName("lissajous") LISSAJOUS,
-    @SerialName("hypocycloid") HYPOCYCLOID,
-    @SerialName("phyllotaxis") PHYLLOTAXIS,
-    @SerialName("fractal") FRACTAL,
-    @SerialName("superformula") SUPERFORMULA,
-    @SerialName("waveInterference") WAVE_INTERFERENCE,
+    @SerialName("spirograph") SPIROGRAPH("Spirograph"),
+    @SerialName("roseCurves") ROSE_CURVES("Rose Curves"),
+    @SerialName("floral") FLORAL("Floral"),
+    @SerialName("butterfly") BUTTERFLY("Butterfly"),
+    @SerialName("epitrochoid") EPITROCHOID("Epitrochoid"),
+    @SerialName("lissajous") LISSAJOUS("Lissajous"),
+    @SerialName("hypocycloid") HYPOCYCLOID("Hypocycloid"),
+    @SerialName("phyllotaxis") PHYLLOTAXIS("Phyllotaxis"),
+    @SerialName("fractal") FRACTAL("Fractal"),
+    @SerialName("superformula") SUPERFORMULA("Superformula"),
+    @SerialName("waveInterference") WAVE_INTERFERENCE("Wave Interference"),
 
     // Geometric and pattern
-    @SerialName("geometric") GEOMETRIC,
-    @SerialName("sacredGeometry") SACRED_GEOMETRY,
-    @SerialName("sunburst") SUNBURST,
-    @SerialName("starBurst") STAR_BURST,
-    @SerialName("stringArt") STRING_ART,
-    @SerialName("spiderWeb") SPIDER_WEB,
-    @SerialName("weave") WEAVE,
-    @SerialName("radialMesh") RADIAL_MESH,
-    @SerialName("moire") MOIRE,
+    @SerialName("geometric") GEOMETRIC("Geometric"),
+    @SerialName("sacredGeometry") SACRED_GEOMETRY("Sacred Geometry"),
+    @SerialName("sunburst") SUNBURST("Sunburst"),
+    @SerialName("starBurst") STAR_BURST("Star Burst"),
+    @SerialName("stringArt") STRING_ART("String Art"),
+    @SerialName("spiderWeb") SPIDER_WEB("Spider Web"),
+    @SerialName("weave") WEAVE("Weave"),
+    @SerialName("radialMesh") RADIAL_MESH("Radial Mesh"),
+    @SerialName("moire") MOIRE("Moiré"),
 
     // Organic and flow
-    @SerialName("flowField") FLOW_FIELD,
-    @SerialName("tendril") TENDRIL,
-    @SerialName("voronoi") VORONOI,
-    @SerialName("strangeAttractor") STRANGE_ATTRACTOR,
-    @SerialName("constellationWeb") CONSTELLATION_WEB,
-    @SerialName("deepNebula") DEEP_NEBULA,
+    @SerialName("flowField") FLOW_FIELD("Flow Field"),
+    @SerialName("tendril") TENDRIL("Tendril"),
+    @SerialName("voronoi") VORONOI("Voronoi"),
+    @SerialName("strangeAttractor") STRANGE_ATTRACTOR("Strange Attractor"),
+    @SerialName("constellationWeb") CONSTELLATION_WEB("Constellation Web"),
+    @SerialName("deepNebula") DEEP_NEBULA("Deep Nebula"),
 
     // Optical and interference
-    @SerialName("interferenceBloom") INTERFERENCE_BLOOM,
+    @SerialName("interferenceBloom") INTERFERENCE_BLOOM("Interference Bloom"),
 
     // 3D
-    @SerialName("hyperboloid") HYPERBOLOID,
-    @SerialName("torus") TORUS,
-    @SerialName("nautilus") NAUTILUS,
-    @SerialName("sphereGrid") SPHERE_GRID,
-    @SerialName("torusKnot") TORUS_KNOT,
-    @SerialName("tesseract") TESSERACT,
+    @SerialName("hyperboloid") HYPERBOLOID("Hyperboloid"),
+    @SerialName("torus") TORUS("Torus"),
+    @SerialName("nautilus") NAUTILUS("Nautilus"),
+    @SerialName("sphereGrid") SPHERE_GRID("Sphere Grid"),
+    @SerialName("torusKnot") TORUS_KNOT("Torus Knot"),
+    @SerialName("tesseract") TESSERACT("Tesseract"),
 
     // Special
-    @SerialName("universe") UNIVERSE,
-    @SerialName("symbols") SYMBOLS,
-    @SerialName("mixed") MIXED,
+    @SerialName("universe") UNIVERSE("Universe"),
+    @SerialName("symbols") SYMBOLS("Symbols"),
+    @SerialName("mixed") MIXED("Mixed"),
+    ;
 }
 
 @Serializable

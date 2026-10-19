@@ -1,8 +1,8 @@
 pluginManagement {
     repositories {
-        gradlePluginPortal()
-        mavenCentral()
         google()
+        mavenCentral()
+        gradlePluginPortal()
     }
 }
 
@@ -14,4 +14,4 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "mandala-app"
-include(":core", ":cli")
+include(":core", ":cli", ":app")

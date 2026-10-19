@@ -1,12 +1,22 @@
 # Mandala Generator for Android
 
-Android port of the macOS [Mandala Generator](../Mandala-Generator). Current state: proof of concept of the renderer in plain Kotlin, with a command-line tool. There is no Android app module yet.
+Android port of the macOS [Mandala Generator](../Mandala-Generator). Current state: the renderer in plain Kotlin (five of the 36 styles), a command-line tool, and a first Android app with one layer, live preview and export to the gallery.
 
 Results so far: [POC-1](docs/POC-1-results.md). Decisions: [docs/adr](docs/adr/README.md). Rules for agents: [AGENTS.md](AGENTS.md).
 
 ## Requirements
 
-JDK 21 (via jenv) and macOS for the reference renderer. Gradle comes with the wrapper.
+JDK 21 (via jenv), the Android SDK (`local.properties` with `sdk.dir`, or `ANDROID_HOME`), and macOS for the reference renderer. Gradle comes with the wrapper.
+
+## Run the app
+
+Android 10 or later. With an emulator or a phone connected:
+
+```sh
+./gradlew :app:installRelease
+```
+
+The release build is signed with the local debug key (no store signing yet). Debug builds work too (`installDebug`) but render about 2.5 times slower. Exports land in `Pictures/Mandala`.
 
 ## Render a settings file from the Mac app
 
@@ -38,7 +48,8 @@ tools/reference-renderer/render-references.sh
 
 | Folder | Content |
 |---|---|
-| `core` | Renderer, settings model and JSON; plain Kotlin, shared with the future Android app |
+| `app` | Android app (Compose): editor screen, preview, gallery export |
+| `core` | Renderer, settings model and JSON; plain Kotlin, shared by app and command |
 | `cli` | JVM command `mandala` (render, compare) and the parity test |
 | `fixtures` | Settings files and macOS reference images |
 | `tools/reference-renderer` | Builds the macOS renderer as a command-line tool |

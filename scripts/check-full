@@ -1,5 +1,6 @@
 #!/bin/sh
-# Full check (before merging into main): fast check plus parity against the macOS reference images.
+# Full check (before merging into main): fast check, parity against the macOS reference images,
+# and a release build of the app.
 set -eu
 scripts/check
-./gradlew --quiet :cli:test -Pparity --rerun-tasks
+./gradlew --quiet :cli:test -Pparity --rerun-tasks :app:assembleRelease

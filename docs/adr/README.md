@@ -8,3 +8,5 @@ One file per decision. A change is a new ADR; the old one is marked "replaced by
 | [0002](0002-renderer-core-plain-kotlin.md) | Renderer as a plain Kotlin module shared by app and JVM tool | decided |
 | [0003](0003-settings-json-compatible.md) | Settings JSON compatible with the macOS app | proposed |
 | [0004](0004-parity-against-macos.md) | Parity tests against macOS reference images | proposed |
+| [0005](0005-android-app-shell.md) | Android app shell: one screen, ViewModel, gallery export | proposed |
+| [0006](0006-design-v1.md) | Design v1: warm neutrals around the mandala, one amber accent | proposed |

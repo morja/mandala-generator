@@ -19,7 +19,11 @@ data class RenderOptions(
      * compare against macOS output; leave null to draw every curve.
      */
     val macCoreCountForChunking: Int? = null,
+    /** Polled between steps; when it returns true the render stops with [RenderCancelledException]. */
+    val isCancelled: () -> Boolean = { false },
 )
+
+class RenderCancelledException : RuntimeException("Render cancelled")
 
 data class RenderResult(val image: Image8, val warnings: List<String>, val millis: Long)
 
@@ -59,7 +63,10 @@ object MandalaRenderer {
             val solidBackground = if (base.isEnabled && base.type == BaseLayerType.COLOR) solidColor(base) else null
 
             // ── Layers ──
+            fun checkpoint() { if (options.isCancelled()) throw RenderCancelledException() }
+
             for ((li, layer) in params.layers.withIndex()) {
+                checkpoint()
                 if (!layer.isEnabled) continue
                 if (layer.style !in supportedStyles) {
                     warnings += "Layer ${li + 1}: style ${layer.style.name.lowercase()} is not ported yet; skipped."
@@ -98,9 +105,13 @@ object MandalaRenderer {
                     buffer.scale(brightnessScale)
                     buffer.toImage()
                 }
+                checkpoint()
                 img = fx.glow(img, layer.glowIntensity, effectWidth)
+                checkpoint()
                 if (layer.wash > 0) img = fx.wash(img, layer.wash, effectWidth)
+                checkpoint()
                 if (layer.abstractLevel > 0.01) img = fx.painted(img, layer.abstractLevel, effectWidth, offset)
+                checkpoint()
                 img = fx.colourGrade(img, layer.saturation, layer.brightness)
                 if (rotated) img = fx.rotate(img, layer.rotation * Math.PI * 2)
                 if (size > bufferSize) img = Filters.cropCenter(img, bufferSize)
@@ -126,6 +137,7 @@ object MandalaRenderer {
             if (params.textLayer.isEnabledLayer()) warnings += "Text layer is not ported yet; skipped."
             if (params.effectsLayer.isEnabled) warnings += "Effects layer is not ported yet; skipped."
 
+            checkpoint()
             val result = fx.downscale(composite, resolvedSize)
             return RenderResult(result, warnings, (System.nanoTime() - start) / 1_000_000)
         }

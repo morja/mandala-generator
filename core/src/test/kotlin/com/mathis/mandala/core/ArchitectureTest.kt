@@ -23,9 +23,24 @@ class ArchitectureTest {
     }
 
     @Test
+    fun appStylingUsesTokens() {
+        // Colours, sizes and spacing live in ui/theme/Tokens.kt only (AGENTS.md, design tokens).
+        val literal = Regex("""Color\(0x|\b\d+(\.\d+)?\.(dp|sp)\b""")
+        val sources = File(root, "app/src/main/kotlin").walkTopDown()
+            .filter { it.extension == "kt" && !it.path.contains("/ui/theme/") }
+            .toList()
+        val hits = sources.flatMap { f ->
+            f.readLines().mapIndexedNotNull { i, line ->
+                if (literal.containsMatchIn(line)) "${f.relativeTo(root)}:${i + 1}: ${line.trim()}" else null
+            }
+        }
+        if (hits.isNotEmpty()) fail("Use tokens from ui/theme/Tokens.kt instead of literals:\n" + hits.joinToString("\n"))
+    }
+
+    @Test
     fun onlyApprovedRootFolders() {
         val approved = setOf(
-            "core", "cli", "docs", "fixtures", "scripts", "tools", "gradle", ".githooks",
+            "app", "core", "cli", "docs", "fixtures", "scripts", "tools", "gradle", ".githooks",
             ".git", ".gradle", ".idea", ".kotlin", "build", ".claude",
         )
         val extra = root.listFiles()!!.filter { it.isDirectory && it.name !in approved }.map { it.name }
