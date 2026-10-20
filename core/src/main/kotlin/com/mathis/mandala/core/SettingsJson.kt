@@ -34,6 +34,12 @@ object SettingsJson {
     private val paramsListSerializer = ListSerializer(MandalaParameters.serializer())
 
     private val favoritesSerializer = ListSerializer(Favorite.serializer())
+    private val quotesSerializer = ListSerializer(Quote.serializer())
+
+    /** The user's own quotes (Android only; the macOS app has none). */
+    fun decodeQuotes(text: String): List<Quote> = json.decodeFromString(quotesSerializer, text)
+
+    fun encodeQuotes(quotes: List<Quote>): String = json.encodeToString(quotesSerializer, quotes)
 
     /** The macOS favourites file (`~/Library/Application Support/MandalaGenerator/favorites.json`). */
     fun decodeFavorites(text: String): List<Favorite> = json.decodeFromString(favoritesSerializer, text)

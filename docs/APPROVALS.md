@@ -14,6 +14,8 @@ Format: `- **What** · What for and why · Alternative without approval · Recom
 
 ## Approved
 
+20 October 2026 (Mathis decided on a Pro unlock, ADR-0007): Google Play Billing Library for the one-time purchase.
+
 19 October 2026 (Mathis asked for the Compose app shell): root folder `app`; Android Gradle plugin 9.4.1, Kotlin Compose plugin 2.4.20, Compose BOM 2026.09.00 (ui, material3), activity-compose 1.13.0, core-ktx 1.19.1, lifecycle-runtime-compose and lifecycle-viewmodel-compose 2.11.0, JUnit 4.13.2 for app unit tests.
 
 19 October 2026: root folders `core`, `cli`, `docs`, `fixtures`, `scripts`, `tools`, `gradle`, `.githooks` (project setup).

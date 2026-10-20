@@ -67,4 +67,17 @@ class FavoritesTest {
         override fun width(text: String, font: com.mathis.mandala.core.TextFont) = text.length * font.sizePx * 0.5f
         override fun drawLines(size: Int, lines: List<com.mathis.mandala.core.PlacedLine>) = FloatArray(size * size)
     }
+
+    @Test
+    fun myQuotesAreTrimmedNewestFirstWithoutDuplicates() {
+        val q = com.mathis.mandala.core.Quote("  Be here.  ", " Me ")
+        val list = MyQuotes.add(MyQuotes.add(emptyList(), q), com.mathis.mandala.core.Quote("Other", ""))
+        assertEquals(listOf("Other", "Be here."), list.map { it.text })
+        assertEquals(2, MyQuotes.add(list, com.mathis.mandala.core.Quote("Be here.", "Me")).size)
+        assertEquals(list, MyQuotes.add(list, com.mathis.mandala.core.Quote("   ", "x")))
+        assertEquals(listOf("Other"), MyQuotes.remove(list, com.mathis.mandala.core.Quote("Be here.", "Me")).map { it.text })
+        val store = MyQuotesStore(File(folder.root, "my-quotes.json"))
+        store.save(list)
+        assertEquals(list, store.load())
+    }
 }

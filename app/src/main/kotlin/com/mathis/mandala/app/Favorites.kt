@@ -1,6 +1,7 @@
 package com.mathis.mandala.app
 
 import com.mathis.mandala.core.Favorite
+import com.mathis.mandala.core.Quote
 import com.mathis.mandala.core.SettingsJson
 import java.io.File
 
@@ -49,4 +50,25 @@ fun writeAtomically(file: File, text: String) {
         file.delete()
         tmp.renameTo(file)
     }
+}
+
+/** The user's own quotes, offered next to the built-in ones. Newest first, no duplicates. */
+object MyQuotes {
+    fun add(list: List<Quote>, quote: Quote): List<Quote> {
+        val clean = Quote(quote.text.trim(), quote.author.trim())
+        if (clean.text.isEmpty()) return list
+        return listOf(clean) + list.filterNot { it.text == clean.text }
+    }
+
+    fun remove(list: List<Quote>, quote: Quote): List<Quote> = list.filterNot { it == quote }
+}
+
+class MyQuotesStore(private val file: File) {
+    fun load(): List<Quote> = try {
+        if (file.isFile) SettingsJson.decodeQuotes(file.readText()) else emptyList()
+    } catch (e: Exception) {
+        emptyList()
+    }
+
+    fun save(quotes: List<Quote>) = writeAtomically(file, SettingsJson.encodeQuotes(quotes))
 }

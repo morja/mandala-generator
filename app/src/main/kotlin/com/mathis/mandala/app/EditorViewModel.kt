@@ -178,7 +178,28 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
 
     fun useQuote(quote: Quote) = updateText { it.withQuote(quote) }
 
-    fun randomQuote() = useQuote(Quotes.all.random())
+    fun randomQuote() = useQuote((Quotes.all + _myQuotes.value).random())
+
+    private val myQuotesStore = MyQuotesStore(File(application.filesDir, "my-quotes.json"))
+    private val _myQuotes = MutableStateFlow(myQuotesStore.load())
+
+    /** Quotes the user saved, newest first. */
+    val myQuotes: StateFlow<List<Quote>> = _myQuotes.asStateFlow()
+
+    /** Keeps the text currently on the image (with its author) among the user's quotes. */
+    fun saveTextAsMyQuote() {
+        val text = _params.value.textLayer
+        changeMyQuotes { MyQuotes.add(it, Quote(text.text, text.customAuthor)) }
+        message("Saved to your quotes")
+    }
+
+    fun removeMyQuote(quote: Quote) = changeMyQuotes { MyQuotes.remove(it, quote) }
+
+    private fun changeMyQuotes(change: (List<Quote>) -> List<Quote>) {
+        val next = change(_myQuotes.value)
+        _myQuotes.value = next
+        viewModelScope.launch(Dispatchers.IO) { runCatching { myQuotesStore.save(next) } }
+    }
 
     /** Uses a picked photo as the background (copied into the app's files). */
     fun useBackgroundImage(uri: Uri) {

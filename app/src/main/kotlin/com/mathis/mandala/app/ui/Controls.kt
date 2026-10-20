@@ -354,8 +354,16 @@ private fun EffectsGroup(
 private fun TextTab(text: TextLayerSettings, vm: EditorViewModel) {
     val update = vm::updateText
     var choosing by remember { mutableStateOf(false) }
+    val myQuotes by vm.myQuotes.collectAsStateWithLifecycle()
     SwitchRow("Show text", text.isEnabled) { on -> if (on && text.text.isEmpty()) vm.randomQuote() else update { it.copy(isEnabled = on) } }
-    if (choosing) QuoteDialog(onPick = { vm.useQuote(it); choosing = false }, onDismiss = { choosing = false })
+    if (choosing) {
+        QuoteDialog(
+            myQuotes = myQuotes,
+            onPick = { vm.useQuote(it); choosing = false },
+            onRemove = vm::removeMyQuote,
+            onDismiss = { choosing = false },
+        )
+    }
     if (!text.isEnabled) return
     Row(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
         OutlinedButton(onClick = vm::randomQuote) { Text("Random quote") }
@@ -363,11 +371,22 @@ private fun TextTab(text: TextLayerSettings, vm: EditorViewModel) {
     }
     OutlinedTextField(
         value = text.text,
-        onValueChange = { v -> update { it.copy(text = v, customAuthor = if (v == it.text) it.customAuthor else Quotes.authorOf(v) ?: "") } },
+        onValueChange = { v -> update { it.copy(text = v) } },
         label = { Text("Text") },
         maxLines = 4,
         modifier = Modifier.fillMaxWidth().padding(top = Spacing.sm),
     )
+    OutlinedTextField(
+        value = text.customAuthor,
+        onValueChange = { v -> update { it.copy(customAuthor = v) } },
+        label = { Text("Author") },
+        singleLine = true,
+        modifier = Modifier.fillMaxWidth(),
+    )
+    val saved = myQuotes.any { it.text == text.text.trim() && it.author == text.customAuthor.trim() }
+    TextButton(onClick = vm::saveTextAsMyQuote, enabled = text.text.isNotBlank() && !saved) {
+        Text(if (saved) "In your quotes" else "Save to my quotes")
+    }
     SwitchRow("Show author", text.showAuthor) { a -> update { it.copy(showAuthor = a) } }
     Group("Font", summary = Quotes.fonts.firstOrNull { it.first == text.fontName }?.second ?: text.fontName) {
         FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
@@ -394,8 +413,9 @@ private fun TextTab(text: TextLayerSettings, vm: EditorViewModel) {
     }
 }
 
+/** Your own quotes first (with a remove button), then the built-in public-domain collection. */
 @Composable
-private fun QuoteDialog(onPick: (Quote) -> Unit, onDismiss: () -> Unit) {
+private fun QuoteDialog(myQuotes: List<Quote>, onPick: (Quote) -> Unit, onRemove: (Quote) -> Unit, onDismiss: () -> Unit) {
     val t = LocalTokens.current
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -403,15 +423,31 @@ private fun QuoteDialog(onPick: (Quote) -> Unit, onDismiss: () -> Unit) {
         title = { Text("Quotes") },
         text = {
             LazyColumn {
-                items(Quotes.all) { q ->
-                    Column(Modifier.fillMaxWidth().clickable { onPick(q) }.padding(vertical = Spacing.sm)) {
-                        Text(q.text, style = MaterialTheme.typography.bodyMedium)
-                        Text(q.author, style = MaterialTheme.typography.bodySmall, color = t.textMuted)
-                    }
+                if (myQuotes.isNotEmpty()) {
+                    item { Text("Your quotes", style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(vertical = Spacing.xs)) }
+                    items(myQuotes) { q -> QuoteRow(q, onPick) { IconButton(onClick = { onRemove(q) }) { Icon(EditorIcons.Close, "Remove quote") } } }
+                    item { Text("Collection", style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(top = Spacing.md, bottom = Spacing.xs)) }
+                }
+                items(Quotes.all) { q -> QuoteRow(q, onPick, null) }
+                item {
+                    Text("All quotes in the collection are in the public domain.", style = MaterialTheme.typography.bodySmall,
+                        color = t.textMuted, modifier = Modifier.padding(top = Spacing.md))
                 }
             }
         },
     )
+}
+
+@Composable
+private fun QuoteRow(q: Quote, onPick: (Quote) -> Unit, trailing: (@Composable () -> Unit)?) {
+    val t = LocalTokens.current
+    Row(Modifier.fillMaxWidth().clickable { onPick(q) }.padding(vertical = Spacing.sm), verticalAlignment = Alignment.CenterVertically) {
+        Column(Modifier.weight(1f)) {
+            Text(q.text, style = MaterialTheme.typography.bodyMedium)
+            if (q.author.isNotEmpty()) Text(q.author, style = MaterialTheme.typography.bodySmall, color = t.textMuted)
+        }
+        trailing?.invoke()
+    }
 }
 
 // ── Draw ──

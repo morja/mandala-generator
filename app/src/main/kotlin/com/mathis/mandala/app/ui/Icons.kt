@@ -25,6 +25,7 @@ object EditorIcons {
     val Save = icon("M19,9h-4V3H9v6H5l7,7 7,-7zM5,18v2h14v-2H5z")
     val Expand = icon("M16.59,8.59L12,13.17 7.41,8.59 6,10l6,6 6,-6z")
     val Less = icon("M12,8l-6,6 1.41,1.41L12,10.83l4.59,4.58L18,14z")
+    val Close = icon("M19,6.41L17.59,5 12,10.59 6.41,5 5,6.41 10.59,12 5,17.59 6.41,19 12,13.41 17.59,19 19,17.59 13.41,12z")
     val Visible = icon(EYE)
     val Hidden = icon(EYE, strike = true)
 
