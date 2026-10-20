@@ -1,0 +1,18 @@
+{
+ "layers": [
+  {
+   "isEnabled": false,
+   "style": "spirograph"
+  }
+ ],
+ "outputSize": 512,
+ "emblemLayer": {
+  "isEnabled": true,
+  "motif": "lotus",
+  "rendering": "beads",
+  "petals": 12,
+  "organic": 0.8,
+  "frame": "enso",
+  "paletteIndex": 9
+ }
+}

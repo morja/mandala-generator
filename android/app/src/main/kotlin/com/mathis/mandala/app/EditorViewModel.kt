@@ -25,11 +25,16 @@ import com.mathis.mandala.app.Editing.updateBackground
 import com.mathis.mandala.app.Editing.updateEffects
 import com.mathis.mandala.app.Editing.updateLayer
 import com.mathis.mandala.app.Editing.updateText
+import com.mathis.mandala.app.Editing.updateEmblem
+import com.mathis.mandala.app.Editing.reset
+import com.mathis.mandala.app.Editing.newShape
+import com.mathis.mandala.app.Randomize.randomized
 import com.mathis.mandala.app.Editing.withQuote
 import com.mathis.mandala.core.BaseLayerSettings
 import com.mathis.mandala.core.BaseLayerType
 import com.mathis.mandala.core.DrawingLayerSettings
 import com.mathis.mandala.core.EffectsLayerSettings
+import com.mathis.mandala.core.EmblemLayerSettings
 import com.mathis.mandala.core.GraffitiLayerSettings
 import com.mathis.mandala.core.Favorite
 import com.mathis.mandala.core.Image8
@@ -187,6 +192,14 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
     fun newEffectsPattern() = updateEffects { it.newPattern(::randomSeed) }
 
     fun updateText(change: (TextLayerSettings) -> TextLayerSettings) = _params.update { it.updateText(change) }
+
+    fun updateEmblem(change: (EmblemLayerSettings) -> EmblemLayerSettings) = _params.update { it.updateEmblem(change) }
+
+    fun randomizeEmblem() = updateEmblem { it.randomized(Random) }
+
+    fun resetEmblem() = updateEmblem { it.reset() }
+
+    fun newEmblemShape() = updateEmblem { it.newShape(Random) }
 
     fun useQuote(quote: Quote) = updateText { it.withQuote(quote) }
 

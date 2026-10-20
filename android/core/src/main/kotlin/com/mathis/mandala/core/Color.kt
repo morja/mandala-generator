@@ -72,6 +72,8 @@ object ColorSpaces {
 
     fun srgbToP3(r: Double, g: Double, b: Double, out: DoubleArray) = convert(SRGB_TO_P3, r, g, b, out)
 
+    fun p3ToSrgb(r: Double, g: Double, b: Double, out: DoubleArray) = convert(P3_TO_SRGB, r, g, b, out)
+
     private fun convert(m: DoubleArray, r: Double, g: Double, b: Double, out: DoubleArray) {
         val lr = decode(r)
         val lg = decode(g)

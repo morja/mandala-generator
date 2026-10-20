@@ -174,6 +174,12 @@ object MandalaRenderer {
                 composite = fx.compositeSolid(composite, solidBackground[0], solidBackground[1], solidBackground[2], BlendOp.LIGHTEN)
             }
 
+            // Emblem above the mandala and background, below the text.
+            if (params.emblemLayer.isEnabled) {
+                checkpoint()
+                composite = EmblemLayer(par, fx).apply(composite, params.emblemLayer, palettes)
+            }
+
             if (params.textLayer.isEnabled && params.textLayer.text.isNotEmpty()) {
                 val textRenderer = options.textRenderer
                 if (textRenderer == null) {

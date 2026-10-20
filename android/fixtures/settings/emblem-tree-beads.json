@@ -1,0 +1,19 @@
+{
+ "layers": [
+  {
+   "isEnabled": false,
+   "style": "spirograph"
+  }
+ ],
+ "outputSize": 512,
+ "emblemLayer": {
+  "isEnabled": true,
+  "motif": "treeOfLife",
+  "rendering": "beads",
+  "seed": 123,
+  "organic": 1,
+  "branching": 0.8,
+  "roots": false,
+  "glow": 0.3
+ }
+}

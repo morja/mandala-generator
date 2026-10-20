@@ -60,7 +60,14 @@ import com.mathis.mandala.app.ui.theme.Spacing
 import com.mathis.mandala.core.BaseLayerSettings
 import com.mathis.mandala.core.BaseLayerType
 import com.mathis.mandala.core.BuiltInPalettes
+import com.mathis.mandala.core.DrawingLayerSettings
 import com.mathis.mandala.core.EffectsLayerSettings
+import com.mathis.mandala.core.EmblemFlowerVariant
+import com.mathis.mandala.core.EmblemFrame
+import com.mathis.mandala.core.EmblemLayerSettings
+import com.mathis.mandala.core.EmblemMotif
+import com.mathis.mandala.core.EmblemRendering
+import com.mathis.mandala.core.GraffitiLayerSettings
 import com.mathis.mandala.core.MandalaParameters
 import com.mathis.mandala.core.Quote
 import com.mathis.mandala.core.Quotes
@@ -68,10 +75,10 @@ import com.mathis.mandala.core.StyleLayer
 import com.mathis.mandala.core.TextLayerSettings
 import kotlin.math.roundToInt
 
-private enum class ControlTab(val label: String) { LAYERS("Layers"), SCENE("Scene"), TEXT("Text"), DRAW("Draw") }
+private enum class ControlTab(val label: String) { LAYERS("Layers"), SCENE("Scene"), EMBLEM("Emblem"), TEXT("Text"), DRAW("Draw") }
 
 /**
- * The controls below (or beside) the canvas, in four tabs so only one area is on screen at a time.
+ * The controls below (or beside) the canvas, in five tabs so only one area is on screen at a time.
  * Each tab keeps its scroll position and open groups while another one is shown.
  */
 @Composable
@@ -83,7 +90,10 @@ internal fun ControlTabs(params: MandalaParameters, selected: Int, vm: EditorVie
     Column(modifier) {
         PrimaryTabRow(selectedTabIndex = tab.ordinal) {
             for (option in ControlTab.entries) {
-                Tab(selected = tab == option, onClick = { tab = option }, text = { Text(option.label, maxLines = 1) })
+                // Content without the text tab's side padding, so five labels fit on a narrow phone.
+                Tab(selected = tab == option, onClick = { tab = option }) {
+                    Text(option.label, style = MaterialTheme.typography.titleSmall, maxLines = 1, modifier = Modifier.padding(vertical = Spacing.md))
+                }
             }
         }
         tabs.SaveableStateProvider(tab) {
@@ -91,6 +101,7 @@ internal fun ControlTabs(params: MandalaParameters, selected: Int, vm: EditorVie
                 when (tab) {
                     ControlTab.LAYERS -> LayersTab(params, selected.coerceIn(0, params.layers.lastIndex), vm)
                     ControlTab.SCENE -> SceneTab(params, vm)
+                    ControlTab.EMBLEM -> EmblemTab(params.emblemLayer, vm)
                     ControlTab.TEXT -> TextTab(params.textLayer, vm)
                     ControlTab.DRAW -> DrawTab(params, vm)
                 }
@@ -197,21 +208,21 @@ private fun LayerControls(layer: StyleLayer, update: ((StyleLayer) -> StyleLayer
     }
     Group("Blending", summary = "${layer.blendMode.displayName} · ${(layer.opacity * 100).roundToInt()} %") {
         BlendChips(layer.blendMode) { m -> update { it.copy(blendMode = m) } }
-        ValueSlider("Opacity", layer.opacity) { v -> update { it.copy(opacity = v) } }
+        ValueSlider("Opacity", layer.opacity, default = StyleLayer().opacity) { v -> update { it.copy(opacity = v) } }
     }
     Group("Shape", initiallyOpen = true) {
-        SteppedSlider("Symmetry", layer.symmetry, 1..8) { v -> update { it.copy(symmetry = v) } }
-        ValueSlider("Scale", layer.scale, 0.1f..1.2f) { v -> update { it.copy(scale = v) } }
-        ValueSlider("Complexity", layer.complexity) { v -> update { it.copy(complexity = v) } }
-        ValueSlider("Density", layer.density) { v -> update { it.copy(density = v) } }
-        ValueSlider("Ripple", layer.ripple) { v -> update { it.copy(ripple = v) } }
+        SteppedSlider("Symmetry", layer.symmetry, 1..8, default = StyleLayer().symmetry) { v -> update { it.copy(symmetry = v) } }
+        ValueSlider("Scale", layer.scale, 0.1f..1.2f, default = StyleLayer().scale) { v -> update { it.copy(scale = v) } }
+        ValueSlider("Complexity", layer.complexity, default = StyleLayer().complexity) { v -> update { it.copy(complexity = v) } }
+        ValueSlider("Density", layer.density, default = StyleLayer().density) { v -> update { it.copy(density = v) } }
+        ValueSlider("Ripple", layer.ripple, default = StyleLayer().ripple) { v -> update { it.copy(ripple = v) } }
     }
     Group("Light and colour") {
-        ValueSlider("Glow", layer.glowIntensity) { v -> update { it.copy(glowIntensity = v) } }
-        ValueSlider("Colour drift", layer.colorDrift) { v -> update { it.copy(colorDrift = v) } }
-        ValueSlider("Painted", layer.abstractLevel) { v -> update { it.copy(abstractLevel = v) } }
-        ValueSlider("Saturation", layer.saturation) { v -> update { it.copy(saturation = v) } }
-        ValueSlider("Brightness", layer.brightness) { v -> update { it.copy(brightness = v) } }
+        ValueSlider("Glow", layer.glowIntensity, default = StyleLayer().glowIntensity) { v -> update { it.copy(glowIntensity = v) } }
+        ValueSlider("Colour drift", layer.colorDrift, default = StyleLayer().colorDrift) { v -> update { it.copy(colorDrift = v) } }
+        ValueSlider("Painted", layer.abstractLevel, default = StyleLayer().abstractLevel) { v -> update { it.copy(abstractLevel = v) } }
+        ValueSlider("Saturation", layer.saturation, default = StyleLayer().saturation) { v -> update { it.copy(saturation = v) } }
+        ValueSlider("Brightness", layer.brightness, default = StyleLayer().brightness) { v -> update { it.copy(brightness = v) } }
     }
 }
 
@@ -258,37 +269,39 @@ private fun BackgroundControls(
         }
         BaseLayerType.IMAGE -> {
             OutlinedButton(onClick = ::choose) { Text("Choose picture") }
-            ValueSlider("Strength", base.imageBlend) { v -> update { it.copy(imageBlend = v) } }
-            ValueSlider("Opacity", base.opacity) { v -> update { it.copy(opacity = v) } }
+            ValueSlider("Strength", base.imageBlend, default = BaseLayerSettings().imageBlend) { v -> update { it.copy(imageBlend = v) } }
+            ValueSlider("Opacity", base.opacity, default = BaseLayerSettings().opacity) { v -> update { it.copy(opacity = v) } }
             return
         }
         else -> Unit
     }
     val twoColours = base.type != BaseLayerType.COLOR && base.type != BaseLayerType.GRAIN
-    ColourGroup(if (twoColours) "Colour 1" else "Colour", base.hue, base.saturation, base.brightness) { h, s, b ->
+    ColourGroup(if (twoColours) "Colour 1" else "Colour", base.hue, base.saturation, base.brightness,
+        BaseLayerSettings().let { Triple(it.hue, it.saturation, it.brightness) }) { h, s, b ->
         update { it.copy(hue = h, saturation = s, brightness = b) }
     }
     if (twoColours) {
-        ColourGroup("Colour 2", base.hue2, base.saturation2, base.brightness2) { h, s, b ->
+        ColourGroup("Colour 2", base.hue2, base.saturation2, base.brightness2,
+            BaseLayerSettings().let { Triple(it.hue2, it.saturation2, it.brightness2) }) { h, s, b ->
             update { it.copy(hue2 = h, saturation2 = s, brightness2 = b) }
         }
     }
     when (base.type) {
         BaseLayerType.GRADIENT -> {
             SwitchRow("Radial", base.isRadial) { r -> update { it.copy(isRadial = r) } }
-            if (!base.isRadial) ValueSlider("Angle", base.gradientAngle) { v -> update { it.copy(gradientAngle = v) } }
+            if (!base.isRadial) ValueSlider("Angle", base.gradientAngle, default = BaseLayerSettings().gradientAngle) { v -> update { it.copy(gradientAngle = v) } }
         }
         BaseLayerType.SUNBURST -> {
-            ValueSlider("Rays", base.patternScale) { v -> update { it.copy(patternScale = v) } }
-            ValueSlider("Sharpness", base.patternSharpness) { v -> update { it.copy(patternSharpness = v) } }
+            ValueSlider("Rays", base.patternScale, default = BaseLayerSettings().patternScale) { v -> update { it.copy(patternScale = v) } }
+            ValueSlider("Sharpness", base.patternSharpness, default = BaseLayerSettings().patternSharpness) { v -> update { it.copy(patternSharpness = v) } }
         }
         BaseLayerType.GRAIN -> {
-            ValueSlider("Grain", base.grainAmount) { v -> update { it.copy(grainAmount = v) } }
+            ValueSlider("Grain", base.grainAmount, default = BaseLayerSettings().grainAmount) { v -> update { it.copy(grainAmount = v) } }
             SwitchRow("Coloured grain", base.grainColored) { c -> update { it.copy(grainColored = c) } }
         }
         else -> Unit
     }
-    ValueSlider("Opacity", base.opacity) { v -> update { it.copy(opacity = v) } }
+    ValueSlider("Opacity", base.opacity, default = BaseLayerSettings().opacity) { v -> update { it.copy(opacity = v) } }
 }
 
 private fun backgroundName(type: BaseLayerType) = when (type) {
@@ -318,32 +331,127 @@ private fun EffectsGroup(
             return@Group
         }
         Group("Light", nested = true, initiallyOpen = true) {
-            ValueSlider("Brightness", fx.brightness) { v -> update { it.copy(brightness = v) } }
-            ValueSlider("Contrast", fx.contrast) { v -> update { it.copy(contrast = v) } }
-            ValueSlider("Vignette", fx.vignette) { v -> update { it.copy(vignette = v) } }
-            ValueSlider("Bloom", fx.bloom) { v -> update { it.copy(bloom = v) } }
-            ValueSlider("Highlights", fx.highlights) { v -> update { it.copy(highlights = v) } }
+            ValueSlider("Brightness", fx.brightness, default = EffectsLayerSettings().brightness) { v -> update { it.copy(brightness = v) } }
+            ValueSlider("Contrast", fx.contrast, default = EffectsLayerSettings().contrast) { v -> update { it.copy(contrast = v) } }
+            ValueSlider("Vignette", fx.vignette, default = EffectsLayerSettings().vignette) { v -> update { it.copy(vignette = v) } }
+            ValueSlider("Bloom", fx.bloom, default = EffectsLayerSettings().bloom) { v -> update { it.copy(bloom = v) } }
+            ValueSlider("Highlights", fx.highlights, default = EffectsLayerSettings().highlights) { v -> update { it.copy(highlights = v) } }
         }
         Group("Tone", nested = true) {
-            ValueSlider("Wash", fx.wash) { v -> update { it.copy(wash = v) } }
-            ValueSlider("Sepia", fx.sepia) { v -> update { it.copy(sepia = v) } }
-            ValueSlider("Fade", fx.fade) { v -> update { it.copy(fade = v) } }
+            ValueSlider("Wash", fx.wash, default = EffectsLayerSettings().wash) { v -> update { it.copy(wash = v) } }
+            ValueSlider("Sepia", fx.sepia, default = EffectsLayerSettings().sepia) { v -> update { it.copy(sepia = v) } }
+            ValueSlider("Fade", fx.fade, default = EffectsLayerSettings().fade) { v -> update { it.copy(fade = v) } }
         }
         Group("Texture", nested = true) {
-            ValueSlider("Grain", fx.grain) { v -> update { it.copy(grain = v) } }
-            ValueSlider("Clarity", fx.localContrast) { v -> update { it.copy(localContrast = v) } }
-            ValueSlider("Relief", fx.relief) { v -> update { it.copy(relief = v) } }
-            if (fx.relief > 0) ValueSlider("Relief angle", fx.reliefAngle) { v -> update { it.copy(reliefAngle = v) } }
-            ValueSlider("Chromatic", fx.chromatic) { v -> update { it.copy(chromatic = v) } }
+            ValueSlider("Grain", fx.grain, default = EffectsLayerSettings().grain) { v -> update { it.copy(grain = v) } }
+            ValueSlider("Clarity", fx.localContrast, default = EffectsLayerSettings().localContrast) { v -> update { it.copy(localContrast = v) } }
+            ValueSlider("Relief", fx.relief, default = EffectsLayerSettings().relief) { v -> update { it.copy(relief = v) } }
+            if (fx.relief > 0) ValueSlider("Relief angle", fx.reliefAngle, default = EffectsLayerSettings().reliefAngle) { v -> update { it.copy(reliefAngle = v) } }
+            ValueSlider("Chromatic", fx.chromatic, default = EffectsLayerSettings().chromatic) { v -> update { it.copy(chromatic = v) } }
         }
         Group("Spots and sparkle", nested = true) {
-            ValueSlider("Dimming", fx.dimming) { v -> update { it.copy(dimming = v) } }
-            ValueSlider("Erasure", fx.erasure) { v -> update { it.copy(erasure = v) } }
-            ValueSlider("Stars", fx.stars) { v -> update { it.copy(stars = v) } }
-            ValueSlider("Glitter", fx.glitter) { v -> update { it.copy(glitter = v) } }
+            ValueSlider("Dimming", fx.dimming, default = EffectsLayerSettings().dimming) { v -> update { it.copy(dimming = v) } }
+            ValueSlider("Erasure", fx.erasure, default = EffectsLayerSettings().erasure) { v -> update { it.copy(erasure = v) } }
+            ValueSlider("Stars", fx.stars, default = EffectsLayerSettings().stars) { v -> update { it.copy(stars = v) } }
+            ValueSlider("Glitter", fx.glitter, default = EffectsLayerSettings().glitter) { v -> update { it.copy(glitter = v) } }
             TextButton(onClick = newPattern) { Text("New pattern") }
         }
     }
+}
+
+// ── Emblem ──
+
+/** One motif large in the centre, with the controls of the macOS emblem card. */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun EmblemTab(em: EmblemLayerSettings, vm: EditorViewModel) {
+    val update = vm::updateEmblem
+    val defaults = EmblemLayerSettings()
+    val t = LocalTokens.current
+    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+        Text("Show emblem", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
+        if (em.isEnabled) {
+            IconButton(onClick = vm::randomizeEmblem) { Icon(EditorIcons.Dice, contentDescription = "Random emblem") }
+            TextButton(onClick = vm::resetEmblem) { Text("Reset") }
+        }
+        Switch(checked = em.isEnabled, onCheckedChange = { on -> update { it.copy(isEnabled = on) } })
+    }
+    if (!em.isEnabled) {
+        Text("One motif drawn large in the centre: Om, Tree of Life, Flower of Life, Lotus and more.",
+            style = MaterialTheme.typography.bodySmall, color = t.textMuted)
+        return
+    }
+    Group("Motif", summary = em.motif.displayName, initiallyOpen = true) {
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+            for (motif in EmblemMotif.entries) {
+                FilterChip(selected = em.motif == motif, onClick = { update { it.copy(motif = motif) } }, label = { Text(motif.displayName) })
+            }
+        }
+        when (em.motif) {
+            EmblemMotif.FLOWER_OF_LIFE -> ChipLine("Variant") {
+                for (v in EmblemFlowerVariant.entries) {
+                    FilterChip(selected = em.flowerVariant == v, onClick = { update { it.copy(flowerVariant = v) } }, label = { Text(v.displayName) })
+                }
+            }
+            EmblemMotif.LOTUS -> ChipLine("Petals") {
+                for (n in Editing.lotusPetals) {
+                    FilterChip(selected = em.petals == n, onClick = { update { it.copy(petals = n) } }, label = { Text("$n") })
+                }
+            }
+            else -> Unit
+        }
+        if (em.motif.isOrganic) ValueSlider("Organic", em.organic, default = defaults.organic) { v -> update { it.copy(organic = v) } }
+        if (em.motif == EmblemMotif.TREE_OF_LIFE) {
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                Text("Shape ${em.seed}", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
+                TextButton(onClick = vm::newEmblemShape) { Text("New shape") }
+            }
+            ValueSlider("Branches", em.branching, default = defaults.branching) { v -> update { it.copy(branching = v) } }
+            SwitchRow("Roots", em.roots) { r -> update { it.copy(roots = r) } }
+        }
+    }
+    Group("Style and frame", summary = "${em.rendering.displayName} · ${em.frame.displayName}") {
+        ChipLine("Style") {
+            for (r in EmblemRendering.entries) {
+                FilterChip(selected = em.rendering == r, onClick = { update { it.copy(rendering = r) } }, label = { Text(r.displayName) })
+            }
+        }
+        ChipLine("Frame") {
+            for (f in EmblemFrame.entries) {
+                FilterChip(selected = em.frame == f, onClick = { update { it.copy(frame = f) } }, label = { Text(f.displayName) })
+            }
+        }
+    }
+    Group("Shape") {
+        ValueSlider("Size", em.size, 0.1f..1f, default = defaults.size) { v -> update { it.copy(size = v) } }
+        ValueSlider("Weight", em.weight, default = defaults.weight) { v -> update { it.copy(weight = v) } }
+        ValueSlider("Rotate", em.rotation, -180f..180f, default = defaults.rotation, display = { "${it.roundToInt()}°" }) { v ->
+            update { it.copy(rotation = v) }
+        }
+    }
+    val palette = BuiltInPalettes.all[em.paletteIndex.coerceIn(0, BuiltInPalettes.all.lastIndex)]
+    Group("Colour", summary = palette.name) {
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.sm), verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+            BuiltInPalettes.all.forEachIndexed { index, p ->
+                Swatch(p, selected = em.paletteIndex == index) { update { it.copy(paletteIndex = index) } }
+            }
+        }
+        ValueSlider("Position", em.colorPosition, default = defaults.colorPosition) { v -> update { it.copy(colorPosition = v) } }
+        ValueSlider("Spread", em.colorSpread, default = defaults.colorSpread) { v -> update { it.copy(colorSpread = v) } }
+        ValueSlider("Glow", em.glow, default = defaults.glow) { v -> update { it.copy(glow = v) } }
+    }
+    Group("Blending", summary = "${em.blendMode.displayName} · ${(em.opacity * 100).roundToInt()} %") {
+        BlendChips(em.blendMode) { m -> update { it.copy(blendMode = m) } }
+        ValueSlider("Opacity", em.opacity, default = defaults.opacity) { v -> update { it.copy(opacity = v) } }
+    }
+}
+
+/** A small caption above a wrapping row of chips. */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun ChipLine(caption: String, chips: @Composable () -> Unit) {
+    Text(caption, style = MaterialTheme.typography.bodySmall, color = LocalTokens.current.textMuted, modifier = Modifier.padding(top = Spacing.xs))
+    FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) { chips() }
 }
 
 // ── Text ──
@@ -396,20 +504,20 @@ private fun TextTab(text: TextLayerSettings, vm: EditorViewModel) {
         }
     }
     Group("Size and place") {
-        ValueSlider("Size", text.fontSize, 0.02f..0.2f) { v -> update { it.copy(fontSize = v) } }
-        ValueSlider("Width", text.fontWidth, 0.1f..1f) { v -> update { it.copy(fontWidth = v) } }
-        ValueSlider("Height", text.offsetY) { v -> update { it.copy(offsetY = v) } }
+        ValueSlider("Size", text.fontSize, 0.02f..0.2f, default = TextLayerSettings().fontSize) { v -> update { it.copy(fontSize = v) } }
+        ValueSlider("Width", text.fontWidth, 0.1f..1f, default = TextLayerSettings().fontWidth) { v -> update { it.copy(fontWidth = v) } }
+        ValueSlider("Height", text.offsetY, default = TextLayerSettings().offsetY) { v -> update { it.copy(offsetY = v) } }
     }
     Group("Light") {
-        ValueSlider("Glow", text.glow) { v -> update { it.copy(glow = v) } }
-        ValueSlider("Cloud", text.cloudOpacity) { v -> update { it.copy(cloudOpacity = v) } }
-        ValueSlider("Cloud size", text.cloudScale) { v -> update { it.copy(cloudScale = v) } }
-        ValueSlider("Shadow", text.shadowOpacity) { v -> update { it.copy(shadowOpacity = v) } }
+        ValueSlider("Glow", text.glow, default = TextLayerSettings().glow) { v -> update { it.copy(glow = v) } }
+        ValueSlider("Cloud", text.cloudOpacity, default = TextLayerSettings().cloudOpacity) { v -> update { it.copy(cloudOpacity = v) } }
+        ValueSlider("Cloud size", text.cloudScale, default = TextLayerSettings().cloudScale) { v -> update { it.copy(cloudScale = v) } }
+        ValueSlider("Shadow", text.shadowOpacity, default = TextLayerSettings().shadowOpacity) { v -> update { it.copy(shadowOpacity = v) } }
     }
     Group("Colour", trailing = { ColourDot(hsbColour(text.hue, text.saturation, text.brightness.coerceAtMost(1.0))) }) {
-        ValueSlider("Hue", text.hue) { v -> update { it.copy(hue = v) } }
-        ValueSlider("Saturation", text.saturation) { v -> update { it.copy(saturation = v) } }
-        ValueSlider("Brightness", text.brightness, 0f..1.5f) { v -> update { it.copy(brightness = v) } }
+        ValueSlider("Hue", text.hue, default = TextLayerSettings().hue) { v -> update { it.copy(hue = v) } }
+        ValueSlider("Saturation", text.saturation, default = TextLayerSettings().saturation) { v -> update { it.copy(saturation = v) } }
+        ValueSlider("Brightness", text.brightness, 0f..1.5f, default = TextLayerSettings().brightness) { v -> update { it.copy(brightness = v) } }
     }
 }
 
@@ -493,27 +601,29 @@ private fun DrawTab(params: MandalaParameters, vm: EditorViewModel) {
     }
     when (tool) {
         DrawTool.LINES -> {
-            SteppedSlider("Symmetry", lines.symmetry.coerceIn(1, 16), 1..16) { v -> vm.updateDrawing { it.copy(symmetry = v) } }
-            ColourGroup("Line colour", lines.currentHue, lines.currentSaturation, lines.currentBrightness, initiallyOpen = true) { h, s, b ->
+            SteppedSlider("Symmetry", lines.symmetry.coerceIn(1, 16), 1..16, default = DrawingLayerSettings().symmetry) { v -> vm.updateDrawing { it.copy(symmetry = v) } }
+            ColourGroup("Line colour", lines.currentHue, lines.currentSaturation, lines.currentBrightness,
+                DrawingLayerSettings().let { Triple(it.currentHue, it.currentSaturation, it.currentBrightness) }, initiallyOpen = true) { h, s, b ->
                 vm.updateDrawing { it.copy(currentHue = h, currentSaturation = s, currentBrightness = b) }
             }
             Group("Line and light", nested = true) {
-                ValueSlider("Weight", lines.strokeWeight) { v -> vm.updateDrawing { it.copy(strokeWeight = v) } }
-                ValueSlider("Glow", lines.glowIntensity) { v -> vm.updateDrawing { it.copy(glowIntensity = v) } }
-                ValueSlider("Opacity", lines.opacity) { v -> vm.updateDrawing { it.copy(opacity = v) } }
+                ValueSlider("Weight", lines.strokeWeight, default = DrawingLayerSettings().strokeWeight) { v -> vm.updateDrawing { it.copy(strokeWeight = v) } }
+                ValueSlider("Glow", lines.glowIntensity, default = DrawingLayerSettings().glowIntensity) { v -> vm.updateDrawing { it.copy(glowIntensity = v) } }
+                ValueSlider("Opacity", lines.opacity, default = DrawingLayerSettings().opacity) { v -> vm.updateDrawing { it.copy(opacity = v) } }
                 BlendChips(lines.blendMode) { m -> vm.updateDrawing { it.copy(blendMode = m) } }
             }
         }
         DrawTool.SPRAY -> {
-            SteppedSlider("Symmetry", spray.symmetry.coerceIn(1, 16), 1..16) { v -> vm.updateGraffiti { it.copy(symmetry = v) } }
-            ValueSlider("Brush size", spray.currentBrushSize, 0.01f..0.2f) { v -> vm.updateGraffiti { it.copy(currentBrushSize = v) } }
-            ValueSlider("Paint", spray.currentOpacity) { v -> vm.updateGraffiti { it.copy(currentOpacity = v) } }
-            ColourGroup("Spray colour", spray.currentHue, spray.currentSaturation, spray.currentBrightness, initiallyOpen = true) { h, s, b ->
+            SteppedSlider("Symmetry", spray.symmetry.coerceIn(1, 16), 1..16, default = GraffitiLayerSettings().symmetry) { v -> vm.updateGraffiti { it.copy(symmetry = v) } }
+            ValueSlider("Brush size", spray.currentBrushSize, 0.01f..0.2f, default = GraffitiLayerSettings().currentBrushSize) { v -> vm.updateGraffiti { it.copy(currentBrushSize = v) } }
+            ValueSlider("Paint", spray.currentOpacity, default = GraffitiLayerSettings().currentOpacity) { v -> vm.updateGraffiti { it.copy(currentOpacity = v) } }
+            ColourGroup("Spray colour", spray.currentHue, spray.currentSaturation, spray.currentBrightness,
+                GraffitiLayerSettings().let { Triple(it.currentHue, it.currentSaturation, it.currentBrightness) }, initiallyOpen = true) { h, s, b ->
                 vm.updateGraffiti { it.copy(currentHue = h, currentSaturation = s, currentBrightness = b) }
             }
             Group("Softness and blending", nested = true) {
-                ValueSlider("Softness", spray.softness) { v -> vm.updateGraffiti { it.copy(softness = v) } }
-                ValueSlider("Opacity", spray.opacity) { v -> vm.updateGraffiti { it.copy(opacity = v) } }
+                ValueSlider("Softness", spray.softness, default = GraffitiLayerSettings().softness) { v -> vm.updateGraffiti { it.copy(softness = v) } }
+                ValueSlider("Opacity", spray.opacity, default = GraffitiLayerSettings().opacity) { v -> vm.updateGraffiti { it.copy(opacity = v) } }
                 BlendChips(spray.blendMode) { m -> vm.updateGraffiti { it.copy(blendMode = m) } }
             }
         }

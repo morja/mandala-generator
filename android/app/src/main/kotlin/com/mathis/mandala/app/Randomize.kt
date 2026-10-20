@@ -2,6 +2,11 @@ package com.mathis.mandala.app
 
 import com.mathis.mandala.core.BaseLayerType
 import com.mathis.mandala.core.BuiltInPalettes
+import com.mathis.mandala.core.EmblemFlowerVariant
+import com.mathis.mandala.core.EmblemFrame
+import com.mathis.mandala.core.EmblemLayerSettings
+import com.mathis.mandala.core.EmblemMotif
+import com.mathis.mandala.core.EmblemRendering
 import com.mathis.mandala.core.MandalaParameters
 import com.mathis.mandala.core.MandalaStyle
 import com.mathis.mandala.core.StyleLayer
@@ -68,6 +73,23 @@ object Randomize {
         abstractLevel = random.nextDouble(0.1, 0.8),
         saturation = random.nextDouble(0.3, 1.0),
         brightness = random.nextDouble(0.3, 0.7),
+    )
+
+    /** The dice of the macOS emblem card: same fields and ranges; size, rotation, opacity and blending stay. */
+    fun EmblemLayerSettings.randomized(random: Random): EmblemLayerSettings = copy(
+        motif = EmblemMotif.entries.random(random),
+        rendering = EmblemRendering.entries.random(random),
+        frame = EmblemFrame.entries.random(random),
+        seed = random.nextLong(1, 1_000_000).toULong(),
+        branching = random.nextDouble(0.2, 0.9),
+        weight = random.nextDouble(0.3, 0.8),
+        paletteIndex = random.nextInt(BuiltInPalettes.all.size),
+        colorPosition = random.nextDouble(),
+        colorSpread = random.nextDouble(0.0, 0.6),
+        glow = random.nextDouble(0.2, 0.8),
+        organic = random.nextDouble(0.2, 1.0),
+        flowerVariant = EmblemFlowerVariant.entries.random(random),
+        petals = Editing.lotusPetals.random(random),
     )
 
     /** Like the macOS app: up to 20 tries for a value not used yet. */

@@ -1,0 +1,15 @@
+{
+ "layers": [
+  {
+   "isEnabled": false,
+   "style": "spirograph"
+  }
+ ],
+ "outputSize": 512,
+ "emblemLayer": {
+  "isEnabled": true,
+  "glow": 0,
+  "blendMode": "normal",
+  "organic": 0
+ }
+}

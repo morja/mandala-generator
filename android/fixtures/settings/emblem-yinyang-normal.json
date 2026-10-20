@@ -1,0 +1,23 @@
+{
+ "layers": [
+  {
+   "style": "spirograph",
+   "scale": 0.9,
+   "complexity": 0.4,
+   "glowIntensity": 0.3,
+   "abstractLevel": 0,
+   "paletteIndex": 2,
+   "seed": 5
+  }
+ ],
+ "outputSize": 512,
+ "emblemLayer": {
+  "isEnabled": true,
+  "motif": "yinYang",
+  "rendering": "filled",
+  "blendMode": "normal",
+  "glow": 0.4,
+  "opacity": 0.7,
+  "size": 0.8
+ }
+}
