@@ -300,6 +300,12 @@ struct MandalaRenderer {
                                             mode: "CILightenBlendMode")
         }
 
+        // ── EMBLEM LAYER (above the mandala and background, below the text) ──
+        if params.emblemLayer.isEnabled {
+            compositeImage = applyEmblemLayer(image: compositeImage, settings: params.emblemLayer,
+                                              palettes: palettes, size: bufferSize)
+        }
+
         // ── TEXT LAYER (on top of everything, before effects) ──
         if params.textLayer.isEnabled && !params.textLayer.text.isEmpty {
             compositeImage = applyTextLayer(image: compositeImage, settings: params.textLayer, size: bufferSize)
@@ -4509,7 +4515,7 @@ struct MandalaRenderer {
 
     // MARK: - Blend composite
 
-    private static func blendComposite(base: CGImage, overlay: CGImage, mode: String) -> CGImage {
+    static func blendComposite(base: CGImage, overlay: CGImage, mode: String) -> CGImage {
         let ciBase    = CIImage(cgImage: base)
         let ciOverlay = CIImage(cgImage: overlay)
         let ctx = CIContext(options: [.workingColorSpace: CGColorSpace(name: CGColorSpace.displayP3) as Any])

@@ -819,7 +819,7 @@ private struct HueSlider: View {
 
 // MARK: - Compact slider for scene panel
 
-private struct SceneSlider: View {
+struct SceneSlider: View {
     let label: String
     @Binding var value: Double
     var range: ClosedRange<Double> = 0...1

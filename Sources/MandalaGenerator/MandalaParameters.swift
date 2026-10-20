@@ -315,6 +315,152 @@ struct GraffitiLayerSettings: Equatable, Codable {
     }
 }
 
+// MARK: - Emblem Layer
+
+/// One motif drawn large and upright in the centre (not repeated by symmetry).
+enum EmblemMotif: String, CaseIterable, Identifiable, Codable {
+    case om, treeOfLife, flowerOfLife, lotus, yinYang, dharmaWheel, unalome, tripleMoon
+    var id: String { rawValue }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        let raw = (try? container.decode(String.self)) ?? ""
+        self = EmblemMotif(rawValue: raw) ?? .om
+    }
+    var displayName: String {
+        switch self {
+        case .om:           return "Om"
+        case .treeOfLife:   return "Tree of Life"
+        case .flowerOfLife: return "Flower of Life"
+        case .lotus:        return "Lotus"
+        case .yinYang:      return "Yin Yang"
+        case .dharmaWheel:  return "Dharma Wheel"
+        case .unalome:      return "Unalome"
+        case .tripleMoon:   return "Triple Moon"
+        }
+    }
+    /// Whether the Organic slider changes this motif.
+    var isOrganic: Bool {
+        switch self {
+        case .om, .treeOfLife, .lotus, .yinYang, .unalome: return true
+        case .flowerOfLife, .dharmaWheel, .tripleMoon:      return false
+        }
+    }
+}
+
+/// The members of the Flower of Life family.
+enum EmblemFlowerVariant: String, CaseIterable, Identifiable, Codable {
+    case seed, flower, fruit, metatron
+    var id: String { rawValue }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        let raw = (try? container.decode(String.self)) ?? ""
+        self = EmblemFlowerVariant(rawValue: raw) ?? .flower
+    }
+    var displayName: String {
+        switch self {
+        case .seed:     return "Seed"
+        case .flower:   return "Flower"
+        case .fruit:    return "Fruit"
+        case .metatron: return "Metatron"
+        }
+    }
+}
+
+/// How the motif's strokes are drawn.
+enum EmblemRendering: String, CaseIterable, Identifiable, Codable {
+    case line, doubleLine, filled, beads
+    var id: String { rawValue }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        let raw = (try? container.decode(String.self)) ?? ""
+        self = EmblemRendering(rawValue: raw) ?? .filled
+    }
+    var displayName: String {
+        switch self {
+        case .line:       return "Line"
+        case .doubleLine: return "Outline"
+        case .filled:     return "Filled"
+        case .beads:      return "Beads"
+        }
+    }
+}
+
+/// Frame around the motif.
+enum EmblemFrame: String, CaseIterable, Identifiable, Codable {
+    case none, ring, doubleRing, lotus, gates
+    var id: String { rawValue }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        let raw = (try? container.decode(String.self)) ?? ""
+        self = EmblemFrame(rawValue: raw) ?? .ring
+    }
+    var displayName: String {
+        switch self {
+        case .none:       return "None"
+        case .ring:       return "Ring"
+        case .doubleRing: return "Double Ring"
+        case .lotus:      return "Lotus Ring"
+        case .gates:      return "Square Gates"
+        }
+    }
+}
+
+struct EmblemLayerSettings: Equatable, Codable {
+    var isEnabled: Bool             = false
+    var motif: EmblemMotif          = .om
+    var rendering: EmblemRendering  = .filled
+    var frame: EmblemFrame          = .ring
+    var size: Double                = 0.6    // frame ring diameter as a fraction of the canvas (0.1–1.0)
+    var weight: Double              = 0.5    // stroke thickness (0–1)
+    var paletteIndex: Int           = 0
+    var colorPosition: Double       = 0.2    // where on the palette the centre colour sits (0–1)
+    var colorSpread: Double         = 0.3    // how far the colour moves along the palette towards the edge (0–1)
+    var glow: Double                = 0.5
+    var opacity: Double             = 1.0
+    var blendMode: LayerBlendMode   = .screen
+    // Tree of Life
+    var seed: UInt64                = 1      // shape of the tree
+    var branching: Double           = 0.5    // number of twigs (0–1)
+    var roots: Bool                 = true
+    // Om, Tree of Life, Lotus: calligraphic strokes, flowing branches, uneven petals (0–1)
+    var organic: Double             = 0.5
+    var flowerVariant: EmblemFlowerVariant = .flower
+    var petals: Int                 = 8      // Lotus: petals in the inner rings
+
+    enum CodingKeys: String, CodingKey {
+        case isEnabled, motif, rendering, frame, size, weight, paletteIndex, colorPosition, colorSpread
+        case glow, opacity, blendMode, seed, branching, roots, organic, flowerVariant, petals
+    }
+
+    init() {}
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        isEnabled     = c.decodeSafe(Bool.self,            forKey: .isEnabled,     default: false)
+        motif         = c.decodeSafe(EmblemMotif.self,     forKey: .motif,         default: .om)
+        rendering     = c.decodeSafe(EmblemRendering.self, forKey: .rendering,     default: .filled)
+        frame         = c.decodeSafe(EmblemFrame.self,     forKey: .frame,         default: .ring)
+        size          = c.decodeSafe(Double.self,          forKey: .size,          default: 0.6)
+        weight        = c.decodeSafe(Double.self,          forKey: .weight,        default: 0.5)
+        paletteIndex  = c.decodeSafe(Int.self,             forKey: .paletteIndex,  default: 0)
+        colorPosition = c.decodeSafe(Double.self,          forKey: .colorPosition, default: 0.2)
+        colorSpread   = c.decodeSafe(Double.self,          forKey: .colorSpread,   default: 0.3)
+        glow          = c.decodeSafe(Double.self,          forKey: .glow,          default: 0.5)
+        opacity       = c.decodeSafe(Double.self,          forKey: .opacity,       default: 1.0)
+        blendMode     = c.decodeSafe(LayerBlendMode.self,  forKey: .blendMode,     default: .screen)
+        seed          = c.decodeSafe(UInt64.self,          forKey: .seed,          default: 1)
+        branching     = c.decodeSafe(Double.self,          forKey: .branching,     default: 0.5)
+        roots         = c.decodeSafe(Bool.self,            forKey: .roots,         default: true)
+        organic       = c.decodeSafe(Double.self,          forKey: .organic,       default: 0.5)
+        flowerVariant = c.decodeSafe(EmblemFlowerVariant.self, forKey: .flowerVariant, default: .flower)
+        petals        = c.decodeSafe(Int.self,             forKey: .petals,        default: 8)
+    }
+}
+
 // MARK: - Text Layer
 
 struct TextLayerSettings: Equatable, Codable {
@@ -627,6 +773,7 @@ struct MandalaParameters: Equatable, Codable {
     var graffitiLayer: GraffitiLayerSettings = GraffitiLayerSettings()
     var drawingLayer: DrawingLayerSettings = DrawingLayerSettings()
     var textLayer: TextLayerSettings = TextLayerSettings()
+    var emblemLayer: EmblemLayerSettings = EmblemLayerSettings()
 
     // Truly global — render setup
     var seed: UInt64 = 42   // used for background/grass; each layer also has its own seed
@@ -660,7 +807,7 @@ struct MandalaParameters: Equatable, Codable {
     }
 
     enum CodingKeys: String, CodingKey {
-        case layers, baseLayer, effectsLayer, graffitiLayer, drawingLayer, textLayer
+        case layers, baseLayer, effectsLayer, graffitiLayer, drawingLayer, textLayer, emblemLayer
         case seed, previewSize, outputSize, outputSizeCustom, outputFormat, outputShape
         case symmetry, complexity, density, glowIntensity, colorDrift, ripple, wash, abstractLevel, paletteIndex
     }
@@ -675,6 +822,7 @@ struct MandalaParameters: Equatable, Codable {
         graffitiLayer   = c.decodeSafe(GraffitiLayerSettings.self,     forKey: .graffitiLayer,   default: GraffitiLayerSettings())
         drawingLayer    = c.decodeSafe(DrawingLayerSettings.self,       forKey: .drawingLayer,    default: DrawingLayerSettings())
         textLayer       = c.decodeSafe(TextLayerSettings.self,         forKey: .textLayer,       default: TextLayerSettings())
+        emblemLayer     = c.decodeSafe(EmblemLayerSettings.self,       forKey: .emblemLayer,     default: EmblemLayerSettings())
         seed            = c.decodeSafe(UInt64.self,                forKey: .seed,            default: 42)
         previewSize     = c.decodeSafe(Int.self,                   forKey: .previewSize,     default: 800)
         outputSize      = c.decodeSafe(Int.self,                   forKey: .outputSize,      default: 1024)
@@ -701,6 +849,7 @@ extension MandalaParameters {
         lhs.graffitiLayer == rhs.graffitiLayer &&
         lhs.drawingLayer == rhs.drawingLayer &&
         lhs.textLayer == rhs.textLayer &&
+        lhs.emblemLayer == rhs.emblemLayer &&
         lhs.seed == rhs.seed &&
         lhs.previewSize == rhs.previewSize &&
         lhs.outputSize == rhs.outputSize &&
