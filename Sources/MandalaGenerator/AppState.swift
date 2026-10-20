@@ -252,6 +252,17 @@ class AppState: ObservableObject {
             mix(UInt64(Int(tl.hue        * 1000)))
             mix(UInt64(Int(tl.saturation * 1000)))
         }
+        // Emblem layer
+        let em = parameters.emblemLayer
+        if em.isEnabled {
+            mix(UInt64(EmblemMotif.allCases.firstIndex(of: em.motif) ?? 0))
+            mix(UInt64(EmblemRendering.allCases.firstIndex(of: em.rendering) ?? 0))
+            mix(UInt64(EmblemFrame.allCases.firstIndex(of: em.frame) ?? 0))
+            mix(UInt64(Int(em.size   * 1000)))
+            mix(UInt64(Int(em.weight * 1000)))
+            mix(UInt64(em.paletteIndex))
+            mix(em.seed)
+        }
         let bgTag = bg.isEnabled  ? "bg-\(String(bg.type.rawValue.prefix(3)))" : ""
         let fxTag = fx.isEnabled  ? "fx" : ""
         let txtTag: String = {
@@ -262,7 +273,8 @@ class AppState: ObservableObject {
             return "txt-\(clean)"
         }()
         let hash = String(format: "%08x", h & 0xFFFFFFFF)
-        return (["mandala", styleAbbr, pal, sym, bgTag, fxTag, txtTag, hash]
+        let emTag = em.isEnabled ? "em-\(em.motif == .om ? "om" : "tree")" : ""
+        return (["mandala", styleAbbr, pal, sym, bgTag, fxTag, emTag, txtTag, hash]
             .filter { !$0.isEmpty }.joined(separator: "-"))
     }
 

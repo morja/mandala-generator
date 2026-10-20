@@ -11,6 +11,7 @@ struct PalettePanel: View {
         ("background", "square.stack.fill",  "Background"),
         ("graphics",   "sparkles",           "Graphics"),
         ("manual",     "hand.draw",          "Manual"),
+        ("emblem",     "circle.circle",      "Emblem"),
         ("text",       "textformat",         "Text"),
     ]
 
@@ -129,6 +130,11 @@ struct PalettePanel: View {
                         }
                         .padding(.horizontal, 8)
                         .padding(.top, 4)
+
+                    case "emblem":
+                        EmblemLayerCard(settings: $appState.parameters.emblemLayer)
+                            .padding(.horizontal, 8)
+                            .padding(.top, 8)
 
                     case "text":
                         TextLayerCard(settings: $appState.parameters.textLayer)
