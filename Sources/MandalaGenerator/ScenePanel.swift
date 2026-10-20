@@ -623,6 +623,14 @@ struct TextLayerCard: View {
                             .help(isInMyQuotes ? "In your quotes" : "Save to my quotes")
                         }
                     }
+                    HStack(spacing: 6) {
+                        Text("Author")
+                            .font(.system(size: 10)).foregroundColor(.secondary)
+                            .frame(width: 52, alignment: .leading)
+                        TextField("auto-detect or type name", text: $settings.customAuthor)
+                            .font(.system(size: 10))
+                            .textFieldStyle(.roundedBorder)
+                    }
 
                     // ── Font ─────────────────────────────────────────────
                     HStack(spacing: 6) {
@@ -729,23 +737,13 @@ struct TextLayerCard: View {
                     }
 
                     HStack(spacing: 6) {
-                        Text("Author")
-                            .font(.system(size: 10)).foregroundColor(.secondary)
-                            .frame(width: 52, alignment: .leading)
-                        Toggle("Show attribution", isOn: $settings.showAuthor)
+                        Color.clear.frame(width: 52, height: 1)
+                        Toggle("Show author on image", isOn: $settings.showAuthor)
                             .font(.system(size: 10))
                             .toggleStyle(.checkbox)
                         Spacer()
                     }
                     if settings.showAuthor {
-                        HStack(spacing: 6) {
-                            Text("Name")
-                                .font(.system(size: 10)).foregroundColor(.secondary)
-                                .frame(width: 52, alignment: .leading)
-                            TextField("auto-detect or type name", text: $settings.customAuthor)
-                                .font(.system(size: 10))
-                                .textFieldStyle(.roundedBorder)
-                        }
                         SceneSlider(label: "Aut. Size", value: $settings.authorScale,
                                     range: 0.3...1.5, color: .orange)
                         HStack(spacing: 6) {
