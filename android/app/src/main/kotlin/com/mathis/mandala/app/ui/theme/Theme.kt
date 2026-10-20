@@ -1,6 +1,5 @@
 package com.mathis.mandala.app.ui.theme
 
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Shapes
@@ -14,7 +13,7 @@ val LocalTokens = staticCompositionLocalOf { DarkTokens }
 
 /** Maps the tokens onto Material 3, so standard components follow them. */
 @Composable
-fun MandalaTheme(dark: Boolean = isSystemInDarkTheme(), content: @Composable () -> Unit) {
+fun MandalaTheme(dark: Boolean = true, content: @Composable () -> Unit) {
     val t = if (dark) DarkTokens else LightTokens
     val base = if (dark) darkColorScheme() else lightColorScheme()
     val colors = base.copy(

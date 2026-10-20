@@ -1,12 +1,13 @@
 {
- "layers": [
-  {
-   "isEnabled": false,
-   "style": "spirograph"
+  "layers": [
+    {
+      "isEnabled": false,
+      "style": "spirograph"
+    }
+  ],
+  "outputSize": 512,
+  "emblemLayer": {
+    "isEnabled": true,
+    "blendMode": "screen"
   }
- ],
- "outputSize": 512,
- "emblemLayer": {
-  "isEnabled": true
- }
 }

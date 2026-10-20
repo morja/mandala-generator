@@ -34,6 +34,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SnackbarResult
@@ -66,6 +67,7 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -93,7 +95,12 @@ import com.mathis.mandala.core.MandalaParameters
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EditorScreen(vm: EditorViewModel, onAbout: () -> Unit = {}) {
+fun EditorScreen(
+    vm: EditorViewModel,
+    onAbout: () -> Unit = {},
+    lightTheme: Boolean = false,
+    onLightTheme: (Boolean) -> Unit = {},
+) {
     val params by vm.params.collectAsStateWithLifecycle()
     val preview by vm.preview.collectAsStateWithLifecycle()
     val busy by vm.busy.collectAsStateWithLifecycle()
@@ -116,8 +123,14 @@ fun EditorScreen(vm: EditorViewModel, onAbout: () -> Unit = {}) {
         vm.events.collect { event ->
             when (event) {
                 is EditorEvent.Message -> {
-                    val result = snackbar.showSnackbar(event.text, actionLabel = if (event.canUndo) "Undo" else null)
-                    if (result == SnackbarResult.ActionPerformed) vm.undo()
+                    // With an action Compose would keep the message until it is tapped; let it go on its own.
+                    val undoable = event.canUndo || event.undo != null
+                    val result = snackbar.showSnackbar(
+                        event.text,
+                        actionLabel = if (undoable) "Undo" else null,
+                        duration = if (undoable) SnackbarDuration.Long else SnackbarDuration.Short,
+                    )
+                    if (result == SnackbarResult.ActionPerformed) event.undo?.invoke() ?: vm.undo()
                 }
                 is EditorEvent.ShareImage -> {
                     val send = Intent(Intent.ACTION_SEND)
@@ -144,6 +157,7 @@ fun EditorScreen(vm: EditorViewModel, onAbout: () -> Unit = {}) {
             onApply = { vm.applyFavorite(it); showFavorites = false },
             onDelete = { vm.removeFavorite(it.id) },
             onDismiss = { showFavorites = false },
+            snackbar = snackbar,
         )
     }
 
@@ -181,12 +195,14 @@ fun EditorScreen(vm: EditorViewModel, onAbout: () -> Unit = {}) {
                         onShare = vm::shareImage,
                         onOpen = { openFile.launch(arrayOf("application/json", "text/plain", "application/octet-stream")) },
                         onSaveSettings = { saveSettings.launch(vm.suggestedSettingsName()) },
+                        lightTheme = lightTheme,
+                        onLightTheme = onLightTheme,
                         onAbout = onAbout,
                     )
                 },
             )
         },
-        snackbarHost = { SnackbarHost(snackbar) },
+        snackbarHost = { if (!showFavorites) SnackbarHost(snackbar) },
     ) { padding ->
         BoxWithConstraints(Modifier.padding(padding).fillMaxSize()) {
             if (maxWidth >= Spacing.twoPaneMinWidth) {
@@ -200,7 +216,7 @@ fun EditorScreen(vm: EditorViewModel, onAbout: () -> Unit = {}) {
                 }
             } else {
                 // The canvas stays in view; only the open tab scrolls, so every change is visible.
-                val canvasMax = maxHeight * 0.42f
+                val canvasMax = maxHeight * 0.5f
                 Column(Modifier.fillMaxSize().padding(horizontal = Spacing.lg)) {
                     Canvas(
                         preview,
@@ -352,6 +368,8 @@ private fun MoreMenu(
     onShare: () -> Unit,
     onOpen: () -> Unit,
     onSaveSettings: () -> Unit,
+    lightTheme: Boolean,
+    onLightTheme: (Boolean) -> Unit,
     onAbout: () -> Unit,
 ) {
     var open by remember { mutableStateOf(false) }
@@ -370,6 +388,11 @@ private fun MoreMenu(
             DropdownMenuItem(text = { Text("Open file…") }, onClick = { open = false; onOpen() })
             DropdownMenuItem(text = { Text("Save settings…") }, onClick = { open = false; onSaveSettings() })
             HorizontalDivider()
+            DropdownMenuItem(
+                text = { Text("Light theme") },
+                trailingIcon = { Checkbox(checked = lightTheme, onCheckedChange = null) },
+                onClick = { open = false; onLightTheme(!lightTheme) },
+            )
             DropdownMenuItem(text = { Text("About") }, onClick = { open = false; onAbout() })
         }
     }
@@ -409,9 +432,13 @@ private fun FavoritesSheet(
     onApply: (Favorite) -> Unit,
     onDelete: (Favorite) -> Unit,
     onDismiss: () -> Unit,
+    snackbar: SnackbarHostState,
 ) {
     val t = LocalTokens.current
     ModalBottomSheet(onDismissRequest = onDismiss) {
+      // Messages show inside the sheet while it is open; behind it they would be hidden. They sit at
+      // the top, because the sheet's lower part can be below the screen while it is half open.
+      Box {
         Column(Modifier.padding(horizontal = Spacing.lg).padding(bottom = Spacing.xl)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text("Favourites", style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
@@ -437,6 +464,8 @@ private fun FavoritesSheet(
                 }
             }
         }
+        SnackbarHost(snackbar, Modifier.align(Alignment.TopCenter))
+      }
     }
 }
 

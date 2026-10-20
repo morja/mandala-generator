@@ -1,22 +1,23 @@
 {
- "layers": [
-  {
-   "isEnabled": false,
-   "style": "spirograph"
+  "layers": [
+    {
+      "isEnabled": false,
+      "style": "spirograph"
+    }
+  ],
+  "outputSize": 512,
+  "emblemLayer": {
+    "isEnabled": true,
+    "motif": "sriYantra",
+    "rendering": "line",
+    "frame": "gates",
+    "size": 0.7,
+    "weight": 0.2,
+    "rotation": -45,
+    "blendMode": "screen"
+  },
+  "baseLayer": {
+    "isEnabled": true,
+    "type": "gradient"
   }
- ],
- "outputSize": 512,
- "emblemLayer": {
-  "isEnabled": true,
-  "motif": "sriYantra",
-  "rendering": "line",
-  "frame": "gates",
-  "size": 0.7,
-  "weight": 0.2,
-  "rotation": -45
- },
- "baseLayer": {
-  "isEnabled": true,
-  "type": "gradient"
- }
 }

@@ -1,16 +1,17 @@
 {
- "layers": [
-  {
-   "isEnabled": false,
-   "style": "spirograph"
+  "layers": [
+    {
+      "isEnabled": false,
+      "style": "spirograph"
+    }
+  ],
+  "outputSize": 512,
+  "emblemLayer": {
+    "isEnabled": true,
+    "motif": "flowerOfLife",
+    "rendering": "line",
+    "frame": "doubleRing",
+    "weight": 0.3,
+    "blendMode": "screen"
   }
- ],
- "outputSize": 512,
- "emblemLayer": {
-  "isEnabled": true,
-  "motif": "flowerOfLife",
-  "rendering": "line",
-  "frame": "doubleRing",
-  "weight": 0.3
- }
 }

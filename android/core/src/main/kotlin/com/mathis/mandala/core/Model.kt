@@ -309,7 +309,8 @@ data class EmblemLayerSettings(
     val colorSpread: Double = 0.3,
     val glow: Double = 0.5,
     val opacity: Double = 1.0,
-    val blendMode: LayerBlendMode = LayerBlendMode.SCREEN,
+    /** Normal by default: stays visible on bright mandalas, where Screen cannot brighten white. */
+    val blendMode: LayerBlendMode = LayerBlendMode.NORMAL,
     /** Tree of Life: shape of the tree. */
     val seed: ULong = 1uL,
     /** Tree of Life: number of twigs (0–1). */

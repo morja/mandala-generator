@@ -80,7 +80,8 @@ data class PreviewState(
 data class HistoryState(val canGoBack: Boolean, val canGoForward: Boolean)
 
 sealed interface EditorEvent {
-    data class Message(val text: String, val canUndo: Boolean = false) : EditorEvent
+    /** `canUndo` steps back in the settings history; `undo` restores something else instead. */
+    data class Message(val text: String, val canUndo: Boolean = false, val undo: (() -> Unit)? = null) : EditorEvent
     data class ShareImage(val uri: Uri) : EditorEvent
 }
 
@@ -339,7 +340,16 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         message("Favourite applied", canUndo = true)
     }
 
-    fun removeFavorite(id: String) = _favorites.update { Favorites.remove(it, id) }
+    fun removeFavorite(id: String) {
+        val before = _favorites.value
+        val index = before.indexOfFirst { it.id == id }
+        if (index < 0) return
+        val removed = before[index]
+        _favorites.update { Favorites.remove(it, id) }
+        message("Favourite deleted", undo = {
+            _favorites.update { list -> if (list.any { it.id == removed.id }) list else list.toMutableList().apply { add(index.coerceAtMost(size), removed) } }
+        })
+    }
 
     // ── Files of the macOS app ──
 
@@ -393,7 +403,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
 
     fun exportToGallery() = renderFullSize(large = false) { image, fileName ->
         withContext(Dispatchers.IO) { GalleryExport.savePng(getApplication(), image, fileName) }
-        message("Saved to Pictures/${GalleryExport.FOLDER} as $fileName")
+        message("Saved to Pictures/${GalleryExport.FOLDER}")
     }
 
     /** Pro: 2048 px, drawn without supersampling so it needs no more memory than the normal export. */
@@ -401,7 +411,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         if (!pro.state.value.owned) return
         renderFullSize(large = true) { image, fileName ->
             withContext(Dispatchers.IO) { GalleryExport.savePng(getApplication(), image, fileName) }
-            message("Saved ${Editing.LARGE_EXPORT_SIZE} px to Pictures/${GalleryExport.FOLDER} as $fileName")
+            message("Saved ${Editing.LARGE_EXPORT_SIZE} px to Pictures/${GalleryExport.FOLDER}")
         }
     }
 
@@ -438,8 +448,8 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
-    private fun message(text: String, canUndo: Boolean = false) {
-        _events.trySend(EditorEvent.Message(text, canUndo))
+    private fun message(text: String, canUndo: Boolean = false, undo: (() -> Unit)? = null) {
+        _events.trySend(EditorEvent.Message(text, canUndo, undo))
     }
 
     private suspend fun renderPreview(params: MandalaParameters) {
