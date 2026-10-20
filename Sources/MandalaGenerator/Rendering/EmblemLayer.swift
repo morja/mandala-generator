@@ -106,9 +106,16 @@ extension MandalaRenderer {
     }
 
     /// Dots spaced along a stroke by arc length, sized by the stroke width there.
-    private static func beads(along pts: [EmblemPoint], thick: Double, minRadius: Double) -> [EmblemDot] {
+    private static func beads(along raw: [EmblemPoint], thick: Double, minRadius: Double) -> [EmblemDot] {
+        // Smooth the widths first so neighbouring beads grow and shrink gently.
+        let pts: [EmblemPoint] = raw.indices.map { i in
+            let lo = max(0, i - 4), hi = min(raw.count - 1, i + 4)
+            var p = raw[i]
+            p.w = raw[lo...hi].reduce(0) { $0 + $1.w } / Double(hi - lo + 1)
+            return p
+        }
         var out: [EmblemDot] = []
-        func radius(_ p: EmblemPoint) -> Double { max(minRadius, p.w * thick * 0.5) }
+        func radius(_ p: EmblemPoint) -> Double { max(minRadius, p.w * thick * 0.42) }
         var next = 0.0          // arc length where the next bead goes
         var walked = 0.0
         for i in 1..<pts.count {
@@ -148,9 +155,11 @@ extension MandalaRenderer {
                         let a = m[y * size + x]
                         guard a > 0 else { continue }
                         let dx = Double(x) + 0.5 - half
+                        // Run along the palette and back instead of jumping from its end to its start.
                         var t = (position + spread * min(1, (dx * dx + dy * dy).squareRoot() / outer))
-                            .truncatingRemainder(dividingBy: 1)
-                        if t < 0 { t += 1 }
+                            .truncatingRemainder(dividingBy: 2)
+                        if t < 0 { t += 2 }
+                        if t > 1 { t = 2 - t }
                         let c = lut[Int(t * 255)]
                         let af = Float(a) / 255
                         let o = (y * size + x) * 4

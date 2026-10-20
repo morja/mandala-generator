@@ -64,10 +64,13 @@ struct EmblemLayerCard: View {
             if isExpanded {
                 VStack(spacing: 8) {
                     // ── Motif ─────────────────────────────────────────────
-                    Picker("", selection: $settings.motif) {
-                        ForEach(EmblemMotif.allCases) { Text($0.displayName).tag($0) }
+                    row("Motif") {
+                        Picker("", selection: $settings.motif) {
+                            ForEach(EmblemMotif.allCases) { Text($0.displayName).tag($0) }
+                        }
+                        .pickerStyle(.menu).labelsHidden().fixedSize()
+                        Spacer()
                     }
-                    .pickerStyle(.segmented).labelsHidden()
 
                     row("Style") {
                         Picker("", selection: $settings.rendering) {
@@ -81,6 +84,28 @@ struct EmblemLayerCard: View {
                         }
                         .pickerStyle(.menu).labelsHidden().fixedSize()
                         Spacer()
+                    }
+
+                    if settings.motif == .flowerOfLife {
+                        row("Variant") {
+                            Picker("", selection: $settings.flowerVariant) {
+                                ForEach(EmblemFlowerVariant.allCases) { Text($0.displayName).tag($0) }
+                            }
+                            .pickerStyle(.segmented).labelsHidden()
+                        }
+                    }
+
+                    if settings.motif == .lotus {
+                        row("Petals") {
+                            Picker("", selection: $settings.petals) {
+                                ForEach([6, 8, 12, 16], id: \.self) { Text("\($0)").tag($0) }
+                            }
+                            .pickerStyle(.segmented).labelsHidden()
+                        }
+                    }
+
+                    if settings.motif.isOrganic {
+                        SceneSlider(label: "Organic", value: $settings.organic, color: .green)
                     }
 
                     if settings.motif == .treeOfLife {
@@ -152,6 +177,9 @@ struct EmblemLayerCard: View {
         settings.colorPosition = Double.random(in: 0...1)
         settings.colorSpread = Double.random(in: 0...0.6)
         settings.glow = Double.random(in: 0.2...0.8)
+        settings.organic = Double.random(in: 0.2...1.0)
+        settings.flowerVariant = EmblemFlowerVariant.allCases.randomElement() ?? .flower
+        settings.petals = [6, 8, 12, 16].randomElement() ?? 8
     }
 }
 

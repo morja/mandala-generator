@@ -319,7 +319,7 @@ struct GraffitiLayerSettings: Equatable, Codable {
 
 /// One motif drawn large and upright in the centre (not repeated by symmetry).
 enum EmblemMotif: String, CaseIterable, Identifiable, Codable {
-    case om, treeOfLife
+    case om, treeOfLife, flowerOfLife, lotus
     var id: String { rawValue }
 
     init(from decoder: Decoder) throws {
@@ -329,8 +329,32 @@ enum EmblemMotif: String, CaseIterable, Identifiable, Codable {
     }
     var displayName: String {
         switch self {
-        case .om:         return "Om"
-        case .treeOfLife: return "Tree of Life"
+        case .om:           return "Om"
+        case .treeOfLife:   return "Tree of Life"
+        case .flowerOfLife: return "Flower of Life"
+        case .lotus:        return "Lotus"
+        }
+    }
+    /// Whether the Organic slider changes this motif.
+    var isOrganic: Bool { self != .flowerOfLife }
+}
+
+/// The members of the Flower of Life family.
+enum EmblemFlowerVariant: String, CaseIterable, Identifiable, Codable {
+    case seed, flower, fruit, metatron
+    var id: String { rawValue }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        let raw = (try? container.decode(String.self)) ?? ""
+        self = EmblemFlowerVariant(rawValue: raw) ?? .flower
+    }
+    var displayName: String {
+        switch self {
+        case .seed:     return "Seed"
+        case .flower:   return "Flower"
+        case .fruit:    return "Fruit"
+        case .metatron: return "Metatron"
         }
     }
 }
@@ -393,10 +417,14 @@ struct EmblemLayerSettings: Equatable, Codable {
     var seed: UInt64                = 1      // shape of the tree
     var branching: Double           = 0.5    // number of twigs (0–1)
     var roots: Bool                 = true
+    // Om, Tree of Life, Lotus: calligraphic strokes, flowing branches, uneven petals (0–1)
+    var organic: Double             = 0.5
+    var flowerVariant: EmblemFlowerVariant = .flower
+    var petals: Int                 = 8      // Lotus: petals in the inner rings
 
     enum CodingKeys: String, CodingKey {
         case isEnabled, motif, rendering, frame, size, weight, paletteIndex, colorPosition, colorSpread
-        case glow, opacity, blendMode, seed, branching, roots
+        case glow, opacity, blendMode, seed, branching, roots, organic, flowerVariant, petals
     }
 
     init() {}
@@ -418,6 +446,9 @@ struct EmblemLayerSettings: Equatable, Codable {
         seed          = c.decodeSafe(UInt64.self,          forKey: .seed,          default: 1)
         branching     = c.decodeSafe(Double.self,          forKey: .branching,     default: 0.5)
         roots         = c.decodeSafe(Bool.self,            forKey: .roots,         default: true)
+        organic       = c.decodeSafe(Double.self,          forKey: .organic,       default: 0.5)
+        flowerVariant = c.decodeSafe(EmblemFlowerVariant.self, forKey: .flowerVariant, default: .flower)
+        petals        = c.decodeSafe(Int.self,             forKey: .petals,        default: 8)
     }
 }
 
