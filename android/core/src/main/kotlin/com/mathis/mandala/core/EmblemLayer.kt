@@ -27,12 +27,15 @@ internal class EmblemLayer(private val par: Parallel, private val fx: LayerEffec
         // Unit space → pixels: the frame ring (radius 0.92) gets a diameter of `size` × canvas.
         val unit = s.size.coerceIn(0.1, 1.0) * size * 0.5 / EmblemShapes.RING_RADIUS
         val glowReach = if (s.glow > 0) 3 * 60.0 * s.glow * size / 1600 else 0.0
-        val area = place.around(max(size.toDouble(), unit * 1.6 + glowReach + 4))
+        // Its own offset from the mandala centre (ADR-0011).
+        val centreX = place.centreX + s.offsetX * size
+        val centreY = place.centreY + s.offsetY * size
+        val area = place.around(centreX, centreY, max(size.toDouble(), unit * 1.6 + glowReach + 4))
         val w = area[2] - area[0]
         val h = area[3] - area[1]
         if (w <= 0 || h <= 0) return base
-        val ecx = place.centreX - area[0]
-        val ecy = place.centreY - area[1]
+        val ecx = centreX - area[0]
+        val ecy = centreY - area[1]
         val mask = EmblemMask(w, h, ecx, ecy, unit, s.rotation).draw(geometry, s.rendering, s.weight, par)
 
         val palette = palettes[s.paletteIndex.coerceIn(0, palettes.size - 1)]

@@ -198,6 +198,31 @@ object Editing {
         return "mandala-$styles-p${first.paletteIndex}$sym-${settingsHash(params)}.png"
     }
 
+    // ── Positions of layers and the emblem (ADR-0011) ──
+
+    /** How far a centre may move from the mandala's centre, in fractions of its square. */
+    const val MAX_OFFSET = 1.0
+
+    /**
+     * The layer moved by (dx, dy) (fractions of the canvas), its size multiplied by `zoom` and turned
+     * by `turnDegrees` clockwise, within the ranges its controls offer.
+     */
+    fun StyleLayer.movedBy(dx: Double, dy: Double, zoom: Double = 1.0, turnDegrees: Double = 0.0): StyleLayer = copy(
+        offsetX = (offsetX + dx).coerceIn(-MAX_OFFSET, MAX_OFFSET),
+        offsetY = (offsetY + dy).coerceIn(-MAX_OFFSET, MAX_OFFSET),
+        scale = (scale * zoom).coerceIn(0.1, 1.2),
+        // A layer's rotation turns counter-clockwise on screen, the fingers' turn is clockwise.
+        rotation = ((rotation - turnDegrees / 360.0) % 1.0).let { if (it < 0) it + 1.0 else it },
+    )
+
+    /** The emblem moved, sized and turned like [movedBy] for a layer; its rotation is in degrees. */
+    fun EmblemLayerSettings.movedBy(dx: Double, dy: Double, zoom: Double = 1.0, turnDegrees: Double = 0.0): EmblemLayerSettings = copy(
+        offsetX = (offsetX + dx).coerceIn(-MAX_OFFSET, MAX_OFFSET),
+        offsetY = (offsetY + dy).coerceIn(-MAX_OFFSET, MAX_OFFSET),
+        size = (size * zoom).coerceIn(0.1, 1.0),
+        rotation = ((rotation + turnDegrees + 180.0) % 360.0).let { if (it < 0) it + 360.0 else it } - 180.0,
+    )
+
     // ── Saving in a format (ADR-0010) ──
 
     /** Formats offered when saving. The phone screen follows the device's aspect ratio. */
@@ -255,6 +280,9 @@ object Editing {
         return h.toString(16).padStart(16, '0').take(8)
     }
 }
+
+/** What drags on the canvas move in the move mode (ADR-0011). */
+enum class MoveTarget { LAYER, EMBLEM }
 
 /** The two hand-drawing tools of the macOS app: glowing lines (drawing layer) and spray paint (graffiti layer). */
 enum class DrawTool(val label: String) { LINES("Lines"), SPRAY("Spray") }

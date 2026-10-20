@@ -21,6 +21,8 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.positionChanged
 import com.mathis.mandala.app.DrawTool
+import com.mathis.mandala.app.MoveTarget
+import androidx.compose.foundation.gestures.detectTransformGestures
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.max
@@ -109,6 +111,7 @@ fun EditorScreen(
     val selected by vm.selected.collectAsStateWithLifecycle()
     val favorites by vm.favorites.collectAsStateWithLifecycle()
     val drawTool by vm.drawTool.collectAsStateWithLifecycle()
+    val moveTarget by vm.moveTarget.collectAsStateWithLifecycle()
     val history by vm.historyState.collectAsStateWithLifecycle()
     val pro by vm.proState.collectAsStateWithLifecycle()
     val saveChoice by vm.saveChoice.collectAsStateWithLifecycle()
@@ -235,9 +238,9 @@ fun EditorScreen(
                     // The square canvas takes the smaller of width and remaining height.
                     BoxWithConstraints(Modifier.weight(1f).fillMaxHeight(), contentAlignment = Alignment.TopCenter) {
                         val side = minOf(maxWidth, maxHeight - Sizes.statusLine)
-                        Canvas(preview, Modifier.width(side), drawing(params, drawTool, vm))
+                        Canvas(preview, Modifier.width(side), drawing(params, drawTool, vm), moving(params, selected, moveTarget, vm))
                     }
-                    ControlTabs(params, selected, vm, Modifier.width(Spacing.controlsWidth).fillMaxHeight())
+                    ControlTabs(params, selected, vm, Modifier.width(Spacing.controlsWidth).fillMaxHeight(), pro.owned) { showPro = true }
                 }
             } else {
                 // The canvas stays in view; only the open tab scrolls, so every change is visible.
@@ -247,8 +250,9 @@ fun EditorScreen(
                         preview,
                         Modifier.widthIn(max = canvasMax).fillMaxWidth().align(Alignment.CenterHorizontally),
                         drawing(params, drawTool, vm),
+                        moving(params, selected, moveTarget, vm),
                     )
-                    ControlTabs(params, selected, vm, Modifier.weight(1f).fillMaxWidth())
+                    ControlTabs(params, selected, vm, Modifier.weight(1f).fillMaxWidth(), pro.owned) { showPro = true }
                 }
             }
         }
@@ -288,8 +292,28 @@ private fun drawing(params: MandalaParameters, tool: DrawTool?, vm: EditorViewMo
     }
 }
 
+/** What the canvas needs in the move mode (ADR-0011): where the target sits, about how large it is, and where gestures go. */
+private class MoveInput(
+    /** Centre as fractions of the canvas, and a ring radius as a fraction of its width. */
+    val x: Float,
+    val y: Float,
+    val radius: Float,
+    val label: String,
+    val onMove: (dx: Double, dy: Double, zoom: Double, turnDegrees: Double) -> Unit,
+)
+
+private fun moving(params: MandalaParameters, selected: Int, target: MoveTarget?, vm: EditorViewModel): MoveInput? = when (target) {
+    null -> null
+    MoveTarget.LAYER -> params.layers.getOrNull(selected)?.let { l ->
+        MoveInput((0.5 + l.offsetX).toFloat(), (0.5 + l.offsetY).toFloat(), (0.36 * l.scale).toFloat(), "layer ${selected + 1}", vm::moveBy)
+    }
+    MoveTarget.EMBLEM -> params.emblemLayer.let { e ->
+        MoveInput((0.5 + e.offsetX).toFloat(), (0.5 + e.offsetY).toFloat(), (0.5 * e.size).toFloat(), "the emblem", vm::moveBy)
+    }
+}
+
 @Composable
-private fun Canvas(preview: PreviewState, modifier: Modifier, drawing: DrawingInput? = null) {
+private fun Canvas(preview: PreviewState, modifier: Modifier, drawing: DrawingInput? = null, move: MoveInput? = null) {
     val t = LocalTokens.current
     Column(modifier.padding(bottom = Spacing.xs), verticalArrangement = Arrangement.spacedBy(Spacing.xs)) {
         Box(
@@ -300,6 +324,7 @@ private fun Canvas(preview: PreviewState, modifier: Modifier, drawing: DrawingIn
                 Image(it, contentDescription = "Mandala preview", contentScale = ContentScale.Fit, modifier = Modifier.fillMaxSize())
             }
             if (drawing != null) DrawingOverlay(drawing, t.accent)
+            if (move != null) MoveOverlay(move, t.accent, t.canvas)
             if (preview.rendering) {
                 LinearProgressIndicator(Modifier.fillMaxWidth().height(Sizes.progress))
             }
@@ -307,6 +332,7 @@ private fun Canvas(preview: PreviewState, modifier: Modifier, drawing: DrawingIn
         val status = when {
             preview.error != null -> preview.error
             drawing != null -> "Drag on the image to draw"
+            move != null -> "Drag to move ${move.label}, pinch to size and turn it"
             else -> null
         }
         if (status != null) {
@@ -380,6 +406,31 @@ private fun DrawingOverlay(input: DrawingInput, guide: Color) {
                 drawPath(path, current.colour, style = Stroke(width, cap = StrokeCap.Round, join = StrokeJoin.Round))
             }
         }
+    }
+}
+
+/**
+ * Moves the selected layer or the emblem with the fingers: drag moves, pinch sizes, two fingers
+ * turn. A ring shows where it is at once; the preview follows when the fingers rest.
+ */
+@Composable
+private fun MoveOverlay(input: MoveInput, guide: Color, halo: Color) {
+    val current by rememberUpdatedState(input)
+    androidx.compose.foundation.Canvas(
+        Modifier
+            .fillMaxSize()
+            .pointerInput(Unit) {
+                detectTransformGestures { _, pan, zoom, rotation ->
+                    current.onMove((pan.x / size.width).toDouble(), (pan.y / size.height).toDouble(), zoom.toDouble(), rotation.toDouble())
+                }
+            },
+    ) {
+        val c = Offset(current.x * size.width, current.y * size.height)
+        // A dark edge under the accent keeps the ring visible over bright mandalas.
+        drawCircle(halo, current.radius * size.width, c, style = Stroke(width = 7f))
+        drawCircle(guide, current.radius * size.width, c, style = Stroke(width = 3f))
+        drawCircle(halo, 10f, c)
+        drawCircle(guide, 7f, c)
     }
 }
 

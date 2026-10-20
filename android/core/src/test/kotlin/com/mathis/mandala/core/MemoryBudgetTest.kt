@@ -58,6 +58,22 @@ class MemoryBudgetTest {
         assertEquals(4779, result.image.height)
     }
 
+    /**
+     * Every layer and the emblem moved away from the centre (ADR-0011) on the Pro portrait, zoomed
+     * in: a moved layer gets its full square, still cut to the canvas plus margin.
+     */
+    @Test
+    fun exportsMovedLayersWithin256MbHeap() {
+        val params = SettingsJson.decode(fiveHeavyLayers).let { p ->
+            p.copy(
+                layers = p.layers.mapIndexed { i, l -> l.copy(offsetX = if (i % 2 == 0) -0.4 else 0.35, offsetY = 0.3 * (i - 2)) },
+                emblemLayer = p.emblemLayer.copy(offsetX = 0.3, offsetY = -0.4),
+            )
+        }
+        val options = RenderOptions(width = 2048, height = 4779, supersample = false, framing = Framing(zoom = 2.0), threads = 4)
+        assertEquals(4779, MandalaRenderer.render(params, options).image.height)
+    }
+
     /** The free portrait: 1024 wide, drawn at twice the size like the free square. */
     @Test
     fun exportsTheFreePortraitWithin256MbHeap() {

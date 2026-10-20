@@ -82,12 +82,9 @@ object MandalaRenderer {
         val baseRadius = mandalaSize * 0.72
         // Same lines spread over a larger canvas give a lower mean; this linear factor cancels it.
         val brightnessScale = mandalaSize / 1600f
-        // Offset of the mandala centre from the canvas centre: whole pixels move the layer buffers,
-        // the rest goes into the centre they are drawn around (zero with the default framing).
+        // Offset of the mandala centre from the canvas centre (zero with the default framing).
         val dX = place.centreX - bufW / 2.0
         val dY = place.centreY - bufH / 2.0
-        val dXi = Math.round(dX).toInt()
-        val dYi = Math.round(dY).toInt()
 
         Parallel(max(1, options.threads)).use { par ->
             val fx = LayerEffects(par)
@@ -139,7 +136,9 @@ object MandalaRenderer {
                 val effectWidth = max(mandalaSize, if (raw % 2 == 0) raw else raw + 1)
                 val rotated = abs(layer.rotation) > 0.001
                 val margin = effectMargin(layer, effectWidth)
-                val size = if (rotated) effectWidth else min(effectWidth, mandalaSize + 2 * margin)
+                // A moved layer shows parts beyond the centred square, so it gets the full one (ADR-0011).
+                val moved = layer.offsetX != 0.0 || layer.offsetY != 0.0
+                val size = if (rotated || moved) effectWidth else min(effectWidth, mandalaSize + 2 * margin)
                 val op = when (layer.blendMode) {
                     LayerBlendMode.SCREEN -> BlendOp.SCREEN
                     LayerBlendMode.ADD -> BlendOp.ADD
@@ -151,16 +150,24 @@ object MandalaRenderer {
                 // canvas. Only the part that can reach the canvas is drawn: for an unrotated layer the
                 // canvas plus the effect margin, for a rotated one what can turn into view. With the
                 // default framing this is the whole square, as before.
-                val sx0 = dXi - (size - bufW) / 2
-                val sy0 = dYi - (size - bufH) / 2
+                // The layer's own offset from the mandala centre (ADR-0011): whole pixels move its square,
+                // the rest goes into the centre it is drawn around (zero for a centred layer).
+                val lX = dX + layer.offsetX * mandalaSize
+                val lY = dY + layer.offsetY * mandalaSize
+                val lXi = Math.round(lX).toInt()
+                val lYi = Math.round(lY).toInt()
+                val layerCentreX = bufW / 2.0 + lX
+                val layerCentreY = bufH / 2.0 + lY
+                val sx0 = lXi - (size - bufW) / 2
+                val sy0 = lYi - (size - bufH) / 2
                 var view = when {
                     !rotated -> intArrayOf(max(sx0, -margin), max(sy0, -margin), min(sx0 + size, bufW + margin), min(sy0 + size, bufH + margin))
                     size <= 2 * max(bufW, bufH) -> intArrayOf(sx0, sy0, sx0 + size, sy0 + size)
                     else -> {
-                        val reach = farthestCorner(place.centreX, place.centreY, bufW, bufH, margin)
+                        val reach = farthestCorner(layerCentreX, layerCentreY, bufW, bufH, margin)
                         intArrayOf(
-                            max(sx0, floor(place.centreX - reach).toInt()), max(sy0, floor(place.centreY - reach).toInt()),
-                            min(sx0 + size, ceil(place.centreX + reach).toInt()), min(sy0 + size, ceil(place.centreY + reach).toInt()),
+                            max(sx0, floor(layerCentreX - reach).toInt()), max(sy0, floor(layerCentreY - reach).toInt()),
+                            min(sx0 + size, ceil(layerCentreX + reach).toInt()), min(sy0 + size, ceil(layerCentreY + reach).toInt()),
                         )
                     }
                 }
@@ -170,8 +177,8 @@ object MandalaRenderer {
                     composite = fx.composite(composite, null, op)
                     continue
                 }
-                val cx = size * 0.5f + (dX - dXi).toFloat() - (view[0] - sx0)
-                val cy = size * 0.5f + (dY - dYi).toFloat() - (view[1] - sy0)
+                val cx = size * 0.5f + (lX - lXi).toFloat() - (view[0] - sx0)
+                val cy = size * 0.5f + (lY - lYi).toFloat() - (view[1] - sy0)
                 // Noise of the painted effect is sampled where this part sits in the effect square.
                 var offsetX = (effectWidth - size) / 2 + (view[0] - sx0)
                 var offsetY = (effectWidth - size) / 2 + (view[1] - sy0)

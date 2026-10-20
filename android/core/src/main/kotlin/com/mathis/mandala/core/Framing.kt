@@ -30,11 +30,14 @@ internal class Placement(val centreX: Double, val centreY: Double, val size: Int
      * The canvas pixels within `reach` of the centre horizontally and vertically, as
      * [x0, y0, x1, y1]; empty (x1 <= x0 or y1 <= y0) when the square misses the canvas.
      */
-    fun around(reach: Double): IntArray = intArrayOf(
-        max(0, floor(centreX - reach).toInt()),
-        max(0, floor(centreY - reach).toInt()),
-        min(canvasWidth, ceil(centreX + reach).toInt()),
-        min(canvasHeight, ceil(centreY + reach).toInt()),
+    fun around(reach: Double): IntArray = around(centreX, centreY, reach)
+
+    /** Like [around], for a point (x, y) other than the centre. */
+    fun around(x: Double, y: Double, reach: Double): IntArray = intArrayOf(
+        max(0, floor(x - reach).toInt()),
+        max(0, floor(y - reach).toInt()),
+        min(canvasWidth, ceil(x + reach).toInt()),
+        min(canvasHeight, ceil(y + reach).toInt()),
     )
 
     companion object {

@@ -3,6 +3,7 @@ package com.mathis.mandala.app
 import com.mathis.mandala.app.Editing.SaveFormat
 import com.mathis.mandala.app.Editing.addLayer
 import com.mathis.mandala.app.Editing.moved
+import com.mathis.mandala.app.Editing.movedBy
 import com.mathis.mandala.app.Editing.zoomedAround
 import com.mathis.mandala.core.Framing
 import com.mathis.mandala.app.Editing.addStroke
@@ -211,5 +212,19 @@ class EditingTest {
         // Limits: zoom 0.25 to 4, centre inside the frame.
         assertEquals(Framing.MAX_ZOOM, Framing(zoom = 3.0).zoomedAround(0.5, 0.5, 10.0).zoom, 1e-9)
         assertEquals(1.0, Framing().moved(5.0, 0.0).centreX, 1e-9)
+    }
+
+    @Test
+    fun layersAndTheEmblemMoveSizeAndTurnWithinTheirRanges() {
+        val layer = com.mathis.mandala.core.StyleLayer(scale = 1.0, rotation = 0.9).movedBy(0.3, -0.2, zoom = 2.0, turnDegrees = 72.0)
+        assertEquals(0.3, layer.offsetX, 1e-9)
+        assertEquals(-0.2, layer.offsetY, 1e-9)
+        assertEquals(1.2, layer.scale, 1e-9)
+        assertEquals(0.7, layer.rotation, 1e-9)
+        assertEquals(1.0, layer.movedBy(5.0, 0.0).offsetX, 1e-9)
+        val emblem = EmblemLayerSettings(size = 0.5, rotation = 170.0).movedBy(-0.1, 0.1, zoom = 0.1, turnDegrees = 20.0)
+        assertEquals(-0.1, emblem.offsetX, 1e-9)
+        assertEquals(0.1, emblem.size, 1e-9)
+        assertEquals(-170.0, emblem.rotation, 1e-9)
     }
 }
