@@ -516,10 +516,16 @@ private struct AnimationOptionsSheet: View {
 // MARK: - Text Layer Card
 
 struct TextLayerCard: View {
+    @EnvironmentObject private var appState: AppState
     @Binding var settings: TextLayerSettings
     @State private var isExpanded = true
+    @State private var showQuotePicker = false
     @State private var shadowExpanded = false
     @State private var cloudExpanded = false
+
+    private var isInMyQuotes: Bool {
+        MyQuotes.contains(text: settings.text, author: settings.customAuthor, in: appState.myQuotes)
+    }
 
     private var selectedFontDisplay: String {
         QuoteDatabase.availableFonts.first { $0.name == settings.fontName }?.display ?? settings.fontName
@@ -585,13 +591,37 @@ struct TextLayerCard: View {
                             .scrollContentBackground(.hidden)
                             .background(Color(NSColor.textBackgroundColor).opacity(0.5))
                             .cornerRadius(5)
-                        Button(action: insertRandomQuote) {
-                            Image(systemName: "quote.bubble")
-                                .font(.system(size: 12))
-                                .foregroundColor(.orange)
+                        VStack(spacing: 6) {
+                            Button(action: insertRandomQuote) {
+                                Image(systemName: "quote.bubble")
+                                    .font(.system(size: 12))
+                                    .foregroundColor(.orange)
+                            }
+                            .buttonStyle(.plain)
+                            .help("Insert random quote")
+                            Button(action: { showQuotePicker.toggle() }) {
+                                Image(systemName: "list.bullet")
+                                    .font(.system(size: 11))
+                                    .foregroundColor(.secondary)
+                            }
+                            .buttonStyle(.plain)
+                            .help("Choose quote")
+                            .popover(isPresented: $showQuotePicker, arrowEdge: .trailing) {
+                                QuotePickerPopover(
+                                    myQuotes: appState.myQuotes,
+                                    onPick: { useQuote($0); showQuotePicker = false },
+                                    onRemove: { appState.removeMyQuote($0) }
+                                )
+                            }
+                            Button(action: saveToMyQuotes) {
+                                Image(systemName: isInMyQuotes ? "bookmark.fill" : "bookmark")
+                                    .font(.system(size: 11))
+                                    .foregroundColor(isInMyQuotes ? .orange : .secondary)
+                            }
+                            .buttonStyle(.plain)
+                            .disabled(settings.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || isInMyQuotes)
+                            .help(isInMyQuotes ? "In your quotes" : "Save to my quotes")
                         }
-                        .buttonStyle(.plain)
-                        .help("Insert random quote")
                     }
 
                     // ── Font ─────────────────────────────────────────────
@@ -742,10 +772,17 @@ struct TextLayerCard: View {
     }
 
     private func insertRandomQuote() {
-        let q = QuoteDatabase.randomQuote()
+        useQuote(QuoteDatabase.randomQuote(including: appState.myQuotes))
+    }
+
+    private func useQuote(_ q: Quote) {
         settings.text = q.text
         settings.customAuthor = q.author
         settings.isEnabled = true
+    }
+
+    private func saveToMyQuotes() {
+        appState.addMyQuote(Quote(text: settings.text, author: settings.customAuthor))
     }
 
     private func syncAuthorIfNeeded() {
@@ -773,6 +810,71 @@ struct TextLayerCard: View {
         settings.blendMode     = .normal
         settings.isEnabled     = true
         if settings.text.isEmpty { insertRandomQuote() }
+    }
+}
+
+// MARK: - Quote picker
+
+/// Your own quotes first (with a remove button), then the built-in public-domain collection.
+struct QuotePickerPopover: View {
+    let myQuotes: [Quote]
+    let onPick: (Quote) -> Void
+    let onRemove: (Quote) -> Void
+
+    var body: some View {
+        ScrollView {
+            LazyVStack(alignment: .leading, spacing: 0) {
+                if !myQuotes.isEmpty {
+                    sectionTitle("Your quotes")
+                    ForEach(myQuotes, id: \.self) { q in
+                        row(q) {
+                            Button(action: { onRemove(q) }) {
+                                Image(systemName: "xmark")
+                                    .font(.system(size: 9)).foregroundColor(.secondary)
+                            }
+                            .buttonStyle(.plain)
+                            .help("Remove quote")
+                        }
+                    }
+                    sectionTitle("Collection").padding(.top, 8)
+                }
+                ForEach(QuoteDatabase.quotes, id: \.self) { q in
+                    row(q) { EmptyView() }
+                }
+                Text("All quotes in the collection are in the public domain.")
+                    .font(.system(size: 10)).foregroundColor(.secondary)
+                    .padding(.top, 10)
+            }
+            .padding(12)
+        }
+        .frame(width: 320, height: 420)
+    }
+
+    private func sectionTitle(_ title: String) -> some View {
+        Text(title)
+            .font(.system(size: 11, weight: .semibold))
+            .padding(.bottom, 4)
+    }
+
+    private func row<Trailing: View>(_ q: Quote, @ViewBuilder trailing: () -> Trailing) -> some View {
+        HStack(alignment: .top, spacing: 8) {
+            Button(action: { onPick(q) }) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(q.text)
+                        .font(.system(size: 11))
+                        .fixedSize(horizontal: false, vertical: true)
+                    if !q.author.isEmpty {
+                        Text(q.author)
+                            .font(.system(size: 10)).foregroundColor(.secondary)
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            trailing()
+        }
+        .padding(.vertical, 5)
     }
 }
 

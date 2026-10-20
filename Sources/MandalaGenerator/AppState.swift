@@ -57,6 +57,9 @@ class AppState: ObservableObject {
     @Published var animationExportProgress: Double? = nil
     @Published var isExporting: Bool = false
     @Published var favorites: [Favorite] = []
+    @Published var myQuotes: [Quote] = [] {
+        didSet { saveMyQuotes() }
+    }
     @Published var disabledStyleRawValues: Set<String> = [] {
         didSet { saveStylePreferences() }
     }
@@ -122,6 +125,7 @@ class AppState: ObservableObject {
         let hasHistory = loadHistory()
         loadCustomPalettes()
         loadFavorites()
+        loadMyQuotes()
         loadStylePreferences()
         if hasHistory {
             isNavigatingHistory = true
@@ -466,6 +470,34 @@ class AppState: ObservableObject {
             .appendingPathComponent("MandalaGenerator", isDirectory: true)
         try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
         return dir.appendingPathComponent("favorites.json")
+    }
+
+    // MARK: - Your Quotes
+
+    func addMyQuote(_ quote: Quote) {
+        myQuotes = MyQuotes.add(quote, to: myQuotes)
+    }
+
+    func removeMyQuote(_ quote: Quote) {
+        myQuotes = MyQuotes.remove(quote, from: myQuotes)
+    }
+
+    private func saveMyQuotes() {
+        guard let data = try? JSONEncoder().encode(myQuotes) else { return }
+        try? data.write(to: myQuotesFileURL, options: .atomic)
+    }
+
+    private func loadMyQuotes() {
+        guard let data   = try? Data(contentsOf: myQuotesFileURL),
+              let loaded = try? JSONDecoder().decode([Quote].self, from: data) else { return }
+        myQuotes = loaded.filter { !$0.text.isEmpty }
+    }
+
+    private var myQuotesFileURL: URL {
+        let dir = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+            .appendingPathComponent("MandalaGenerator", isDirectory: true)
+        try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        return dir.appendingPathComponent("my-quotes.json")
     }
 
     func duplicateLayer(at index: Int) {

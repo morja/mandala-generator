@@ -1,8 +1,41 @@
 import Foundation
 
-struct Quote: Equatable {
+struct Quote: Equatable, Hashable, Codable {
     let text: String
     let author: String
+
+    init(text: String, author: String) {
+        self.text = text
+        self.author = author
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        text   = c.decodeSafe(String.self, forKey: .text,   default: "")
+        author = c.decodeSafe(String.self, forKey: .author, default: "")
+    }
+}
+
+// MARK: - Your Quotes
+
+/// The user's own quotes, offered next to the built-in ones. Newest first, no duplicate texts.
+enum MyQuotes {
+    static func add(_ quote: Quote, to list: [Quote]) -> [Quote] {
+        let clean = Quote(text: quote.text.trimmingCharacters(in: .whitespacesAndNewlines),
+                          author: quote.author.trimmingCharacters(in: .whitespacesAndNewlines))
+        guard !clean.text.isEmpty else { return list }
+        return [clean] + list.filter { $0.text != clean.text }
+    }
+
+    static func remove(_ quote: Quote, from list: [Quote]) -> [Quote] {
+        list.filter { $0 != quote }
+    }
+
+    static func contains(text: String, author: String, in list: [Quote]) -> Bool {
+        let t = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        let a = author.trimmingCharacters(in: .whitespacesAndNewlines)
+        return list.contains { $0.text == t && $0.author == a }
+    }
 }
 
 // MARK: - Quote Database
@@ -70,8 +103,9 @@ enum QuoteDatabase {
         Quote(text: "Hope is the thing with feathers that perches in the soul.", author: "Emily Dickinson"),
     ]
 
-    static func randomQuote() -> Quote {
-        quotes.randomElement() ?? quotes[0]
+    /// A random quote from the built-in collection and the user's own quotes.
+    static func randomQuote(including myQuotes: [Quote] = []) -> Quote {
+        (quotes + myQuotes).randomElement() ?? quotes[0]
     }
 
     // Fonts well-suited for spiritual/contemplative text overlays
