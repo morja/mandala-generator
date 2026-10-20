@@ -60,3 +60,4 @@ Step 0 first; it changes no image and can be merged on its own. Steps 1 and 2 be
 4. **"Set as wallpaper":** yes, step 4 is part of the work.
 5. **Zoom range:** a quarter to four times the width, the mandala's centre inside the frame.
 6. **Framing by hand is a Pro feature** (ADR-0010, point 4): more reason to buy Pro than resolution alone. Without Pro the chosen format is saved with the mandala centred.
+7. **Centred backgrounds follow the mandala** (after trying the CLI renders): auto, radial gradient and sunburst sit at the mandala's centre, the auto background also takes its size; linear gradient, grain and image stay on the canvas (ADR-0010, point 6). Idea for later: moving each layer on its own (ADR-0010, Later).

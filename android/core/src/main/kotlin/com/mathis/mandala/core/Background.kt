@@ -13,8 +13,9 @@ import kotlin.math.sqrt
  * go through the same tone map as the mandala lines (x / (x + 0.55)), so they come out darker
  * than the picked colour, and the result is tagged Display P3.
  *
- * On a canvas that is not square (ADR-0010) radial backgrounds stay round and centred, with their
- * radius measured on the shorter side; a linear gradient runs across the whole canvas.
+ * On a canvas that is not square (ADR-0010) radial backgrounds stay round, with their radius
+ * measured on the shorter side, and sit at the mandala's centre (`centreX`, `centreY`); a linear
+ * gradient runs across the whole canvas.
  */
 internal object Background {
 
@@ -22,15 +23,15 @@ internal object Background {
         type == BaseLayerType.GRADIENT || type == BaseLayerType.SUNBURST || type == BaseLayerType.GRAIN ||
             type == BaseLayerType.AUTO || type == BaseLayerType.IMAGE
 
-    fun render(settings: BaseLayerSettings, width: Int, height: Int, par: Parallel): Image8 {
+    fun render(settings: BaseLayerSettings, width: Int, height: Int, centreX: Double, centreY: Double, par: Parallel): Image8 {
         val c1 = hsbToRgb(settings.hue, settings.saturation, settings.brightness)
         val c2 = hsbToRgb(settings.hue2, settings.saturation2, settings.brightness2)
         val out = Image8(width, height, Encoding.DISPLAY_P3)
         val opacity = settings.opacity.toFloat()
         val fill: (Int, Int, FloatArray) -> Unit = when (settings.type) {
-            BaseLayerType.SUNBURST -> sunburst(settings, c1, c2, width, height)
+            BaseLayerType.SUNBURST -> sunburst(settings, c1, c2, width, height, centreX, centreY)
             BaseLayerType.GRAIN -> grain(settings, c1)
-            else -> if (settings.isRadial) radialGradient(c1, c2, width, height) else linearGradient(settings, c1, c2, width, height)
+            else -> if (settings.isRadial) radialGradient(c1, c2, width, height, centreX, centreY) else linearGradient(settings, c1, c2, width, height)
         }
         par.forRange(height) { from, until ->
             val c = FloatArray(3)
@@ -79,11 +80,15 @@ internal object Background {
     // ── Auto (drawBackground plus drawGrassFibers in the macOS app) ──
     // A dark radial gradient tinted by the first layer's palette, a faint wash of its middle colour,
     // and thousands of short "grass" strokes around the centre, all tone-mapped like the lines.
+    // It is drawn from the first layer around the mandala, so it takes the mandala's centre and size.
 
     /** Threads the macOS app splits the fibres over; each draws from its own random stream. */
     private const val MAC_FIBRE_THREADS = 12
 
-    fun renderAuto(params: MandalaParameters, palettes: List<ColorPalette>, width: Int, height: Int, par: Parallel): Image8 {
+    fun renderAuto(
+        params: MandalaParameters, palettes: List<ColorPalette>, width: Int, height: Int,
+        centreX: Double, centreY: Double, side: Int, par: Parallel,
+    ): Image8 {
         val first = params.layers.firstOrNull()
         val palette = palettes[(first?.paletteIndex ?: 0).coerceIn(0, palettes.size - 1)]
         val col0 = FloatArray(3).also { palette.colorAt(0.0, it) }
@@ -93,9 +98,6 @@ internal object Background {
         // macOS app copies into its float buffer as they are.
         val inner = DoubleArray(3) { ColorSpaces.decode(col0[it] * 0.12) }
         val wash = DoubleArray(3) { ColorSpaces.decode(col1[it] * 0.06) }
-        val side = min(width, height)
-        val centreX = width / 2.0
-        val centreY = height / 2.0
         val r0 = side * 0.55
         val r1 = side * 0.85
         // Strip by strip: the gradient for the strip's rows, then all fibres clipped to them.
@@ -116,13 +118,11 @@ internal object Background {
                     }
                 }
             }
-            if (first != null) grassFibres(strip, params.seed, first, palette, side)
+            if (first != null) grassFibres(strip, params.seed, first, palette, centreX.toFloat(), centreY.toFloat(), side)
         }
     }
 
-    private fun grassFibres(buffer: PixelBuffer, seed: ULong, layer: StyleLayer, palette: ColorPalette, side: Int) {
-        val cx = buffer.width * 0.5f
-        val cy = buffer.height * 0.5f
+    private fun grassFibres(buffer: PixelBuffer, seed: ULong, layer: StyleLayer, palette: ColorPalette, cx: Float, cy: Float, side: Int) {
         val maxRadius = side.toFloat() * 0.48f
         val lines = (15000.0 * layer.density + 500).toInt()
         val symmetry = layer.symmetry.coerceIn(1, 8)
@@ -155,9 +155,7 @@ internal object Background {
     // Core Image blends the two colours in linear light and hands back 8-bit sRGB values,
     // which the macOS renderer then copies into its buffer as they are.
 
-    private fun radialGradient(c1: Rgb, c2: Rgb, width: Int, height: Int): (Int, Int, FloatArray) -> Unit {
-        val centreX = width / 2.0
-        val centreY = height / 2.0
+    private fun radialGradient(c1: Rgb, c2: Rgb, width: Int, height: Int, centreX: Double, centreY: Double): (Int, Int, FloatArray) -> Unit {
         val r1 = min(width, height) * 0.72
         return { x, y, out ->
             val dx = x + 0.5 - centreX
@@ -223,9 +221,9 @@ internal object Background {
 
     // ── Sunburst (computed per pixel in the macOS app too) ──
 
-    private fun sunburst(settings: BaseLayerSettings, c1: Rgb, c2: Rgb, width: Int, height: Int): (Int, Int, FloatArray) -> Unit {
-        val cx = width / 2f
-        val cy = height / 2f
+    private fun sunburst(settings: BaseLayerSettings, c1: Rgb, c2: Rgb, width: Int, height: Int, centreX: Double, centreY: Double): (Int, Int, FloatArray) -> Unit {
+        val cx = centreX.toFloat()
+        val cy = centreY.toFloat()
         val size = min(width, height)
         val numRays = (settings.patternScale * 14.0 + 3.0).toFloat()
         val edgeWidth = max(0.015f, 0.48f * (1.0f - settings.patternSharpness.toFloat() * 0.93f))

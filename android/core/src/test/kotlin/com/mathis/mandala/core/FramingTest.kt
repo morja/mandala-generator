@@ -46,6 +46,17 @@ class FramingTest {
     }
 
     @Test
+    fun aRadialBackgroundSitsAtTheMandalaCentre() {
+        val background = SettingsJson.decode("""{"layers":[],"baseLayer":{"isEnabled":true,"type":"gradient","isRadial":true}}""")
+        val high = render(background, RenderOptions(width = 100, height = 400, supersample = false, framing = Framing(centreY = 0.3)))
+        val low = render(background, RenderOptions(width = 100, height = 400, supersample = false, framing = Framing(centreY = 0.7)))
+        val centred = render(background, RenderOptions(width = 100, height = 400, supersample = false))
+        // Centres at 120 and 280 px mirror each other; neither is the centred background.
+        for (y in 0 until 400) for (x in 0 until 100) assertEquals(pixel(high, x, y, 0), pixel(low, x, 399 - y, 0), "pixel $x,$y")
+        assertTrue((0 until 400).any { pixel(high, 50, it, 0) != pixel(centred, 50, it, 0) })
+    }
+
+    @Test
     fun aMandalaMostlyOffTheCanvasStillRenders() {
         val img = render(oneLayer, RenderOptions(width = 120, height = 200, framing = Framing(centreX = 1.0, centreY = 0.0, zoom = 0.25)))
         assertEquals(120, img.width)

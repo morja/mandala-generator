@@ -98,13 +98,13 @@ object MandalaRenderer {
                 warnings += "Background \"${base.type.name.lowercase()}\" is not available yet; drawn black."
             }
             var composite = if (base.isEnabled && base.type == BaseLayerType.AUTO) {
-                Background.renderAuto(params, palettes, bufW, bufH, par)
+                Background.renderAuto(params, palettes, bufW, bufH, place.centreX, place.centreY, mandalaSize, par)
             } else if (base.isEnabled && base.type == BaseLayerType.IMAGE) {
                 val picture = base.imageURL?.let { url -> options.imageLoader?.load(url, max(bufW, bufH)) }
                 if (picture == null) warnings += "Background image not found; drawn in colour 1."
                 Background.renderImage(base, picture, bufW, bufH, par)
             } else if (base.isEnabled && Background.supports(base.type)) {
-                Background.render(base, bufW, bufH, par)
+                Background.render(base, bufW, bufH, place.centreX, place.centreY, par)
             } else {
                 Image8(bufW, bufH, Encoding.SRGB)
             }
