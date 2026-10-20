@@ -90,7 +90,10 @@ internal fun ControlTabs(params: MandalaParameters, selected: Int, vm: EditorVie
     Column(modifier) {
         PrimaryTabRow(selectedTabIndex = tab.ordinal) {
             for (option in ControlTab.entries) {
-                Tab(selected = tab == option, onClick = { tab = option }, text = { Text(option.label, maxLines = 1) })
+                // Content without the text tab's side padding, so five labels fit on a narrow phone.
+                Tab(selected = tab == option, onClick = { tab = option }) {
+                    Text(option.label, style = MaterialTheme.typography.titleSmall, maxLines = 1, modifier = Modifier.padding(vertical = Spacing.md))
+                }
             }
         }
         tabs.SaveableStateProvider(tab) {
