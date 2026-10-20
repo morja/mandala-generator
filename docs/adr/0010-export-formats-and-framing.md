@@ -1,6 +1,6 @@
 # ADR-0010 · Export formats and framing: portrait images with the mandala placed by hand
 
-Status: proposed, 20 October 2026. Points 1 to 3 below are Mathis' decisions of that day; sizes and the open questions in [PLAN-2](../PLAN-2-portrait-export.md) wait for his approval.
+Status: accepted, 20 October 2026 (Mathis' decisions; points 1 to 3 first, the rest as recommended in [PLAN-2](../PLAN-2-portrait-export.md)).
 
 ## Decision
 
@@ -10,7 +10,11 @@ Status: proposed, 20 October 2026. Points 1 to 3 below are Mathis' decisions of 
 4. **Framing by hand.** After picking a format the user places the mandala in the frame: drag to move, pinch to zoom, double tap to reset. Zoomed in, only a section of the mandala is saved; zoomed out, it sits anywhere on the background.
 5. **The canvas is extended, never cropped from a square.** The renderer draws a canvas of any width and height with the mandala at a given centre and size. Zooming in renders real detail at the output resolution, not enlarged pixels.
 6. **What moves with the mandala, what stays with the canvas.** The mandala layers (and the emblem) move and scale with the framing, including everything that depends on their size: line widths, glow, wash, painted effect, brightness scale. Background and the effects layer (grain, stars, glitter, vignette, bloom, local contrast, relief) belong to the canvas.
-7. **Square with the default framing is today's image.** Format square, mandala centred at the width of the canvas, must render pixel-identical to today, so `ParityTest` and its thresholds stay valid.
+7. **Text layer stays with the canvas.** A quote is placed in canvas coordinates, so it can sit in the free space below the mandala; it does not move or scale with the framing.
+8. **Zoom range** from a quarter to four times "fits the width"; the mandala's centre always stays inside the frame.
+9. **Sizes.** Free: 1024 px wide in every format, drawn at up to twice the size so the inside stays at about 4.2 megapixels (today's large export), then scaled down with an area filter. Pro: the largest size with at most 2048 px width and about 4.5 megapixels, without supersampling: 2048 × 2048 square, about 1900 × 2370 for 4:5, about 1440 × 3120 for a 9:19.5 phone screen.
+10. **"Set as wallpaper"** in the framing step, through Android's `WallpaperManager` (home screen, lock screen or both), at the size of the chosen export.
+11. **Square with the default framing is today's image.** Format square, mandala centred at the width of the canvas, must render pixel-identical to today, so `ParityTest` and its thresholds stay valid.
 
 Formats offered: **Square**, **This phone's screen** (aspect ratio from the display, the format for wallpapers) and **4:5**. More can follow without a new decision.
 
@@ -27,7 +31,6 @@ Formats offered: **Square**, **This phone's screen** (aspect ratio from the disp
 - Portrait for free: wallpapers are the main use on a phone, and shared wallpapers advertise the app (same reasoning as ADR-0007). Pro stays attractive through sharpness on high-resolution screens and for prints.
 - Keeping the format out of the settings JSON keeps compatibility with the macOS app simple: a favourite looks the same on both, and the format is a decision about one saved image.
 
-## Open
+## Later
 
-- Sizes per format, free and Pro, and whether banded rendering is built (PLAN-2, questions 1 and 2).
-- Whether the text layer moves with the mandala or stays with the canvas (PLAN-2, question 3).
+- Larger Pro sizes (2048 wide in portrait, 4096 square): first profile and lower the memory per pixel; banded rendering only if that is not enough (PLAN-2).
