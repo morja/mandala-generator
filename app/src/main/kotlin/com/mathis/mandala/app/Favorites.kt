@@ -20,6 +20,17 @@ object Favorites {
 
 /** Keeps the favourites in one file in the macOS app's format, so the files are interchangeable. */
 class FavoritesStore(private val file: File) {
+    /**
+     * The saved favourites. On the very first start (no file yet) these are the starter favourites
+     * from `seed`, saved right away so they only come once and can be deleted like any other.
+     */
+    fun loadOrSeed(seed: () -> List<Favorite>): List<Favorite> {
+        if (file.exists()) return load()
+        val starters = runCatching(seed).getOrDefault(emptyList())
+        runCatching { save(starters) }
+        return starters
+    }
+
     fun load(): List<Favorite> = try {
         if (file.isFile) SettingsJson.decodeFavorites(file.readText()) else emptyList()
     } catch (e: Exception) {

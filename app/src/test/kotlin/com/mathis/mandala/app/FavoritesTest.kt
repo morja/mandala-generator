@@ -37,4 +37,34 @@ class FavoritesTest {
         file.writeText("[{")
         assertEquals(emptyList<Favorite>(), store.load())
     }
+
+    @Test
+    fun startersComeOnlyOnTheFirstStart() {
+        val store = FavoritesStore(File(folder.root, "favorites.json"))
+        assertEquals(listOf("s"), store.loadOrSeed { listOf(fav("s")) }.map { it.id })
+        store.save(emptyList()) // the user deleted them
+        assertEquals(emptyList<Favorite>(), store.loadOrSeed { listOf(fav("s")) })
+    }
+
+    @Test
+    fun bundledStartersDecodeAndRenderWithoutWarnings() {
+        val text = File("src/main/assets/starter-favorites.json").readText()
+        val starters = com.mathis.mandala.core.SettingsJson.decodeFavorites(text)
+        assertEquals(starters.size, starters.map { it.id }.distinct().size)
+        for (f in starters) {
+            val result = com.mathis.mandala.core.MandalaRenderer.render(
+                f.parameters,
+                com.mathis.mandala.core.RenderOptions(outputSize = 64, threads = 2, textRenderer = NoTextRenderer),
+            )
+            assertEquals(f.id, emptyList<String>(), result.warnings)
+        }
+    }
+
+    /** Stands in for the platform's text drawing in JVM tests. */
+    private object NoTextRenderer : com.mathis.mandala.core.TextRenderer {
+        override fun metrics(font: com.mathis.mandala.core.TextFont) =
+            com.mathis.mandala.core.TextRenderer.Metrics(font.sizePx * 0.8f, font.sizePx * 0.2f, 0f)
+        override fun width(text: String, font: com.mathis.mandala.core.TextFont) = text.length * font.sizePx * 0.5f
+        override fun drawLines(size: Int, lines: List<com.mathis.mandala.core.PlacedLine>) = FloatArray(size * size)
+    }
 }

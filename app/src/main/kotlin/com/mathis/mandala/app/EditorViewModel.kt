@@ -97,7 +97,12 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
     private val _preview = MutableStateFlow(PreviewState())
     val preview: StateFlow<PreviewState> = _preview.asStateFlow()
 
-    private val _favorites = MutableStateFlow(favoritesStore.load())
+    private val _favorites = MutableStateFlow(
+        favoritesStore.loadOrSeed {
+            // Examples from the macOS app's favourites, so new users see what the app can do.
+            application.assets.open(STARTER_FAVORITES).use { SettingsJson.decodeFavorites(it.reader().readText()) }
+        },
+    )
     val favorites: StateFlow<List<Favorite>> = _favorites.asStateFlow()
 
     /** True while an export or share render runs. */
@@ -397,6 +402,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         const val DEBOUNCE_MS = 150L
         const val SAVE_DELAY_MS = 400L
         const val HISTORY_DELAY_MS = 700L
+        const val STARTER_FAVORITES = "starter-favorites.json"
 
         fun randomSeed(): ULong = Random.nextLong().toULong()
     }
