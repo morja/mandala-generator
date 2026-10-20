@@ -343,8 +343,8 @@ enum EmblemMotif: String, CaseIterable, Identifiable, Codable {
     /// Whether the Organic slider changes this motif.
     var isOrganic: Bool {
         switch self {
-        case .om, .treeOfLife, .lotus, .yinYang, .unalome: return true
-        case .flowerOfLife, .dharmaWheel, .tripleMoon, .sriYantra: return false
+        case .om, .treeOfLife, .lotus, .unalome: return true
+        case .flowerOfLife, .dharmaWheel, .tripleMoon, .sriYantra, .yinYang: return false
         }
     }
 }
@@ -391,7 +391,7 @@ enum EmblemRendering: String, CaseIterable, Identifiable, Codable {
 
 /// Frame around the motif.
 enum EmblemFrame: String, CaseIterable, Identifiable, Codable {
-    case none, ring, doubleRing, lotus, gates
+    case none, ring, doubleRing, lotus, gates, enso
     var id: String { rawValue }
 
     init(from decoder: Decoder) throws {
@@ -406,6 +406,7 @@ enum EmblemFrame: String, CaseIterable, Identifiable, Codable {
         case .doubleRing: return "Double Ring"
         case .lotus:      return "Lotus Ring"
         case .gates:      return "Square Gates"
+        case .enso:       return "Ensō"
         }
     }
 }
@@ -431,10 +432,11 @@ struct EmblemLayerSettings: Equatable, Codable {
     var organic: Double             = 0.5
     var flowerVariant: EmblemFlowerVariant = .flower
     var petals: Int                 = 8      // Lotus: petals in the inner rings
+    var rotation: Double            = 0      // degrees, motif and frame together (-180–180)
 
     enum CodingKeys: String, CodingKey {
         case isEnabled, motif, rendering, frame, size, weight, paletteIndex, colorPosition, colorSpread
-        case glow, opacity, blendMode, seed, branching, roots, organic, flowerVariant, petals
+        case glow, opacity, blendMode, seed, branching, roots, organic, flowerVariant, petals, rotation
     }
 
     init() {}
@@ -459,6 +461,7 @@ struct EmblemLayerSettings: Equatable, Codable {
         organic       = c.decodeSafe(Double.self,          forKey: .organic,       default: 0.5)
         flowerVariant = c.decodeSafe(EmblemFlowerVariant.self, forKey: .flowerVariant, default: .flower)
         petals        = c.decodeSafe(Int.self,             forKey: .petals,        default: 8)
+        rotation      = c.decodeSafe(Double.self,          forKey: .rotation,      default: 0)
     }
 }
 

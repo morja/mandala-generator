@@ -45,7 +45,7 @@ enum EmblemShapes {
         case .treeOfLife:   g = treeOfLife(seed: s.seed, branching: s.branching, roots: s.roots, organic: organic)
         case .flowerOfLife: g = flowerOfLife(s.flowerVariant)
         case .lotus:        g = lotus(petals: s.petals, organic: organic)
-        case .yinYang:      g = yinYang(organic: organic)
+        case .yinYang:      g = yinYang()
         case .dharmaWheel:  g = dharmaWheel()
         case .unalome:      g = unalome(organic: organic)
         case .tripleMoon:   g = tripleMoon()
@@ -455,8 +455,8 @@ enum EmblemShapes {
 
     // MARK: Yin Yang
 
-    /// Yin and yang, always exact and closed. `organic` adds an open brush circle (ensō) around it.
-    static func yinYang(organic: Double = 0) -> EmblemGeometry {
+    /// Yin and yang, exact and closed. For an open brush circle around it, use the Ensō frame.
+    static func yinYang() -> EmblemGeometry {
         var g = EmblemGeometry()
         let r = 0.70, h = r / 2, w = 0.03
         func arc(_ cx: Double, _ cy: Double, _ rad: Double, from a0: Double, to a1: Double, steps: Int = 90) -> [(x: Double, y: Double)] {
@@ -476,18 +476,6 @@ enum EmblemShapes {
         g.strokes.append(circle(radius: eye, width: w * 0.7, cx: 0, cy: -h, steps: 60))
         g.dots.append(EmblemDot(x: 0, y: h, r: eye))
 
-        if organic > 0.05 {
-            // Ensō: one brush stroke, starting heavy, thinning out and leaving a gap.
-            let gap = 0.15 + 0.45 * organic
-            let start = -.pi * 0.62
-            let ring = arc(0, 0, 0.81, from: start, to: start + 2 * .pi - gap, steps: 240)
-            let pts = ring.enumerated().map { i, p -> EmblemPoint in
-                let t = Double(i) / Double(ring.count - 1)
-                let brush = 0.25 + 1.2 * pow(sin(.pi * pow(t, 0.55)), 0.8) * (1 - 0.45 * t)
-                return EmblemPoint(x: p.x, y: p.y, w: 0.045 * organic * brush + 0.008)
-            }
-            g.strokes.append(penWidths(pts, organic: organic * 0.6))
-        }
         return g
     }
 
@@ -653,6 +641,45 @@ enum EmblemShapes {
             for (i, s) in [1.06, 1.14, 1.22].enumerated() {
                 g.strokes.append(gateSquare(half: s, gate: 0.26, step: 0.09, width: i == 1 ? 0.022 : 0.014))
             }
+        case .enso:
+            g.append(enso(radius: r))
+        }
+        return g
+    }
+
+    /// Ensō: an open circle in one brush stroke. It starts heavy, thins out along the way and
+    /// ends in a few dry bristle traces; the gap stays open.
+    private static func enso(radius r: Double) -> EmblemGeometry {
+        var g = EmblemGeometry()
+        let start = -Double.pi * 0.58          // upper left, where the brush is set down
+        let sweep = 2 * Double.pi * 0.9        // leaves a tenth of the circle open
+        let steps = 260
+        func point(_ t: Double, _ dr: Double) -> (Double, Double) {
+            // The brush drifts slightly inwards towards the end, as a hand does.
+            let a = start + sweep * t
+            let rr = r - 0.03 * t * t + dr
+            return (cos(a) * rr, sin(a) * rr)
+        }
+        // Main stroke: a heavy, round start, a full body, then thinning out.
+        var main: [EmblemPoint] = []
+        for i in 0...steps {
+            let t = Double(i) / Double(steps)
+            // Swells quickly where the brush is pressed down, then loses ink towards the end.
+            let w = t < 0.06 ? 0.06 + 0.04 * t / 0.06 : 0.10 * (1 - 0.85 * pow(t, 1.3))
+            let (x, y) = point(t, 0)
+            main.append(EmblemPoint(x: x, y: y, w: max(0.006, w)))
+        }
+        g.strokes.append(main)
+        // Dry brush: bristle traces that split off over the last third and stop one after another.
+        for (offset, endT, w) in [(-0.028, 0.97, 0.010), (-0.012, 1.0, 0.012), (0.010, 0.93, 0.009), (0.026, 0.88, 0.007)] {
+            var trace: [EmblemPoint] = []
+            for i in 0...80 {
+                let t = 0.62 + (endT - 0.62) * Double(i) / 80
+                let spread = offset * min(1, (t - 0.62) / 0.12)
+                let (x, y) = point(t, spread)
+                trace.append(EmblemPoint(x: x, y: y, w: w * (1 - 0.7 * Double(i) / 80)))
+            }
+            g.strokes.append(trace)
         }
         return g
     }

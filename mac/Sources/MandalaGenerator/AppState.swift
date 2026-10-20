@@ -269,6 +269,7 @@ class AppState: ObservableObject {
             mix(UInt64(Int(em.organic * 1000)))
             mix(UInt64(EmblemFlowerVariant.allCases.firstIndex(of: em.flowerVariant) ?? 0))
             mix(UInt64(em.petals))
+            mix(UInt64(bitPattern: Int64(em.rotation * 10)))
         }
         let bgTag = bg.isEnabled  ? "bg-\(String(bg.type.rawValue.prefix(3)))" : ""
         let fxTag = fx.isEnabled  ? "fx" : ""

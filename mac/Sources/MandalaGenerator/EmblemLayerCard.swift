@@ -132,6 +132,7 @@ struct EmblemLayerCard: View {
                     sectionLabel("SHAPE")
                     SceneSlider(label: "Size",   value: $settings.size,   range: 0.1...1.0, color: .cyan)
                     SceneSlider(label: "Weight", value: $settings.weight, color: .cyan)
+                    SceneSlider(label: "Rotate", value: $settings.rotation, range: -180...180, color: .cyan)
 
                     // ── Color ─────────────────────────────────────────────
                     sectionLabel("COLOR")

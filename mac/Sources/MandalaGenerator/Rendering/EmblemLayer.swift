@@ -14,7 +14,7 @@ extension MandalaRenderer {
         // Unit space → pixels: the frame ring (radius 0.92) gets a diameter of `size` × canvas.
         let unit = max(0.1, min(1.0, s.size)) * Double(size) * 0.5 / EmblemShapes.ringRadius
         guard let mask = emblemMask(geometry, rendering: s.rendering, weight: s.weight,
-                                    unit: unit, size: size) else { return image }
+                                    unit: unit, rotation: s.rotation, size: size) else { return image }
 
         let palette = palettes[max(0, min(palettes.count - 1, s.paletteIndex))]
         guard var overlay = colourise(mask: mask, palette: palette, position: s.colorPosition,
@@ -37,7 +37,7 @@ extension MandalaRenderer {
 
     /// 8-bit coverage of the emblem; memory row 0 is the top of the image.
     private static func emblemMask(_ g: EmblemGeometry, rendering: EmblemRendering, weight: Double,
-                                   unit: Double, size: Int) -> [UInt8]? {
+                                   unit: Double, rotation: Double, size: Int) -> [UInt8]? {
         var bytes = [UInt8](repeating: 0, count: size * size)
         let ok = bytes.withUnsafeMutableBytes { raw -> Bool in
             guard let ctx = CGContext(data: raw.baseAddress, width: size, height: size, bitsPerComponent: 8,
@@ -46,6 +46,8 @@ extension MandalaRenderer {
             // y down, origin in the centre, one unit = `unit` pixels.
             ctx.translateBy(x: CGFloat(size) / 2, y: CGFloat(size) / 2)
             ctx.scaleBy(x: CGFloat(unit), y: -CGFloat(unit))
+            // Positive degrees turn clockwise on screen (y points down in unit space).
+            ctx.rotate(by: CGFloat(rotation * .pi / 180))
             ctx.setLineCap(.round)
             ctx.setLineJoin(.round)
             ctx.setShouldAntialias(true)
