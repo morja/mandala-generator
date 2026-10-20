@@ -74,12 +74,18 @@ extension MandalaRenderer {
 
             switch rendering {
             case .line:
+                // Even lines, but fine parts (twigs, thin rings) get thinner lines.
                 ctx.setStrokeColor(white)
-                ctx.setLineWidth(CGFloat(line))
                 for pts in g.strokes where pts.count > 1 {
-                    ctx.addLines(between: pts.map { CGPoint(x: $0.x, y: $0.y) })
-                    ctx.strokePath()
+                    for i in 1..<pts.count {
+                        let w = (pts[i - 1].w + pts[i].w) * 0.5
+                        ctx.setLineWidth(CGFloat(line * max(0.35, min(1, w / 0.03))))
+                        ctx.move(to: CGPoint(x: pts[i - 1].x, y: pts[i - 1].y))
+                        ctx.addLine(to: CGPoint(x: pts[i].x, y: pts[i].y))
+                        ctx.strokePath()
+                    }
                 }
+                ctx.setLineWidth(CGFloat(line))
                 for d in g.dots {
                     ctx.strokeEllipse(in: CGRect(x: d.x - d.r, y: d.y - d.r, width: d.r * 2, height: d.r * 2))
                 }

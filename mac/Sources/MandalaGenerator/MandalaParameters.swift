@@ -319,7 +319,7 @@ struct GraffitiLayerSettings: Equatable, Codable {
 
 /// One motif drawn large and upright in the centre (not repeated by symmetry).
 enum EmblemMotif: String, CaseIterable, Identifiable, Codable {
-    case om, treeOfLife, flowerOfLife, lotus, yinYang, dharmaWheel, unalome, tripleMoon
+    case om, treeOfLife, flowerOfLife, lotus, yinYang, dharmaWheel, unalome, tripleMoon, sriYantra
     var id: String { rawValue }
 
     init(from decoder: Decoder) throws {
@@ -337,13 +337,14 @@ enum EmblemMotif: String, CaseIterable, Identifiable, Codable {
         case .dharmaWheel:  return "Dharma Wheel"
         case .unalome:      return "Unalome"
         case .tripleMoon:   return "Triple Moon"
+        case .sriYantra:    return "Sri Yantra"
         }
     }
     /// Whether the Organic slider changes this motif.
     var isOrganic: Bool {
         switch self {
         case .om, .treeOfLife, .lotus, .yinYang, .unalome: return true
-        case .flowerOfLife, .dharmaWheel, .tripleMoon:      return false
+        case .flowerOfLife, .dharmaWheel, .tripleMoon, .sriYantra: return false
         }
     }
 }
