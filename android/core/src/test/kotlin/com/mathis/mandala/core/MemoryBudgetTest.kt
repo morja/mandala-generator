@@ -9,7 +9,8 @@ import kotlin.test.assertTrue
  * Worst case the app allows: five layers (its maximum), the bottom one full size, all with strong
  * glow, wash and the heavy painted effect, the line-heaviest styles, a gradient background and the
  * most memory-hungry effects (bloom, clarity, relief, stars, glitter), plus hand-drawn lines and
- * spray paint (the graffiti layer keeps a float colour and alpha plane at buffer size).
+ * spray paint (the graffiti layer keeps a float colour and alpha plane at buffer size), and an emblem
+ * with glow and normal blending (which blurs its alpha as well as its colour).
  */
 class MemoryBudgetTest {
     private val fiveHeavyLayers = run {
@@ -20,7 +21,8 @@ class MemoryBudgetTest {
         }
         val stroke = """"xs":[0.1,0.5,0.9,0.5],"ys":[0.2,0.8,0.3,0.5]"""
         val hand = """"drawingLayer":{"isEnabled":true,"symmetry":16,"glowIntensity":1,"strokeWeight":1,"strokes":[{$stroke}]},""" +
-            """"graffitiLayer":{"isEnabled":true,"symmetry":16,"softness":1,"strokes":[{$stroke,"brushSize":0.2}]}"""
+            """"graffitiLayer":{"isEnabled":true,"symmetry":16,"softness":1,"strokes":[{$stroke,"brushSize":0.2}]},""" +
+            """"emblemLayer":{"isEnabled":true,"motif":"treeOfLife","branching":1,"organic":1,"frame":"lotus","size":1,"glow":1,"blendMode":"normal"}"""
         """{"layers":[${layers.joinToString(",")}],"baseLayer":{"isEnabled":true,"type":"gradient"},"effectsLayer":{"isEnabled":true,"vignette":0.3,"bloom":0.5,"localContrast":0.3,"relief":0.4,"grain":0.3,"stars":0.3,"glitter":0.3,"dimming":0.3,"highlights":0.3},$hand}"""
     }
 

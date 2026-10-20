@@ -248,6 +248,82 @@ data class TextLayerSettings(
     val authorItalic: Boolean = true,
 )
 
+/** One motif drawn large and upright in the centre (not repeated by symmetry), as in the macOS EmblemMotif. */
+@Serializable
+enum class EmblemMotif(val displayName: String, /** Whether the Organic slider changes this motif. */ val isOrganic: Boolean) {
+    @SerialName("om") OM("Om", true),
+    @SerialName("treeOfLife") TREE_OF_LIFE("Tree of Life", true),
+    @SerialName("flowerOfLife") FLOWER_OF_LIFE("Flower of Life", false),
+    @SerialName("lotus") LOTUS("Lotus", true),
+    @SerialName("yinYang") YIN_YANG("Yin Yang", false),
+    @SerialName("dharmaWheel") DHARMA_WHEEL("Dharma Wheel", false),
+    @SerialName("unalome") UNALOME("Unalome", true),
+    @SerialName("tripleMoon") TRIPLE_MOON("Triple Moon", false),
+    @SerialName("sriYantra") SRI_YANTRA("Sri Yantra", false),
+}
+
+/** The members of the Flower of Life family. */
+@Serializable
+enum class EmblemFlowerVariant(val displayName: String) {
+    @SerialName("seed") SEED("Seed"),
+    @SerialName("flower") FLOWER("Flower"),
+    @SerialName("fruit") FRUIT("Fruit"),
+    @SerialName("metatron") METATRON("Metatron"),
+}
+
+/** How the motif's strokes are drawn. */
+@Serializable
+enum class EmblemRendering(val displayName: String) {
+    @SerialName("line") LINE("Line"),
+    @SerialName("doubleLine") DOUBLE_LINE("Outline"),
+    @SerialName("filled") FILLED("Filled"),
+    @SerialName("beads") BEADS("Beads"),
+}
+
+/** Frame around the motif. */
+@Serializable
+enum class EmblemFrame(val displayName: String) {
+    @SerialName("none") NONE("None"),
+    @SerialName("ring") RING("Ring"),
+    @SerialName("doubleRing") DOUBLE_RING("Double Ring"),
+    @SerialName("lotus") LOTUS("Lotus Ring"),
+    @SerialName("gates") GATES("Square Gates"),
+    @SerialName("enso") ENSO("Ensō"),
+}
+
+/** One motif large in the centre, as in the macOS EmblemLayerSettings. Defaults match its decoder. */
+@Serializable
+data class EmblemLayerSettings(
+    val isEnabled: Boolean = false,
+    val motif: EmblemMotif = EmblemMotif.OM,
+    val rendering: EmblemRendering = EmblemRendering.FILLED,
+    val frame: EmblemFrame = EmblemFrame.RING,
+    /** Frame ring diameter as a fraction of the canvas (0.1–1.0). */
+    val size: Double = 0.6,
+    /** Stroke thickness (0–1). */
+    val weight: Double = 0.5,
+    val paletteIndex: Int = 0,
+    /** Where on the palette the centre colour sits (0–1). */
+    val colorPosition: Double = 0.2,
+    /** How far the colour moves along the palette towards the edge (0–1). */
+    val colorSpread: Double = 0.3,
+    val glow: Double = 0.5,
+    val opacity: Double = 1.0,
+    val blendMode: LayerBlendMode = LayerBlendMode.SCREEN,
+    /** Tree of Life: shape of the tree. */
+    val seed: ULong = 1uL,
+    /** Tree of Life: number of twigs (0–1). */
+    val branching: Double = 0.5,
+    val roots: Boolean = true,
+    /** Om, Tree of Life, Lotus, Unalome: calligraphic strokes, flowing branches, uneven petals (0–1). */
+    val organic: Double = 0.5,
+    val flowerVariant: EmblemFlowerVariant = EmblemFlowerVariant.FLOWER,
+    /** Lotus: petals in the inner rings. */
+    val petals: Int = 8,
+    /** Degrees, motif and frame together (-180–180). */
+    val rotation: Double = 0.0,
+)
+
 @Serializable
 data class MandalaParameters(
     val layers: List<StyleLayer> = listOf(StyleLayer()),
@@ -256,6 +332,7 @@ data class MandalaParameters(
     val graffitiLayer: GraffitiLayerSettings = GraffitiLayerSettings(),
     val drawingLayer: DrawingLayerSettings = DrawingLayerSettings(),
     val textLayer: TextLayerSettings = TextLayerSettings(),
+    val emblemLayer: EmblemLayerSettings = EmblemLayerSettings(),
     val seed: ULong = 42uL,
     val previewSize: Int = 800,
     val outputSize: Int = 1024,

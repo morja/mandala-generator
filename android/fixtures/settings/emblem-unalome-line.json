@@ -1,0 +1,17 @@
+{
+ "layers": [
+  {
+   "isEnabled": false,
+   "style": "spirograph"
+  }
+ ],
+ "outputSize": 512,
+ "emblemLayer": {
+  "isEnabled": true,
+  "motif": "unalome",
+  "rendering": "line",
+  "organic": 1,
+  "frame": "none",
+  "weight": 0.8
+ }
+}

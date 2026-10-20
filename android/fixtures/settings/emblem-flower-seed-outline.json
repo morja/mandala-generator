@@ -1,0 +1,18 @@
+{
+ "layers": [
+  {
+   "isEnabled": false,
+   "style": "spirograph"
+  }
+ ],
+ "outputSize": 512,
+ "emblemLayer": {
+  "isEnabled": true,
+  "motif": "flowerOfLife",
+  "flowerVariant": "seed",
+  "rendering": "doubleLine",
+  "frame": "gates",
+  "size": 0.5,
+  "paletteIndex": 7
+ }
+}

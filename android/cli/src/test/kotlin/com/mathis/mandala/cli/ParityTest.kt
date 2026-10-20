@@ -44,6 +44,7 @@ class ParityTest {
         "background-grain" to 20.0,
         "hand-graffiti" to 27.0,
         "hand-both" to 30.0,
+        // Emblem fixtures (emblem-*) keep the default: own antialiasing instead of Core Graphics, 50–63 dB.
     )
 
     @Test

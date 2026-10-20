@@ -1,0 +1,27 @@
+{
+ "layers": [
+  {
+   "style": "spirograph",
+   "scale": 0.9,
+   "complexity": 0.4,
+   "glowIntensity": 0.3,
+   "abstractLevel": 0,
+   "paletteIndex": 2,
+   "seed": 5
+  }
+ ],
+ "outputSize": 512,
+ "emblemLayer": {
+  "isEnabled": true,
+  "motif": "dharmaWheel",
+  "rendering": "doubleLine",
+  "blendMode": "multiply",
+  "glow": 0.5,
+  "size": 0.9,
+  "paletteIndex": 1
+ },
+ "baseLayer": {
+  "isEnabled": true,
+  "type": "gradient"
+ }
+}
