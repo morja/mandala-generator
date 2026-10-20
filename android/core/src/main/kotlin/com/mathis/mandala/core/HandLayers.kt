@@ -19,29 +19,29 @@ internal class HandLayers(private val par: Parallel, private val fx: LayerEffect
 
     fun drawing(base: Image8, s: DrawingLayerSettings): Image8 {
         val size = base.width
-        val buffer = PixelBuffer(size, size)
         val c = size * 0.5f
         val sym = max(1, s.symmetry)
         val thickness = max(1, (s.strokeWeight.toFloat() * size * 0.015f + 1.5f).toInt())
-        for (stroke in s.strokes) {
-            if (stroke.xs.size < 2 || stroke.xs.size != stroke.ys.size) continue
-            val col = hsbToRgb(stroke.hue, stroke.saturation, stroke.brightness)
-            val r = col.r.toFloat(); val g = col.g.toFloat(); val b = col.b.toFloat()
-            for (k in 0 until sym) {
-                val angle = k * PI.toFloat() * 2f / sym
-                val ca = cos(angle); val sa = sin(angle)
-                for (i in 1 until stroke.xs.size) {
-                    val dx0 = stroke.xs[i - 1].toFloat() * size - c; val dy0 = stroke.ys[i - 1].toFloat() * size - c
-                    val dx1 = stroke.xs[i].toFloat() * size - c; val dy1 = stroke.ys[i].toFloat() * size - c
-                    buffer.addThickLine(
-                        c + dx0 * ca - dy0 * sa, c + dx0 * sa + dy0 * ca,
-                        c + dx1 * ca - dy1 * sa, c + dx1 * sa + dy1 * ca,
-                        r, g, b, 1.5f, thickness,
-                    )
+        var img = PixelBuffer.drawInStrips(size, size) { buffer ->
+            for (stroke in s.strokes) {
+                if (stroke.xs.size < 2 || stroke.xs.size != stroke.ys.size) continue
+                val col = hsbToRgb(stroke.hue, stroke.saturation, stroke.brightness)
+                val r = col.r.toFloat(); val g = col.g.toFloat(); val b = col.b.toFloat()
+                for (k in 0 until sym) {
+                    val angle = k * PI.toFloat() * 2f / sym
+                    val ca = cos(angle); val sa = sin(angle)
+                    for (i in 1 until stroke.xs.size) {
+                        val dx0 = stroke.xs[i - 1].toFloat() * size - c; val dy0 = stroke.ys[i - 1].toFloat() * size - c
+                        val dx1 = stroke.xs[i].toFloat() * size - c; val dy1 = stroke.ys[i].toFloat() * size - c
+                        buffer.addThickLine(
+                            c + dx0 * ca - dy0 * sa, c + dx0 * sa + dy0 * ca,
+                            c + dx1 * ca - dy1 * sa, c + dx1 * sa + dy1 * ca,
+                            r, g, b, 1.5f, thickness,
+                        )
+                    }
                 }
             }
         }
-        var img = buffer.toImage()
         img = fx.glow(img, s.glowIntensity, size)
         if (s.opacity < 0.999) img = fx.opacity(img, s.opacity)
         return fx.composite(base, img, blendOp(s.blendMode, normal = BlendOp.LIGHTEN)!!)
@@ -53,60 +53,72 @@ internal class HandLayers(private val par: Parallel, private val fx: LayerEffect
 
     fun graffiti(base: Image8, s: GraffitiLayerSettings): Image8 {
         val size = base.width
-        val colour = FloatImage(size, size) // premultiplied P3 working values
-        val alpha = FloatArray(size * size)
         val sym = max(1, s.symmetry)
         val c = size * 0.5
-        val mask = Coverage()
-        for (stroke in s.strokes) {
-            if (stroke.xs.isEmpty() || stroke.xs.size != stroke.ys.size) continue
-            val halfWidth = max(0.005, stroke.brushSize) * size * 0.5
-            val a = (stroke.opacity * s.opacity).toFloat().coerceIn(0f, 1f)
-            val p3 = toWorking(hsbToRgb(stroke.hue, stroke.saturation, stroke.brightness))
-            for (k in 0 until sym) {
-                if (stroke.xs.size == 1) {
-                    // The macOS app fills single dots at the unrotated spot for every copy.
-                    mask.dot(stroke.xs[0] * size, stroke.ys[0] * size, halfWidth, size)
-                } else {
-                    val angle = k * PI * 2 / sym
-                    val ca = cos(angle); val sa = sin(angle)
-                    val xs = DoubleArray(stroke.xs.size) { val dx = stroke.xs[it] * size - c; val dy = stroke.ys[it] * size - c; c + dx * ca - dy * sa }
-                    val ys = DoubleArray(stroke.xs.size) { val dx = stroke.xs[it] * size - c; val dy = stroke.ys[it] * size - c; c + dx * sa + dy * ca }
-                    mask.path(xs, ys, halfWidth, size)
-                }
-                mask.paint(colour, alpha, p3, a, size)
-            }
-        }
         val sigma = s.softness * size * 0.012
-        if (sigma > 0.5) {
-            Filters.blurInPlace(colour, sigma, par)
-            MaskBlur.blur(alpha, size, sigma, par)
-        }
+        val blurred = sigma > 0.5
+        // Strips of rows; each carries an overlap as wide as the blur reads, so its core rows
+        // get the same paint and nearly the same blur as the whole canvas at once.
+        val overlap = if (blurred) max(Filters.blurReach(sigma), MaskBlur.reach(sigma)) else 0
+        val core = max(PixelBuffer.STRIP_ROWS, 2 * overlap)
         val op = blendOp(s.blendMode, normal = null)
-        val out = Image8(size, size, Encoding.SRGB)
+        val out = if (base.encoding == Encoding.SRGB) base else Image8(size, size, Encoding.SRGB, base.data)
         val n = size * 3
-        par.forRange(size) { from, until ->
-            val row = FloatArray(n)
-            for (y in from until until) {
-                WorkingSpace.readRow(base, y, row)
-                for (x in 0 until size) {
-                    val p = y * size + x
-                    val sa = alpha[p]
-                    if (sa <= 0f) continue
-                    for (ch in 0..2) {
-                        val d = row[x * 3 + ch]
-                        val sc = colour.data[p * 3 + ch]
-                        // Blend formulas for a premultiplied overlay on an opaque base.
-                        row[x * 3 + ch] = when (op) {
-                            null -> sc + d * (1 - sa)
-                            BlendOp.SCREEN -> d + sc - d * sc
-                            BlendOp.ADD -> d + sc
-                            BlendOp.MULTIPLY -> d * (1 - sa + sc)
-                            BlendOp.LIGHTEN -> max(d, sc + d * (1 - sa))
+        val mask = Coverage()
+        for (y0 in 0 until size step core) {
+            val y1 = min(size, y0 + core)
+            val top = max(0, y0 - overlap)
+            val bottom = min(size, y1 + overlap)
+            val rows = bottom - top
+            val colour = FloatImage(size, rows) // premultiplied P3 working values
+            val alpha = FloatArray(size * rows)
+            for (stroke in s.strokes) {
+                if (stroke.xs.isEmpty() || stroke.xs.size != stroke.ys.size) continue
+                val halfWidth = max(0.005, stroke.brushSize) * size * 0.5
+                val a = (stroke.opacity * s.opacity).toFloat().coerceIn(0f, 1f)
+                val p3 = toWorking(hsbToRgb(stroke.hue, stroke.saturation, stroke.brightness))
+                for (k in 0 until sym) {
+                    if (stroke.xs.size == 1) {
+                        // The macOS app fills single dots at the unrotated spot for every copy.
+                        mask.dot(stroke.xs[0] * size, stroke.ys[0] * size, halfWidth, size, top, bottom)
+                    } else {
+                        val angle = k * PI * 2 / sym
+                        val ca = cos(angle); val sa = sin(angle)
+                        val xs = DoubleArray(stroke.xs.size) { val dx = stroke.xs[it] * size - c; val dy = stroke.ys[it] * size - c; c + dx * ca - dy * sa }
+                        val ys = DoubleArray(stroke.xs.size) { val dx = stroke.xs[it] * size - c; val dy = stroke.ys[it] * size - c; c + dx * sa + dy * ca }
+                        mask.path(xs, ys, halfWidth, size, top, bottom)
+                    }
+                    mask.paint(colour, alpha, p3, a, size, top)
+                }
+            }
+            if (blurred) {
+                Filters.blurInPlace(colour, sigma, par)
+                MaskBlur.blur(alpha, size, rows, sigma, par)
+            }
+            par.forRange(y1 - y0) { from, until ->
+                val row = FloatArray(n)
+                for (y in y0 + from until y0 + until) {
+                    WorkingSpace.readRow(base, y, row)
+                    val r = y - top
+                    for (x in 0 until size) {
+                        val p = r * size + x
+                        val sa = alpha[p]
+                        if (sa <= 0f) continue
+                        for (ch in 0..2) {
+                            val d = row[x * 3 + ch]
+                            val sc = colour.data[p * 3 + ch]
+                            // Blend formulas for a premultiplied overlay on an opaque base.
+                            row[x * 3 + ch] = when (op) {
+                                null -> sc + d * (1 - sa)
+                                BlendOp.SCREEN -> d + sc - d * sc
+                                BlendOp.ADD -> d + sc
+                                BlendOp.MULTIPLY -> d * (1 - sa + sc)
+                                BlendOp.LIGHTEN -> max(d, sc + d * (1 - sa))
+                            }
                         }
                     }
+                    WorkingSpace.writeRow(row, out, y)
                 }
-                WorkingSpace.writeRow(row, out, y)
             }
         }
         return out
@@ -127,25 +139,25 @@ internal class HandLayers(private val par: Parallel, private val fx: LayerEffect
         LayerBlendMode.MULTIPLY -> BlendOp.MULTIPLY
     }
 
-    /** Antialiased coverage of one path, kept in its bounding box. */
+    /** Antialiased coverage of one path, kept in its bounding box and clipped to rows [rowFrom, rowUntil). */
     private class Coverage {
         private var data = FloatArray(0)
         private var x0 = 0; private var y0 = 0; private var w = 0; private var h = 0
 
-        private fun reset(minX: Double, minY: Double, maxX: Double, maxY: Double, size: Int): Boolean {
-            x0 = max(0, floor(minX).toInt()); y0 = max(0, floor(minY).toInt())
-            val x1 = min(size, ceil(maxX).toInt() + 1); val y1 = min(size, ceil(maxY).toInt() + 1)
+        private fun reset(minX: Double, minY: Double, maxX: Double, maxY: Double, size: Int, rowFrom: Int, rowUntil: Int): Boolean {
+            x0 = max(0, floor(minX).toInt()); y0 = max(rowFrom, floor(minY).toInt())
+            val x1 = min(size, ceil(maxX).toInt() + 1); val y1 = min(rowUntil, ceil(maxY).toInt() + 1)
             w = max(0, x1 - x0); h = max(0, y1 - y0)
             if (w * h > data.size) data = FloatArray(w * h) else data.fill(0f, 0, w * h)
             return w > 0 && h > 0
         }
 
-        fun dot(cx: Double, cy: Double, r: Double, size: Int) {
-            path(doubleArrayOf(cx, cx), doubleArrayOf(cy, cy), r, size)
+        fun dot(cx: Double, cy: Double, r: Double, size: Int, rowFrom: Int, rowUntil: Int) {
+            path(doubleArrayOf(cx, cx), doubleArrayOf(cy, cy), r, size, rowFrom, rowUntil)
         }
 
-        fun path(xs: DoubleArray, ys: DoubleArray, r: Double, size: Int) {
-            if (!reset(xs.min() - r - 1, ys.min() - r - 1, xs.max() + r + 1, ys.max() + r + 1, size)) return
+        fun path(xs: DoubleArray, ys: DoubleArray, r: Double, size: Int, rowFrom: Int, rowUntil: Int) {
+            if (!reset(xs.min() - r - 1, ys.min() - r - 1, xs.max() + r + 1, ys.max() + r + 1, size, rowFrom, rowUntil)) return
             for (i in 1 until xs.size) segment(xs[i - 1], ys[i - 1], xs[i], ys[i], r)
         }
 
@@ -167,12 +179,12 @@ internal class HandLayers(private val par: Parallel, private val fx: LayerEffect
             }
         }
 
-        /** Source-over of colour `p3` at opacity `a` through the coverage. */
-        fun paint(colour: FloatImage, alpha: FloatArray, p3: FloatArray, a: Float, size: Int) {
+        /** Source-over of colour `p3` at opacity `a` through the coverage, into a strip starting at row `top`. */
+        fun paint(colour: FloatImage, alpha: FloatArray, p3: FloatArray, a: Float, size: Int, top: Int) {
             for (y in 0 until h) for (x in 0 until w) {
                 val cov = data[y * w + x] * a
                 if (cov <= 0f) continue
-                val p = (y + y0) * size + (x + x0)
+                val p = (y + y0 - top) * size + (x + x0)
                 val keep = 1f - cov
                 alpha[p] = cov + alpha[p] * keep
                 for (ch in 0..2) colour.data[p * 3 + ch] = p3[ch] * cov + colour.data[p * 3 + ch] * keep

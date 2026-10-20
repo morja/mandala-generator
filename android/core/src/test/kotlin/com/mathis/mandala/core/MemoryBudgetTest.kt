@@ -45,6 +45,18 @@ class MemoryBudgetTest {
         assertEquals(Encoding.SRGB, result.image.encoding)
     }
 
+    /**
+     * Stand-in for the 2048 x 4437 Pro portrait (PLAN-2, ADR-0010) until the renderer draws other
+     * formats: a square with the same number of pixels, without supersampling. Fits only because
+     * every full-size step works in strips.
+     */
+    @Test
+    fun exportsThePortraitPixelCountWithin256MbHeap() {
+        val params = SettingsJson.decode(fiveHeavyLayers)
+        val result = MandalaRenderer.render(params, RenderOptions(outputSize = 3014, supersample = false, threads = 4))
+        assertEquals(3014, result.image.width)
+    }
+
     @Test
     fun largeExportMatchesTheNormalExportScaledDown() {
         val params = SettingsJson.decode("""{"layers":[{"style":"roseCurves","scale":0.8,"seed":3}]}""")

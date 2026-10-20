@@ -13,6 +13,9 @@ import kotlin.math.sqrt
  * A buffer can hand out band views (`band`) that share its data but only write rows
  * [bandLo, bandHi). Threads draw through their own bands, so no thread needs a full buffer
  * of its own, and every pixel receives its lines in the same order whatever the thread count.
+ *
+ * A strip (`strip`) holds only some rows of a larger canvas; coordinates stay those of the
+ * canvas. Drawing the same lines strip by strip gives every pixel the same sums as one buffer.
  */
 class PixelBuffer private constructor(
     val width: Int,
@@ -20,10 +23,16 @@ class PixelBuffer private constructor(
     val data: FloatArray,
     private val bandLo: Int,
     private val bandHi: Int,
+    /** Canvas row stored first in `data`. */
+    private val originY: Int,
 ) {
-    constructor(width: Int, height: Int) : this(width, height, FloatArray(width * height * 3), 0, height)
+    constructor(width: Int, height: Int) : this(width, height, FloatArray(width * height * 3), 0, height, 0)
 
-    fun band(from: Int, until: Int): PixelBuffer = PixelBuffer(width, height, data, max(0, from), min(height, until))
+    /** The rows this buffer or view writes: [rowsFrom, rowsUntil). */
+    val rowsFrom: Int get() = bandLo
+    val rowsUntil: Int get() = bandHi
+
+    fun band(from: Int, until: Int): PixelBuffer = PixelBuffer(width, height, data, max(bandLo, from), min(bandHi, until), originY)
 
     /** True when a vertical span [yMin, yMax] can touch this view's rows. */
     fun touchesRows(yMin: Float, yMax: Float): Boolean = yMax >= bandLo - 2 && yMin <= bandHi + 1
@@ -35,7 +44,7 @@ class PixelBuffer private constructor(
 
     fun addPixel(x: Int, y: Int, r: Float, g: Float, b: Float, weight: Float) {
         if (x < 0 || y < bandLo || x >= width || y >= bandHi) return
-        val base = (y * width + x) * 3
+        val base = ((y - originY) * width + x) * 3
         data[base] += r * weight
         data[base + 1] += g * weight
         data[base + 2] += b * weight
@@ -140,14 +149,40 @@ class PixelBuffer private constructor(
     }
 
     /** Filmic tone map x / (x + 0.55) to 8-bit values. The macOS renderer tags them as Display P3. */
-    fun toImage(): Image8 {
-        val out = Image8(width, height, Encoding.DISPLAY_P3)
+    fun toImage(): Image8 = Image8(width, height, Encoding.DISPLAY_P3).also { writeRows(it) }
+
+    /** Tone-maps the rows this buffer holds into the same rows of `out` (a width x height image). */
+    fun writeRows(out: Image8) {
         val dst = out.data
+        val base = originY * width * 3
         for (i in data.indices) {
             val v = data[i]
-            dst[i] = WorkingSpace.quantize(v / (v + 0.55f))
+            dst[base + i] = WorkingSpace.quantize(v / (v + 0.55f))
         }
-        return out
+    }
+
+    companion object {
+        /** Rows of a strip; at 5000 px width one strip of floats is about 15 MB. */
+        const val STRIP_ROWS = 256
+
+        /** A buffer for rows [from, until) of a width x height canvas. */
+        fun strip(width: Int, height: Int, from: Int, until: Int): PixelBuffer =
+            PixelBuffer(width, height, FloatArray(width * (until - from) * 3), from, until, from)
+
+        /**
+         * Draws a width x height canvas strip by strip into an 8-bit image, so only one strip is
+         * held as floats. `draw` must draw the whole picture into the strip it gets; drawing
+         * clipped to the strip's rows gives every pixel the same sums as one full buffer.
+         */
+        fun drawInStrips(width: Int, height: Int, draw: (PixelBuffer) -> Unit): Image8 {
+            val out = Image8(width, height, Encoding.DISPLAY_P3)
+            for (y0 in 0 until height step STRIP_ROWS) {
+                val strip = strip(width, height, y0, min(height, y0 + STRIP_ROWS))
+                draw(strip)
+                strip.writeRows(out)
+            }
+            return out
+        }
     }
 
     // Float to Int clamped so it never overflows; truncates toward zero like Swift's Int(Float).

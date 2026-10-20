@@ -28,10 +28,12 @@ class LineList {
 
     fun drawInto(buffer: PixelBuffer, par: Parallel) {
         if (size == 0) return
-        val bands = max(1, min(buffer.height, par.threads * 4))
-        val bandHeight = (buffer.height + bands - 1) / bands
+        val rows = buffer.rowsUntil - buffer.rowsFrom
+        if (rows <= 0) return
+        val bands = max(1, min(rows, par.threads * 4))
+        val bandHeight = (rows + bands - 1) / bands
         par.forEachChunk(bands) { b ->
-            val view = buffer.band(b * bandHeight, (b + 1) * bandHeight)
+            val view = buffer.band(buffer.rowsFrom + b * bandHeight, buffer.rowsFrom + (b + 1) * bandHeight)
             for (i in 0 until size) {
                 val o = i * 8
                 view.addLine(data[o], data[o + 1], data[o + 2], data[o + 3], data[o + 4], data[o + 5], data[o + 6], data[o + 7])

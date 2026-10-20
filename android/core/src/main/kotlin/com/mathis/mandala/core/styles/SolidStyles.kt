@@ -1,7 +1,6 @@
 package com.mathis.mandala.core.styles
 
 import com.mathis.mandala.core.ColorPalette
-import com.mathis.mandala.core.PixelBuffer
 import com.mathis.mandala.core.SeededRng
 import kotlin.math.PI
 import kotlin.math.abs
@@ -300,8 +299,11 @@ object SolidStyles {
         doubleArrayOf(3.0, 0.7, 1.2, -0.3, 0.0),
     )
 
-    /** Clifford, De Jong, Bedhead and Hopalong attractors as hundreds of thousands of points. */
-    fun strangeAttractor(buffer: PixelBuffer, cx: Float, cy: Float, radius: Double, ctx: StyleContext, palette: ColorPalette, rng: SeededRng, layerCount: Int, symmetry: Int, colorOffset: Double) {
+    /**
+     * Clifford, De Jong, Bedhead and Hopalong attractors as hundreds of thousands of points. The
+     * points are returned instead of drawn, so they can be drawn strip by strip.
+     */
+    fun strangeAttractor(cx: Float, cy: Float, radius: Double, ctx: StyleContext, palette: ColorPalette, rng: SeededRng, layerCount: Int, symmetry: Int, colorOffset: Double): AttractorPoints {
         val bigR = radius.toFloat()
         val nColors = 2048
         val lut = lut(palette, nColors, colorOffset)
@@ -309,6 +311,7 @@ object SolidStyles {
         val bright = (ctx.density * 1.2 + 0.5).toFloat() / max(1, symmetry)
         val symCos = FloatArray(symmetry) { cos(it.toFloat() * PI_F * 2.0f / symmetry) }
         val symSin = FloatArray(symmetry) { sin(it.toFloat() * PI_F * 2.0f / symmetry) }
+        val points = AttractorPoints(cx, cy, lut, symCos, symSin)
         for (li in 0 until layerCount) {
             val p = attractorPresets[(li + (ctx.seed % 13uL).toInt()) % attractorPresets.size]
             val type = p[0].toInt()
@@ -340,6 +343,7 @@ object SolidStyles {
             val offY = -(minY + maxY) * 0.5 * scale
             val weight = rng.nextDouble(0.25, 0.7).toFloat() * bright
             val tShift = rng.nextDouble()
+            points.startRun(weight, iters)
             for (i in 0 until iters) {
                 step(x, y)
                 x = next[0]; y = next[1]
@@ -348,15 +352,9 @@ object SolidStyles {
                 val py = (y * scale + offY).toFloat()
                 val angle01 = atan2(py, px).toDouble() / (PI * 2.0) + 0.5
                 val colorIdx = (((angle01 + tShift + ctx.colorDrift * i / iters) % 1.0) * nColors).toInt() % nColors
-                val col = lut[colorIdx.coerceIn(0, nColors - 1)]
-                for (s in 0 until symmetry) {
-                    buffer.addPixel(
-                        (cx + px * symCos[s] - py * symSin[s]).toInt(),
-                        (cy + px * symSin[s] + py * symCos[s]).toInt(),
-                        col[0], col[1], col[2], weight,
-                    )
-                }
+                points.add(px, py, colorIdx.coerceIn(0, nColors - 1))
             }
         }
+        return points
     }
 }

@@ -76,6 +76,13 @@ internal object Filters {
         }
     }
 
+    /** How many pixels [blurInPlace] reads on each side for this sigma. */
+    fun blurReach(sigma: Double): Int = when {
+        sigma < 0.05 -> 0
+        sigma <= 6.0 -> ceil(sigma * 3.0).toInt().coerceAtLeast(1)
+        else -> boxRadiiForGauss(sigma).sum()
+    }
+
     /** One line of interleaved RGB and its blur, Gaussian up to sigma 6, three box passes above. */
     private class Line(val n: Int, sigma: Double) {
         val src = FloatArray(n * 3)
@@ -192,19 +199,23 @@ internal object Filters {
      * over rows. Only a few source rows per thread are held at a time. `row` is reused after
      * the call returns.
      */
-    fun resampleRows(src: RowSource, dstW: Int, dstH: Int, par: Parallel, sink: (Int, FloatArray) -> Unit) {
+    fun resampleRows(src: RowSource, dstW: Int, dstH: Int, par: Parallel, sink: (Int, FloatArray) -> Unit) =
+        resampleRows(src, dstW, dstH, 0, dstH, par, sink)
+
+    /** Like [resampleRows], for destination rows [fromRow, untilRow) only; each row comes out the same. */
+    fun resampleRows(src: RowSource, dstW: Int, dstH: Int, fromRow: Int, untilRow: Int, par: Parallel, sink: (Int, FloatArray) -> Unit) {
         val sw = src.width
         val sh = src.height
         val sameW = dstW == sw
         val sameH = dstH == sh
         val wx = if (sameW) null else Weights(sw, dstW)
         val wy = if (sameH) null else Weights(sh, dstH)
-        par.forRange(dstH) { from, until ->
+        par.forRange(untilRow - fromRow) { from, until ->
             val cache = HashMap<Int, FloatArray>()
             val vertical = FloatArray(sw * 3)
             val out = FloatArray(dstW * 3)
             fun row(y: Int): FloatArray = cache.getOrPut(y) { FloatArray(sw * 3).also { src.readRow(y, it) } }
-            for (y in from until until) {
+            for (y in fromRow + from until fromRow + until) {
                 if (wy == null) {
                     System.arraycopy(row(y), 0, vertical, 0, sw * 3)
                     cache.remove(y)

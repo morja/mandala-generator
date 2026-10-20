@@ -34,9 +34,13 @@ internal class LayerEffects(private val par: Parallel) {
         return FloatArray(size).also { rowScratch.set(it) }
     }
 
-    /** Output image: the input itself when it is already sRGB, else a new one. */
+    /**
+     * Output image over the input's own bytes: every caller reads a row and then writes the same row,
+     * so the result can replace the input in place. A Display P3 input is relabelled sRGB; callers
+     * must not use the input image afterwards.
+     */
     private fun target(img: Image8): Image8 =
-        if (img.encoding == Encoding.SRGB) img else Image8(img.width, img.height, Encoding.SRGB)
+        if (img.encoding == Encoding.SRGB) img else Image8(img.width, img.height, Encoding.SRGB, img.data)
 
     /**
      * Sum of blur passes computed at a 1600 px reference width (radii in reference pixels), so glow
