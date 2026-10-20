@@ -1,0 +1,485 @@
+package com.mathis.mandala.app.ui
+
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.PrimaryTabRow
+import androidx.compose.material3.Switch
+import androidx.compose.material3.Tab
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.saveable.rememberSaveableStateHolder
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.selected
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.mathis.mandala.app.DrawTool
+import com.mathis.mandala.app.Editing
+import com.mathis.mandala.app.Editing.strokeCount
+import com.mathis.mandala.app.EditorViewModel
+import com.mathis.mandala.app.ui.theme.LocalTokens
+import com.mathis.mandala.app.ui.theme.Radius
+import com.mathis.mandala.app.ui.theme.Sizes
+import com.mathis.mandala.app.ui.theme.Spacing
+import com.mathis.mandala.core.BaseLayerSettings
+import com.mathis.mandala.core.BaseLayerType
+import com.mathis.mandala.core.BuiltInPalettes
+import com.mathis.mandala.core.EffectsLayerSettings
+import com.mathis.mandala.core.MandalaParameters
+import com.mathis.mandala.core.Quote
+import com.mathis.mandala.core.Quotes
+import com.mathis.mandala.core.StyleLayer
+import com.mathis.mandala.core.TextLayerSettings
+import kotlin.math.roundToInt
+
+private enum class ControlTab(val label: String) { LAYERS("Layers"), SCENE("Scene"), TEXT("Text"), DRAW("Draw") }
+
+/**
+ * The controls below (or beside) the canvas, in four tabs so only one area is on screen at a time.
+ * Each tab keeps its scroll position and open groups while another one is shown.
+ */
+@Composable
+internal fun ControlTabs(params: MandalaParameters, selected: Int, vm: EditorViewModel, modifier: Modifier = Modifier) {
+    var tab by rememberSaveable { mutableStateOf(ControlTab.LAYERS) }
+    val tabs = rememberSaveableStateHolder()
+    // Drawing on the canvas only while the Draw tab is shown.
+    LaunchedEffect(tab) { if (tab != ControlTab.DRAW) vm.setDrawTool(null) }
+    Column(modifier) {
+        PrimaryTabRow(selectedTabIndex = tab.ordinal) {
+            for (option in ControlTab.entries) {
+                Tab(selected = tab == option, onClick = { tab = option }, text = { Text(option.label, maxLines = 1) })
+            }
+        }
+        tabs.SaveableStateProvider(tab) {
+            Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(top = Spacing.xs, bottom = Spacing.lg)) {
+                when (tab) {
+                    ControlTab.LAYERS -> LayersTab(params, selected.coerceIn(0, params.layers.lastIndex), vm)
+                    ControlTab.SCENE -> SceneTab(params, vm)
+                    ControlTab.TEXT -> TextTab(params.textLayer, vm)
+                    ControlTab.DRAW -> DrawTab(params, vm)
+                }
+            }
+        }
+    }
+}
+
+// ── Layers ──
+
+@Composable
+private fun LayersTab(params: MandalaParameters, selected: Int, vm: EditorViewModel) {
+    val layers = params.layers
+    Column(verticalArrangement = Arrangement.spacedBy(Spacing.xs), modifier = Modifier.padding(top = Spacing.sm)) {
+        for (i in layers.indices.reversed()) {
+            LayerRow(
+                number = i + 1,
+                layer = layers[i],
+                selected = i == selected,
+                canMoveUp = i < layers.lastIndex,
+                canMoveDown = i > 0,
+                onSelect = { vm.select(i) },
+                onToggle = { vm.updateLayer(i) { it.copy(isEnabled = !it.isEnabled) } },
+                onMoveUp = { vm.moveLayer(i, +1) },
+                onMoveDown = { vm.moveLayer(i, -1) },
+            )
+        }
+    }
+    // Actions on the selected (highlighted) layer; its settings follow below.
+    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+        TextButton(onClick = vm::addLayer, enabled = layers.size < Editing.MAX_LAYERS) { Text("Add") }
+        TextButton(onClick = vm::duplicateSelected, enabled = layers.size < Editing.MAX_LAYERS) { Text("Duplicate") }
+        TextButton(onClick = vm::removeSelected, enabled = layers.size > 1) { Text("Delete") }
+        Box(Modifier.weight(1f))
+        IconButton(onClick = vm::randomizeSelected) { Icon(EditorIcons.Dice, contentDescription = "Randomize layer ${selected + 1}") }
+    }
+    LayerControls(layers[selected], vm::updateSelected)
+}
+
+@Composable
+private fun LayerRow(
+    number: Int,
+    layer: StyleLayer,
+    selected: Boolean,
+    canMoveUp: Boolean,
+    canMoveDown: Boolean,
+    onSelect: () -> Unit,
+    onToggle: () -> Unit,
+    onMoveUp: () -> Unit,
+    onMoveDown: () -> Unit,
+) {
+    val t = LocalTokens.current
+    val palette = BuiltInPalettes.all[layer.paletteIndex.coerceIn(0, BuiltInPalettes.all.lastIndex)]
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(Radius.sm))
+            .background(if (selected) t.accentSoft else t.surface)
+            .clickable(onClick = onSelect)
+            .semantics { this.selected = selected }
+            .padding(start = Spacing.md),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Box(Modifier.size(Sizes.swatchSmall).clip(CircleShape).background(paletteBrush(palette)))
+        Column(Modifier.weight(1f).padding(horizontal = Spacing.md, vertical = Spacing.xs)) {
+            Text("$number · ${layer.style.displayName}", style = MaterialTheme.typography.bodyMedium,
+                color = if (layer.isEnabled) t.text else t.textMuted, maxLines = 1)
+            Text("${layer.blendMode.displayName} · ${(layer.opacity * 100).roundToInt()} %",
+                style = MaterialTheme.typography.bodySmall, color = t.textMuted, maxLines = 1)
+        }
+        IconButton(onClick = onToggle) {
+            Icon(
+                if (layer.isEnabled) EditorIcons.Visible else EditorIcons.Hidden,
+                contentDescription = if (layer.isEnabled) "Hide layer $number" else "Show layer $number",
+                tint = if (layer.isEnabled) t.text else t.textMuted,
+            )
+        }
+        IconButton(onClick = onMoveUp, enabled = canMoveUp) { Icon(EditorIcons.MoveUp, contentDescription = "Move layer $number up") }
+        IconButton(onClick = onMoveDown, enabled = canMoveDown) { Icon(EditorIcons.MoveDown, contentDescription = "Move layer $number down") }
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun LayerControls(layer: StyleLayer, update: ((StyleLayer) -> StyleLayer) -> Unit) {
+    val t = LocalTokens.current
+    Group("Style", summary = layer.style.displayName) {
+        for ((group, styles) in Editing.styleGroups) {
+            Text(group, style = MaterialTheme.typography.bodySmall, color = t.textMuted, modifier = Modifier.padding(top = Spacing.xs))
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+                for (style in styles) {
+                    FilterChip(selected = layer.style == style, onClick = { update { it.copy(style = style) } }, label = { Text(style.displayName) })
+                }
+            }
+        }
+    }
+    val palette = BuiltInPalettes.all[layer.paletteIndex.coerceIn(0, BuiltInPalettes.all.lastIndex)]
+    Group("Palette", summary = palette.name) {
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.sm), verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+            BuiltInPalettes.all.forEachIndexed { index, p ->
+                Swatch(p, selected = layer.paletteIndex == index) { update { it.copy(paletteIndex = index) } }
+            }
+        }
+    }
+    Group("Blending", summary = "${layer.blendMode.displayName} · ${(layer.opacity * 100).roundToInt()} %") {
+        BlendChips(layer.blendMode) { m -> update { it.copy(blendMode = m) } }
+        ValueSlider("Opacity", layer.opacity) { v -> update { it.copy(opacity = v) } }
+    }
+    Group("Shape", initiallyOpen = true) {
+        SteppedSlider("Symmetry", layer.symmetry, 1..8) { v -> update { it.copy(symmetry = v) } }
+        ValueSlider("Scale", layer.scale, 0.1f..1.2f) { v -> update { it.copy(scale = v) } }
+        ValueSlider("Complexity", layer.complexity) { v -> update { it.copy(complexity = v) } }
+        ValueSlider("Density", layer.density) { v -> update { it.copy(density = v) } }
+        ValueSlider("Ripple", layer.ripple) { v -> update { it.copy(ripple = v) } }
+    }
+    Group("Light and colour") {
+        ValueSlider("Glow", layer.glowIntensity) { v -> update { it.copy(glowIntensity = v) } }
+        ValueSlider("Colour drift", layer.colorDrift) { v -> update { it.copy(colorDrift = v) } }
+        ValueSlider("Painted", layer.abstractLevel) { v -> update { it.copy(abstractLevel = v) } }
+        ValueSlider("Saturation", layer.saturation) { v -> update { it.copy(saturation = v) } }
+        ValueSlider("Brightness", layer.brightness) { v -> update { it.copy(brightness = v) } }
+    }
+}
+
+// ── Scene: background and effects ──
+
+@Composable
+private fun SceneTab(params: MandalaParameters, vm: EditorViewModel) {
+    val base = params.baseLayer
+    Group("Background", summary = if (base.isEnabled) backgroundName(base.type) else "Off", initiallyOpen = true) {
+        BackgroundControls(base, vm::updateBackground, vm::useBackgroundImage)
+    }
+    EffectsGroup(params.effectsLayer, vm::updateEffects, vm::newEffectsPattern)
+}
+
+/** Background behind all layers: off or one of the macOS types, with the fitting sliders. */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun BackgroundControls(
+    base: BaseLayerSettings,
+    update: ((BaseLayerSettings) -> BaseLayerSettings) -> Unit,
+    useImage: (Uri) -> Unit,
+) {
+    val pickImage = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri -> uri?.let(useImage) }
+    fun choose() = pickImage.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+    FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+        FilterChip(selected = !base.isEnabled, onClick = { update { it.copy(isEnabled = false) } }, label = { Text("Off") })
+        for (type in Editing.backgrounds) {
+            FilterChip(
+                selected = base.isEnabled && base.type == type,
+                onClick = {
+                    if (type == BaseLayerType.IMAGE && base.imageURL == null) choose()
+                    else update { it.copy(isEnabled = true, type = type) }
+                },
+                label = { Text(backgroundName(type)) },
+            )
+        }
+    }
+    if (!base.isEnabled || base.type !in Editing.backgrounds) return
+    when (base.type) {
+        BaseLayerType.AUTO -> {
+            Text("A dark glow and fine fibres in the colours of the bottom layer.", style = MaterialTheme.typography.bodySmall,
+                color = LocalTokens.current.textMuted)
+            return
+        }
+        BaseLayerType.IMAGE -> {
+            OutlinedButton(onClick = ::choose) { Text("Choose picture") }
+            ValueSlider("Strength", base.imageBlend) { v -> update { it.copy(imageBlend = v) } }
+            ValueSlider("Opacity", base.opacity) { v -> update { it.copy(opacity = v) } }
+            return
+        }
+        else -> Unit
+    }
+    val twoColours = base.type != BaseLayerType.COLOR && base.type != BaseLayerType.GRAIN
+    ColourGroup(if (twoColours) "Colour 1" else "Colour", base.hue, base.saturation, base.brightness) { h, s, b ->
+        update { it.copy(hue = h, saturation = s, brightness = b) }
+    }
+    if (twoColours) {
+        ColourGroup("Colour 2", base.hue2, base.saturation2, base.brightness2) { h, s, b ->
+            update { it.copy(hue2 = h, saturation2 = s, brightness2 = b) }
+        }
+    }
+    when (base.type) {
+        BaseLayerType.GRADIENT -> {
+            SwitchRow("Radial", base.isRadial) { r -> update { it.copy(isRadial = r) } }
+            if (!base.isRadial) ValueSlider("Angle", base.gradientAngle) { v -> update { it.copy(gradientAngle = v) } }
+        }
+        BaseLayerType.SUNBURST -> {
+            ValueSlider("Rays", base.patternScale) { v -> update { it.copy(patternScale = v) } }
+            ValueSlider("Sharpness", base.patternSharpness) { v -> update { it.copy(patternSharpness = v) } }
+        }
+        BaseLayerType.GRAIN -> {
+            ValueSlider("Grain", base.grainAmount) { v -> update { it.copy(grainAmount = v) } }
+            SwitchRow("Coloured grain", base.grainColored) { c -> update { it.copy(grainColored = c) } }
+        }
+        else -> Unit
+    }
+    ValueSlider("Opacity", base.opacity) { v -> update { it.copy(opacity = v) } }
+}
+
+private fun backgroundName(type: BaseLayerType) = when (type) {
+    BaseLayerType.AUTO -> "Auto"
+    BaseLayerType.IMAGE -> "Picture"
+    BaseLayerType.COLOR -> "Colour"
+    BaseLayerType.GRADIENT -> "Gradient"
+    BaseLayerType.SUNBURST -> "Sunburst"
+    BaseLayerType.GRAIN -> "Grain"
+}
+
+/** The effects layer over the whole image, switched on in its heading; its sliders in four groups. */
+@Composable
+private fun EffectsGroup(
+    fx: EffectsLayerSettings,
+    update: ((EffectsLayerSettings) -> EffectsLayerSettings) -> Unit,
+    newPattern: () -> Unit,
+) {
+    Group(
+        "Effects",
+        summary = if (fx.isEnabled) "On" else "Off",
+        trailing = { Switch(checked = fx.isEnabled, onCheckedChange = { on -> update { it.copy(isEnabled = on) } }) },
+    ) {
+        if (!fx.isEnabled) {
+            Text("Switch on to use vignette, bloom, grain, stars and more.", style = MaterialTheme.typography.bodySmall,
+                color = LocalTokens.current.textMuted)
+            return@Group
+        }
+        Group("Light", nested = true, initiallyOpen = true) {
+            ValueSlider("Brightness", fx.brightness) { v -> update { it.copy(brightness = v) } }
+            ValueSlider("Contrast", fx.contrast) { v -> update { it.copy(contrast = v) } }
+            ValueSlider("Vignette", fx.vignette) { v -> update { it.copy(vignette = v) } }
+            ValueSlider("Bloom", fx.bloom) { v -> update { it.copy(bloom = v) } }
+            ValueSlider("Highlights", fx.highlights) { v -> update { it.copy(highlights = v) } }
+        }
+        Group("Tone", nested = true) {
+            ValueSlider("Wash", fx.wash) { v -> update { it.copy(wash = v) } }
+            ValueSlider("Sepia", fx.sepia) { v -> update { it.copy(sepia = v) } }
+            ValueSlider("Fade", fx.fade) { v -> update { it.copy(fade = v) } }
+        }
+        Group("Texture", nested = true) {
+            ValueSlider("Grain", fx.grain) { v -> update { it.copy(grain = v) } }
+            ValueSlider("Clarity", fx.localContrast) { v -> update { it.copy(localContrast = v) } }
+            ValueSlider("Relief", fx.relief) { v -> update { it.copy(relief = v) } }
+            if (fx.relief > 0) ValueSlider("Relief angle", fx.reliefAngle) { v -> update { it.copy(reliefAngle = v) } }
+            ValueSlider("Chromatic", fx.chromatic) { v -> update { it.copy(chromatic = v) } }
+        }
+        Group("Spots and sparkle", nested = true) {
+            ValueSlider("Dimming", fx.dimming) { v -> update { it.copy(dimming = v) } }
+            ValueSlider("Erasure", fx.erasure) { v -> update { it.copy(erasure = v) } }
+            ValueSlider("Stars", fx.stars) { v -> update { it.copy(stars = v) } }
+            ValueSlider("Glitter", fx.glitter) { v -> update { it.copy(glitter = v) } }
+            TextButton(onClick = newPattern) { Text("New pattern") }
+        }
+    }
+}
+
+// ── Text ──
+
+/** Text over the mandala: quotes from the macOS app's collection or own text, with font and light. */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun TextTab(text: TextLayerSettings, vm: EditorViewModel) {
+    val update = vm::updateText
+    var choosing by remember { mutableStateOf(false) }
+    SwitchRow("Show text", text.isEnabled) { on -> if (on && text.text.isEmpty()) vm.randomQuote() else update { it.copy(isEnabled = on) } }
+    if (choosing) QuoteDialog(onPick = { vm.useQuote(it); choosing = false }, onDismiss = { choosing = false })
+    if (!text.isEnabled) return
+    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+        OutlinedButton(onClick = vm::randomQuote) { Text("Random quote") }
+        OutlinedButton(onClick = { choosing = true }) { Text("Choose quote") }
+    }
+    OutlinedTextField(
+        value = text.text,
+        onValueChange = { v -> update { it.copy(text = v, customAuthor = if (v == it.text) it.customAuthor else Quotes.authorOf(v) ?: "") } },
+        label = { Text("Text") },
+        maxLines = 4,
+        modifier = Modifier.fillMaxWidth().padding(top = Spacing.sm),
+    )
+    SwitchRow("Show author", text.showAuthor) { a -> update { it.copy(showAuthor = a) } }
+    Group("Font", summary = Quotes.fonts.firstOrNull { it.first == text.fontName }?.second ?: text.fontName) {
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+            for ((name, display) in Quotes.fonts) {
+                FilterChip(selected = text.fontName == name, onClick = { update { it.copy(fontName = name) } }, label = { Text(display) })
+            }
+        }
+    }
+    Group("Size and place") {
+        ValueSlider("Size", text.fontSize, 0.02f..0.2f) { v -> update { it.copy(fontSize = v) } }
+        ValueSlider("Width", text.fontWidth, 0.1f..1f) { v -> update { it.copy(fontWidth = v) } }
+        ValueSlider("Height", text.offsetY) { v -> update { it.copy(offsetY = v) } }
+    }
+    Group("Light") {
+        ValueSlider("Glow", text.glow) { v -> update { it.copy(glow = v) } }
+        ValueSlider("Cloud", text.cloudOpacity) { v -> update { it.copy(cloudOpacity = v) } }
+        ValueSlider("Cloud size", text.cloudScale) { v -> update { it.copy(cloudScale = v) } }
+        ValueSlider("Shadow", text.shadowOpacity) { v -> update { it.copy(shadowOpacity = v) } }
+    }
+    Group("Colour", trailing = { ColourDot(hsbColour(text.hue, text.saturation, text.brightness.coerceAtMost(1.0))) }) {
+        ValueSlider("Hue", text.hue) { v -> update { it.copy(hue = v) } }
+        ValueSlider("Saturation", text.saturation) { v -> update { it.copy(saturation = v) } }
+        ValueSlider("Brightness", text.brightness, 0f..1.5f) { v -> update { it.copy(brightness = v) } }
+    }
+}
+
+@Composable
+private fun QuoteDialog(onPick: (Quote) -> Unit, onDismiss: () -> Unit) {
+    val t = LocalTokens.current
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = { TextButton(onClick = onDismiss) { Text("Close") } },
+        title = { Text("Quotes") },
+        text = {
+            LazyColumn {
+                items(Quotes.all) { q ->
+                    Column(Modifier.fillMaxWidth().clickable { onPick(q) }.padding(vertical = Spacing.sm)) {
+                        Text(q.text, style = MaterialTheme.typography.bodyMedium)
+                        Text(q.author, style = MaterialTheme.typography.bodySmall, color = t.textMuted)
+                    }
+                }
+            }
+        },
+    )
+}
+
+// ── Draw ──
+
+/**
+ * Drawing by hand, as on the Mac: glowing lines (drawing layer) or soft spray paint (graffiti layer),
+ * each repeated around the centre. "Draw on image" turns drags on the canvas into strokes.
+ */
+@Composable
+private fun DrawTab(params: MandalaParameters, vm: EditorViewModel) {
+    val active by vm.drawTool.collectAsStateWithLifecycle()
+    var tool by rememberSaveable { mutableStateOf(DrawTool.LINES) }
+    val count = params.strokeCount(tool)
+    val lines = params.drawingLayer
+    val spray = params.graffitiLayer
+
+    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.sm), modifier = Modifier.padding(top = Spacing.sm)) {
+        for (option in DrawTool.entries) {
+            FilterChip(
+                selected = tool == option,
+                onClick = {
+                    tool = option
+                    if (active != null) vm.setDrawTool(option)
+                },
+                label = { Text("${option.label} (${params.strokeCount(option)})") },
+            )
+        }
+    }
+    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+        if (active == null) {
+            Button(onClick = { vm.setDrawTool(tool) }) { Text("Draw on image") }
+        } else {
+            FilledTonalButton(onClick = { vm.setDrawTool(null) }) { Text("Done") }
+        }
+        OutlinedButton(onClick = { vm.removeLastStroke(tool) }, enabled = count > 0) { Text("Undo") }
+        OutlinedButton(onClick = { vm.clearStrokes(tool) }, enabled = count > 0) { Text("Clear") }
+    }
+    if (count > 0) {
+        val shown = if (tool == DrawTool.LINES) lines.isEnabled else spray.isEnabled
+        SwitchRow("Show ${tool.label.lowercase()}", shown) { on ->
+            if (tool == DrawTool.LINES) vm.updateDrawing { it.copy(isEnabled = on) } else vm.updateGraffiti { it.copy(isEnabled = on) }
+        }
+    }
+    when (tool) {
+        DrawTool.LINES -> {
+            SteppedSlider("Symmetry", lines.symmetry.coerceIn(1, 16), 1..16) { v -> vm.updateDrawing { it.copy(symmetry = v) } }
+            ColourGroup("Line colour", lines.currentHue, lines.currentSaturation, lines.currentBrightness, initiallyOpen = true) { h, s, b ->
+                vm.updateDrawing { it.copy(currentHue = h, currentSaturation = s, currentBrightness = b) }
+            }
+            Group("Line and light", nested = true) {
+                ValueSlider("Weight", lines.strokeWeight) { v -> vm.updateDrawing { it.copy(strokeWeight = v) } }
+                ValueSlider("Glow", lines.glowIntensity) { v -> vm.updateDrawing { it.copy(glowIntensity = v) } }
+                ValueSlider("Opacity", lines.opacity) { v -> vm.updateDrawing { it.copy(opacity = v) } }
+                BlendChips(lines.blendMode) { m -> vm.updateDrawing { it.copy(blendMode = m) } }
+            }
+        }
+        DrawTool.SPRAY -> {
+            SteppedSlider("Symmetry", spray.symmetry.coerceIn(1, 16), 1..16) { v -> vm.updateGraffiti { it.copy(symmetry = v) } }
+            ValueSlider("Brush size", spray.currentBrushSize, 0.01f..0.2f) { v -> vm.updateGraffiti { it.copy(currentBrushSize = v) } }
+            ValueSlider("Paint", spray.currentOpacity) { v -> vm.updateGraffiti { it.copy(currentOpacity = v) } }
+            ColourGroup("Spray colour", spray.currentHue, spray.currentSaturation, spray.currentBrightness, initiallyOpen = true) { h, s, b ->
+                vm.updateGraffiti { it.copy(currentHue = h, currentSaturation = s, currentBrightness = b) }
+            }
+            Group("Softness and blending", nested = true) {
+                ValueSlider("Softness", spray.softness) { v -> vm.updateGraffiti { it.copy(softness = v) } }
+                ValueSlider("Opacity", spray.opacity) { v -> vm.updateGraffiti { it.copy(opacity = v) } }
+                BlendChips(spray.blendMode) { m -> vm.updateGraffiti { it.copy(blendMode = m) } }
+            }
+        }
+    }
+}
