@@ -1,6 +1,6 @@
 # STORE-1 · Google Play listing and Play Console answers
 
-Prepared 20 October 2026 for the first Android release. Nothing here has been entered in the Play Console yet. Graphics in this folder: `play-icon-512.png` (512×512, 32-bit PNG), `play-feature-graphic.png` (1024×500). Phone and tablet screenshots are still missing; they need the finished app with the emblem layer.
+Prepared 20 October 2026 for the first Android release; entered in the Play Console the same day. Graphics in this folder: `play-icon-512.png` (512×512, 32-bit PNG), `play-feature-graphic.png` (1024×500), and six phone screenshots in `screenshots/` (1080×1920, cropped from Mathis' Galaxy S23 without the status bar): Flower of Life, Flow Field, Lotus emblem, quote, favourites, drawing. AI asset declaration: "Don't label assets" (icon and feature graphic are rendered by the app, screenshots are real).
 
 ## App details
 
