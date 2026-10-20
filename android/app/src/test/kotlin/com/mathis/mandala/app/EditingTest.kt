@@ -1,6 +1,10 @@
 package com.mathis.mandala.app
 
+import com.mathis.mandala.app.Editing.SaveFormat
 import com.mathis.mandala.app.Editing.addLayer
+import com.mathis.mandala.app.Editing.moved
+import com.mathis.mandala.app.Editing.zoomedAround
+import com.mathis.mandala.core.Framing
 import com.mathis.mandala.app.Editing.addStroke
 import com.mathis.mandala.app.Editing.clearStrokes
 import com.mathis.mandala.app.Editing.removeLastStroke
@@ -180,5 +184,32 @@ class EditingTest {
             assertTrue(r.colorSpread in 0.0..0.6 && r.glow in 0.2..0.8 && r.organic in 0.2..1.0)
             assertTrue(custom.newShape(kotlin.random.Random(i)).seed in 1uL..999_999uL)
         }
+    }
+
+    @Test
+    fun saveSizesFollowTheFormatAndThePhoneScreen() {
+        val phone = 2400.0 / 1080.0
+        assertEquals(1024 to 1024, Editing.exportSize(SaveFormat.SQUARE, phone, large = false))
+        assertEquals(2048 to 2560, Editing.exportSize(SaveFormat.FOUR_FIVE, phone, large = true))
+        assertEquals(1024 to 2276, Editing.exportSize(SaveFormat.SCREEN, phone, large = false))
+        // Taller than 21:9 is capped; below 1 (never passed by the app) gives a square.
+        assertEquals(2048 to 4779, Editing.exportSize(SaveFormat.SCREEN, 3.0, large = true))
+        assertEquals(1024 to 1024, Editing.exportSize(SaveFormat.SCREEN, 0.6, large = false))
+        assertEquals("a-1024x2276.png", Editing.fileName(start, 1024, 2276).substringAfterLast('-').let { "a-$it" })
+        assertTrue(Editing.fileName(start, 1024, 1024) == Editing.fileName(start))
+    }
+
+    @Test
+    fun framingMovesAndZoomsAroundTheFingers() {
+        val moved = Framing().moved(0.1, -0.2)
+        assertEquals(0.6, moved.centreX, 1e-9)
+        assertEquals(0.3, moved.centreY, 1e-9)
+        // Zooming around the centre keeps it; around a point the centre moves away from that point.
+        assertEquals(Framing(zoom = 2.0), Framing().zoomedAround(0.5, 0.5, 2.0))
+        val z = Framing().zoomedAround(0.25, 0.5, 2.0)
+        assertEquals(0.75, z.centreX, 1e-9)
+        // Limits: zoom 0.25 to 4, centre inside the frame.
+        assertEquals(Framing.MAX_ZOOM, Framing(zoom = 3.0).zoomedAround(0.5, 0.5, 10.0).zoom, 1e-9)
+        assertEquals(1.0, Framing().moved(5.0, 0.0).centreX, 1e-9)
     }
 }

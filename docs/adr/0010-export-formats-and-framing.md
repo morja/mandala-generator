@@ -13,11 +13,11 @@ Status: accepted, 20 October 2026 (Mathis' decisions; points 1 to 3 first, the r
 7. **Text layer: a choice in the framing step.** "Text stays in place" (default): the quote is placed in canvas coordinates, so it can sit in the free space below the mandala. "Text moves with the mandala": it moves and scales with the framing. Like the format, the choice belongs to the saved image, not to the settings.
 8. **Zoom range** (Pro) from a quarter to four times "fits the width"; the mandala's centre always stays inside the frame.
 9. **Sizes.** Free: 1024 px wide in every format, drawn at twice the size and scaled down, as today. Pro: 2048 px wide in every format, without supersampling, so it is the free export's internal image, as today for the square (ADR-0007): 2048 × 2048, 2048 × 2560 for 4:5, about 2048 × 4437 for a 9:19.5 phone screen.
-10. **"Set as wallpaper"** in the framing step, through Android's `WallpaperManager` (home screen, lock screen or both), at the size of the chosen export.
+10. **"Set as wallpaper"** in the framing step, through Android's `WallpaperManager` (home screen, lock screen or both). A wallpaper fills the screen, so it is always set in the "This screen" format (the sheet switches to it first, so the frame shows what is set), 2048 px wide with Pro, 1024 without.
 11. **Square with the default framing is today's image.** Format square, mandala centred at the width of the canvas, must render pixel-identical to today, so `ParityTest` and its thresholds stay valid.
 12. **Every step that works on a full-size image does it in strips** and keeps only the 8-bit result ([SPIKE-1](../SPIKE-1-banded-rendering.md)): layer lines, Strange Attractor points, graffiti, drawing layer, effects layer, stars and glitter; glow and wash write into the layer image instead of a copy. The image stays byte-identical and the render time the same; the one exception is the graffiti blur, whose running sums start at the strip and may differ by one step of 255 in single pixels. This is what makes 2048 × 4437 fit into 256 MB (ADR-0002); without it neither the free nor the Pro portrait export fits.
 
-Formats offered: **Square**, **This phone's screen** (aspect ratio from the display, the format for wallpapers) and **4:5**. More can follow without a new decision.
+Formats offered: **Square**, **This screen** (aspect ratio of the device's screen, taller side over shorter, at most 21:9; the format for wallpapers) and **4:5**. More can follow without a new decision.
 
 ## How it is built
 
