@@ -122,6 +122,18 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
     val historyState: StateFlow<HistoryState> = _historyState.asStateFlow()
 
     private val threads = Runtime.getRuntime().availableProcessors()
+    private val pro = ProPurchases(application) { message(it) }.also { it.connect() }
+
+    /** Whether Pro is owned, and its price. */
+    val proState: StateFlow<ProState> = pro.state
+
+    fun buyPro(activity: android.app.Activity) = pro.buy(activity)
+
+    override fun onCleared() {
+        pro.close()
+        super.onCleared()
+    }
+
     private val textRenderer = AndroidTextRenderer()
     private val imageLoader = AndroidImageLoader()
 
@@ -366,26 +378,43 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
 
     // ── Images ──
 
-    fun exportToGallery() = renderFullSize { image, fileName ->
+    fun exportToGallery() = renderFullSize(large = false) { image, fileName ->
         withContext(Dispatchers.IO) { GalleryExport.savePng(getApplication(), image, fileName) }
         message("Saved to Pictures/${GalleryExport.FOLDER} as $fileName")
     }
 
-    fun shareImage() = renderFullSize { image, fileName ->
+    /** Pro: 2048 px, drawn without supersampling so it needs no more memory than the normal export. */
+    fun exportLargeToGallery() {
+        if (!pro.state.value.owned) return
+        renderFullSize(large = true) { image, fileName ->
+            withContext(Dispatchers.IO) { GalleryExport.savePng(getApplication(), image, fileName) }
+            message("Saved ${Editing.LARGE_EXPORT_SIZE} px to Pictures/${GalleryExport.FOLDER} as $fileName")
+        }
+    }
+
+    fun shareImage() = renderFullSize(large = false) { image, fileName ->
         val uri = withContext(Dispatchers.IO) { ImageShare.prepare(getApplication(), image, fileName) }
         _events.send(EditorEvent.ShareImage(uri))
     }
 
-    private fun renderFullSize(then: suspend (Image8, String) -> Unit) {
+    private fun renderFullSize(large: Boolean, then: suspend (Image8, String) -> Unit) {
         if (_busy.value) return
         val snapshot = _params.value
         _busy.value = true
         viewModelScope.launch {
             try {
                 val image = withContext(Dispatchers.Default) {
-                    MandalaRenderer.render(snapshot, RenderOptions(outputSize = Editing.EXPORT_SIZE, threads = threads, textRenderer = textRenderer, imageLoader = imageLoader)).image
+                    val options = RenderOptions(
+                        outputSize = if (large) Editing.LARGE_EXPORT_SIZE else Editing.EXPORT_SIZE,
+                        supersample = !large,
+                        threads = threads,
+                        textRenderer = textRenderer,
+                        imageLoader = imageLoader,
+                    )
+                    MandalaRenderer.render(snapshot, options).image
                 }
-                then(image, Editing.fileName(snapshot))
+                val name = Editing.fileName(snapshot)
+                then(image, if (large) name.removeSuffix(".png") + "-${Editing.LARGE_EXPORT_SIZE}.png" else name)
             } catch (e: OutOfMemoryError) {
                 message("Not enough memory for this image.")
             } catch (e: Exception) {

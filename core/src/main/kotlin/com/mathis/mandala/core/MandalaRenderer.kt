@@ -19,6 +19,12 @@ import kotlin.math.min
 data class RenderOptions(
     /** Overrides the size from the settings (the preview uses a smaller one). */
     val outputSize: Int? = null,
+    /**
+     * Like the macOS app, everything is drawn at twice the output size and scaled down at the end.
+     * False draws at the output size itself: the image then looks like the supersampled one at half
+     * its size, with twice the detail, for the memory of that half size (the app's large export).
+     */
+    val supersample: Boolean = true,
     /** Threads for drawing and filters. The image does not depend on it. */
     val threads: Int = Runtime.getRuntime().availableProcessors(),
     /** Draws text for the text layer; supplied by the platform (fonts are not part of the core). */
@@ -55,7 +61,7 @@ object MandalaRenderer {
         val start = System.nanoTime()
         val warnings = mutableListOf<String>()
         val resolvedSize = options.outputSize ?: params.resolvedOutputSize
-        val bufferSize = resolvedSize * 2
+        val bufferSize = if (options.supersample) resolvedSize * 2 else resolvedSize
         val baseRadius = bufferSize * 0.72
         // Same lines spread over a larger canvas give a lower mean; this linear factor cancels it.
         val brightnessScale = bufferSize / 1600f
@@ -183,7 +189,11 @@ object MandalaRenderer {
             }
 
             checkpoint()
-            val result = fx.downscale(composite, resolvedSize)
+            val result = when {
+                bufferSize != resolvedSize -> fx.downscale(composite, resolvedSize)
+                composite.encoding == Encoding.SRGB -> composite
+                else -> WorkingSpace.convertToSrgb(composite)
+            }
             return RenderResult(result, warnings, (System.nanoTime() - start) / 1_000_000)
         }
     }

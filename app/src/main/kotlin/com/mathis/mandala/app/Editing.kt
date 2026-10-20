@@ -54,6 +54,9 @@ object Editing {
     const val PREVIEW_SIZE = 512
     const val EXPORT_SIZE = 1024
 
+    /** Pro export (ADR-0007). */
+    const val LARGE_EXPORT_SIZE = 2048
+
     /** Same limit as the macOS app. */
     const val MAX_LAYERS = 5
 

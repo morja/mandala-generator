@@ -1,5 +1,7 @@
 package com.mathis.mandala.app.ui
 
+import androidx.activity.compose.LocalActivity
+import com.mathis.mandala.app.ProState
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
@@ -99,6 +101,8 @@ fun EditorScreen(vm: EditorViewModel) {
     val favorites by vm.favorites.collectAsStateWithLifecycle()
     val drawTool by vm.drawTool.collectAsStateWithLifecycle()
     val history by vm.historyState.collectAsStateWithLifecycle()
+    val pro by vm.proState.collectAsStateWithLifecycle()
+    var showPro by remember { mutableStateOf(false) }
     val snackbar = remember { SnackbarHostState() }
     val context = LocalContext.current
     var showFavorites by remember { mutableStateOf(false) }
@@ -125,6 +129,12 @@ fun EditorScreen(vm: EditorViewModel) {
             }
         }
     }
+
+    if (showPro) {
+        val activity = LocalActivity.current
+        ProSheet(pro, onBuy = { activity?.let(vm::buyPro) }, onDismiss = { showPro = false })
+    }
+    LaunchedEffect(pro.owned) { if (pro.owned) showPro = false }
 
     if (showFavorites) {
         FavoritesSheet(
@@ -164,6 +174,8 @@ fun EditorScreen(vm: EditorViewModel) {
                     IconButton(onClick = { showFavorites = true }) { Icon(EditorIcons.Star, contentDescription = "Favourites") }
                     MoreMenu(
                         busy = busy,
+                        proOwned = pro.owned,
+                        onSaveLarge = { if (pro.owned) vm.exportLargeToGallery() else showPro = true },
                         onVariation = vm::newVariation,
                         onNewLayers = vm::randomLayers,
                         onShare = vm::shareImage,
@@ -332,6 +344,8 @@ private fun DrawingOverlay(input: DrawingInput, guide: Color) {
 @Composable
 private fun MoreMenu(
     busy: Boolean,
+    proOwned: Boolean,
+    onSaveLarge: () -> Unit,
     onVariation: () -> Unit,
     onNewLayers: () -> Unit,
     onShare: () -> Unit,
@@ -345,9 +359,38 @@ private fun MoreMenu(
             DropdownMenuItem(text = { Text("New variation") }, onClick = { open = false; onVariation() })
             DropdownMenuItem(text = { Text("New layers") }, onClick = { open = false; onNewLayers() })
             HorizontalDivider()
+            DropdownMenuItem(
+                text = { Text(if (proOwned) "Save large (2048 px)" else "Save large (2048 px) · Pro") },
+                enabled = !busy,
+                onClick = { open = false; onSaveLarge() },
+            )
             DropdownMenuItem(text = { Text("Share image") }, enabled = !busy, onClick = { open = false; onShare() })
             DropdownMenuItem(text = { Text("Open file…") }, onClick = { open = false; onOpen() })
             DropdownMenuItem(text = { Text("Save settings…") }, onClick = { open = false; onSaveSettings() })
+        }
+    }
+}
+
+/** What Pro adds, and the purchase button with Google Play's price. */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ProSheet(pro: ProState, onBuy: () -> Unit, onDismiss: () -> Unit) {
+    val t = LocalTokens.current
+    ModalBottomSheet(onDismissRequest = onDismiss) {
+        Column(Modifier.padding(horizontal = Spacing.lg).padding(bottom = Spacing.xl), verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+            Text("Mandala Pro", style = MaterialTheme.typography.titleLarge)
+            Text(
+                "Save your mandalas at 2048 × 2048 pixels, sharp enough for prints and wallpapers. " +
+                    "One purchase, no subscription. Everything else stays free.",
+                style = MaterialTheme.typography.bodyMedium,
+            )
+            Button(onClick = onBuy, enabled = pro.available, modifier = Modifier.fillMaxWidth()) {
+                Text(if (pro.price != null) "Buy for ${pro.price}" else "Buy Pro")
+            }
+            if (!pro.available) {
+                Text("Pro is sold through Google Play and is not available in this installation right now.",
+                    style = MaterialTheme.typography.bodySmall, color = t.textMuted)
+            }
         }
     }
 }

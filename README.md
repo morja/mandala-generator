@@ -18,7 +18,7 @@ Android 10 or later. With an emulator or a phone connected:
 ./gradlew :app:installRelease
 ```
 
-The release build is signed with the local debug key (no store signing yet). Debug builds work too (`installDebug`) but render about 2.5 times slower. Exports land in `Pictures/Mandala`.
+The release build is signed with the local debug key (no store signing yet). Pro (saving at 2048 px, ADR-0007) is sold through Google Play as product `pro`; debug builds count as Pro. Debug builds work too (`installDebug`) but render about 2.5 times slower. Exports land in `Pictures/Mandala`.
 
 ## Render a settings file from the Mac app
 

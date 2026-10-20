@@ -34,4 +34,26 @@ class MemoryBudgetTest {
         assertEquals(1024, result.image.width)
         assertTrue(result.warnings.isEmpty(), result.warnings.joinToString())
     }
+
+    @Test
+    fun exports2048WithoutSupersamplingWithin256MbHeap() {
+        val params = SettingsJson.decode(fiveHeavyLayers)
+        val result = MandalaRenderer.render(params, RenderOptions(outputSize = 2048, supersample = false, threads = 4))
+        assertEquals(2048, result.image.width)
+        assertEquals(Encoding.SRGB, result.image.encoding)
+    }
+
+    @Test
+    fun largeExportMatchesTheNormalExportScaledDown() {
+        val params = SettingsJson.decode("""{"layers":[{"style":"roseCurves","scale":0.8,"seed":3}]}""")
+        val normal = MandalaRenderer.render(params, RenderOptions(outputSize = 128, threads = 2)).image
+        val large = MandalaRenderer.render(params, RenderOptions(outputSize = 256, supersample = false, threads = 2)).image
+        // Same picture: the large one is the normal export's internal image before scaling down.
+        val mean = (0 until 128 * 128 * 3).sumOf { i ->
+            val y = i / (128 * 3); val x = (i / 3) % 128; val c = i % 3
+            val l = (0..1).sumOf { dy -> (0..1).sumOf { dx -> large.get(((2 * y + dy) * 256 + 2 * x + dx) * 3 + c) } } / 4
+            kotlin.math.abs(l - normal.get(i))
+        } / (128.0 * 128 * 3)
+        assertTrue(mean < 6.0, "mean difference $mean")
+    }
 }
