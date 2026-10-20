@@ -99,6 +99,22 @@ struct CanvasView: View {
                 .help("Undo last spray stroke")
 
                 Divider().frame(height: 20)
+            } else if appState.isMoveMode {
+                Button(action: { appState.isMoveMode = false }) {
+                    Label("Done Moving", systemImage: "checkmark.circle.fill")
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(.mint)
+
+                Divider().frame(height: 20)
+            }
+
+            if !appState.isMoveMode && !appState.isDrawingMode && !appState.isGraffitiMode {
+                Button(action: { appState.isMoveMode = true }) {
+                    Image(systemName: "arrow.up.and.down.and.arrow.left.and.right")
+                }
+                .buttonStyle(.bordered)
+                .help("Move layers and the emblem")
             }
 
             Button(action: { appState.randomizeAll() }) {
@@ -214,28 +230,30 @@ struct CanvasView: View {
                             DrawingOverlay(settings: $appState.parameters.drawingLayer)
                         } else if appState.isGraffitiMode {
                             GraffitiOverlay(settings: $appState.parameters.graffitiLayer)
+                        } else if appState.isMoveMode {
+                            LayerMoveOverlay(parameters: $appState.parameters)
                         }
                     }
                 )
-                .scaleEffect((appState.isDrawingMode || appState.isGraffitiMode) ? 1.0 : zoomScale)
-                .offset((appState.isDrawingMode || appState.isGraffitiMode) ? .zero : panOffset)
+                .scaleEffect((appState.isDrawingMode || appState.isGraffitiMode || appState.isMoveMode) ? 1.0 : zoomScale)
+                .offset((appState.isDrawingMode || appState.isGraffitiMode || appState.isMoveMode) ? .zero : panOffset)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .gesture(
                     DragGesture()
                         .onChanged { value in
-                            guard !appState.isDrawingMode && !appState.isGraffitiMode else { return }
+                            guard !appState.isDrawingMode && !appState.isGraffitiMode && !appState.isMoveMode else { return }
                             panOffset = CGSize(
                                 width: lastPanOffset.width + value.translation.width,
                                 height: lastPanOffset.height + value.translation.height
                             )
                         }
                         .onEnded { _ in
-                            guard !appState.isDrawingMode && !appState.isGraffitiMode else { return }
+                            guard !appState.isDrawingMode && !appState.isGraffitiMode && !appState.isMoveMode else { return }
                             lastPanOffset = panOffset
                         }
                 )
                 .onScrollWheel { delta in
-                    guard !appState.isDrawingMode && !appState.isGraffitiMode else { return }
+                    guard !appState.isDrawingMode && !appState.isGraffitiMode && !appState.isMoveMode else { return }
                     let factor = 1.0 + delta * 0.1
                     withAnimation(.interactiveSpring()) {
                         zoomScale = max(0.1, min(10.0, zoomScale * CGFloat(factor)))
@@ -280,6 +298,93 @@ struct CanvasView: View {
     private func copyImageToClipboard(_ image: NSImage) {
         NSPasteboard.general.clearContents()
         NSPasteboard.general.writeObjects([image])
+    }
+}
+
+// MARK: - Move overlay
+
+/// Handles for moving the layers and the emblem (ADR-0011): a numbered dot at each centre and a
+/// faint ring of about the layer's size. Dragging a dot moves that layer with the pointer; the
+/// image is rendered again whenever the pointer rests for a moment and when the drag ends.
+struct LayerMoveOverlay: View {
+    @Binding var parameters: MandalaParameters
+    /// The handle being dragged (a layer index, or -1 for the emblem) and where the pointer grabbed
+    /// it, relative to its centre, so the dot does not jump to the pointer.
+    @State private var dragging: Int? = nil
+    @State private var grab: CGSize = .zero
+
+    private static let space = "layerMoveOverlay"
+
+    var body: some View {
+        GeometryReader { geo in
+            let side = geo.size.width
+            ZStack {
+                ForEach(Array(parameters.layers.enumerated()), id: \.offset) { i, layer in
+                    if layer.isEnabled {
+                        handle(label: "\(i + 1)", x: layer.offsetX, y: layer.offsetY,
+                               ring: 0.36 * max(0.1, min(1.2, layer.scale)), index: i, side: side)
+                    }
+                }
+                if parameters.emblemLayer.isEnabled {
+                    handle(label: "E", x: parameters.emblemLayer.offsetX, y: parameters.emblemLayer.offsetY,
+                           ring: 0.5 * max(0.1, min(1.0, parameters.emblemLayer.size)), index: -1, side: side)
+                }
+            }
+            .frame(width: geo.size.width, height: geo.size.height)
+            // Measured in the overlay's own space, which does not move while a handle does.
+            .coordinateSpace(name: Self.space)
+        }
+    }
+
+    private func handle(label: String, x: Double, y: Double, ring: Double, index: Int, side: CGFloat) -> some View {
+        let cx = CGFloat(0.5 + x) * side
+        let cy = CGFloat(0.5 + y) * side
+        return ZStack {
+            Circle()
+                .stroke(Color.white.opacity(dragging == index ? 0.6 : 0.35), lineWidth: 1)
+                .frame(width: CGFloat(ring * 2) * side, height: CGFloat(ring * 2) * side)
+                .allowsHitTesting(false)
+            ZStack {
+                Circle().fill(Color.black.opacity(0.6))
+                Circle().stroke(Color.white, lineWidth: 1.5)
+                Text(label).font(.system(size: 11, weight: .semibold)).foregroundColor(.white)
+            }
+            .frame(width: 22, height: 22)
+            .contentShape(Circle())
+            .gesture(
+                DragGesture(minimumDistance: 0, coordinateSpace: .named(Self.space))
+                    .onChanged { v in
+                        if dragging != index {
+                            dragging = index
+                            grab = CGSize(width: v.startLocation.x - cx, height: v.startLocation.y - cy)
+                        }
+                        move(index, to: v.location, side: side)
+                    }
+                    .onEnded { v in
+                        move(index, to: v.location, side: side)
+                        dragging = nil
+                        grab = .zero
+                    }
+            )
+            .onHover { hovering in
+                if hovering { NSCursor.openHand.set() } else { NSCursor.arrow.set() }
+            }
+        }
+        .position(x: cx, y: cy)
+    }
+
+    /// Puts the handle's centre under the pointer (minus where it was grabbed) and stores the offset.
+    private func move(_ index: Int, to location: CGPoint, side: CGFloat) {
+        guard side > 0 else { return }
+        let nx = max(-1, min(1, Double((location.x - grab.width) / side) - 0.5))
+        let ny = max(-1, min(1, Double((location.y - grab.height) / side) - 0.5))
+        if index >= 0, index < parameters.layers.count {
+            parameters.layers[index].offsetX = nx
+            parameters.layers[index].offsetY = ny
+        } else if index == -1 {
+            parameters.emblemLayer.offsetX = nx
+            parameters.emblemLayer.offsetY = ny
+        }
     }
 }
 

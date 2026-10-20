@@ -420,6 +420,8 @@ private struct LayerCard: View {
                     CardSlider(label: "Saturation",  value: $layer.saturation,   range: 0...1,     color: .pink, reset: defaults.saturation)
                     CardSlider(label: "Brightness",  value: $layer.brightness,   range: 0...1,     color: .yellow, reset: defaults.brightness)
                     CardSlider(label: "Rotation",    value: $layer.rotation,     range: 0...1,     color: .mint, reset: defaults.rotation)
+                    CardSlider(label: "Position X",  value: $layer.offsetX,      range: -1...1,    color: .mint, reset: defaults.offsetX)
+                    CardSlider(label: "Position Y",  value: $layer.offsetY,      range: -1...1,    color: .mint, reset: defaults.offsetY)
                     CardSlider(label: "Opacity",     value: $layer.opacity,      range: 0...1,     color: .white, reset: defaults.opacity)
                 }
                 .padding(10)
