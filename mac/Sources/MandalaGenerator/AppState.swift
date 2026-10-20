@@ -48,6 +48,8 @@ class AppState: ObservableObject {
     @Published var copiedLayer: StyleLayer? = nil
     @Published var isDrawingMode: Bool = false
     @Published var isGraffitiMode: Bool = false
+    /// Handles on the canvas for moving the layers and the emblem (ADR-0011).
+    @Published var isMoveMode: Bool = false
     @Published var showDrawingPanel: Bool = false
     @Published var layerPreviews: [Int: NSImage] = [:]
     @Published var cardExpandedStates: [String: Bool] = [:]

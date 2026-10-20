@@ -13,12 +13,15 @@ extension MandalaRenderer {
         let geometry = EmblemShapes.geometry(for: s)
         // Unit space → pixels: the frame ring (radius 0.92) gets a diameter of `size` × canvas.
         let unit = max(0.1, min(1.0, s.size)) * Double(size) * 0.5 / EmblemShapes.ringRadius
-        guard let mask = emblemMask(geometry, rendering: s.rendering, weight: s.weight,
-                                    unit: unit, rotation: s.rotation, size: size) else { return image }
+        // The emblem's centre in pixels, row 0 at the top; moved by its offset (ADR-0011).
+        let centreX = Double(size) / 2 + s.offsetX * Double(size)
+        let centreY = Double(size) / 2 + s.offsetY * Double(size)
+        guard let mask = emblemMask(geometry, rendering: s.rendering, weight: s.weight, unit: unit,
+                                    rotation: s.rotation, size: size, centreX: centreX, centreY: centreY) else { return image }
 
         let palette = palettes[max(0, min(palettes.count - 1, s.paletteIndex))]
-        guard var overlay = colourise(mask: mask, palette: palette, position: s.colorPosition,
-                                      spread: s.colorSpread, unit: unit, size: size) else { return image }
+        guard var overlay = colourise(mask: mask, palette: palette, position: s.colorPosition, spread: s.colorSpread,
+                                      unit: unit, size: size, centreX: centreX, centreY: centreY) else { return image }
         overlay = applyGlow(image: overlay, intensity: s.glow)
         if s.opacity < 0.999 {
             overlay = fadeEmblem(overlay, opacity: s.opacity)
@@ -37,14 +40,14 @@ extension MandalaRenderer {
 
     /// 8-bit coverage of the emblem; memory row 0 is the top of the image.
     private static func emblemMask(_ g: EmblemGeometry, rendering: EmblemRendering, weight: Double,
-                                   unit: Double, rotation: Double, size: Int) -> [UInt8]? {
+                                   unit: Double, rotation: Double, size: Int, centreX: Double, centreY: Double) -> [UInt8]? {
         var bytes = [UInt8](repeating: 0, count: size * size)
         let ok = bytes.withUnsafeMutableBytes { raw -> Bool in
             guard let ctx = CGContext(data: raw.baseAddress, width: size, height: size, bitsPerComponent: 8,
                                       bytesPerRow: size, space: CGColorSpaceCreateDeviceGray(),
                                       bitmapInfo: CGImageAlphaInfo.none.rawValue) else { return false }
-            // y down, origin in the centre, one unit = `unit` pixels.
-            ctx.translateBy(x: CGFloat(size) / 2, y: CGFloat(size) / 2)
+            // y down, origin at the emblem's centre, one unit = `unit` pixels (the context's y points up).
+            ctx.translateBy(x: CGFloat(centreX), y: CGFloat(Double(size) - centreY))
             ctx.scaleBy(x: CGFloat(unit), y: -CGFloat(unit))
             // Positive degrees turn clockwise on screen (y points down in unit space).
             ctx.rotate(by: CGFloat(rotation * .pi / 180))
@@ -153,24 +156,23 @@ extension MandalaRenderer {
 
     /// Premultiplied RGBA: palette colour by distance from the centre, alpha = coverage.
     private static func colourise(mask: [UInt8], palette: ColorPalette, position: Double, spread: Double,
-                                  unit: Double, size: Int) -> CGImage? {
+                                  unit: Double, size: Int, centreX: Double, centreY: Double) -> CGImage? {
         var lut = [(Float, Float, Float)](repeating: (0, 0, 0), count: 256)
         for i in 0..<256 {
             let c = palette.color(at: Double(i) / 255).usingColorSpace(.deviceRGB) ?? .white
             lut[i] = (Float(c.redComponent), Float(c.greenComponent), Float(c.blueComponent))
         }
-        let half = Double(size) / 2
         // The colour reaches `position + spread` at the outer edge of the lotus or gate frame.
         let outer = unit * 1.45
         var rgba = [UInt8](repeating: 0, count: size * size * 4)
         rgba.withUnsafeMutableBufferPointer { out in
             mask.withUnsafeBufferPointer { m in
                 for y in 0..<size {
-                    let dy = Double(y) + 0.5 - half
+                    let dy = Double(y) + 0.5 - centreY
                     for x in 0..<size {
                         let a = m[y * size + x]
                         guard a > 0 else { continue }
-                        let dx = Double(x) + 0.5 - half
+                        let dx = Double(x) + 0.5 - centreX
                         // Run along the palette and back instead of jumping from its end to its start.
                         var t = (position + spread * min(1, (dx * dx + dy * dy).squareRoot() / outer))
                             .truncatingRemainder(dividingBy: 2)

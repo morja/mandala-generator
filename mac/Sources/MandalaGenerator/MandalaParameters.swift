@@ -433,10 +433,14 @@ struct EmblemLayerSettings: Equatable, Codable {
     var flowerVariant: EmblemFlowerVariant = .flower
     var petals: Int                 = 8      // Lotus: petals in the inner rings
     var rotation: Double            = 0      // degrees, motif and frame together (-180–180)
+    // Where the emblem's centre sits, in fractions of the canvas from its centre (right, down); 0 = centred (ADR-0011)
+    var offsetX: Double             = 0
+    var offsetY: Double             = 0
 
     enum CodingKeys: String, CodingKey {
         case isEnabled, motif, rendering, frame, size, weight, paletteIndex, colorPosition, colorSpread
         case glow, opacity, blendMode, seed, branching, roots, organic, flowerVariant, petals, rotation
+        case offsetX, offsetY
     }
 
     init() {}
@@ -462,6 +466,8 @@ struct EmblemLayerSettings: Equatable, Codable {
         flowerVariant = c.decodeSafe(EmblemFlowerVariant.self, forKey: .flowerVariant, default: .flower)
         petals        = c.decodeSafe(Int.self,             forKey: .petals,        default: 8)
         rotation      = c.decodeSafe(Double.self,          forKey: .rotation,      default: 0)
+        offsetX       = c.decodeSafe(Double.self,          forKey: .offsetX,       default: 0)
+        offsetY       = c.decodeSafe(Double.self,          forKey: .offsetY,       default: 0)
     }
 }
 
@@ -714,11 +720,15 @@ struct StyleLayer: Equatable, Codable {
     var symmetry: Int = 6
     var seed: UInt64 = 42
     var spokes: Double = 1.0     // Radial Mesh only: spoke brightness, 0 = rings only
+    // Where the layer's centre sits, in fractions of the canvas from its centre (right, down); 0 = centred (ADR-0011)
+    var offsetX: Double = 0.0
+    var offsetY: Double = 0.0
 
     enum CodingKeys: String, CodingKey {
         case isEnabled, style, scale, paletteIndex, colorOffset, complexity, density
         case glowIntensity, colorDrift, ripple, wash, abstractLevel
         case saturation, brightness, rotation, opacity, blendMode, symmetry, seed, spokes
+        case offsetX, offsetY
     }
 
     init(isEnabled: Bool = true, style: MandalaStyle = .mixed, scale: Double = 1.0,
@@ -727,7 +737,8 @@ struct StyleLayer: Equatable, Codable {
          ripple: Double = 0.0, wash: Double = 0.0, abstractLevel: Double = 0.3,
          saturation: Double = 0.7, brightness: Double = 0.5, rotation: Double = 0.0,
          opacity: Double = 1.0, blendMode: LayerBlendMode = .screen,
-         symmetry: Int = 6, seed: UInt64 = 42, spokes: Double = 1.0) {
+         symmetry: Int = 6, seed: UInt64 = 42, spokes: Double = 1.0,
+         offsetX: Double = 0.0, offsetY: Double = 0.0) {
         self.isEnabled = isEnabled
         self.style = style
         self.scale = scale
@@ -748,6 +759,8 @@ struct StyleLayer: Equatable, Codable {
         self.symmetry = symmetry
         self.seed = seed
         self.spokes = spokes
+        self.offsetX = offsetX
+        self.offsetY = offsetY
     }
 
     init(from decoder: Decoder) throws {
@@ -772,6 +785,8 @@ struct StyleLayer: Equatable, Codable {
         symmetry      = c.decodeSafe(Int.self,            forKey: .symmetry,      default: 6)
         seed          = c.decodeSafe(UInt64.self,         forKey: .seed,          default: 42)
         spokes        = c.decodeSafe(Double.self,         forKey: .spokes,        default: 1.0)
+        offsetX       = c.decodeSafe(Double.self,         forKey: .offsetX,       default: 0.0)
+        offsetY       = c.decodeSafe(Double.self,         forKey: .offsetY,       default: 0.0)
     }
 }
 

@@ -132,8 +132,15 @@ struct MandalaRenderer {
                 let even = raw % 2 == 0 ? raw : raw + 1
                 return max(bufferSize, even)
             }()
-            let lcx = Float(lBufSize) * 0.5
-            let lcy = Float(lBufSize) * 0.5
+            // Where the layer's centre sits (ADR-0011): whole pixels move the crop window below,
+            // the rest moves the drawing centre, as in the Android renderer (which rounds like this).
+            let moved = layer.offsetX != 0 || layer.offsetY != 0
+            let shiftX = layer.offsetX * Double(bufferSize)
+            let shiftY = layer.offsetY * Double(bufferSize)
+            let shiftXi = Int((shiftX + 0.5).rounded(.down))
+            let shiftYi = Int((shiftY + 0.5).rounded(.down))
+            let lcx = Float(lBufSize) * 0.5 + Float(shiftX - Double(shiftXi))
+            let lcy = Float(lBufSize) * 0.5 + Float(shiftY - Double(shiftYi))
 
             let buffer = PixelBuffer(width: lBufSize, height: lBufSize)
 
@@ -156,8 +163,10 @@ struct MandalaRenderer {
             if hasRotation {
                 layerImage = rotateImage(layerImage, angle: layer.rotation * .pi * 2)
             }
-            // Crop back to bufferSize × bufferSize from the expanded buffer.
-            if lBufSize > bufferSize {
+            // Crop back to bufferSize × bufferSize from the expanded buffer, around the layer's position.
+            if moved {
+                layerImage = cropShifted(layerImage, to: bufferSize, shiftX: shiftXi, shiftY: shiftYi)
+            } else if lBufSize > bufferSize {
                 layerImage = cropCenter(layerImage, to: bufferSize)
             }
             if layer.opacity < 0.999 {
@@ -3976,6 +3985,23 @@ struct MandalaRenderer {
         // `from:` must use cropRect (CIImage coordinates), not (0,0,size,size),
         // so that output pixel (0,0) maps to CIImage coordinate (ox, oy) — the centre of the expanded buffer.
         return ctx.createCGImage(cropped, from: cropRect) ?? image
+    }
+
+    /// The `size` square around the centre of `image`, moved by (shiftX, shiftY) pixels (right, down):
+    /// the layer then appears that far from the canvas centre. Past the image it is black, so a moved
+    /// layer blends like one that covers the whole canvas (ADR-0011).
+    private static func cropShifted(_ image: CGImage, to size: Int, shiftX: Int, shiftY: Int) -> CGImage {
+        let ci  = CIImage(cgImage: image)
+        let src = ci.extent
+        // Core Image's y axis points up, so moving the layer down moves the window up.
+        let ox  = (src.width  - CGFloat(size)) * 0.5 - CGFloat(shiftX)
+        let oy  = (src.height - CGFloat(size)) * 0.5 + CGFloat(shiftY)
+        let cropRect = CGRect(x: src.origin.x + ox, y: src.origin.y + oy,
+                              width: CGFloat(size), height: CGFloat(size))
+        let black = CIImage(color: CIColor(red: 0, green: 0, blue: 0)).cropped(to: cropRect)
+        let shifted = ci.cropped(to: cropRect).composited(over: black)
+        let ctx = CIContext(options: [.workingColorSpace: CGColorSpace(name: CGColorSpace.displayP3) as Any])
+        return ctx.createCGImage(shifted, from: cropRect) ?? image
     }
 
     private static func rotateImage(_ image: CGImage, angle: Double) -> CGImage {

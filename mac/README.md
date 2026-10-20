@@ -215,6 +215,7 @@ Each layer is an independent drawing pass composited on top of previous layers. 
 | **Saturation** | Colour vividness for this layer |
 | **Brightness** | Luminance boost for this layer |
 | **Rotation** | 2D rotation of the rendered layer (0–1 = 0–360°) |
+| **Position X / Y** | Where the layer's centre sits, as a fraction of the canvas from its centre (−1 to 1, 0 = centred). The four-arrow button above the canvas shows a handle for every layer and the emblem; drag a handle to move it |
 | **Opacity** | Layer transparency (0–1) |
 
 #### Palette
