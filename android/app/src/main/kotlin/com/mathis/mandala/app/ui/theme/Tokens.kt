@@ -54,15 +54,15 @@ data class Tokens(
 )
 
 val DarkTokens = Tokens(
-    background = Color(0xFF151413),
-    surface = Color(0xFF1C1A18),
-    surfaceRaised = Color(0xFF262320),
-    text = Color(0xFFECE7E1),
-    textMuted = Color(0xFFB4ACA3),
-    outline = Color(0xFF4A4540),
-    accent = Color(0xFFE2A85E),
+    background = Color(0xFF0A0908),
+    surface = Color(0xFF121110),
+    surfaceRaised = Color(0xFF1B1917),
+    text = Color(0xFFE6E1DB),
+    textMuted = Color(0xFF9C948B),
+    outline = Color(0xFF2E2A26),
+    accent = Color(0xFFD9A15C),
     onAccent = Color(0xFF241605),
-    accentSoft = Color(0xFF3B2E1F),
+    accentSoft = Color(0xFF2A2117),
     error = Color(0xFFF2A39A),
     canvas = Color(0xFF000000),
 )

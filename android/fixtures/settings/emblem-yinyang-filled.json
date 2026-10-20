@@ -1,17 +1,18 @@
 {
- "layers": [
-  {
-   "isEnabled": false,
-   "style": "spirograph"
+  "layers": [
+    {
+      "isEnabled": false,
+      "style": "spirograph"
+    }
+  ],
+  "outputSize": 512,
+  "emblemLayer": {
+    "isEnabled": true,
+    "motif": "yinYang",
+    "rendering": "filled",
+    "frame": "enso",
+    "rotation": 30,
+    "glow": 0.2,
+    "blendMode": "screen"
   }
- ],
- "outputSize": 512,
- "emblemLayer": {
-  "isEnabled": true,
-  "motif": "yinYang",
-  "rendering": "filled",
-  "frame": "enso",
-  "rotation": 30,
-  "glow": 0.2
- }
 }

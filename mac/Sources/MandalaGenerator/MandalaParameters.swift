@@ -423,7 +423,7 @@ struct EmblemLayerSettings: Equatable, Codable {
     var colorSpread: Double         = 0.3    // how far the colour moves along the palette towards the edge (0–1)
     var glow: Double                = 0.5
     var opacity: Double             = 1.0
-    var blendMode: LayerBlendMode   = .screen
+    var blendMode: LayerBlendMode   = .normal   // stays visible on bright mandalas, where Screen cannot brighten white
     // Tree of Life
     var seed: UInt64                = 1      // shape of the tree
     var branching: Double           = 0.5    // number of twigs (0–1)
@@ -454,7 +454,7 @@ struct EmblemLayerSettings: Equatable, Codable {
         colorSpread   = c.decodeSafe(Double.self,          forKey: .colorSpread,   default: 0.3)
         glow          = c.decodeSafe(Double.self,          forKey: .glow,          default: 0.5)
         opacity       = c.decodeSafe(Double.self,          forKey: .opacity,       default: 1.0)
-        blendMode     = c.decodeSafe(LayerBlendMode.self,  forKey: .blendMode,     default: .screen)
+        blendMode     = c.decodeSafe(LayerBlendMode.self,  forKey: .blendMode,     default: .normal)
         seed          = c.decodeSafe(UInt64.self,          forKey: .seed,          default: 1)
         branching     = c.decodeSafe(Double.self,          forKey: .branching,     default: 0.5)
         roots         = c.decodeSafe(Bool.self,            forKey: .roots,         default: true)
@@ -558,7 +558,12 @@ enum LayerBlendMode: String, CaseIterable, Identifiable, Codable {
     init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
         let raw = (try? container.decode(String.self)) ?? ""
-        self = LayerBlendMode(rawValue: raw) ?? .screen
+        // An unknown mode throws, so decodeSafe falls back to the field's own default (Screen for
+        // style layers, Normal for the text and emblem layers), as the Android decoder does.
+        guard let mode = LayerBlendMode(rawValue: raw) else {
+            throw DecodingError.dataCorruptedError(in: container, debugDescription: "Unknown blend mode \(raw)")
+        }
+        self = mode
     }
     var displayName: String {
         switch self {

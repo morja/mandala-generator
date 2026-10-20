@@ -20,7 +20,14 @@
 
 1. **Messages with Undo never went away.** Compose keeps a snackbar that has an action until it is tapped. Because messages queue, every later message waited behind it, so "Saved to Pictures" never showed after a favourite was applied. Fixed: messages with Undo disappear after about 10 s, others after a few seconds (commit on `fix/snackbar-and-dark-theme`). Checked in the emulator with "Favourite applied" and "Lines cleared".
 
-## Found, not fixed yet
+## Fixed after the walkthrough (same day, Mathis' decisions)
+
+2. Emblem on bright mandalas: the emblem's default blend is now Normal in both apps (Screen stays selectable; the parity fixtures that relied on the old default now set Screen explicitly).
+3. Deleting a favourite shows "Favourite deleted" with Undo, which puts it back at its place. Messages show at the top of the favourites sheet while it is open (behind it they were hidden).
+4. Save messages are short: "Saved to Pictures/Mandala", "Saved 2048 px to Pictures/Mandala".
+5. DM-3 is the new default (ADR-0006): always dark unless "Light theme" is chosen in the menu; light status bar icons on the dark theme.
+
+## Found, not fixed yet (original list)
 
 2. **Emblem disappears on very bright mandalas.** With the default blend Screen, an emblem cannot brighten a white centre (seen with the favourite Floral, Wave Interference, Moiré, Sphere Grid). Options: a soft dark halo behind the emblem (new setting, needs a Mac change first), or Normal as the emblem's default blend. To decide.
 3. **No feedback when a favourite is deleted** by long press; it is gone without Undo. Suggestion: "Favourite deleted" with Undo.

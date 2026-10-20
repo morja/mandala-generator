@@ -16,7 +16,7 @@ class EmblemLayerTest {
         assertEquals(EmblemRendering.FILLED, e.rendering)
         assertEquals(EmblemFrame.RING, e.frame)
         assertEquals(EmblemFlowerVariant.FLOWER, e.flowerVariant)
-        assertEquals(LayerBlendMode.SCREEN, e.blendMode)
+        assertEquals(LayerBlendMode.NORMAL, e.blendMode)
         assertEquals(1uL, e.seed)
         assertEquals(8, e.petals)
     }
@@ -32,7 +32,8 @@ class EmblemLayerTest {
         assertEquals(EmblemRendering.FILLED, e.rendering)
         assertEquals(EmblemFrame.RING, e.frame)
         assertEquals(EmblemFlowerVariant.FLOWER, e.flowerVariant)
-        assertEquals(LayerBlendMode.SCREEN, e.blendMode)
+        // An unknown blend falls back to the field's default (Normal for the emblem), as in Swift.
+        assertEquals(LayerBlendMode.NORMAL, e.blendMode)
         assertEquals(12, e.petals)
     }
 
