@@ -15,3 +15,4 @@ ADR-0001 to ADR-0008 were written for the Android repository before both apps mo
 | [0007](0007-free-and-pro.md) | Free app with a one-time Pro unlock; public-domain quotes only | accepted |
 | [0008](0008-open-source-gpl.md) | Both apps open source under GPL-3.0, sold as store builds | accepted |
 | [0009](0009-one-public-repository.md) | One public repository for both apps | accepted |
+| [0010](0010-export-formats-and-framing.md) | Export formats and framing: portrait images with the mandala placed by hand | accepted |
