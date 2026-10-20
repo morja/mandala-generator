@@ -1,7 +1,17 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.plugin.compose")
 }
+
+// Upload key for Google Play, read from the git-ignored android/keystore.properties (see
+// docs/store/STORE-1-play-listing.md). Without that file, release builds are signed with the local
+// debug key, so they still build and install for testing; Google Play rejects such a bundle.
+val keystoreProperties = rootProject.file("keystore.properties")
+val keystore = Properties().apply { if (keystoreProperties.isFile) keystoreProperties.inputStream().use(::load) }
+
+fun homePath(path: String): String = if (path.startsWith("~/")) System.getProperty("user.home") + path.substring(1) else path
 
 android {
     namespace = "com.mathis.mandala.app"
@@ -12,14 +22,26 @@ android {
         minSdk = 29
         targetSdk = 36
         versionCode = 1
-        versionName = "0.1"
+        versionName = "1.0"
+    }
+
+    signingConfigs {
+        if (keystoreProperties.isFile) {
+            create("upload") {
+                storeFile = file(homePath(keystore.getProperty("storeFile") ?: "~/.keystore/mandala-upload.jks"))
+                storePassword = keystore.getProperty("storePassword")
+                keyAlias = keystore.getProperty("keyAlias") ?: "upload"
+                keyPassword = keystore.getProperty("keyPassword") ?: keystore.getProperty("storePassword")
+            }
+        }
     }
 
     buildTypes {
         release {
-            // Signed with the local debug key so release builds can be measured on devices.
-            // There is no store signing yet.
-            signingConfig = signingConfigs.getByName("debug")
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            signingConfig = signingConfigs.findByName("upload") ?: signingConfigs.getByName("debug")
         }
     }
 

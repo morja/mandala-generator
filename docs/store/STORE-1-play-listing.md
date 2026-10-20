@@ -90,16 +90,40 @@ These answers follow what the app does today (checked in `android/app` on 20 Oct
 - **Target audience:** 13 and over. (Choosing younger age groups brings the app under the Families policy, which the app does not need.)
 - **News app:** No.
 - **Data safety:**
-  - Does the app collect or share user data? **No.** The app has no internet permission of its own and sends nothing to the developer; all data stays on the device.
+  - Does the app collect or share user data? **No.** The app's own code uses no network and sends nothing to the developer; all data stays on the device. The built app does contain the permissions `INTERNET` and `ACCESS_NETWORK_STATE`: they come from the Play Billing Library and Google Play services, which talk to Google Play for the purchase (checked in the merged manifest of the 1.0 release build, 20 October 2026).
   - Purchases go through Google Play; Google's own processing is covered by Google, not declared by the app. Check Google's current guidance on the Play Billing Library when filling in.
   - Is data encrypted in transit? Not applicable (no data transferred by the app).
   - Can users request deletion? Not applicable (no data collected); data is deleted with the app's storage.
 - **Government app, financial features, health:** No.
 
+## Building the app bundle (AAB)
+
+Version 1.0 (`versionName` "1.0", `versionCode` 1, in `android/app/build.gradle.kts`). Raise `versionCode` by one for every upload.
+
+1. Create `android/keystore.properties` (git-ignored, like `*.jks`; never commit it):
+
+   ```properties
+   storeFile=~/.keystore/mandala-upload.jks
+   storePassword=…
+   keyAlias=upload
+   keyPassword=…
+   ```
+
+   `storeFile` defaults to `~/.keystore/mandala-upload.jks` and `keyAlias` to `upload`; `keyPassword` defaults to `storePassword`. A leading `~/` means the home folder. On 20 October 2026 the folder held `~/.keystore/mandalagenerator-upload.jks`; if that is the upload key, set `storeFile` to it.
+2. Build the bundle from the repository root:
+
+   ```bash
+   android/gradlew -p android :app:bundleRelease
+   ```
+
+3. The bundle lands in `android/app/build/outputs/bundle/release/app-release.aab`. Check that it is signed with the upload key: `jarsigner -verify -verbose -certs android/app/build/outputs/bundle/release/app-release.aab` shows the key's name (CN).
+
+Without `keystore.properties`, release builds are signed with the local debug key, so `assembleRelease` keeps working for tests on devices; Google Play rejects a bundle signed that way. Release builds are shrunk with R8 (minify and resource shrinking); the R8 mapping file is part of the bundle, so the Play Console shows readable stack traces.
+
 ## What Mathis does himself
 
-1. Create the upload key (keep it outside the repository and back it up):
-   `keytool -genkeypair -v -keystore ~/keys/mandala-upload.jks -alias upload -keyalg RSA -keysize 4096 -validity 10000`
+1. Create the upload key (keep it outside the repository and back it up), unless it exists already, and fill `android/keystore.properties` (see above):
+   `keytool -genkeypair -v -keystore ~/.keystore/mandala-upload.jks -alias upload -keyalg RSA -keysize 4096 -validity 10000`
 2. In the Play Console: create the app (name, default language, app, free) and accept the declarations.
 3. Enrol in Play App Signing with the first upload of an app bundle (AAB).
 4. Deploy tearoom.one so that the privacy policy URL works.

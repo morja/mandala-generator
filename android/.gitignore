@@ -6,3 +6,8 @@ build/
 local.properties
 .DS_Store
 /out/
+
+# Upload signing (see docs/store/STORE-1-play-listing.md); never commit keys or passwords.
+keystore.properties
+*.jks
+*.keystore
