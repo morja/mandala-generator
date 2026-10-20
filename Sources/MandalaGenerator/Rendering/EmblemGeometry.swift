@@ -49,6 +49,7 @@ enum EmblemShapes {
         case .dharmaWheel:  g = dharmaWheel()
         case .unalome:      g = unalome(organic: organic)
         case .tripleMoon:   g = tripleMoon()
+        case .sriYantra:    g = sriYantra()
         }
         g.append(frame(s.frame))
         return g
@@ -349,9 +350,15 @@ enum EmblemShapes {
 
     private struct PetalShape {
         var angle, r0, r1, halfWidth, curl: Double
+        /// Yantra petal: full width where it sits on the circle, curving in to a point like an arch.
+        var arch = false
 
-        /// Full, rounded body and a short point, like a lotus petal.
-        func halfWidth(at t: Double) -> Double { halfWidth * pow(sin(.pi * pow(max(0, min(1, t)), 0.85)), 0.6) }
+        /// Lotus: full, rounded body and a short point. Arch: widest at the base.
+        func halfWidth(at t: Double) -> Double {
+            let t = max(0, min(1, t))
+            if arch { return halfWidth * pow(sin(.pi / 2 * (1 - t)), 0.55) * (1 + 0.18 * sin(.pi * t)) }
+            return halfWidth * pow(sin(.pi * pow(t, 0.85)), 0.6)
+        }
 
         /// Whether a point lies inside the petal (with a small margin so cut lines meet cleanly).
         func contains(_ x: Double, _ y: Double) -> Bool {
@@ -575,6 +582,47 @@ enum EmblemShapes {
             }
             g.fills.append([poly])
             g.strokes.append((poly + [poly[0]]).map { EmblemPoint(x: $0.x, y: $0.y, w: w) })
+        }
+        return g
+    }
+
+    // MARK: Sri Yantra
+
+    /// The nine interlocking triangles (four pointing up, five down) with the bindu, inside two
+    /// lotus rings of 8 and 16 petals. Triangle coordinates from Bhaskar Tripathi, "Sri Yantra",
+    /// TeXample.net (CC BY-SA 4.0): left x, base y, apex y, right x in a circle of radius 100
+    /// around (150, 150), y down. Checked 20 October 2026: 29 points where three or more lines
+    /// meet exactly; six near misses of 0.13 (of 200), below a pixel at any export size.
+    static func sriYantra() -> EmblemGeometry {
+        var g = EmblemGeometry()
+        let triangles: [(l: Double, base: Double, apex: Double, r: Double)] = [
+            (53.65669559977147, 123.20508075688774, 250, 246.34330440022853),                    // down
+            (52.984011026495736, 174.24660560764943, 50, 247.01598897350425),                   // up
+            (98.71823312733801, 220.03828947357886, 123.20508075688774, 201.281766872662),      // up
+            (78.26467997914015, 197.92315674002487, 78.10499177949904, 221.73532002085986),     // up
+            (90.4856922951427, 78.10499177949904, 160.66014976539617, 209.51430770485734),      // down
+            (80.98384838952128, 103.12199145016105, 220.03828947357886, 219.0161516104787),     // down
+            (114.9488500600036, 160.66014976539617, 103.12199145016105, 185.0511499399964),     // up
+            (116.35142605010424, 134.30757626706648, 197.92315674002487, 183.64857394989576),   // down
+            (124.61190803072795, 144.79777263138968, 174.24660560764943, 175.38809196927207),   // down
+        ]
+        let inner = 0.46
+        func map(_ x: Double, _ y: Double) -> (Double, Double) { ((x - 150) / 100 * inner, (y - 150) / 100 * inner) }
+        for t in triangles {
+            let pts = [map(t.l, t.base), map(150, t.apex), map(t.r, t.base), map(t.l, t.base)]
+            g.strokes.append(pts.map { EmblemPoint(x: $0.0, y: $0.1, w: 0.012) })
+        }
+        g.strokes.append(circle(radius: inner, width: 0.016))
+        g.dots.append(EmblemDot(x: 0, y: 0, r: 0.022))
+        // Lotus rings: 8 petals, then 16, each closed by a circle.
+        for (count, r0, r1, offset) in [(8, inner, 0.65, 0.5), (16, 0.665, 0.83, 0.25)] {
+            // Neighbouring petals touch where they sit on the circle.
+            let half = .pi * r0 / Double(count)
+            for i in 0..<count {
+                let a = (Double(i) + offset) / Double(count) * .pi * 2 - .pi / 2
+                g.strokes.append(PetalShape(angle: a, r0: r0, r1: r1, halfWidth: half, curl: 0, arch: true).outline(width: 0.014))
+            }
+            g.strokes.append(circle(radius: r1 + 0.012, width: 0.014))
         }
         return g
     }
