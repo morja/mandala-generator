@@ -1,5 +1,6 @@
 package com.mathis.mandala.core
 
+import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.max
@@ -11,6 +12,9 @@ import kotlin.math.sqrt
  * Background types of the macOS base layer that are computed per pixel. Like there, the colours
  * go through the same tone map as the mandala lines (x / (x + 0.55)), so they come out darker
  * than the picked colour, and the result is tagged Display P3.
+ *
+ * On a canvas that is not square (ADR-0010) radial backgrounds stay round and centred, with their
+ * radius measured on the shorter side; a linear gradient runs across the whole canvas.
  */
 internal object Background {
 
@@ -18,22 +22,22 @@ internal object Background {
         type == BaseLayerType.GRADIENT || type == BaseLayerType.SUNBURST || type == BaseLayerType.GRAIN ||
             type == BaseLayerType.AUTO || type == BaseLayerType.IMAGE
 
-    fun render(settings: BaseLayerSettings, size: Int, par: Parallel): Image8 {
+    fun render(settings: BaseLayerSettings, width: Int, height: Int, par: Parallel): Image8 {
         val c1 = hsbToRgb(settings.hue, settings.saturation, settings.brightness)
         val c2 = hsbToRgb(settings.hue2, settings.saturation2, settings.brightness2)
-        val out = Image8(size, size, Encoding.DISPLAY_P3)
+        val out = Image8(width, height, Encoding.DISPLAY_P3)
         val opacity = settings.opacity.toFloat()
         val fill: (Int, Int, FloatArray) -> Unit = when (settings.type) {
-            BaseLayerType.SUNBURST -> sunburst(settings, c1, c2, size)
+            BaseLayerType.SUNBURST -> sunburst(settings, c1, c2, width, height)
             BaseLayerType.GRAIN -> grain(settings, c1)
-            else -> if (settings.isRadial) radialGradient(c1, c2, size) else linearGradient(settings, c1, c2, size)
+            else -> if (settings.isRadial) radialGradient(c1, c2, width, height) else linearGradient(settings, c1, c2, width, height)
         }
-        par.forRange(size) { from, until ->
+        par.forRange(height) { from, until ->
             val c = FloatArray(3)
             for (y in from until until) {
-                for (x in 0 until size) {
+                for (x in 0 until width) {
                     fill(x, y, c)
-                    val o = (y * size + x) * 3
+                    val o = (y * width + x) * 3
                     for (k in 0..2) {
                         val v = c[k] * opacity
                         out.data[o + k] = WorkingSpace.quantize(v / (v + 0.55f))
@@ -46,19 +50,24 @@ internal object Background {
 
     // ── Image (drawBaseLayer .image in the macOS app) ──
     // The picture is stretched to the square, scaled by strength and opacity and tone-mapped like
-    // the lines, so it sits darker behind the mandala. Without a picture: colour 1.
+    // the lines, so it sits darker behind the mandala. Without a picture: colour 1. On a canvas that
+    // is not square, `picture` is the square of its longer side and the middle of it is used.
 
-    fun renderImage(settings: BaseLayerSettings, picture: Image8?, size: Int, par: Parallel): Image8 {
+    fun renderImage(settings: BaseLayerSettings, picture: Image8?, width: Int, height: Int, par: Parallel): Image8 {
         val strength = (settings.imageBlend * settings.opacity).toFloat()
-        val out = Image8(size, size, Encoding.DISPLAY_P3)
+        val out = Image8(width, height, Encoding.DISPLAY_P3)
         val c1 = hsbToRgb(settings.hue, settings.saturation, settings.brightness)
         val fallback = floatArrayOf(c1.r.toFloat(), c1.g.toFloat(), c1.b.toFloat())
-        par.forRange(size) { from, until ->
+        val side = max(width, height)
+        val ox = (side - width) / 2
+        val oy = (side - height) / 2
+        par.forRange(height) { from, until ->
             for (y in from until until) {
-                for (x in 0 until size) {
-                    val o = (y * size + x) * 3
+                for (x in 0 until width) {
+                    val o = (y * width + x) * 3
+                    val po = ((y + oy) * side + x + ox) * 3
                     for (k in 0..2) {
-                        val v = (if (picture != null) picture.get(o + k) / 255f else fallback[k]) * strength
+                        val v = (if (picture != null) picture.get(po + k) / 255f else fallback[k]) * strength
                         out.data[o + k] = WorkingSpace.quantize(v / (v + 0.55f))
                     }
                 }
@@ -74,7 +83,7 @@ internal object Background {
     /** Threads the macOS app splits the fibres over; each draws from its own random stream. */
     private const val MAC_FIBRE_THREADS = 12
 
-    fun renderAuto(params: MandalaParameters, palettes: List<ColorPalette>, size: Int, par: Parallel): Image8 {
+    fun renderAuto(params: MandalaParameters, palettes: List<ColorPalette>, width: Int, height: Int, par: Parallel): Image8 {
         val first = params.layers.firstOrNull()
         val palette = palettes[(first?.paletteIndex ?: 0).coerceIn(0, palettes.size - 1)]
         val col0 = FloatArray(3).also { palette.colorAt(0.0, it) }
@@ -84,20 +93,22 @@ internal object Background {
         // macOS app copies into its float buffer as they are.
         val inner = DoubleArray(3) { ColorSpaces.decode(col0[it] * 0.12) }
         val wash = DoubleArray(3) { ColorSpaces.decode(col1[it] * 0.06) }
-        val centre = size / 2.0
-        val r0 = size * 0.55
-        val r1 = size * 0.85
+        val side = min(width, height)
+        val centreX = width / 2.0
+        val centreY = height / 2.0
+        val r0 = side * 0.55
+        val r1 = side * 0.85
         // Strip by strip: the gradient for the strip's rows, then all fibres clipped to them.
-        return PixelBuffer.drawInStrips(size, size) { strip ->
+        return PixelBuffer.drawInStrips(width, height) { strip ->
             val top = strip.rowsFrom
             par.forRange(strip.rowsUntil - top) { from, until ->
                 for (r in from until until) {
                     val y = top + r
-                    for (x in 0 until size) {
-                        val dx = x + 0.5 - centre
-                        val dy = y + 0.5 - centre
+                    for (x in 0 until width) {
+                        val dx = x + 0.5 - centreX
+                        val dy = y + 0.5 - centreY
                         val t = ((sqrt(dx * dx + dy * dy) - r0) / (r1 - r0)).coerceIn(0.0, 1.0)
-                        val o = (r * size + x) * 3
+                        val o = (r * width + x) * 3
                         for (k in 0..2) {
                             val enc = ColorSpaces.encode(inner[k] * (1 - t) + wash[k])
                             strip.data[o + k] = (min(255.0, max(0.0, enc * 255 + 0.5)).toInt() / 255.0).toFloat()
@@ -105,14 +116,14 @@ internal object Background {
                     }
                 }
             }
-            if (first != null) grassFibres(strip, params.seed, first, palette)
+            if (first != null) grassFibres(strip, params.seed, first, palette, side)
         }
     }
 
-    private fun grassFibres(buffer: PixelBuffer, seed: ULong, layer: StyleLayer, palette: ColorPalette) {
-        val w = buffer.width.toFloat()
-        val c = w * 0.5f
-        val maxRadius = w * 0.48f
+    private fun grassFibres(buffer: PixelBuffer, seed: ULong, layer: StyleLayer, palette: ColorPalette, side: Int) {
+        val cx = buffer.width * 0.5f
+        val cy = buffer.height * 0.5f
+        val maxRadius = side.toFloat() * 0.48f
         val lines = (15000.0 * layer.density + 500).toInt()
         val symmetry = layer.symmetry.coerceIn(1, 8)
         val chunk = max(1, lines / MAC_FIBRE_THREADS)
@@ -131,8 +142,8 @@ internal object Background {
                 val weight = rng.nextDouble(0.03, 0.25).toFloat() * layer.density.toFloat()
                 for (k in 0 until symmetry) {
                     val sa = (angle + k * Math.PI * 2.0 / symmetry).toFloat()
-                    val x0 = c + cos(sa) * startR
-                    val y0 = c + sin(sa) * startR
+                    val x0 = cx + cos(sa) * startR
+                    val y0 = cy + sin(sa) * startR
                     val ea = sa + wobble
                     buffer.addLine(x0, y0, x0 + cos(ea) * length, y0 + sin(ea) * length, col[0], col[1], col[2], weight)
                 }
@@ -144,26 +155,33 @@ internal object Background {
     // Core Image blends the two colours in linear light and hands back 8-bit sRGB values,
     // which the macOS renderer then copies into its buffer as they are.
 
-    private fun radialGradient(c1: Rgb, c2: Rgb, size: Int): (Int, Int, FloatArray) -> Unit {
-        val centre = size / 2.0
-        val r1 = size * 0.72
+    private fun radialGradient(c1: Rgb, c2: Rgb, width: Int, height: Int): (Int, Int, FloatArray) -> Unit {
+        val centreX = width / 2.0
+        val centreY = height / 2.0
+        val r1 = min(width, height) * 0.72
         return { x, y, out ->
-            val dx = x + 0.5 - centre
-            val dy = y + 0.5 - centre
+            val dx = x + 0.5 - centreX
+            val dy = y + 0.5 - centreY
             mixLinear(c1, c2, min(1.0, sqrt(dx * dx + dy * dy) / r1), out)
         }
     }
 
-    private fun linearGradient(settings: BaseLayerSettings, c1: Rgb, c2: Rgb, size: Int): (Int, Int, FloatArray) -> Unit {
+    private fun linearGradient(settings: BaseLayerSettings, c1: Rgb, c2: Rgb, width: Int, height: Int): (Int, Int, FloatArray) -> Unit {
         val angle = settings.gradientAngle * Math.PI * 2
+        val ca = cos(angle)
+        val sa = sin(angle)
+        // Half the length of the gradient: half the side on a square; on other canvases it weighs
+        // width and height by the direction, so it runs from edge to edge both ways.
+        val half = if (width == height) width * 0.5 else 0.5 * (abs(ca) * width + abs(sa) * height) / (abs(ca) + abs(sa))
         // Core Image's y axis points up; the image rows run down.
-        val dx = cos(angle) * size * 0.5
-        val dy = sin(angle) * size * 0.5
+        val dx = ca * half
+        val dy = sa * half
         val len2 = 4 * (dx * dx + dy * dy)
-        val centre = size / 2.0
+        val centreX = width / 2.0
+        val centreY = height / 2.0
         return { x, y, out ->
-            val px = x + 0.5 - (centre - dx)
-            val py = (size - (y + 0.5)) - (centre - dy)
+            val px = x + 0.5 - (centreX - dx)
+            val py = (height - (y + 0.5)) - (centreY - dy)
             val t = ((px * 2 * dx + py * 2 * dy) / len2).coerceIn(0.0, 1.0)
             mixLinear(c1, c2, t * t * (3 - 2 * t), out)
         }
@@ -205,9 +223,10 @@ internal object Background {
 
     // ── Sunburst (computed per pixel in the macOS app too) ──
 
-    private fun sunburst(settings: BaseLayerSettings, c1: Rgb, c2: Rgb, size: Int): (Int, Int, FloatArray) -> Unit {
-        val cx = size / 2f
-        val cy = size / 2f
+    private fun sunburst(settings: BaseLayerSettings, c1: Rgb, c2: Rgb, width: Int, height: Int): (Int, Int, FloatArray) -> Unit {
+        val cx = width / 2f
+        val cy = height / 2f
+        val size = min(width, height)
         val numRays = (settings.patternScale * 14.0 + 3.0).toFloat()
         val edgeWidth = max(0.015f, 0.48f * (1.0f - settings.patternSharpness.toFloat() * 0.93f))
         val invHalfW = 1.0f / (size * 0.5f)

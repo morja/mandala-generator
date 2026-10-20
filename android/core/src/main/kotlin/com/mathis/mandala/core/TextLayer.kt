@@ -32,9 +32,16 @@ interface TextRenderer {
 
     fun width(text: String, font: TextFont): Float
 
-    /** Draws the lines into a coverage mask (0..1, size x size, row 0 at the top). */
-    fun drawLines(size: Int, lines: List<PlacedLine>): FloatArray
+    /** Draws the lines into a coverage mask (0..1, width x height, row 0 at the top). */
+    fun drawLines(width: Int, height: Int, lines: List<PlacedLine>): FloatArray
 }
+
+/**
+ * Where the text is laid out on the canvas: the rectangle (x, y, width, height) whose vertical
+ * position setting it follows, and `scale`, the side that font size and line width are measured
+ * on. The whole canvas with its shorter side, or the mandala's square (ADR-0010).
+ */
+internal class TextFrame(val x: Float, val y: Float, val width: Int, val height: Int, val scale: Int)
 
 /**
  * Port of applyTextLayer: cloud, shadow passes, then the text with blur, glow, brightness boost and
@@ -46,51 +53,53 @@ internal class TextLayer(private val par: Parallel, private val renderer: TextRe
 
     private class Block(val quote: List<PlacedLine>, val author: List<PlacedLine>, val centreX: Float, val centreYDown: Float, val fontSize: Float)
 
-    fun apply(image: Image8, s: TextLayerSettings): Image8 {
-        val size = image.width
-        val block = layout(s, size, 0f, 0f)
+    fun apply(image: Image8, s: TextLayerSettings, frame: TextFrame): Image8 {
+        val w = image.width
+        val h = image.height
+        val size = frame.scale
+        val block = layout(s, frame, 0f, 0f)
         var out = image
 
         if (s.cloudOpacity > 0.01) {
             val textHalf = block.fontSize * 0.8f
             val fullRadius = size * 0.78f
             val circR = textHalf + s.cloudScale.toFloat() * (fullRadius - textHalf)
-            val mask = FloatArray(size * size)
+            val mask = FloatArray(w * h)
             // Solid to half the radius, then fading to nothing at the edge (NSGradient stops 0, 0.5, 1).
-            for (y in 0 until size) for (x in 0 until size) {
+            for (y in 0 until h) for (x in 0 until w) {
                 val dx = x + 0.5f - block.centreX
                 val dy = y + 0.5f - block.centreYDown
                 val t = sqrt(dx * dx + dy * dy) / circR
-                mask[y * size + x] = when {
+                mask[y * w + x] = when {
                     t <= 0.5f -> 1f
                     t >= 1f -> 0f
                     else -> 1f - (t - 0.5f) / 0.5f
                 } * s.cloudOpacity.toFloat()
             }
-            MaskBlur.blur(mask, size, (circR * s.cloudRadius.toFloat() * 0.35f + block.fontSize * 0.3f).toDouble(), par)
+            MaskBlur.blur(mask, w, h, (circR * s.cloudRadius.toFloat() * 0.35f + block.fontSize * 0.3f).toDouble(), par)
             out = sourceOver(out, mask, hsbColour(s.cloudHue, s.cloudSaturation, s.cloudBrightness))
         }
 
         if (s.shadowOpacity > 0.01) {
             val offX = (s.shadowOffsetX * block.fontSize * 0.75).toFloat()
             val offY = (s.shadowOffsetY * block.fontSize * 0.75).toFloat()
-            val shadow = layout(s, size, offX, -offY)
-            val mask = renderer.drawLines(size, shadow.quote + shadow.author)
-            MaskBlur.blur(mask, size, max(0.5, s.shadowBlur * block.fontSize * 0.4), par)
+            val shadow = layout(s, frame, offX, -offY)
+            val mask = renderer.drawLines(w, h, shadow.quote + shadow.author)
+            MaskBlur.blur(mask, w, h, max(0.5, s.shadowBlur * block.fontSize * 0.4), par)
             val colour = hsbColour(s.shadowHue, s.shadowSaturation, s.shadowBrightness)
             repeat(max(1, (s.shadowOpacity * 4 + 0.5).toInt())) { out = sourceOver(out, mask, colour) }
         }
 
-        val text = renderer.drawLines(size, block.quote + block.author)
-        if (s.blur > 0.005) MaskBlur.blur(text, size, s.blur * s.blur * size * 0.025, par)
+        val text = renderer.drawLines(w, h, block.quote + block.author)
+        if (s.blur > 0.005) MaskBlur.blur(text, w, h, s.blur * s.blur * size * 0.025, par)
         var glow: FloatArray? = null
         if (s.glow > 0.005) {
             // Glow radii are given at a 1600 px reference width.
-            val g = FloatArray(size * size)
+            val g = FloatArray(w * h)
             val k = size / 1600.0
             for ((radius, strength) in listOf(30.0 * s.glow to 0.9 * s.glow, 105.0 * s.glow to 0.5 * s.glow, 210.0 * s.glow to 0.2 * s.glow)) {
                 val pass = text.copyOf()
-                MaskBlur.blur(pass, size, radius * k, par)
+                MaskBlur.blur(pass, w, h, radius * k, par)
                 val st = strength.toFloat()
                 for (i in g.indices) g[i] += pass[i] * st
             }
@@ -102,8 +111,9 @@ internal class TextLayer(private val par: Parallel, private val renderer: TextRe
         return blendText(out, text, glow, colour, boost * opacity, s.blendMode)
     }
 
-    /** Lays out quote and author like renderTextToCGImage (block centred at offsetY, y up). */
-    private fun layout(s: TextLayerSettings, size: Int, shiftX: Float, shiftYDown: Float): Block {
+    /** Lays out quote and author like renderTextToCGImage (block centred at offsetY of the frame, y up). */
+    private fun layout(s: TextLayerSettings, frame: TextFrame, shiftX: Float, shiftYDown: Float): Block {
+        val size = frame.scale
         val fs = (s.fontSize * size).toFloat()
         val font = TextFont(s.fontName, fs, false, (s.tracking * fs * 0.12).toFloat())
         val maxWidth = size * max(0.05f, s.fontWidth.toFloat())
@@ -116,17 +126,17 @@ internal class TextLayer(private val par: Parallel, private val renderer: TextRe
         val authorH = if (author != null) blockHeight(authorLines.size, authorFont) else 0f
         val lineGap = if (author != null) fs * 0.75f else 0f
         val totalHeight = quoteH + lineGap + authorH
-        val drawX = (size - maxWidth) / 2f
-        val centreY = s.offsetY.toFloat() * size
+        val drawX = frame.x + (frame.width - maxWidth) / 2f
+        val centreY = s.offsetY.toFloat() * frame.height
         val blockBottom = centreY - totalHeight / 2f
         val quoteY = blockBottom + authorH + lineGap
         // AppKit draws from the top of the rectangle (height plus a little padding), y up.
-        val quoteTop = size - (quoteY + quoteH + fs * 0.3f)
-        val authorTop = size - (blockBottom + authorH + fs * 0.2f)
+        val quoteTop = frame.y + (frame.height - (quoteY + quoteH + fs * 0.3f))
+        val authorTop = frame.y + (frame.height - (blockBottom + authorH + fs * 0.2f))
         return Block(
             place(quoteLines, font, drawX + shiftX, quoteTop + shiftYDown, maxWidth),
             place(authorLines, authorFont, drawX + shiftX, authorTop + shiftYDown, maxWidth),
-            drawX + maxWidth / 2, size - (blockBottom + totalHeight / 2), fs,
+            drawX + maxWidth / 2, frame.y + (frame.height - (blockBottom + totalHeight / 2)), fs,
         )
     }
 

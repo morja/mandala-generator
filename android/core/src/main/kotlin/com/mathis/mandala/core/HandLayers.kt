@@ -11,18 +11,26 @@ import kotlin.math.sqrt
 
 /**
  * The two hand-made layers of the macOS app, drawn over the generated layers: the drawing layer
- * (glowing lines repeated around the centre) and the graffiti layer (soft spray paint).
+ * (glowing lines repeated around the centre) and the graffiti layer (soft spray paint). Strokes are
+ * stored in the mandala's square (0..1), so they move and scale with the framing (ADR-0010).
  */
 internal class HandLayers(private val par: Parallel, private val fx: LayerEffects) {
 
     // ── Drawing layer: the same additive lines as the styles, then glow and blending ──
 
-    fun drawing(base: Image8, s: DrawingLayerSettings): Image8 {
-        val size = base.width
-        val c = size * 0.5f
+    fun drawing(base: Image8, s: DrawingLayerSettings, place: Placement): Image8 {
+        val size = place.size
+        val half = size * 0.5f
         val sym = max(1, s.symmetry)
         val thickness = max(1, (s.strokeWeight.toFloat() * size * 0.015f + 1.5f).toInt())
-        var img = PixelBuffer.drawInStrips(size, size) { buffer ->
+        // Only the canvas part the strokes (the square turned about its centre) and their glow reach.
+        val area = place.around(size * 0.75 + thickness + 3 * 60.0 * s.glowIntensity * size / 1600 + 4)
+        val w = area[2] - area[0]
+        val h = area[3] - area[1]
+        if (w <= 0 || h <= 0) return base
+        val cx = (place.centreX - area[0]).toFloat()
+        val cy = (place.centreY - area[1]).toFloat()
+        var img = PixelBuffer.drawInStrips(w, h) { buffer ->
             for (stroke in s.strokes) {
                 if (stroke.xs.size < 2 || stroke.xs.size != stroke.ys.size) continue
                 val col = hsbToRgb(stroke.hue, stroke.saturation, stroke.brightness)
@@ -31,11 +39,11 @@ internal class HandLayers(private val par: Parallel, private val fx: LayerEffect
                     val angle = k * PI.toFloat() * 2f / sym
                     val ca = cos(angle); val sa = sin(angle)
                     for (i in 1 until stroke.xs.size) {
-                        val dx0 = stroke.xs[i - 1].toFloat() * size - c; val dy0 = stroke.ys[i - 1].toFloat() * size - c
-                        val dx1 = stroke.xs[i].toFloat() * size - c; val dy1 = stroke.ys[i].toFloat() * size - c
+                        val dx0 = stroke.xs[i - 1].toFloat() * size - half; val dy0 = stroke.ys[i - 1].toFloat() * size - half
+                        val dx1 = stroke.xs[i].toFloat() * size - half; val dy1 = stroke.ys[i].toFloat() * size - half
                         buffer.addThickLine(
-                            c + dx0 * ca - dy0 * sa, c + dx0 * sa + dy0 * ca,
-                            c + dx1 * ca - dy1 * sa, c + dx1 * sa + dy1 * ca,
+                            cx + dx0 * ca - dy0 * sa, cy + dx0 * sa + dy0 * ca,
+                            cx + dx1 * ca - dy1 * sa, cy + dx1 * sa + dy1 * ca,
                             r, g, b, 1.5f, thickness,
                         )
                     }
@@ -44,17 +52,21 @@ internal class HandLayers(private val par: Parallel, private val fx: LayerEffect
         }
         img = fx.glow(img, s.glowIntensity, size)
         if (s.opacity < 0.999) img = fx.opacity(img, s.opacity)
-        return fx.composite(base, img, blendOp(s.blendMode, normal = BlendOp.LIGHTEN)!!)
+        return fx.composite(base, img, blendOp(s.blendMode, normal = BlendOp.LIGHTEN)!!, area[0], area[1])
     }
 
     // ── Graffiti layer: round-capped strokes painted over each other, blurred, then blended ──
     // The macOS app strokes paths with Core Graphics into a transparent canvas; each path is one
     // coverage shape, so a stroke does not darken where it crosses itself.
 
-    fun graffiti(base: Image8, s: GraffitiLayerSettings): Image8 {
-        val size = base.width
+    fun graffiti(base: Image8, s: GraffitiLayerSettings, place: Placement): Image8 {
+        val width = base.width
+        val height = base.height
+        val size = place.size
         val sym = max(1, s.symmetry)
-        val c = size * 0.5
+        val half = size * 0.5
+        val cx = place.centreX
+        val cy = place.centreY
         val sigma = s.softness * size * 0.012
         val blurred = sigma > 0.5
         // Strips of rows; each carries an overlap as wide as the blur reads, so its core rows
@@ -62,16 +74,16 @@ internal class HandLayers(private val par: Parallel, private val fx: LayerEffect
         val overlap = if (blurred) max(Filters.blurReach(sigma), MaskBlur.reach(sigma)) else 0
         val core = max(PixelBuffer.STRIP_ROWS, 2 * overlap)
         val op = blendOp(s.blendMode, normal = null)
-        val out = if (base.encoding == Encoding.SRGB) base else Image8(size, size, Encoding.SRGB, base.data)
-        val n = size * 3
+        val out = if (base.encoding == Encoding.SRGB) base else Image8(width, height, Encoding.SRGB, base.data)
+        val n = width * 3
         val mask = Coverage()
-        for (y0 in 0 until size step core) {
-            val y1 = min(size, y0 + core)
+        for (y0 in 0 until height step core) {
+            val y1 = min(height, y0 + core)
             val top = max(0, y0 - overlap)
-            val bottom = min(size, y1 + overlap)
+            val bottom = min(height, y1 + overlap)
             val rows = bottom - top
-            val colour = FloatImage(size, rows) // premultiplied P3 working values
-            val alpha = FloatArray(size * rows)
+            val colour = FloatImage(width, rows) // premultiplied P3 working values
+            val alpha = FloatArray(width * rows)
             for (stroke in s.strokes) {
                 if (stroke.xs.isEmpty() || stroke.xs.size != stroke.ys.size) continue
                 val halfWidth = max(0.005, stroke.brushSize) * size * 0.5
@@ -80,28 +92,28 @@ internal class HandLayers(private val par: Parallel, private val fx: LayerEffect
                 for (k in 0 until sym) {
                     if (stroke.xs.size == 1) {
                         // The macOS app fills single dots at the unrotated spot for every copy.
-                        mask.dot(stroke.xs[0] * size, stroke.ys[0] * size, halfWidth, size, top, bottom)
+                        mask.dot(stroke.xs[0] * size + (cx - half), stroke.ys[0] * size + (cy - half), halfWidth, width, top, bottom)
                     } else {
                         val angle = k * PI * 2 / sym
                         val ca = cos(angle); val sa = sin(angle)
-                        val xs = DoubleArray(stroke.xs.size) { val dx = stroke.xs[it] * size - c; val dy = stroke.ys[it] * size - c; c + dx * ca - dy * sa }
-                        val ys = DoubleArray(stroke.xs.size) { val dx = stroke.xs[it] * size - c; val dy = stroke.ys[it] * size - c; c + dx * sa + dy * ca }
-                        mask.path(xs, ys, halfWidth, size, top, bottom)
+                        val xs = DoubleArray(stroke.xs.size) { val dx = stroke.xs[it] * size - half; val dy = stroke.ys[it] * size - half; cx + dx * ca - dy * sa }
+                        val ys = DoubleArray(stroke.xs.size) { val dx = stroke.xs[it] * size - half; val dy = stroke.ys[it] * size - half; cy + dx * sa + dy * ca }
+                        mask.path(xs, ys, halfWidth, width, top, bottom)
                     }
-                    mask.paint(colour, alpha, p3, a, size, top)
+                    mask.paint(colour, alpha, p3, a, width, top)
                 }
             }
             if (blurred) {
                 Filters.blurInPlace(colour, sigma, par)
-                MaskBlur.blur(alpha, size, rows, sigma, par)
+                MaskBlur.blur(alpha, width, rows, sigma, par)
             }
             par.forRange(y1 - y0) { from, until ->
                 val row = FloatArray(n)
                 for (y in y0 + from until y0 + until) {
                     WorkingSpace.readRow(base, y, row)
                     val r = y - top
-                    for (x in 0 until size) {
-                        val p = r * size + x
+                    for (x in 0 until width) {
+                        val p = r * width + x
                         val sa = alpha[p]
                         if (sa <= 0f) continue
                         for (ch in 0..2) {

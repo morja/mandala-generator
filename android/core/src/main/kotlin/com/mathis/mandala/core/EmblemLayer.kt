@@ -19,15 +19,24 @@ import kotlin.math.sqrt
  */
 internal class EmblemLayer(private val par: Parallel, private val fx: LayerEffects) {
 
-    fun apply(base: Image8, s: EmblemLayerSettings, palettes: List<ColorPalette>): Image8 {
-        val size = base.width
+    fun apply(base: Image8, s: EmblemLayerSettings, palettes: List<ColorPalette>, place: Placement): Image8 {
+        // The emblem belongs to the mandala: it is sized by the mandala's square and drawn around
+        // its centre, on the part of the canvas it and its glow can reach (all of it by default).
+        val size = place.size
         val geometry = EmblemShapes.geometry(s)
         // Unit space → pixels: the frame ring (radius 0.92) gets a diameter of `size` × canvas.
         val unit = s.size.coerceIn(0.1, 1.0) * size * 0.5 / EmblemShapes.RING_RADIUS
-        val mask = EmblemMask(size, unit, s.rotation).draw(geometry, s.rendering, s.weight, par)
+        val glowReach = if (s.glow > 0) 3 * 60.0 * s.glow * size / 1600 else 0.0
+        val area = place.around(max(size.toDouble(), unit * 1.6 + glowReach + 4))
+        val w = area[2] - area[0]
+        val h = area[3] - area[1]
+        if (w <= 0 || h <= 0) return base
+        val ecx = place.centreX - area[0]
+        val ecy = place.centreY - area[1]
+        val mask = EmblemMask(w, h, ecx, ecy, unit, s.rotation).draw(geometry, s.rendering, s.weight, par)
 
         val palette = palettes[s.paletteIndex.coerceIn(0, palettes.size - 1)]
-        val colour = ColourSource(mask, size, lut(palette), s.colorPosition, s.colorSpread, unit)
+        val colour = ColourSource(mask, w, h, ecx, ecy, lut(palette), s.colorPosition, s.colorSpread, unit)
         val op = s.blendMode
         // Alpha only matters where the overlay covers the image: source-over and multiply.
         val needsAlpha = op == LayerBlendMode.NORMAL || op == LayerBlendMode.MULTIPLY
@@ -36,10 +45,10 @@ internal class EmblemLayer(private val par: Parallel, private val fx: LayerEffec
         // Core Image's glow keeps the blurred alpha unscaled and sums it over the passes.
         val glowAlpha: ByteArray? = if (needsAlpha && passes != null) {
             val alphaPasses = passes.map { LayerEffects.BlurPass(it.radius, 1.0) }
-            fx.referenceBlurOverlay(AlphaSource(mask, size), size, alphaPasses)?.let { ref ->
-                ByteArray(size * size).also { out ->
-                    Filters.resampleRows(ref.asRowSource(), size, size, par) { y, row ->
-                        for (x in 0 until size) out[y * size + x] = WorkingSpace.quantize(row[x * 3])
+            fx.referenceBlurOverlay(AlphaSource(mask, w, h), size, alphaPasses)?.let { ref ->
+                ByteArray(w * h).also { out ->
+                    Filters.resampleRows(ref.asRowSource(), w, h, par) { y, row ->
+                        for (x in 0 until w) out[y * w + x] = WorkingSpace.quantize(row[x * 3])
                     }
                 }
             }
@@ -49,15 +58,16 @@ internal class EmblemLayer(private val par: Parallel, private val fx: LayerEffec
         val glow = passes?.let { fx.referenceBlurOverlay(colour, size, it) }
 
         val fade = if (s.opacity < 0.999) s.opacity.coerceIn(0.0, 1.0).toFloat() else 1f
-        val out = if (base.encoding == Encoding.SRGB) base else Image8(size, size, Encoding.SRGB)
-        val n = size * 3
+        val canvasW = base.width
+        val out = if (base.encoding == Encoding.SRGB) base else Image8(canvasW, base.height, Encoding.SRGB)
+        val n = canvasW * 3
         fun blendRow(y: Int, over: FloatArray?) {
             val row = FloatArray(n)
-            val c = FloatArray(n)
-            WorkingSpace.readRow(base, y, row)
+            val c = FloatArray(w * 3)
+            WorkingSpace.readRow(base, y + area[1], row)
             colour.readRow(y, c)
-            for (x in 0 until size) {
-                val p = y * size + x
+            for (x in 0 until w) {
+                val p = y * w + x
                 var a = (mask[p].toInt() and 0xFF) / 255f
                 if (glowAlpha != null) {
                     val ga = (glowAlpha[p].toInt() and 0xFF) / 255f
@@ -65,9 +75,10 @@ internal class EmblemLayer(private val par: Parallel, private val fx: LayerEffec
                 }
                 a = a.coerceIn(0f, 1f) * fade
                 for (ch in 0..2) {
-                    val k = x * 3 + ch
-                    var sc = c[k]
-                    if (over != null) sc = sc + over[k] - sc * over[k]
+                    val j = x * 3 + ch
+                    val k = (x + area[0]) * 3 + ch
+                    var sc = c[j]
+                    if (over != null) sc = sc + over[j] - sc * over[j]
                     sc = sc.coerceIn(0f, 1f) * fade
                     val d = row[k]
                     // Blend formulas for a premultiplied overlay on an opaque base.
@@ -79,12 +90,23 @@ internal class EmblemLayer(private val par: Parallel, private val fx: LayerEffec
                     }
                 }
             }
-            WorkingSpace.writeRow(row, out, y)
+            WorkingSpace.writeRow(row, out, y + area[1])
         }
         if (glow != null) {
-            Filters.resampleRows(glow.asRowSource(), size, size, par) { y, over -> blendRow(y, over) }
+            Filters.resampleRows(glow.asRowSource(), w, h, par) { y, over -> blendRow(y, over) }
         } else {
-            par.forRange(size) { from, until -> for (y in from until until) blendRow(y, null) }
+            par.forRange(h) { from, until -> for (y in from until until) blendRow(y, null) }
+        }
+        if (out !== base) {
+            // A new image: the rows outside the emblem's area still need converting to sRGB.
+            par.forRange(base.height) { from, until ->
+                val row = FloatArray(n)
+                for (y in from until until) {
+                    if (y >= area[1] && y < area[3]) continue
+                    WorkingSpace.readRow(base, y, row)
+                    WorkingSpace.writeRow(row, out, y)
+                }
+            }
         }
         return out
     }
@@ -121,29 +143,28 @@ internal class EmblemLayer(private val par: Parallel, private val fx: LayerEffec
     /** Premultiplied overlay colour: palette colour by distance from the centre times coverage. */
     private class ColourSource(
         private val mask: ByteArray,
-        private val size: Int,
+        override val width: Int,
+        override val height: Int,
+        private val centreX: Double,
+        private val centreY: Double,
         private val lut: FloatArray,
         private val position: Double,
         private val spread: Double,
         unit: Double,
     ) : RowSource {
-        override val width get() = size
-        override val height get() = size
-
         // The colour reaches `position + spread` at the outer edge of the lotus or gate frame.
         private val outer = unit * 1.45
 
         override fun readRow(y: Int, out: FloatArray) {
-            val half = size / 2.0
-            val dy = y + 0.5 - half
-            for (x in 0 until size) {
-                val a = mask[y * size + x].toInt() and 0xFF
+            val dy = y + 0.5 - centreY
+            for (x in 0 until width) {
+                val a = mask[y * width + x].toInt() and 0xFF
                 val o = x * 3
                 if (a == 0) {
                     out[o] = 0f; out[o + 1] = 0f; out[o + 2] = 0f
                     continue
                 }
-                val dx = x + 0.5 - half
+                val dx = x + 0.5 - centreX
                 // Run along the palette and back instead of jumping from its end to its start.
                 var t = (position + spread * min(1.0, sqrt(dx * dx + dy * dy) / outer)) % 2.0
                 if (t < 0) t += 2
@@ -156,12 +177,10 @@ internal class EmblemLayer(private val par: Parallel, private val fx: LayerEffec
     }
 
     /** The coverage as a grey image, for blurring the alpha channel like the colour. */
-    private class AlphaSource(private val mask: ByteArray, private val size: Int) : RowSource {
-        override val width get() = size
-        override val height get() = size
+    private class AlphaSource(private val mask: ByteArray, override val width: Int, override val height: Int) : RowSource {
         override fun readRow(y: Int, out: FloatArray) {
-            for (x in 0 until size) {
-                val a = (mask[y * size + x].toInt() and 0xFF) / 255f
+            for (x in 0 until width) {
+                val a = (mask[y * width + x].toInt() and 0xFF) / 255f
                 out[x * 3] = a; out[x * 3 + 1] = a; out[x * 3 + 2] = a
             }
         }
@@ -173,15 +192,20 @@ internal class EmblemLayer(private val par: Parallel, private val fx: LayerEffec
  * context: round-capped line segments, discs, rings and even-odd filled polygons, each painted
  * source-over in white (or black, to cut out) in order. Row 0 is the top of the image.
  */
-internal class EmblemMask(private val size: Int, private val unit: Double, rotationDegrees: Double) {
+internal class EmblemMask(
+    private val width: Int,
+    private val height: Int,
+    private val centreX: Double,
+    private val centreY: Double,
+    private val unit: Double,
+    rotationDegrees: Double,
+) {
 
     // Positive degrees turn clockwise on screen (y points down in unit space).
     private val ca = cos(rotationDegrees * PI / 180)
     private val sa = sin(rotationDegrees * PI / 180)
-    private val c = size / 2.0
-
-    private fun px(x: Double, y: Double) = c + unit * (x * ca - y * sa)
-    private fun py(x: Double, y: Double) = c + unit * (x * sa + y * ca)
+    private fun px(x: Double, y: Double) = centreX + unit * (x * ca - y * sa)
+    private fun py(x: Double, y: Double) = centreY + unit * (x * sa + y * ca)
 
     private sealed class Shape(val white: Boolean, val top: Double, val bottom: Double)
 
@@ -296,14 +320,14 @@ internal class EmblemMask(private val size: Int, private val unit: Double, rotat
      * to its rows, so the result does not depend on the thread count.
      */
     private fun rasterise(par: Parallel): ByteArray {
-        val mask = ByteArray(size * size)
-        val bands = max(1, min(size, par.threads * 4))
-        val bandHeight = (size + bands - 1) / bands
+        val mask = ByteArray(width * height)
+        val bands = max(1, min(height, par.threads * 4))
+        val bandHeight = (height + bands - 1) / bands
         par.forEachChunk(bands) { band ->
             val y0 = band * bandHeight
-            val y1 = min(size, y0 + bandHeight)
+            val y1 = min(height, y0 + bandHeight)
             if (y0 >= y1) return@forEachChunk
-            val acc = FloatArray(size)
+            val acc = FloatArray(width)
             for (shape in shapes) {
                 val from = max(y0, floor(shape.top).toInt())
                 val until = min(y1, ceil(shape.bottom).toInt() + 1)
@@ -335,7 +359,7 @@ internal class EmblemMask(private val size: Int, private val unit: Double, rotat
         val len2 = dx * dx + dy * dy
         val reach = s.r + 1
         val left = max(0, floor(min(s.ax, s.bx) - reach).toInt())
-        val right = min(size, ceil(max(s.ax, s.bx) + reach).toInt() + 1)
+        val right = min(width, ceil(max(s.ax, s.bx) + reach).toInt() + 1)
         val len = sqrt(len2)
         for (y in from until until) {
             val cy = y + 0.5
@@ -351,7 +375,7 @@ internal class EmblemMask(private val size: Int, private val unit: Double, rotat
                 val cx = x + 0.5
                 val t = if (len2 > 0) (((cx - s.ax) * dx + (cy - s.ay) * dy) / len2).coerceIn(0.0, 1.0) else 0.0
                 val ex = cx - (s.ax + t * dx); val ey = cy - (s.ay + t * dy)
-                put(mask, y * size + x, bandCoverage(sqrt(ex * ex + ey * ey), s.r), s.white)
+                put(mask, y * width + x, bandCoverage(sqrt(ex * ex + ey * ey), s.r), s.white)
             }
         }
     }
@@ -359,14 +383,14 @@ internal class EmblemMask(private val size: Int, private val unit: Double, rotat
     private fun paintDisc(mask: ByteArray, d: Disc, from: Int, until: Int) {
         val outer = d.r + d.ring + 1
         val x0 = max(0, floor(d.cx - outer).toInt())
-        val x1 = min(size, ceil(d.cx + outer).toInt() + 1)
+        val x1 = min(width, ceil(d.cx + outer).toInt() + 1)
         for (y in from until until) {
             val ey = y + 0.5 - d.cy
             for (x in x0 until x1) {
                 val ex = x + 0.5 - d.cx
                 val dist = sqrt(ex * ex + ey * ey)
                 val cov = if (d.ring > 0) bandCoverage(abs(dist - d.r), d.ring) else (d.r + 0.5 - dist).coerceIn(0.0, min(1.0, 2 * d.r))
-                put(mask, y * size + x, cov, d.white)
+                put(mask, y * width + x, cov, d.white)
             }
         }
     }
@@ -380,7 +404,7 @@ internal class EmblemMask(private val size: Int, private val unit: Double, rotat
         val crossings = DoubleArray(s.polys.sumOf { it.size / 2 })
         for (y in from until until) {
             acc.fill(0f)
-            var minX = size; var maxX = -1
+            var minX = width; var maxX = -1
             for (k in 0 until sub) {
                 val sy = y + (k + 0.5) / sub
                 var count = 0
@@ -398,11 +422,11 @@ internal class EmblemMask(private val size: Int, private val unit: Double, rotat
                 crossings.sort(0, count)
                 var i = 0
                 while (i + 1 < count) {
-                    val xa = crossings[i].coerceIn(0.0, size.toDouble())
-                    val xb = crossings[i + 1].coerceIn(0.0, size.toDouble())
+                    val xa = crossings[i].coerceIn(0.0, width.toDouble())
+                    val xb = crossings[i + 1].coerceIn(0.0, width.toDouble())
                     i += 2
                     if (xb <= xa) continue
-                    val pa = floor(xa).toInt(); val pb = min(size - 1, floor(xb).toInt())
+                    val pa = floor(xa).toInt(); val pb = min(width - 1, floor(xb).toInt())
                     minX = min(minX, pa); maxX = max(maxX, pb)
                     val w = 1f / sub
                     if (pa == pb) {
@@ -414,7 +438,7 @@ internal class EmblemMask(private val size: Int, private val unit: Double, rotat
                     }
                 }
             }
-            for (x in minX..maxX) put(mask, y * size + x, min(1f, acc[x]).toDouble(), true)
+            for (x in minX..maxX) put(mask, y * width + x, min(1f, acc[x]).toDouble(), true)
         }
     }
 }

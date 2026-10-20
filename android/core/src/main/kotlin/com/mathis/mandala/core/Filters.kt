@@ -307,6 +307,13 @@ internal object Filters {
         dst[o] = r; dst[o + 1] = g; dst[o + 2] = b
     }
 
+    /** The w x h part of `src` whose top left corner is at (x0, y0). */
+    fun crop(src: Image8, x0: Int, y0: Int, w: Int, h: Int): Image8 {
+        val out = Image8(w, h, src.encoding)
+        for (y in 0 until h) System.arraycopy(src.data, ((y + y0) * src.width + x0) * 3, out.data, y * w * 3, w * 3)
+        return out
+    }
+
     fun cropCenter(src: Image8, size: Int): Image8 {
         val ox = (src.width - size) / 2
         val oy = (src.height - size) / 2

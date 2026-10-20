@@ -21,9 +21,13 @@ Formats offered: **Square**, **This phone's screen** (aspect ratio from the disp
 
 ## How it is built
 
-- `RenderOptions` gets a canvas (`width`, `height`) and a framing (`centreX`, `centreY` as fractions of the canvas, `zoom` relative to "fits the width"). `outputSize` stays as the square shortcut. Every layer buffer covers at most the canvas plus its effect margin, also when zoomed in; a mandala larger than the canvas is never drawn in full and cropped afterwards.
-- Background types that today take one `size` get width and height. Radial ones (radial gradient, sunburst, auto) stay round and centred on the canvas; their radius is measured on the shorter side, so a square stays as it is.
-- Memory and sizes: see PLAN-2. The budget rule (ADR-0002, `MemoryBudgetTest`) applies to every format at every size the app offers; `MemoryBudgetTest` gets one case per format at its largest size, zoomed in as far as the app allows.
+- `RenderOptions` has a canvas (`width`, `height`), a `Framing` (`centreX`, `centreY` as fractions of the canvas, `zoom` relative to "fits the width", clamped to 0.25–4 with the centre inside the frame) and `textFollowsMandala`. `outputSize` stays as the square shortcut.
+- The mandala layers, hand layers and emblem are drawn for a square of side `canvas width × zoom` around the centre (`Placement`); background and effects layer use the canvas. Each mandala layer keeps the buffer square the macOS port uses (its size and effect margin as before), placed around the centre, and only the part that can reach the canvas is drawn: the canvas plus the effect margin for an unrotated layer, the whole square for a rotated one, or, when that square is more than twice the canvas, the part within reach of the canvas corners. Lines far outside are rejected in the coordinates of that whole square, so zooming in loses none. Layers are blended at their offset; outside a layer counts as black, which only matters for multiply.
+- Zoomed in, the effect margin grows with the mandala; an unrotated layer is therefore cut to what the painted effect still reads before painting, and the painted effect works in place.
+- Reference blurs (glow, bloom) on a tall canvas are computed in strips of rows once the reference image is larger than a 1700 px square, so a portrait canvas never holds several full reference copies.
+- Backgrounds take width and height. Radial ones (radial gradient, sunburst, auto) stay round and centred on the canvas, with their radius measured on the shorter side; a linear gradient runs edge to edge; an image is stretched to the square of the longer side and its middle is used. In the effects layer, spots, highlights, stars and glitter spread over the whole canvas and their number grows with its area.
+- The text layer is laid out in a frame: the canvas (font size from the shorter side, vertical position from the height) or the mandala's square. The platform text renderer draws masks of width × height.
+- Memory: the budget rule (ADR-0002, `MemoryBudgetTest`) holds for the Pro portrait 2048 × 4437 zoomed in to 4 and the free portrait 1024 × 2219.
 
 ## Reasons
 

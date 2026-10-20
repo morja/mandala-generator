@@ -14,12 +14,21 @@ import com.mathis.mandala.core.styles.CosmicStyles
 import com.mathis.mandala.core.styles.StyleContext
 import kotlin.math.abs
 import kotlin.math.ceil
+import kotlin.math.floor
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.math.sqrt
 
 data class RenderOptions(
-    /** Overrides the size from the settings (the preview uses a smaller one). */
+    /** Overrides the size from the settings (the preview uses a smaller one). The image is square. */
     val outputSize: Int? = null,
+    /** Output width and height of a canvas that need not be square (ADR-0010); they override `outputSize`. */
+    val width: Int? = null,
+    val height: Int? = null,
+    /** Where the mandala sits on the canvas; the default is today's centred image. */
+    val framing: Framing = Framing(),
+    /** The text layer moves and scales with the mandala instead of staying in place on the canvas. */
+    val textFollowsMandala: Boolean = false,
     /**
      * Like the macOS app, everything is drawn at twice the output size and scaled down at the end.
      * False draws at the output size itself: the image then looks like the supersampled one at half
@@ -61,11 +70,24 @@ object MandalaRenderer {
     ): RenderResult {
         val start = System.nanoTime()
         val warnings = mutableListOf<String>()
-        val resolvedSize = options.outputSize ?: params.resolvedOutputSize
-        val bufferSize = if (options.supersample) resolvedSize * 2 else resolvedSize
-        val baseRadius = bufferSize * 0.72
+        val outW = options.width ?: options.outputSize ?: params.resolvedOutputSize
+        val outH = options.height ?: outW
+        val factor = if (options.supersample) 2 else 1
+        val bufW = outW * factor
+        val bufH = outH * factor
+        // The mandala layers, hand layers and emblem are drawn for a square of side `mandalaSize`
+        // around the framing's centre; background and effects layer belong to the canvas.
+        val place = Placement.of(options.framing, bufW, bufH)
+        val mandalaSize = place.size
+        val baseRadius = mandalaSize * 0.72
         // Same lines spread over a larger canvas give a lower mean; this linear factor cancels it.
-        val brightnessScale = bufferSize / 1600f
+        val brightnessScale = mandalaSize / 1600f
+        // Offset of the mandala centre from the canvas centre: whole pixels move the layer buffers,
+        // the rest goes into the centre they are drawn around (zero with the default framing).
+        val dX = place.centreX - bufW / 2.0
+        val dY = place.centreY - bufH / 2.0
+        val dXi = Math.round(dX).toInt()
+        val dYi = Math.round(dY).toInt()
 
         Parallel(max(1, options.threads)).use { par ->
             val fx = LayerEffects(par)
@@ -76,15 +98,15 @@ object MandalaRenderer {
                 warnings += "Background \"${base.type.name.lowercase()}\" is not available yet; drawn black."
             }
             var composite = if (base.isEnabled && base.type == BaseLayerType.AUTO) {
-                Background.renderAuto(params, palettes, bufferSize, par)
+                Background.renderAuto(params, palettes, bufW, bufH, par)
             } else if (base.isEnabled && base.type == BaseLayerType.IMAGE) {
-                val picture = base.imageURL?.let { url -> options.imageLoader?.load(url, bufferSize) }
+                val picture = base.imageURL?.let { url -> options.imageLoader?.load(url, max(bufW, bufH)) }
                 if (picture == null) warnings += "Background image not found; drawn in colour 1."
-                Background.renderImage(base, picture, bufferSize, par)
+                Background.renderImage(base, picture, bufW, bufH, par)
             } else if (base.isEnabled && Background.supports(base.type)) {
-                Background.render(base, bufferSize, par)
+                Background.render(base, bufW, bufH, par)
             } else {
-                Image8(bufferSize, bufferSize, Encoding.SRGB)
+                Image8(bufW, bufH, Encoding.SRGB)
             }
             val solidBackground = if (base.isEnabled && base.type == BaseLayerType.COLOR) solidColor(base) else null
 
@@ -114,11 +136,46 @@ object MandalaRenderer {
                 // full size; others get a margin as wide as glow, wash and painting reach, so light
                 // from just outside the frame still bleeds in. Size-dependent effects use effectWidth.
                 val raw = ceil(layerRadius * 2.0).toInt() + 8
-                val effectWidth = max(bufferSize, if (raw % 2 == 0) raw else raw + 1)
+                val effectWidth = max(mandalaSize, if (raw % 2 == 0) raw else raw + 1)
                 val rotated = abs(layer.rotation) > 0.001
-                val size = if (rotated) effectWidth else min(effectWidth, bufferSize + 2 * effectMargin(layer, effectWidth))
-                val offset = (effectWidth - size) / 2
-                val c = size * 0.5f
+                val margin = effectMargin(layer, effectWidth)
+                val size = if (rotated) effectWidth else min(effectWidth, mandalaSize + 2 * margin)
+                val op = when (layer.blendMode) {
+                    LayerBlendMode.SCREEN -> BlendOp.SCREEN
+                    LayerBlendMode.ADD -> BlendOp.ADD
+                    LayerBlendMode.NORMAL -> BlendOp.LIGHTEN
+                    LayerBlendMode.MULTIPLY -> BlendOp.MULTIPLY
+                }
+
+                // That square of side `size` sits around the mandala centre at (sx0, sy0) on the
+                // canvas. Only the part that can reach the canvas is drawn: for an unrotated layer the
+                // canvas plus the effect margin, for a rotated one what can turn into view. With the
+                // default framing this is the whole square, as before.
+                val sx0 = dXi - (size - bufW) / 2
+                val sy0 = dYi - (size - bufH) / 2
+                var view = when {
+                    !rotated -> intArrayOf(max(sx0, -margin), max(sy0, -margin), min(sx0 + size, bufW + margin), min(sy0 + size, bufH + margin))
+                    size <= 2 * max(bufW, bufH) -> intArrayOf(sx0, sy0, sx0 + size, sy0 + size)
+                    else -> {
+                        val reach = farthestCorner(place.centreX, place.centreY, bufW, bufH, margin)
+                        intArrayOf(
+                            max(sx0, floor(place.centreX - reach).toInt()), max(sy0, floor(place.centreY - reach).toInt()),
+                            min(sx0 + size, ceil(place.centreX + reach).toInt()), min(sy0 + size, ceil(place.centreY + reach).toInt()),
+                        )
+                    }
+                }
+                val vw = view[2] - view[0]
+                val vh = view[3] - view[1]
+                if (vw <= 0 || vh <= 0) {
+                    composite = fx.composite(composite, null, op)
+                    continue
+                }
+                val cx = size * 0.5f + (dX - dXi).toFloat() - (view[0] - sx0)
+                val cy = size * 0.5f + (dY - dYi).toFloat() - (view[1] - sy0)
+                // Noise of the painted effect is sampled where this part sits in the effect square.
+                var offsetX = (effectWidth - size) / 2 + (view[0] - sx0)
+                var offsetY = (effectWidth - size) / 2 + (view[1] - sy0)
+                val reject = PixelBuffer.Reject((view[0] - sx0).toFloat(), (view[1] - sy0).toFloat(), (size * 4).toFloat())
 
                 val ctx = StyleContext(
                     layer.complexity, layer.density, layer.colorDrift, params.seed, layer.spokes,
@@ -129,11 +186,11 @@ object MandalaRenderer {
                     val lines = LineList()
                     val points = ArrayList<AttractorPoints>()
                     collectStyle(
-                        layer.style, tasks, lines, points, c, c, layerRadius, ctx, palette, rng,
+                        layer.style, tasks, lines, points, cx, cy, layerRadius, ctx, palette, rng,
                         layerCount, symmetry, layer.ripple.toFloat(), layer.colorOffset,
                     )
                     // Same order per pixel as one full buffer: attractor points, curves, lines.
-                    PixelBuffer.drawInStrips(size, size) { strip ->
+                    PixelBuffer.drawInStrips(vw, vh, reject) { strip ->
                         for (p in points) p.drawInto(strip)
                         drawTasks(tasks, strip, palette, layer.colorOffset, par)
                         lines.drawInto(strip, par)
@@ -145,31 +202,36 @@ object MandalaRenderer {
                 checkpoint()
                 if (layer.wash > 0) img = fx.wash(img, layer.wash, effectWidth)
                 checkpoint()
-                if (layer.abstractLevel > 0.01) img = fx.painted(img, layer.abstractLevel, effectWidth, offset)
+                if (layer.abstractLevel > 0.01) {
+                    if (!rotated && place.size > bufW) {
+                        // Zoomed in, the margin for glow and wash is wide; painting needs less of it.
+                        val reach = fx.paintedReach(layer.abstractLevel, effectWidth)
+                        val keep = intArrayOf(max(view[0], -reach), max(view[1], -reach), min(view[2], bufW + reach), min(view[3], bufH + reach))
+                        if (!keep.contentEquals(view)) {
+                            img = Filters.crop(img, keep[0] - view[0], keep[1] - view[1], keep[2] - keep[0], keep[3] - keep[1])
+                            offsetX += keep[0] - view[0]
+                            offsetY += keep[1] - view[1]
+                            view = keep
+                        }
+                    }
+                    img = fx.painted(img, layer.abstractLevel, effectWidth, offsetX, offsetY)
+                }
                 checkpoint()
                 img = fx.colourGrade(img, layer.saturation, layer.brightness)
-                if (rotated) img = fx.rotate(img, layer.rotation * Math.PI * 2)
-                if (size > bufferSize) img = Filters.cropCenter(img, bufferSize)
+                if (rotated) img = fx.rotate(img, layer.rotation * Math.PI * 2, cx, cy)
                 if (layer.opacity < 0.999) img = fx.opacity(img, layer.opacity)
-
-                val op = when (layer.blendMode) {
-                    LayerBlendMode.SCREEN -> BlendOp.SCREEN
-                    LayerBlendMode.ADD -> BlendOp.ADD
-                    LayerBlendMode.NORMAL -> BlendOp.LIGHTEN
-                    LayerBlendMode.MULTIPLY -> BlendOp.MULTIPLY
-                }
-                composite = fx.composite(composite, img, op)
+                composite = fx.composite(composite, img, op, view[0], view[1])
             }
 
             // ── Hand-made layers ──
             val hand = HandLayers(par, fx)
             if (params.graffitiLayer.isEnabled && params.graffitiLayer.strokes.isNotEmpty()) {
                 checkpoint()
-                composite = hand.graffiti(composite, params.graffitiLayer)
+                composite = hand.graffiti(composite, params.graffitiLayer, place)
             }
             if (params.drawingLayer.isEnabled && params.drawingLayer.strokes.isNotEmpty()) {
                 checkpoint()
-                composite = hand.drawing(composite, params.drawingLayer)
+                composite = hand.drawing(composite, params.drawingLayer, place)
             }
 
             // Solid background goes in after all layers (lighten) so layer blend modes don't tint it.
@@ -180,7 +242,7 @@ object MandalaRenderer {
             // Emblem above the mandala and background, below the text.
             if (params.emblemLayer.isEnabled) {
                 checkpoint()
-                composite = EmblemLayer(par, fx).apply(composite, params.emblemLayer, palettes)
+                composite = EmblemLayer(par, fx).apply(composite, params.emblemLayer, palettes, place)
             }
 
             if (params.textLayer.isEnabled && params.textLayer.text.isNotEmpty()) {
@@ -189,7 +251,13 @@ object MandalaRenderer {
                     warnings += "Text needs a text renderer; skipped."
                 } else {
                     checkpoint()
-                    composite = TextLayer(par, textRenderer).apply(composite, params.textLayer)
+                    val frame = if (options.textFollowsMandala) {
+                        val half = mandalaSize / 2.0
+                        TextFrame((place.centreX - half).toFloat(), (place.centreY - half).toFloat(), mandalaSize, mandalaSize, mandalaSize)
+                    } else {
+                        TextFrame(0f, 0f, bufW, bufH, min(bufW, bufH))
+                    }
+                    composite = TextLayer(par, textRenderer).apply(composite, params.textLayer, frame)
                 }
             }
             if (params.effectsLayer.isEnabled) {
@@ -199,12 +267,19 @@ object MandalaRenderer {
 
             checkpoint()
             val result = when {
-                bufferSize != resolvedSize -> fx.downscale(composite, resolvedSize)
+                factor != 1 -> fx.downscale(composite, outW, outH)
                 composite.encoding == Encoding.SRGB -> composite
                 else -> WorkingSpace.convertToSrgb(composite)
             }
             return RenderResult(result, warnings, (System.nanoTime() - start) / 1_000_000)
         }
+    }
+
+    /** Distance from (cx, cy) to the farthest corner of the canvas grown by `margin` on every side. */
+    private fun farthestCorner(cx: Double, cy: Double, width: Int, height: Int, margin: Int): Double {
+        val dx = max(abs(cx + margin), abs(width + margin - cx))
+        val dy = max(abs(cy + margin), abs(height + margin - cy))
+        return sqrt(dx * dx + dy * dy)
     }
 
     /**

@@ -1,5 +1,6 @@
 package com.mathis.mandala.cli
 
+import com.mathis.mandala.core.Framing
 import com.mathis.mandala.core.MandalaRenderer
 import com.mathis.mandala.core.RenderOptions
 import com.mathis.mandala.core.SettingsJson
@@ -9,12 +10,19 @@ import java.lang.management.MemoryType
 import kotlin.system.exitProcess
 
 private const val USAGE = """Usage:
-  mandala render <settings.json> <out.png> [--size N] [--threads N]
+  mandala render <settings.json> <out.png> [--size N] [--width N --height N]
+                 [--centre-x F] [--centre-y F] [--zoom F] [--text follows|stays] [--threads N]
   mandala compare <a.png> <b.png> [--diff diff.png]
 
 render   Renders a settings file saved by the macOS app to a PNG.
-         --size       output size in pixels (default: the size stored in the file)
-         --threads    drawing/filter threads (default: all cores; each holds a full buffer)
+         --size       output size in pixels of a square image (default: the size stored in the file)
+         --width, --height
+                      output size of an image that need not be square (both are needed)
+         --centre-x, --centre-y
+                      where the mandala's centre sits, as a fraction of width and height (default 0.5)
+         --zoom       mandala size relative to fitting the width, 0.25 to 4 (default 1)
+         --text       the quote stays in place on the canvas (default) or follows the mandala
+         --threads    drawing/filter threads (default: all cores)
 compare  Prints how far two images of equal size differ (mean/max error, PSNR)."""
 
 fun main(args: Array<String>) {
@@ -54,6 +62,8 @@ private class Args(raw: List<String>) {
     }
 
     fun int(name: String): Int? = options[name]?.let { it.toIntOrNull() ?: throw UsageException("--$name needs a number") }
+
+    fun double(name: String): Double? = options[name]?.let { it.toDoubleOrNull() ?: throw UsageException("--$name needs a number") }
 }
 
 private fun render(raw: List<String>): Int {
@@ -61,8 +71,17 @@ private fun render(raw: List<String>): Int {
     if (args.positional.size != 2) throw UsageException("render needs <settings.json> and <out.png>")
     val (input, output) = args.positional
     val params = SettingsJson.decode(File(input).readText())
+    val width = args.int("width")
+    val height = args.int("height")
+    if ((width == null) != (height == null)) throw UsageException("--width and --height go together")
+    val text = args.options["text"] ?: "stays"
+    if (text != "stays" && text != "follows") throw UsageException("--text is follows or stays")
     val options = RenderOptions(
         outputSize = args.int("size"),
+        width = width,
+        height = height,
+        framing = Framing(args.double("centre-x") ?: 0.5, args.double("centre-y") ?: 0.5, args.double("zoom") ?: 1.0),
+        textFollowsMandala = text == "follows",
         threads = args.int("threads") ?: Runtime.getRuntime().availableProcessors(),
         textRenderer = AwtTextRenderer(),
         imageLoader = FileImageLoader(),

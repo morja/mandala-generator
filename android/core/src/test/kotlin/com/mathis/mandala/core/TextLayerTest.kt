@@ -10,14 +10,14 @@ class TextLayerTest {
         val drawn = mutableListOf<PlacedLine>()
         override fun metrics(font: TextFont) = TextRenderer.Metrics(font.sizePx * 0.8f, font.sizePx * 0.2f, 0f)
         override fun width(text: String, font: TextFont) = text.length * font.sizePx * 0.5f
-        override fun drawLines(size: Int, lines: List<PlacedLine>): FloatArray {
+        override fun drawLines(width: Int, height: Int, lines: List<PlacedLine>): FloatArray {
             drawn += lines
-            val mask = FloatArray(size * size)
+            val mask = FloatArray(width * height)
             for (l in lines) {
                 val top = (l.baseline - l.font.sizePx * 0.8f).toInt().coerceAtLeast(0)
-                val bottom = l.baseline.toInt().coerceAtMost(size)
-                val right = (l.x + width(l.text, l.font)).toInt().coerceAtMost(size)
-                for (y in top until bottom) for (x in l.x.toInt().coerceAtLeast(0) until right) mask[y * size + x] = 1f
+                val bottom = l.baseline.toInt().coerceAtMost(height)
+                val right = (l.x + width(l.text, l.font)).toInt().coerceAtMost(width)
+                for (y in top until bottom) for (x in l.x.toInt().coerceAtLeast(0) until right) mask[y * width + x] = 1f
             }
             return mask
         }

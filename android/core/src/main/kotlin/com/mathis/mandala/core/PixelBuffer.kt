@@ -25,14 +25,19 @@ class PixelBuffer private constructor(
     private val bandHi: Int,
     /** Canvas row stored first in `data`. */
     private val originY: Int,
+    /** Lines are rejected when an end lies `rejectLimit` or more from (-rejectX, -rejectY), see [addLine]. */
+    private val rejectX: Float,
+    private val rejectY: Float,
+    private val rejectLimit: Float,
 ) {
-    constructor(width: Int, height: Int) : this(width, height, FloatArray(width * height * 3), 0, height, 0)
+    constructor(width: Int, height: Int) : this(width, height, FloatArray(width * height * 3), 0, height, 0, 0f, 0f, (max(width, height) * 4).toFloat())
 
     /** The rows this buffer or view writes: [rowsFrom, rowsUntil). */
     val rowsFrom: Int get() = bandLo
     val rowsUntil: Int get() = bandHi
 
-    fun band(from: Int, until: Int): PixelBuffer = PixelBuffer(width, height, data, max(bandLo, from), min(bandHi, until), originY)
+    fun band(from: Int, until: Int): PixelBuffer =
+        PixelBuffer(width, height, data, max(bandLo, from), min(bandHi, until), originY, rejectX, rejectY, rejectLimit)
 
     /** True when a vertical span [yMin, yMax] can touch this view's rows. */
     fun touchesRows(yMin: Float, yMax: Float): Boolean = yMax >= bandLo - 2 && yMin <= bandHi + 1
@@ -50,12 +55,17 @@ class PixelBuffer private constructor(
         data[base + 2] += b * weight
     }
 
-    /** Wu anti-aliased line with additive blending. Rejects non-finite and far out-of-range input. */
+    /**
+     * Wu anti-aliased line with additive blending. Rejects non-finite and far out-of-range input:
+     * by default ends four buffer sizes away; a buffer that shows a part of a larger mandala buffer
+     * measures that in the larger buffer's coordinates, so the same lines are kept.
+     */
     fun addLine(x0In: Float, y0In: Float, x1In: Float, y1In: Float, r: Float, g: Float, b: Float, weight: Float) {
         if (!x0In.isFinite() || !y0In.isFinite() || !x1In.isFinite() || !y1In.isFinite()) return
-        val limit = (max(width, height) * 4).toFloat()
-        if (x0In <= -limit || x0In >= limit || y0In <= -limit || y0In >= limit ||
-            x1In <= -limit || x1In >= limit || y1In <= -limit || y1In >= limit
+        val limit = rejectLimit
+        val ax = x0In + rejectX; val ay = y0In + rejectY; val bx = x1In + rejectX; val by = y1In + rejectY
+        if (ax <= -limit || ax >= limit || ay <= -limit || ay >= limit ||
+            bx <= -limit || bx >= limit || by <= -limit || by >= limit
         ) return
         if (!touchesRows(min(y0In, y1In), max(y0In, y1In))) return
 
@@ -166,22 +176,32 @@ class PixelBuffer private constructor(
         const val STRIP_ROWS = 256
 
         /** A buffer for rows [from, until) of a width x height canvas. */
-        fun strip(width: Int, height: Int, from: Int, until: Int): PixelBuffer =
-            PixelBuffer(width, height, FloatArray(width * (until - from) * 3), from, until, from)
+        fun strip(width: Int, height: Int, from: Int, until: Int, reject: Reject = Reject.of(width, height)): PixelBuffer =
+            PixelBuffer(width, height, FloatArray(width * (until - from) * 3), from, until, from, reject.x, reject.y, reject.limit)
 
         /**
          * Draws a width x height canvas strip by strip into an 8-bit image, so only one strip is
          * held as floats. `draw` must draw the whole picture into the strip it gets; drawing
          * clipped to the strip's rows gives every pixel the same sums as one full buffer.
          */
-        fun drawInStrips(width: Int, height: Int, draw: (PixelBuffer) -> Unit): Image8 {
+        fun drawInStrips(width: Int, height: Int, reject: Reject = Reject.of(width, height), draw: (PixelBuffer) -> Unit): Image8 {
             val out = Image8(width, height, Encoding.DISPLAY_P3)
             for (y0 in 0 until height step STRIP_ROWS) {
-                val strip = strip(width, height, y0, min(height, y0 + STRIP_ROWS))
+                val strip = strip(width, height, y0, min(height, y0 + STRIP_ROWS), reject)
                 draw(strip)
                 strip.writeRows(out)
             }
             return out
+        }
+    }
+
+    /**
+     * Where lines count as far out: (x, y) is this buffer's origin in the larger buffer it is part
+     * of, `limit` four times that buffer's size.
+     */
+    class Reject(val x: Float, val y: Float, val limit: Float) {
+        companion object {
+            fun of(width: Int, height: Int) = Reject(0f, 0f, (max(width, height) * 4).toFloat())
         }
     }
 
