@@ -84,6 +84,14 @@ extension MandalaRenderer {
                     ctx.strokeEllipse(in: CGRect(x: d.x - d.r, y: d.y - d.r, width: d.r * 2, height: d.r * 2))
                 }
             case .filled:
+                ctx.setFillColor(white)
+                for group in g.fills {
+                    for poly in group where poly.count > 2 {
+                        ctx.addLines(between: poly.map { CGPoint(x: $0.x, y: $0.y) })
+                        ctx.closePath()
+                    }
+                    ctx.fillPath(using: .evenOdd)
+                }
                 for pts in g.strokes where pts.count > 1 { strokeSegments(pts, extra: 0, colour: white) }
                 for d in g.dots { fillDot(d, radius: d.r * thick.squareRoot(), colour: white) }
             case .doubleLine:

@@ -319,7 +319,7 @@ struct GraffitiLayerSettings: Equatable, Codable {
 
 /// One motif drawn large and upright in the centre (not repeated by symmetry).
 enum EmblemMotif: String, CaseIterable, Identifiable, Codable {
-    case om, treeOfLife, flowerOfLife, lotus
+    case om, treeOfLife, flowerOfLife, lotus, yinYang, dharmaWheel, unalome, tripleMoon
     var id: String { rawValue }
 
     init(from decoder: Decoder) throws {
@@ -333,10 +333,19 @@ enum EmblemMotif: String, CaseIterable, Identifiable, Codable {
         case .treeOfLife:   return "Tree of Life"
         case .flowerOfLife: return "Flower of Life"
         case .lotus:        return "Lotus"
+        case .yinYang:      return "Yin Yang"
+        case .dharmaWheel:  return "Dharma Wheel"
+        case .unalome:      return "Unalome"
+        case .tripleMoon:   return "Triple Moon"
         }
     }
     /// Whether the Organic slider changes this motif.
-    var isOrganic: Bool { self != .flowerOfLife }
+    var isOrganic: Bool {
+        switch self {
+        case .om, .treeOfLife, .lotus, .yinYang, .unalome: return true
+        case .flowerOfLife, .dharmaWheel, .tripleMoon:      return false
+        }
+    }
 }
 
 /// The members of the Flower of Life family.

@@ -21,10 +21,14 @@ struct EmblemDot {
 struct EmblemGeometry {
     var strokes: [[EmblemPoint]] = []
     var dots: [EmblemDot] = []
+    /// Areas filled in the Filled rendering; each entry is a set of polygons filled even-odd,
+    /// so an inner polygon cuts a hole. Their outlines come from `strokes`.
+    var fills: [[[(x: Double, y: Double)]]] = []
 
     mutating func append(_ other: EmblemGeometry) {
         strokes += other.strokes
         dots += other.dots
+        fills += other.fills
     }
 }
 
@@ -41,6 +45,10 @@ enum EmblemShapes {
         case .treeOfLife:   g = treeOfLife(seed: s.seed, branching: s.branching, roots: s.roots, organic: organic)
         case .flowerOfLife: g = flowerOfLife(s.flowerVariant)
         case .lotus:        g = lotus(petals: s.petals, organic: organic)
+        case .yinYang:      g = yinYang(organic: organic)
+        case .dharmaWheel:  g = dharmaWheel()
+        case .unalome:      g = unalome(organic: organic)
+        case .tripleMoon:   g = tripleMoon()
         }
         g.append(frame(s.frame))
         return g
@@ -388,6 +396,133 @@ enum EmblemShapes {
         for i in 0..<6 {
             let a = Double(i) / 6 * .pi * 2 - .pi / 2
             g.dots.append(EmblemDot(x: cos(a) * 0.08, y: sin(a) * 0.08, r: 0.02))
+        }
+        return g
+    }
+
+    // MARK: Yin Yang
+
+    /// Yin and yang; `organic` draws the outer circle as an open brush stroke (ensō).
+    static func yinYang(organic: Double = 0) -> EmblemGeometry {
+        var g = EmblemGeometry()
+        let r = 0.78, h = r / 2, w = 0.03
+        func arc(_ cx: Double, _ cy: Double, _ rad: Double, from a0: Double, to a1: Double, steps: Int = 90) -> [(x: Double, y: Double)] {
+            (0...steps).map { i in
+                let a = a0 + (a1 - a0) * Double(i) / Double(steps)
+                return (cx + cos(a) * rad, cy + sin(a) * rad)
+            }
+        }
+        // The S: upper half bulges left, lower half bulges right.
+        let s = arc(0, -h, h, from: -.pi / 2, to: -1.5 * .pi) + arc(0, h, h, from: -.pi / 2, to: .pi / 2).dropFirst()
+        // Outer circle, opened by a gap for the brush look.
+        let gap = organic * 0.45
+        let start = -.pi * 0.62
+        let ring = arc(0, 0, r, from: start + gap / 2, to: start + 2 * .pi - gap / 2, steps: 240)
+        let brush: (Double) -> Double = { t in 1 + organic * (0.9 * sin(.pi * t) - 0.35) }
+        g.strokes.append(penWidths(ring.enumerated().map {
+            EmblemPoint(x: $1.x, y: $1.y, w: w * brush(Double($0) / Double(ring.count - 1)))
+        }, organic: organic))
+        g.strokes.append(penWidths(s.map { EmblemPoint(x: $0.x, y: $0.y, w: w * 0.8) }, organic: organic))
+        // Dark half: the right side of the circle and back along the S, with the light eye cut out.
+        let eye = r * 0.13
+        let darkHalf = arc(0, 0, r, from: -.pi / 2, to: .pi / 2) + s.reversed()
+        g.fills.append([darkHalf, arc(0, -h, eye, from: 0, to: 2 * .pi, steps: 48)])
+        g.strokes.append(circle(radius: eye, width: w * 0.7, cx: 0, cy: -h, steps: 60))
+        g.dots.append(EmblemDot(x: 0, y: h, r: eye))
+        return g
+    }
+
+    // MARK: Dharma wheel
+
+    /// The eight-spoked wheel: double rim, hub and spindle-shaped spokes with knobs outside.
+    static func dharmaWheel() -> EmblemGeometry {
+        var g = EmblemGeometry()
+        let outer = 0.72, inner = 0.60, hub = 0.15
+        g.strokes.append(circle(radius: outer, width: 0.035))
+        g.strokes.append(circle(radius: inner, width: 0.026))
+        g.strokes.append(circle(radius: hub, width: 0.03))
+        g.dots.append(EmblemDot(x: 0, y: 0, r: 0.055))
+        for k in 0..<8 {
+            let a = -Double.pi / 2 + Double(k) * .pi / 4
+            let spoke: [EmblemPoint] = (0...24).map { i in
+                let t = Double(i) / 24
+                let rr = hub + (inner - hub) * t
+                // Spindle: thin at both ends, widest a third of the way out.
+                let bulge = sin(.pi * pow(t, 0.75))
+                return EmblemPoint(x: cos(a) * rr, y: sin(a) * rr, w: 0.018 + 0.05 * bulge)
+            }
+            g.strokes.append(spoke)
+            g.strokes.append([EmblemPoint(x: cos(a) * outer, y: sin(a) * outer, w: 0.03),
+                              EmblemPoint(x: cos(a) * 0.79, y: sin(a) * 0.79, w: 0.03)])
+            g.dots.append(EmblemDot(x: cos(a) * 0.82, y: sin(a) * 0.82, r: 0.045))
+        }
+        return g
+    }
+
+    // MARK: Unalome
+
+    /// The unalome: a spiral at the bottom, loops that grow smaller on the way up, a straight
+    /// line and three dots. `organic` gives it the strokes of a broad pen.
+    static func unalome(organic: Double = 0) -> EmblemGeometry {
+        var g = EmblemGeometry()
+        let w = 0.032
+        var pts: [EmblemPoint] = []
+        // Spiral from the centre outwards, ending at its top.
+        let cx = 0.0, cy = 0.50, spiral = 0.17, turns = 2.5
+        for i in 0...200 {
+            let t = Double(i) / 200
+            let a = .pi / 2 + t * turns * 2 * .pi
+            pts.append(EmblemPoint(x: cx + cos(a) * spiral * t, y: cy + sin(a) * spiral * t, w: w * (0.4 + 0.6 * t)))
+        }
+        // Loops climbing upwards, each smaller than the one before.
+        let loops = 3.0, yStart = cy - spiral, yTop = -0.25
+        for i in 1...400 {
+            let t = Double(i) / 400
+            let th = t * loops * 2 * .pi
+            let amp = 0.20 * (1 - 0.65 * t)
+            let back = 0.10 * (1 - 0.6 * t)
+            pts.append(EmblemPoint(x: amp * sin(th),
+                                   y: yStart + (yTop - yStart) * t + back * cos(th) - back,
+                                   w: w))
+        }
+        // Straight line to the top.
+        if let last = pts.last {
+            for i in 1...20 {
+                let t = Double(i) / 20
+                pts.append(EmblemPoint(x: last.x * (1 - t), y: last.y + (-0.58 - last.y) * t, w: w * (1 - 0.3 * t)))
+            }
+        }
+        g.strokes.append(penWidths(pts, organic: organic))
+        for y in [-0.67, -0.75, -0.83] { g.dots.append(EmblemDot(x: 0, y: y, r: 0.026)) }
+        return g
+    }
+
+    // MARK: Triple moon
+
+    /// Waxing crescent, full moon, waning crescent.
+    static func tripleMoon() -> EmblemGeometry {
+        var g = EmblemGeometry()
+        let r = 0.24, w = 0.026
+        g.strokes.append(circle(radius: r, width: w, steps: 120))
+        g.fills.append([(0...120).map { i in
+            let a = Double(i) / 120 * 2 * .pi
+            return (cos(a) * r, sin(a) * r)
+        }])
+        for side in [-1.0, 1.0] {
+            // A crescent with its back to the full moon: the disc minus one shifted outwards.
+            let cx = side * 0.58, d = 0.13
+            let phi = atan2((r * r - d * d / 4).squareRoot(), d / 2)
+            var poly: [(x: Double, y: Double)] = []
+            for i in 0...80 {
+                let a = phi + (2 * .pi - 2 * phi) * Double(i) / 80
+                poly.append((cx + side * cos(a) * r, sin(a) * r))
+            }
+            for i in 0...60 {
+                let a = (.pi + phi) - 2 * phi * Double(i) / 60
+                poly.append((cx + side * (d + cos(a) * r), sin(a) * r))
+            }
+            g.fills.append([poly])
+            g.strokes.append((poly + [poly[0]]).map { EmblemPoint(x: $0.x, y: $0.y, w: w) })
         }
         return g
     }
