@@ -93,7 +93,7 @@ import com.mathis.mandala.core.MandalaParameters
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EditorScreen(vm: EditorViewModel) {
+fun EditorScreen(vm: EditorViewModel, onAbout: () -> Unit = {}) {
     val params by vm.params.collectAsStateWithLifecycle()
     val preview by vm.preview.collectAsStateWithLifecycle()
     val busy by vm.busy.collectAsStateWithLifecycle()
@@ -181,6 +181,7 @@ fun EditorScreen(vm: EditorViewModel) {
                         onShare = vm::shareImage,
                         onOpen = { openFile.launch(arrayOf("application/json", "text/plain", "application/octet-stream")) },
                         onSaveSettings = { saveSettings.launch(vm.suggestedSettingsName()) },
+                        onAbout = onAbout,
                     )
                 },
             )
@@ -351,6 +352,7 @@ private fun MoreMenu(
     onShare: () -> Unit,
     onOpen: () -> Unit,
     onSaveSettings: () -> Unit,
+    onAbout: () -> Unit,
 ) {
     var open by remember { mutableStateOf(false) }
     Box {
@@ -367,6 +369,8 @@ private fun MoreMenu(
             DropdownMenuItem(text = { Text("Share image") }, enabled = !busy, onClick = { open = false; onShare() })
             DropdownMenuItem(text = { Text("Open file…") }, onClick = { open = false; onOpen() })
             DropdownMenuItem(text = { Text("Save settings…") }, onClick = { open = false; onSaveSettings() })
+            HorizontalDivider()
+            DropdownMenuItem(text = { Text("About") }, onClick = { open = false; onAbout() })
         }
     }
 }

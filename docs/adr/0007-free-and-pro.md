@@ -23,5 +23,5 @@ Status: accepted, 20 October 2026 (Mathis' decision)
 ## Open
 
 - The price (set in the Play Console for product `pro`).
-- Store signing: release builds are still signed with the local debug key; Play needs an upload key.
+- ~~Store signing: release builds are still signed with the local debug key; Play needs an upload key.~~ Upload signing through `android/keystore.properties` (20 October 2026, STORE-1); the key itself is Mathis'.
 - Whether 4096 px is worth tiled rendering later.
