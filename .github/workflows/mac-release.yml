@@ -1,9 +1,12 @@
-name: Build & Release
+name: macOS Build & Release
 
+# A tag mac-v* builds the macOS app and publishes a release (tags v1.4.0 and v1.5.0 are from
+# before both apps shared this repository). Run by hand, it only builds.
 on:
   push:
     tags:
-      - 'v*'
+      - 'mac-v*'
+  workflow_dispatch:
 
 jobs:
   build:
@@ -12,6 +15,10 @@ jobs:
 
     permissions:
       contents: write
+
+    defaults:
+      run:
+        working-directory: mac
 
     steps:
       - name: Checkout
@@ -34,9 +41,10 @@ jobs:
           ditto -c -k --sequesterRsrc --keepParent "Mandala Generator.app" "Mandala-Generator.zip"
 
       - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
-          name: Mandala Generator ${{ github.ref_name }}
+          name: Mandala Generator for macOS ${{ github.ref_name }}
           body: |
             ## Install
 
@@ -50,5 +58,5 @@ jobs:
 
             ---
           generate_release_notes: true
-          files: Mandala-Generator.zip
+          files: mac/Mandala-Generator.zip
           fail_on_unmatched_files: true

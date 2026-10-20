@@ -30,6 +30,6 @@ The same text stands in both READMEs.
 
 ## Open
 
-- The macOS app ships a quote collection with modern translations and living authors (`QuoteDatabase.swift`). In a public, sold app it should follow ADR-0007 (public domain only), as the Android app already does.
-- Merging both apps into one public repository (layout, history, scripts, the public Mac releases).
+- ~~The macOS app's quote collection should follow ADR-0007 (public domain only).~~ Done 20 October 2026 (macOS app, merge of `feature/public-domain-quotes`).
+- ~~Merging both apps into one public repository.~~ Decided in ADR-0009.
 - This is not legal advice; for a larger commercial launch, a short check by a lawyer is cheap.

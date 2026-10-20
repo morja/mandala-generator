@@ -2,5 +2,6 @@
 # Full check (before merging into main): fast check, parity against the macOS reference images,
 # and a release build of the app.
 set -eu
+cd "$(dirname "$0")/.."
 scripts/check
 ./gradlew --quiet :cli:test -Pparity --rerun-tasks :app:assembleRelease

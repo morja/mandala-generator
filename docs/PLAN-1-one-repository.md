@@ -1,6 +1,6 @@
 # PLAN-1 · Both apps in one public repository
 
-20 October 2026. Status: waiting for Mathis' approval. Nothing below has been carried out; no push, visibility change, merge into `main` or archive happens without his yes in chat. Decision draft: [ADR-0009](adr/0009-one-public-repository.md).
+20 October 2026. Status: approved by Mathis on 20 October 2026, all recommendations taken (see "Decisions" at the end). Decision: [ADR-0009](adr/0009-one-public-repository.md).
 
 ## Secret check of the Android history (done)
 
@@ -119,3 +119,7 @@ After the push and a working check: **archive `morja/mandala-generator-android`,
 8. Old Android repository: archive privately (recommended), with or without a pointer commit?
 9. Repository description, for example "Mandala generator for macOS and Android"?
 10. Pre-commit hook: also `swift build` for commits that touch `mac/`?
+
+## Decisions (Mathis, 20 October 2026)
+
+All recommendations above, with these details: `feature/white-bg` stays only in the local Mac checkout; the old Android repository is **deleted** instead of archived (its whole history is in the shared repository); the new checkout is `/Users/mathis/Work/Projects/Mandala-Generator/mandala-generator`, next to the project files that stay out of git (`generated/`, `samples/`); the hook also runs `swift build` for changes in `mac/`.

@@ -1,10 +1,12 @@
 #!/bin/sh
 # Builds a command-line build of the macOS renderer from the Mac app's sources and renders
 # fixtures/reference/*.png from fixtures/settings/*.json. macOS only.
-# Usage: tools/reference-renderer/render-references.sh [path to MandalaGenerator sources]
+# Runs in android/ from any folder; the sources default to the macOS app in ../mac.
+# Usage: tools/reference-renderer/render-references.sh [path to MandalaGenerator sources, relative to android/]
 set -eu
-src="${1:-../Mandala-Generator/MandalaGenerator/Sources/MandalaGenerator}"
-here="$(dirname "$0")"
+cd "$(dirname "$0")/../.."
+src="${1:-../mac/Sources/MandalaGenerator}"
+here="tools/reference-renderer"
 work="build/reference-renderer"
 mkdir -p "$work/src"
 find "$src" -name '*.swift' ! -name main.swift -exec cp {} "$work/src/" \;

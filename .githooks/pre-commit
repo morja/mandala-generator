@@ -1,2 +1,10 @@
 #!/bin/sh
-exec scripts/check
+# Runs the check of each platform whose files are staged; docs-only commits need none.
+set -eu
+staged="$(git diff --cached --name-only)"
+if printf '%s\n' "$staged" | grep -q '^android/'; then
+    android/scripts/check
+fi
+if printf '%s\n' "$staged" | grep -q '^mac/'; then
+    swift build --package-path mac
+fi

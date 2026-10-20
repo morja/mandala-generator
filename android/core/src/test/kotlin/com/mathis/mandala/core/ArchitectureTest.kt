@@ -40,7 +40,7 @@ class ArchitectureTest {
     @Test
     fun onlyApprovedRootFolders() {
         val approved = setOf(
-            "app", "core", "cli", "docs", "fixtures", "scripts", "tools", "gradle", ".githooks",
+            "app", "core", "cli", "fixtures", "scripts", "tools", "gradle",
             ".git", ".gradle", ".idea", ".kotlin", "build", ".claude",
         )
         val extra = root.listFiles()!!.filter { it.isDirectory && it.name !in approved }.map { it.name }

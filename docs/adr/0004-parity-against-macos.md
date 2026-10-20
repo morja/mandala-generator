@@ -4,7 +4,7 @@ Status: proposed, 19 October 2026
 
 ## Decision
 
-`tools/reference-renderer/render-references.sh` compiles the macOS renderer from `../Mandala-Generator` into a command-line tool and renders `fixtures/reference/*.png` from `fixtures/settings/*.json`. `ParityTest` (full check) renders the same files in Kotlin and requires a minimum PSNR per fixture. Default threshold: 45 dB.
+`tools/reference-renderer/render-references.sh` compiles the macOS renderer from `../mac` (path changed with ADR-0009) into a command-line tool and renders `fixtures/reference/*.png` from `fixtures/settings/*.json`. `ParityTest` (full check) renders the same files in Kotlin and requires a minimum PSNR per fixture. Default threshold: 45 dB.
 
 ## Known deviations
 

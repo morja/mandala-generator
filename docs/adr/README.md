@@ -1,6 +1,8 @@
 # Architecture decisions
 
-One file per decision. A change is a new ADR; the old one is marked "replaced by ADR-NNNN".
+One file per decision, for both apps. A change is a new ADR; the old one is marked "replaced by ADR-NNNN".
+
+ADR-0001 to ADR-0008 were written for the Android repository before both apps moved into this one (ADR-0009): their paths are relative to `android/`, and `docs/` means this folder.
 
 | ADR | Title | Status |
 |---|---|---|
@@ -12,4 +14,4 @@ One file per decision. A change is a new ADR; the old one is marked "replaced by
 | [0006](0006-design-v1.md) | Design v1: warm neutrals around the mandala, one amber accent | proposed |
 | [0007](0007-free-and-pro.md) | Free app with a one-time Pro unlock; public-domain quotes only | accepted |
 | [0008](0008-open-source-gpl.md) | Both apps open source under GPL-3.0, sold as store builds | accepted |
-| [0009](0009-one-public-repository.md) | One public repository for both apps | draft |
+| [0009](0009-one-public-repository.md) | One public repository for both apps | accepted |

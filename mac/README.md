@@ -70,7 +70,7 @@ Find more samples [here](samples/).
 
 ## Building
 
-Requires Xcode command-line tools and Swift 5.9+.
+Requires Xcode command-line tools and Swift 5.9+. Run in `mac/`:
 
 ```bash
 swift build -c release
@@ -254,10 +254,4 @@ Frames are rendered in parallel using Swift's structured concurrency (`withTaskG
 
 ## License
 
-Copyright (C) 2026 Mathis Koblin
-
-This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, version 3 (see `LICENSE`).
-
-Additional permission under GNU GPL version 3 section 7: If you modify this Program, or any covered work, by linking or combining it with the Google Play Billing Library or with the system and platform libraries of Android, macOS or iOS (or modified versions of those libraries), containing parts covered by the terms of their own licences, the licensors of this Program grant you additional permission to convey the resulting work. You may also convey the Program through app stores (such as Google Play and the Apple App Store) whose terms of service add restrictions on use or copying.
-
-Contributions are accepted under the same terms.
+GPL-3.0 with an additional permission for app stores; see the [README at the repository root](../README.md#license).
