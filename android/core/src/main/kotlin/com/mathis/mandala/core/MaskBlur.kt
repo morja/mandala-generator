@@ -5,30 +5,35 @@ import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.sqrt
 
-/** Approximate Gaussian blur (three box passes) of a single-channel size x size mask, in place. */
+/** Approximate Gaussian blur (three box passes) of a single-channel mask, in place, zero outside. */
 internal object MaskBlur {
-    fun blur(mask: FloatArray, size: Int, sigma: Double, par: Parallel) {
+    fun blur(mask: FloatArray, size: Int, sigma: Double, par: Parallel) = blur(mask, size, size, sigma, par)
+
+    fun blur(mask: FloatArray, width: Int, height: Int, sigma: Double, par: Parallel) {
         if (sigma < 0.5) return
         val radii = boxRadii(sigma)
-        par.forRange(size) { from, until ->
-            val a = FloatArray(size)
-            val b = FloatArray(size)
+        par.forRange(height) { from, until ->
+            val a = FloatArray(width)
+            val b = FloatArray(width)
             for (y in from until until) {
-                System.arraycopy(mask, y * size, a, 0, size)
-                for (r in radii) { box(a, b, size, r); System.arraycopy(b, 0, a, 0, size) }
-                System.arraycopy(a, 0, mask, y * size, size)
+                System.arraycopy(mask, y * width, a, 0, width)
+                for (r in radii) { box(a, b, width, r); System.arraycopy(b, 0, a, 0, width) }
+                System.arraycopy(a, 0, mask, y * width, width)
             }
         }
-        par.forRange(size) { from, until ->
-            val a = FloatArray(size)
-            val b = FloatArray(size)
+        par.forRange(width) { from, until ->
+            val a = FloatArray(height)
+            val b = FloatArray(height)
             for (x in from until until) {
-                for (y in 0 until size) a[y] = mask[y * size + x]
-                for (r in radii) { box(a, b, size, r); System.arraycopy(b, 0, a, 0, size) }
-                for (y in 0 until size) mask[y * size + x] = a[y]
+                for (y in 0 until height) a[y] = mask[y * width + x]
+                for (r in radii) { box(a, b, height, r); System.arraycopy(b, 0, a, 0, height) }
+                for (y in 0 until height) mask[y * width + x] = a[y]
             }
         }
     }
+
+    /** How many pixels a blur of this sigma reads on each side. */
+    fun reach(sigma: Double): Int = if (sigma < 0.5) 0 else boxRadii(sigma).sum()
 
     private fun boxRadii(sigma: Double): IntArray {
         val wIdeal = sqrt(12 * sigma * sigma / 3 + 1)

@@ -76,6 +76,13 @@ internal object Filters {
         }
     }
 
+    /** How many pixels [blurInPlace] reads on each side for this sigma. */
+    fun blurReach(sigma: Double): Int = when {
+        sigma < 0.05 -> 0
+        sigma <= 6.0 -> ceil(sigma * 3.0).toInt().coerceAtLeast(1)
+        else -> boxRadiiForGauss(sigma).sum()
+    }
+
     /** One line of interleaved RGB and its blur, Gaussian up to sigma 6, three box passes above. */
     private class Line(val n: Int, sigma: Double) {
         val src = FloatArray(n * 3)

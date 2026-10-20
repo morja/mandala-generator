@@ -79,7 +79,6 @@ internal object Background {
         val palette = palettes[(first?.paletteIndex ?: 0).coerceIn(0, palettes.size - 1)]
         val col0 = FloatArray(3).also { palette.colorAt(0.0, it) }
         val col1 = FloatArray(3).also { palette.colorAt(0.5, it) }
-        val buffer = PixelBuffer(size, size)
 
         // Core Image blends and adds in linear light and hands back 8-bit sRGB values, which the
         // macOS app copies into its float buffer as they are.
@@ -88,22 +87,26 @@ internal object Background {
         val centre = size / 2.0
         val r0 = size * 0.55
         val r1 = size * 0.85
-        par.forRange(size) { from, until ->
-            for (y in from until until) {
-                for (x in 0 until size) {
-                    val dx = x + 0.5 - centre
-                    val dy = y + 0.5 - centre
-                    val t = ((sqrt(dx * dx + dy * dy) - r0) / (r1 - r0)).coerceIn(0.0, 1.0)
-                    val o = (y * size + x) * 3
-                    for (k in 0..2) {
-                        val enc = ColorSpaces.encode(inner[k] * (1 - t) + wash[k])
-                        buffer.data[o + k] = (min(255.0, max(0.0, enc * 255 + 0.5)).toInt() / 255.0).toFloat()
+        // Strip by strip: the gradient for the strip's rows, then all fibres clipped to them.
+        return PixelBuffer.drawInStrips(size, size) { strip ->
+            val top = strip.rowsFrom
+            par.forRange(strip.rowsUntil - top) { from, until ->
+                for (r in from until until) {
+                    val y = top + r
+                    for (x in 0 until size) {
+                        val dx = x + 0.5 - centre
+                        val dy = y + 0.5 - centre
+                        val t = ((sqrt(dx * dx + dy * dy) - r0) / (r1 - r0)).coerceIn(0.0, 1.0)
+                        val o = (r * size + x) * 3
+                        for (k in 0..2) {
+                            val enc = ColorSpaces.encode(inner[k] * (1 - t) + wash[k])
+                            strip.data[o + k] = (min(255.0, max(0.0, enc * 255 + 0.5)).toInt() / 255.0).toFloat()
+                        }
                     }
                 }
             }
+            if (first != null) grassFibres(strip, params.seed, first, palette)
         }
-        if (first != null) grassFibres(buffer, params.seed, first, palette)
-        return buffer.toImage()
     }
 
     private fun grassFibres(buffer: PixelBuffer, seed: ULong, layer: StyleLayer, palette: ColorPalette) {

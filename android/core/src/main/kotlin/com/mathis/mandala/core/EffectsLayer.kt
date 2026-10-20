@@ -327,9 +327,7 @@ internal class EffectsLayer(private val par: Parallel, private val fx: LayerEffe
     private fun lightLayer(size: Int, draw: (LineList) -> Unit): Image8 {
         val lines = LineList()
         draw(lines)
-        val buffer = PixelBuffer(size, size)
-        lines.drawInto(buffer, par)
-        return buffer.toImage()
+        return PixelBuffer.drawInStrips(size, size) { lines.drawInto(it, par) }
     }
 
     /** Tapered diffraction spikes: four long arms and four shorter, dimmer diagonals. */

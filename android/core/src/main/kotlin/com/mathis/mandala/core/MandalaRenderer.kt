@@ -1,5 +1,6 @@
 package com.mathis.mandala.core
 
+import com.mathis.mandala.core.styles.AttractorPoints
 import com.mathis.mandala.core.styles.CurveStyles
 import com.mathis.mandala.core.styles.CurveTask
 import com.mathis.mandala.core.styles.DirectStyles
@@ -124,18 +125,20 @@ object MandalaRenderer {
                     layer.abstractLevel, layer.glowIntensity,
                 )
                 var img = run {
-                    val buffer = PixelBuffer(size, size)
                     val tasks = ArrayList<CurveTask>()
                     val lines = LineList()
+                    val points = ArrayList<AttractorPoints>()
                     collectStyle(
-                        layer.style, tasks, lines, buffer, c, c, layerRadius, ctx, palette, rng,
+                        layer.style, tasks, lines, points, c, c, layerRadius, ctx, palette, rng,
                         layerCount, symmetry, layer.ripple.toFloat(), layer.colorOffset,
                     )
-                    drawTasks(tasks, buffer, palette, layer.colorOffset, par)
-                    lines.drawInto(buffer, par)
-                    tasks.clear()
-                    buffer.scale(brightnessScale)
-                    buffer.toImage()
+                    // Same order per pixel as one full buffer: attractor points, curves, lines.
+                    PixelBuffer.drawInStrips(size, size) { strip ->
+                        for (p in points) p.drawInto(strip)
+                        drawTasks(tasks, strip, palette, layer.colorOffset, par)
+                        lines.drawInto(strip, par)
+                        strip.scale(brightnessScale)
+                    }
                 }
                 checkpoint()
                 img = fx.glow(img, layer.glowIntensity, effectWidth)
@@ -220,10 +223,10 @@ object MandalaRenderer {
 
     /**
      * Curve styles fill `tasks`; styles the macOS renderer draws directly fill `lines`; point styles
-     * (Strange Attractor) draw straight into `buffer`. Mixed calls this again for three zones.
+     * (Strange Attractor) fill `points`. Mixed calls this again for three zones.
      */
     private fun collectStyle(
-        style: MandalaStyle, tasks: MutableList<CurveTask>, lines: LineList, buffer: PixelBuffer, cx: Float, cy: Float, radius: Double,
+        style: MandalaStyle, tasks: MutableList<CurveTask>, lines: LineList, points: MutableList<AttractorPoints>, cx: Float, cy: Float, radius: Double,
         ctx: StyleContext, palette: ColorPalette, rng: SeededRng, layerCount: Int, symmetry: Int, ripple: Float,
         colorOffset: Double, weightMul: Float = 1f,
     ) {
@@ -257,7 +260,7 @@ object MandalaRenderer {
             MandalaStyle.TORUS -> SolidStyles.torus(lines, cx, cy, radius, ctx, palette, rng, layerCount, symmetry, colorOffset)
             MandalaStyle.NAUTILUS -> SolidStyles.nautilus(lines, cx, cy, radius, ctx, palette, rng, layerCount, symmetry, colorOffset)
             MandalaStyle.CONSTELLATION_WEB -> SolidStyles.constellationWeb(lines, cx, cy, radius, ctx, palette, rng, colorOffset, symmetry)
-            MandalaStyle.STRANGE_ATTRACTOR -> SolidStyles.strangeAttractor(buffer, cx, cy, radius, ctx, palette, rng, layerCount, symmetry, colorOffset)
+            MandalaStyle.STRANGE_ATTRACTOR -> points += SolidStyles.strangeAttractor(cx, cy, radius, ctx, palette, rng, layerCount, symmetry, colorOffset)
             MandalaStyle.STAR_BURST -> DirectStyles.starBurst(lines, cx, cy, radius, ctx, palette, rng)
             MandalaStyle.HYPERBOLOID -> DirectStyles.hyperboloid(lines, cx, cy, radius, ctx, palette, rng, layerCount, symmetry, colorOffset)
             MandalaStyle.UNIVERSE -> DirectStyles.universe(lines, cx, cy, radius, ctx, palette, rng, colorOffset, symmetry)
@@ -273,7 +276,7 @@ object MandalaRenderer {
                     val zoneWeight = weightMul * (0.7 + zoneRng.nextDouble() * 0.6).toFloat()
                     collectStyle(
                         if (pick == MandalaStyle.MIXED) MandalaStyle.SPIROGRAPH else pick,
-                        tasks, lines, buffer, cx, cy, radius * zRadius, ctx, palette, rng, sub, symmetry, ripple,
+                        tasks, lines, points, cx, cy, radius * zRadius, ctx, palette, rng, sub, symmetry, ripple,
                         colorOffset = 0.0, weightMul = zoneWeight,
                     )
                 }
@@ -312,10 +315,12 @@ object MandalaRenderer {
             yMax[i] = hi + t.thickness
         }
         // More bands than threads keeps threads busy when the centre is denser than the edges.
-        val bands = max(1, min(buffer.height, par.threads * 4))
-        val bandHeight = (buffer.height + bands - 1) / bands
+        val rows = buffer.rowsUntil - buffer.rowsFrom
+        if (rows <= 0) return
+        val bands = max(1, min(rows, par.threads * 4))
+        val bandHeight = (rows + bands - 1) / bands
         par.forEachChunk(bands) { b ->
-            val view = buffer.band(b * bandHeight, (b + 1) * bandHeight)
+            val view = buffer.band(buffer.rowsFrom + b * bandHeight, buffer.rowsFrom + (b + 1) * bandHeight)
             val col = FloatArray(3)
             for (i in tasks.indices) {
                 if (view.touchesRows(yMin[i], yMax[i])) drawCurve(view, tasks[i], palette, colorOffset, col)
