@@ -8,7 +8,7 @@ Status: accepted, 20 October 2026 (Mathis' decision; plan in [PLAN-1](../PLAN-1-
 - One folder per platform: **`mac/`** for the Swift package, **`android/`** for the Gradle project (`core`, `cli`, `app`, `fixtures`, `scripts`, `tools`). Shared at the root: `docs/` (ADRs with one numbering, approvals, reports), `LICENSE`, `README.md`, `AGENTS.md`, `CLAUDE.md`, `.github/`, `.githooks/`.
 - Both histories are kept without a rewrite: each repository moves its files into its folder in one commit, then the Android history is merged with `--allow-unrelated-histories`. Commit hashes, tags and releases of the Mac app stay valid.
 - The private repository `morja/mandala-generator-android` is deleted after the move; its whole history is in this repository.
-- macOS releases are tagged `mac-v*` from now on (`.github/workflows/mac-release.yml`); the tags v1.4.0 and v1.5.0 stay.
+- macOS releases are tagged `mac-v*` from now on (`.github/workflows/mac-release.yml`); the older tags v1.0.0 to v1.5.0 stay.
 
 ## Reasons
 

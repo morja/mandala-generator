@@ -1,6 +1,6 @@
 name: macOS Build & Release
 
-# A tag mac-v* builds the macOS app and publishes a release (tags v1.4.0 and v1.5.0 are from
+# A tag mac-v* builds the macOS app and publishes a release (the v1.0.0 to v1.5.0 tags are from
 # before both apps shared this repository). Run by hand, it only builds.
 on:
   push:
