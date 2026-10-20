@@ -251,3 +251,13 @@ Each layer has its own palette grid. You can select from the 18 built-in palette
 ### Animation export
 
 Frames are rendered in parallel using Swift's structured concurrency (`withTaskGroup` with per-frame `Task.detached` to keep the main actor free). The render canvas is expanded by √2 and each layer's scale is reduced proportionally, so after a center-crop to the target size the mandala appears identical to the static render — but the background fills all corner area that would otherwise be visible during rotation. MOV uses AVFoundation (HEVC), GIF uses `CGImageDestination`.
+
+## License
+
+Copyright (C) 2026 Mathis Koblin
+
+This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, version 3 (see `LICENSE`).
+
+Additional permission under GNU GPL version 3 section 7: If you modify this Program, or any covered work, by linking or combining it with the Google Play Billing Library or with the system and platform libraries of Android, macOS or iOS (or modified versions of those libraries), containing parts covered by the terms of their own licences, the licensors of this Program grant you additional permission to convey the resulting work. You may also convey the Program through app stores (such as Google Play and the Apple App Store) whose terms of service add restrictions on use or copying.
+
+Contributions are accepted under the same terms.
