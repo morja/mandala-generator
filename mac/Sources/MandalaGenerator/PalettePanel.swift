@@ -176,6 +176,7 @@ struct PalettePanel: View {
 private struct LayerCard: View {
     @EnvironmentObject private var appState: AppState
     @Binding var layer: StyleLayer
+    let defaults = StyleLayer()   // reset values for double-click
     let index: Int
     let canDelete: Bool
     let canDuplicate: Bool
@@ -402,24 +403,24 @@ private struct LayerCard: View {
                     Divider()
 
                     // Sliders
-                    CardSlider(label: "Scale",       value: $layer.scale,        range: 0...1,     color: .blue)
-                    CardSlider(label: "Complexity",  value: $layer.complexity,   range: 0...1,     color: .indigo)
-                    CardSlider(label: "Density",     value: $layer.density,      range: 0...1,     color: .blue)
+                    CardSlider(label: "Scale",       value: $layer.scale,        range: 0...1,     color: .blue, reset: defaults.scale)
+                    CardSlider(label: "Complexity",  value: $layer.complexity,   range: 0...1,     color: .indigo, reset: defaults.complexity)
+                    CardSlider(label: "Density",     value: $layer.density,      range: 0...1,     color: .blue, reset: defaults.density)
                     if layer.style == .radialMesh {
-                        CardSlider(label: "Spokes",  value: $layer.spokes,       range: 0...1,     color: .blue)
+                        CardSlider(label: "Spokes",  value: $layer.spokes,       range: 0...1,     color: .blue, reset: defaults.spokes)
                     }
-                    CardSlider(label: "Glow",        value: $layer.glowIntensity,range: 0...1,     color: .yellow)
-                    CardSlider(label: "Color Drift", value: $layer.colorDrift,   range: 0...1,     color: .purple)
-                    CardSlider(label: "Ripple",      value: $layer.ripple,       range: 0...1,     color: .cyan)
-                    CardSlider(label: "Wash",        value: $layer.wash,         range: 0...1,     color: .teal)
+                    CardSlider(label: "Glow",        value: $layer.glowIntensity,range: 0...1,     color: .yellow, reset: defaults.glowIntensity)
+                    CardSlider(label: "Color Drift", value: $layer.colorDrift,   range: 0...1,     color: .purple, reset: defaults.colorDrift)
+                    CardSlider(label: "Ripple",      value: $layer.ripple,       range: 0...1,     color: .cyan, reset: defaults.ripple)
+                    CardSlider(label: "Wash",        value: $layer.wash,         range: 0...1,     color: .teal, reset: defaults.wash)
 
                     Divider()
 
-                    CardSlider(label: "Abstract",    value: $layer.abstractLevel,range: 0...1,     color: .purple)
-                    CardSlider(label: "Saturation",  value: $layer.saturation,   range: 0...1,     color: .pink)
-                    CardSlider(label: "Brightness",  value: $layer.brightness,   range: 0...1,     color: .yellow)
-                    CardSlider(label: "Rotation",    value: $layer.rotation,     range: 0...1,     color: .mint)
-                    CardSlider(label: "Opacity",     value: $layer.opacity,      range: 0...1,     color: .white)
+                    CardSlider(label: "Abstract",    value: $layer.abstractLevel,range: 0...1,     color: .purple, reset: defaults.abstractLevel)
+                    CardSlider(label: "Saturation",  value: $layer.saturation,   range: 0...1,     color: .pink, reset: defaults.saturation)
+                    CardSlider(label: "Brightness",  value: $layer.brightness,   range: 0...1,     color: .yellow, reset: defaults.brightness)
+                    CardSlider(label: "Rotation",    value: $layer.rotation,     range: 0...1,     color: .mint, reset: defaults.rotation)
+                    CardSlider(label: "Opacity",     value: $layer.opacity,      range: 0...1,     color: .white, reset: defaults.opacity)
                 }
                 .padding(10)
                 .background(Color(NSColor.controlBackgroundColor).opacity(0.7))
@@ -469,6 +470,7 @@ private struct StyleSettingsMenu: View {
 private struct DrawingCard: View {
     @EnvironmentObject private var appState: AppState
     @Binding var settings: DrawingLayerSettings
+    let defaults = DrawingLayerSettings()   // reset values for double-click
     @Binding var isDrawingMode: Bool
 
     private var isExpanded: Bool {
@@ -574,9 +576,9 @@ private struct DrawingCard: View {
                         Spacer()
                     }
 
-                    CardSlider(label: "Opacity", value: $settings.opacity,       range: 0...1,   color: .white)
-                    CardSlider(label: "Weight",  value: $settings.strokeWeight,  range: 0...1,   color: .white)
-                    CardSlider(label: "Glow",    value: $settings.glowIntensity, range: 0...1,   color: .yellow)
+                    CardSlider(label: "Opacity", value: $settings.opacity,       range: 0...1,   color: .white, reset: defaults.opacity)
+                    CardSlider(label: "Weight",  value: $settings.strokeWeight,  range: 0...1,   color: .white, reset: defaults.strokeWeight)
+                    CardSlider(label: "Glow",    value: $settings.glowIntensity, range: 0...1,   color: .yellow, reset: defaults.glowIntensity)
 
                     Divider()
 
@@ -613,6 +615,7 @@ private struct DrawingCard: View {
 private struct GraffitiCard: View {
     @EnvironmentObject private var appState: AppState
     @Binding var settings: GraffitiLayerSettings
+    let defaults = GraffitiLayerSettings()   // reset values for double-click
     @Binding var isGraffitiMode: Bool
 
     private var isExpanded: Bool {
@@ -705,9 +708,9 @@ private struct GraffitiCard: View {
                     }
 
                     // Brush size
-                    CardSlider(label: "Brush Size", value: $settings.currentBrushSize, range: 0.01...0.20, color: .purple)
-                    CardSlider(label: "Opacity",    value: $settings.currentOpacity,   range: 0...1,      color: .white)
-                    CardSlider(label: "Softness",   value: $settings.softness,          range: 0...1,      color: .cyan)
+                    CardSlider(label: "Brush Size", value: $settings.currentBrushSize, range: 0.01...0.20, color: .purple, reset: defaults.currentBrushSize)
+                    CardSlider(label: "Opacity",    value: $settings.currentOpacity,   range: 0...1,      color: .white, reset: defaults.currentOpacity)
+                    CardSlider(label: "Softness",   value: $settings.softness,          range: 0...1,      color: .cyan, reset: defaults.softness)
 
                     Divider()
 
@@ -722,7 +725,7 @@ private struct GraffitiCard: View {
                         .frame(width: 90)
                         Spacer()
                     }
-                    CardSlider(label: "Layer Opacity", value: $settings.opacity, range: 0...1, color: .white)
+                    CardSlider(label: "Layer Opacity", value: $settings.opacity, range: 0...1, color: .white, reset: defaults.opacity)
 
                     Divider()
 
@@ -778,6 +781,7 @@ private struct CardSlider: View {
     @Binding var value: Double
     var range: ClosedRange<Double> = 0...1
     var color: Color = .blue
+    var reset: Double? = nil
 
     var body: some View {
         HStack(spacing: 6) {
@@ -785,12 +789,14 @@ private struct CardSlider: View {
                 .font(.system(size: 10))
                 .foregroundColor(.secondary)
                 .frame(width: 70, alignment: .leading)
-            Slider(value: $value, in: range)
-                .accentColor(color)
+            ResettableSlider(value: $value, range: range, tint: color, reset: reset)
             Text(String(format: "%.2f", value))
                 .font(.system(size: 9)).foregroundColor(.secondary).monospacedDigit()
                 .frame(width: 28, alignment: .trailing)
         }
+        .contentShape(Rectangle())
+        .simultaneousGesture(TapGesture(count: 2).onEnded { if let r = reset { value = r } })
+        .help(reset == nil ? "" : "Double-click to reset")
     }
 }
 

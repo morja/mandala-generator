@@ -5,6 +5,7 @@ import SwiftUI
 struct EmblemLayerCard: View {
     @EnvironmentObject private var appState: AppState
     @Binding var settings: EmblemLayerSettings
+    let defaults = EmblemLayerSettings()   // reset values for double-click
     @State private var isExpanded = true
 
     @ViewBuilder
@@ -105,7 +106,7 @@ struct EmblemLayerCard: View {
                     }
 
                     if settings.motif.isOrganic {
-                        SceneSlider(label: "Organic", value: $settings.organic, color: .green)
+                        SceneSlider(label: "Organic", value: $settings.organic, color: .green, reset: defaults.organic)
                     }
 
                     if settings.motif == .treeOfLife {
@@ -120,7 +121,7 @@ struct EmblemLayerCard: View {
                             }
                             .buttonStyle(.plain).foregroundColor(.purple)
                         }
-                        SceneSlider(label: "Branches", value: $settings.branching, color: .green)
+                        SceneSlider(label: "Branches", value: $settings.branching, color: .green, reset: defaults.branching)
                         row("Roots") {
                             Toggle("", isOn: $settings.roots)
                                 .toggleStyle(.switch).scaleEffect(0.7).labelsHidden()
@@ -130,9 +131,9 @@ struct EmblemLayerCard: View {
 
                     // ── Shape ─────────────────────────────────────────────
                     sectionLabel("SHAPE")
-                    SceneSlider(label: "Size",   value: $settings.size,   range: 0.1...1.0, color: .cyan)
-                    SceneSlider(label: "Weight", value: $settings.weight, color: .cyan)
-                    SceneSlider(label: "Rotate", value: $settings.rotation, range: -180...180, color: .cyan)
+                    SceneSlider(label: "Size",   value: $settings.size,   range: 0.1...1.0, color: .cyan, reset: defaults.size)
+                    SceneSlider(label: "Weight", value: $settings.weight, color: .cyan, reset: defaults.weight)
+                    SceneSlider(label: "Rotate", value: $settings.rotation, range: -180...180, color: .cyan, reset: defaults.rotation)
 
                     // ── Color ─────────────────────────────────────────────
                     sectionLabel("COLOR")
@@ -142,13 +143,13 @@ struct EmblemLayerCard: View {
                                 .onTapGesture { settings.paletteIndex = idx }
                         }
                     }
-                    SceneSlider(label: "Position", value: $settings.colorPosition, color: .orange)
-                    SceneSlider(label: "Spread",   value: $settings.colorSpread,   color: .orange)
-                    SceneSlider(label: "Glow",     value: $settings.glow,          color: .purple)
+                    SceneSlider(label: "Position", value: $settings.colorPosition, color: .orange, reset: defaults.colorPosition)
+                    SceneSlider(label: "Spread",   value: $settings.colorSpread,   color: .orange, reset: defaults.colorSpread)
+                    SceneSlider(label: "Glow",     value: $settings.glow,          color: .purple, reset: defaults.glow)
 
                     // ── Layer ─────────────────────────────────────────────
                     sectionLabel("LAYER")
-                    SceneSlider(label: "Opacity", value: $settings.opacity, color: .white)
+                    SceneSlider(label: "Opacity", value: $settings.opacity, color: .white, reset: defaults.opacity)
                     row("Blend") {
                         Picker("", selection: $settings.blendMode) {
                             ForEach(LayerBlendMode.allCases) { Text($0.displayName).tag($0) }

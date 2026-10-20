@@ -66,6 +66,7 @@ struct ScenePanel: View {
 
 struct BaseLayerCard: View {
     @Binding var settings: BaseLayerSettings
+    let defaults = BaseLayerSettings()   // reset values for double-click
     @State private var isExpanded = true
 
     var body: some View {
@@ -114,9 +115,9 @@ struct BaseLayerCard: View {
                     Text("PRIMARY")
                         .font(.system(size: 9, weight: .semibold)).foregroundColor(.secondary).kerning(1.0)
                         .frame(maxWidth: .infinity, alignment: .leading)
-                    HueSlider(value: $settings.hue)
-                    SceneSlider(label: "Sat",   value: $settings.saturation, color: .pink)
-                    SceneSlider(label: "Bri",   value: $settings.brightness, color: .yellow)
+                    HueSlider(value: $settings.hue, reset: defaults.hue)
+                    SceneSlider(label: "Sat",   value: $settings.saturation, color: .pink, reset: defaults.saturation)
+                    SceneSlider(label: "Bri",   value: $settings.brightness, color: .yellow, reset: defaults.brightness)
                     }
 
                     // Secondary color
@@ -125,9 +126,9 @@ struct BaseLayerCard: View {
                         Text("SECONDARY")
                             .font(.system(size: 9, weight: .semibold)).foregroundColor(.secondary).kerning(1.0)
                             .frame(maxWidth: .infinity, alignment: .leading)
-                        HueSlider(value: $settings.hue2)
-                        SceneSlider(label: "Sat", value: $settings.saturation2, color: .pink)
-                        SceneSlider(label: "Bri", value: $settings.brightness2, color: .yellow)
+                        HueSlider(value: $settings.hue2, reset: defaults.hue2)
+                        SceneSlider(label: "Sat", value: $settings.saturation2, color: .pink, reset: defaults.saturation2)
+                        SceneSlider(label: "Bri", value: $settings.brightness2, color: .yellow, reset: defaults.brightness2)
                     }
 
                     // Gradient controls
@@ -144,21 +145,21 @@ struct BaseLayerCard: View {
                             .pickerStyle(.segmented).labelsHidden()
                         }
                         if !settings.isRadial {
-                            SceneSlider(label: "Angle", value: $settings.gradientAngle, color: .blue)
+                            SceneSlider(label: "Angle", value: $settings.gradientAngle, color: .blue, reset: defaults.gradientAngle)
                         }
                     }
 
                     // Sunburst controls
                     if settings.type == .sunburst {
                         Divider()
-                        SceneSlider(label: "Rays",  value: $settings.patternScale,     color: .orange)
-                        SceneSlider(label: "Sharp", value: $settings.patternSharpness, color: .cyan)
+                        SceneSlider(label: "Rays",  value: $settings.patternScale,     color: .orange, reset: defaults.patternScale)
+                        SceneSlider(label: "Sharp", value: $settings.patternSharpness, color: .cyan, reset: defaults.patternSharpness)
                     }
 
                     // Grain controls
                     if settings.type == .grain {
                         Divider()
-                        SceneSlider(label: "Amount", value: $settings.grainAmount, color: .orange)
+                        SceneSlider(label: "Amount", value: $settings.grainAmount, color: .orange, reset: defaults.grainAmount)
                         HStack(spacing: 6) {
                             Text("Colored")
                                 .font(.system(size: 10)).foregroundColor(.secondary)
@@ -189,12 +190,12 @@ struct BaseLayerCard: View {
                             }
                             .frame(maxWidth: .infinity, alignment: .leading)
                         }
-                        SceneSlider(label: "Blend", value: $settings.imageBlend, color: .blue)
+                        SceneSlider(label: "Blend", value: $settings.imageBlend, color: .blue, reset: defaults.imageBlend)
                     }
 
                     if settings.type != .auto {
                         Divider()
-                        SceneSlider(label: "Opacity", value: $settings.opacity, color: .white)
+                        SceneSlider(label: "Opacity", value: $settings.opacity, color: .white, reset: defaults.opacity)
                     }
                 }
                 .padding(10)
@@ -221,6 +222,7 @@ struct BaseLayerCard: View {
 
 struct EffectsLayerCard: View {
     @Binding var settings: EffectsLayerSettings
+    let defaults = EffectsLayerSettings()   // reset values for double-click
     @State private var isExpanded = true
 
     var body: some View {
@@ -264,29 +266,29 @@ struct EffectsLayerCard: View {
 
             if isExpanded {
                 VStack(spacing: 8) {
-                    SceneSlider(label: "Brightness", value: $settings.brightness, color: .white)
-                    SceneSlider(label: "Contrast",  value: $settings.contrast,   color: .orange)
+                    SceneSlider(label: "Brightness", value: $settings.brightness, color: .white, reset: defaults.brightness)
+                    SceneSlider(label: "Contrast",  value: $settings.contrast,   color: .orange, reset: defaults.contrast)
                     Divider()
-                    SceneSlider(label: "Vignette",  value: $settings.vignette,   color: .gray)
-                    SceneSlider(label: "Chromatic", value: $settings.chromatic,  color: .cyan)
-                    SceneSlider(label: "Relief",    value: $settings.relief,     color: .mint)
+                    SceneSlider(label: "Vignette",  value: $settings.vignette,   color: .gray, reset: defaults.vignette)
+                    SceneSlider(label: "Chromatic", value: $settings.chromatic,  color: .cyan, reset: defaults.chromatic)
+                    SceneSlider(label: "Relief",    value: $settings.relief,     color: .mint, reset: defaults.relief)
                     if settings.relief > 0 {
-                        SceneSlider(label: "Light", value: $settings.reliefAngle, color: .yellow)
+                        SceneSlider(label: "Light", value: $settings.reliefAngle, color: .yellow, reset: defaults.reliefAngle)
                     }
                     Divider()
-                    SceneSlider(label: "Wash",          value: $settings.wash,         color: .white)
-                    SceneSlider(label: "Sepia",         value: $settings.sepia,        color: Color(red: 0.8, green: 0.6, blue: 0.3))
-                    SceneSlider(label: "Fade",          value: $settings.fade,         color: .secondary)
-                    SceneSlider(label: "Bloom",         value: $settings.bloom,        color: .purple)
-                    SceneSlider(label: "Local Contrast",value: $settings.localContrast,color: .teal)
-                    SceneSlider(label: "Grain",         value: $settings.grain,        color: Color(red: 0.6, green: 0.55, blue: 0.5))
+                    SceneSlider(label: "Wash",          value: $settings.wash,         color: .white, reset: defaults.wash)
+                    SceneSlider(label: "Sepia",         value: $settings.sepia,        color: Color(red: 0.8, green: 0.6, blue: 0.3), reset: defaults.sepia)
+                    SceneSlider(label: "Fade",          value: $settings.fade,         color: .secondary, reset: defaults.fade)
+                    SceneSlider(label: "Bloom",         value: $settings.bloom,        color: .purple, reset: defaults.bloom)
+                    SceneSlider(label: "Local Contrast",value: $settings.localContrast,color: .teal, reset: defaults.localContrast)
+                    SceneSlider(label: "Grain",         value: $settings.grain,        color: Color(red: 0.6, green: 0.55, blue: 0.5), reset: defaults.grain)
                     Divider()
-                    EffectRow(label: "Dimming",    value: $settings.dimming,    seed: $settings.dimmingSeed,    color: .indigo)
-                    EffectRow(label: "Erasure",    value: $settings.erasure,    seed: $settings.erasureSeed,    color: .red)
+                    EffectRow(label: "Dimming",    value: $settings.dimming,    seed: $settings.dimmingSeed,    color: .indigo, reset: defaults.dimming)
+                    EffectRow(label: "Erasure",    value: $settings.erasure,    seed: $settings.erasureSeed,    color: .red, reset: defaults.erasure)
                     Divider()
-                    EffectRow(label: "Highlights", value: $settings.highlights, seed: $settings.highlightsSeed, color: .orange)
-                    EffectRow(label: "Stars",      value: $settings.stars,      seed: $settings.starsSeed,      color: .yellow)
-                    EffectRow(label: "Glitter",    value: $settings.glitter,    seed: $settings.glitterSeed,    color: .pink)
+                    EffectRow(label: "Highlights", value: $settings.highlights, seed: $settings.highlightsSeed, color: .orange, reset: defaults.highlights)
+                    EffectRow(label: "Stars",      value: $settings.stars,      seed: $settings.starsSeed,      color: .yellow, reset: defaults.stars)
+                    EffectRow(label: "Glitter",    value: $settings.glitter,    seed: $settings.glitterSeed,    color: .pink, reset: defaults.glitter)
                 }
                 .padding(10)
                 .background(Color(NSColor.controlBackgroundColor).opacity(0.7))
@@ -306,13 +308,14 @@ private struct EffectRow: View {
     @Binding var value: Double
     @Binding var seed: UInt64
     var color: Color = .blue
+    var reset: Double? = nil
 
     var body: some View {
         HStack(spacing: 4) {
             Text(label)
                 .font(.system(size: 10)).foregroundColor(.secondary)
                 .frame(width: 52, alignment: .leading)
-            Slider(value: $value, in: 0...1).accentColor(color)
+            ResettableSlider(value: $value, range: 0...1, tint: color, reset: reset)
             Text(String(format: "%.2f", value))
                 .font(.system(size: 9)).foregroundColor(.secondary).monospacedDigit()
                 .frame(width: 28, alignment: .trailing)
@@ -324,6 +327,9 @@ private struct EffectRow: View {
             .buttonStyle(.plain)
             .help("Randomize \(label.lowercased()) positions")
         }
+        .contentShape(Rectangle())
+        .simultaneousGesture(TapGesture(count: 2).onEnded { if let r = reset { value = r } })
+        .help(reset == nil ? "" : "Double-click to reset")
     }
 }
 
@@ -518,6 +524,7 @@ private struct AnimationOptionsSheet: View {
 struct TextLayerCard: View {
     @EnvironmentObject private var appState: AppState
     @Binding var settings: TextLayerSettings
+    let defaults = TextLayerSettings()   // reset values for double-click
     @State private var isExpanded = true
     @State private var showQuotePicker = false
     @State private var shadowExpanded = false
@@ -652,21 +659,21 @@ struct TextLayerCard: View {
 
                     // ── Typography ────────────────────────────────────────
                     sectionLabel("TYPOGRAPHY")
-                    SceneSlider(label: "Size",    value: $settings.fontSize,  range: 0.02...0.105, color: .cyan)
-                    SceneSlider(label: "Width",   value: $settings.fontWidth, range: 0.1...1.0,    color: .cyan)
-                    SceneSlider(label: "Tracking",value: $settings.tracking,  range: -0.5...1.0,   color: .mint)
+                    SceneSlider(label: "Size",    value: $settings.fontSize,  range: 0.02...0.105, color: .cyan, reset: defaults.fontSize)
+                    SceneSlider(label: "Width",   value: $settings.fontWidth, range: 0.1...1.0,    color: .cyan, reset: defaults.fontWidth)
+                    SceneSlider(label: "Tracking",value: $settings.tracking,  range: -0.5...1.0,   color: .mint, reset: defaults.tracking)
 
                     // ── Position ──────────────────────────────────────────
                     sectionLabel("POSITION")
-                    SceneSlider(label: "Pos X", value: $settings.offsetX, color: .blue)
-                    SceneSlider(label: "Pos Y", value: $settings.offsetY, color: .blue)
+                    SceneSlider(label: "Pos X", value: $settings.offsetX, color: .blue, reset: defaults.offsetX)
+                    SceneSlider(label: "Pos Y", value: $settings.offsetY, color: .blue, reset: defaults.offsetY)
 
                     // ── Color ─────────────────────────────────────────────
                     sectionLabel("COLOR")
-                    HueSlider(value: $settings.hue)
-                    SceneSlider(label: "Sat",  value: $settings.saturation, color: .pink)
-                    SceneSlider(label: "Bri",  value: $settings.brightness, range: 0...2, color: .yellow)
-                    SceneSlider(label: "Glow",   value: $settings.glow,    color: .purple)
+                    HueSlider(value: $settings.hue, reset: defaults.hue)
+                    SceneSlider(label: "Sat",  value: $settings.saturation, color: .pink, reset: defaults.saturation)
+                    SceneSlider(label: "Bri",  value: $settings.brightness, range: 0...2, color: .yellow, reset: defaults.brightness)
+                    SceneSlider(label: "Glow",   value: $settings.glow,    color: .purple, reset: defaults.glow)
 
                     // ── Shadow ────────────────────────────────────────────
                     Button(action: { withAnimation(.easeInOut(duration: 0.18)) { shadowExpanded.toggle() } }) {
@@ -683,13 +690,13 @@ struct TextLayerCard: View {
                     }
                     .buttonStyle(.plain)
                     if shadowExpanded {
-                        SceneSlider(label: "Opacity", value: $settings.shadowOpacity, color: .gray)
-                        SceneSlider(label: "Blur",    value: $settings.shadowBlur,       color: .secondary)
-                        SceneSlider(label: "X",       value: $settings.shadowOffsetX,    range: -2...2, color: .orange)
-                        SceneSlider(label: "Y",       value: $settings.shadowOffsetY,    range: -2...2, color: .orange)
-                        HueSlider(value: $settings.shadowHue)
-                        SceneSlider(label: "Sat",     value: $settings.shadowSaturation, color: .pink)
-                        SceneSlider(label: "Bri",     value: $settings.shadowBrightness, color: .white)
+                        SceneSlider(label: "Opacity", value: $settings.shadowOpacity, color: .gray, reset: defaults.shadowOpacity)
+                        SceneSlider(label: "Blur",    value: $settings.shadowBlur,       color: .secondary, reset: defaults.shadowBlur)
+                        SceneSlider(label: "X",       value: $settings.shadowOffsetX,    range: -2...2, color: .orange, reset: defaults.shadowOffsetX)
+                        SceneSlider(label: "Y",       value: $settings.shadowOffsetY,    range: -2...2, color: .orange, reset: defaults.shadowOffsetY)
+                        HueSlider(value: $settings.shadowHue, reset: defaults.shadowHue)
+                        SceneSlider(label: "Sat",     value: $settings.shadowSaturation, color: .pink, reset: defaults.shadowSaturation)
+                        SceneSlider(label: "Bri",     value: $settings.shadowBrightness, color: .white, reset: defaults.shadowBrightness)
                     }
 
                     // ── Cloud ─────────────────────────────────────────────
@@ -707,18 +714,18 @@ struct TextLayerCard: View {
                     }
                     .buttonStyle(.plain)
                     if cloudExpanded {
-                        SceneSlider(label: "Opacity", value: $settings.cloudOpacity, color: .teal)
-                        SceneSlider(label: "Size",    value: $settings.cloudScale,       color: .teal)
-                        SceneSlider(label: "Blur",    value: $settings.cloudRadius,      color: .cyan)
-                        HueSlider(value: $settings.cloudHue)
-                        SceneSlider(label: "Sat",     value: $settings.cloudSaturation,  color: .pink)
-                        SceneSlider(label: "Bri",     value: $settings.cloudBrightness,  color: .white)
+                        SceneSlider(label: "Opacity", value: $settings.cloudOpacity, color: .teal, reset: defaults.cloudOpacity)
+                        SceneSlider(label: "Size",    value: $settings.cloudScale,       color: .teal, reset: defaults.cloudScale)
+                        SceneSlider(label: "Blur",    value: $settings.cloudRadius,      color: .cyan, reset: defaults.cloudRadius)
+                        HueSlider(value: $settings.cloudHue, reset: defaults.cloudHue)
+                        SceneSlider(label: "Sat",     value: $settings.cloudSaturation,  color: .pink, reset: defaults.cloudSaturation)
+                        SceneSlider(label: "Bri",     value: $settings.cloudBrightness,  color: .white, reset: defaults.cloudBrightness)
                     }
 
                     // ── Layer ─────────────────────────────────────────────
                     sectionLabel("LAYER")
-                    SceneSlider(label: "Blur",   value: $settings.blur,    color: .indigo)
-                    SceneSlider(label: "Opacity",value: $settings.opacity,  color: .white)
+                    SceneSlider(label: "Blur",   value: $settings.blur,    color: .indigo, reset: defaults.blur)
+                    SceneSlider(label: "Opacity",value: $settings.opacity,  color: .white, reset: defaults.opacity)
 
                     Divider()
 
@@ -745,7 +752,7 @@ struct TextLayerCard: View {
                     }
                     if settings.showAuthor {
                         SceneSlider(label: "Aut. Size", value: $settings.authorScale,
-                                    range: 0.3...1.5, color: .orange)
+                                    range: 0.3...1.5, color: .orange, reset: defaults.authorScale)
                         HStack(spacing: 6) {
                             Text("Italic")
                                 .font(.system(size: 10)).foregroundColor(.secondary)
@@ -880,6 +887,7 @@ struct QuotePickerPopover: View {
 
 private struct HueSlider: View {
     @Binding var value: Double   // 0...1
+    var reset: Double? = nil
 
     private static let hueGradient = LinearGradient(
         colors: (0...12).map { i in Color(hue: Double(i) / 12.0, saturation: 0.85, brightness: 0.9) },
@@ -914,6 +922,9 @@ private struct HueSlider: View {
                 .font(.system(size: 9)).foregroundColor(.secondary).monospacedDigit()
                 .frame(width: 28, alignment: .trailing)
         }
+        .contentShape(Rectangle())
+        .simultaneousGesture(TapGesture(count: 2).onEnded { if let r = reset { value = r } })
+        .help(reset == nil ? "" : "Double-click to reset")
     }
 }
 
@@ -924,16 +935,21 @@ struct SceneSlider: View {
     @Binding var value: Double
     var range: ClosedRange<Double> = 0...1
     var color: Color = .blue
+    /// Value a double-click returns to; nil leaves the slider as it is.
+    var reset: Double? = nil
 
     var body: some View {
         HStack(spacing: 6) {
             Text(label)
                 .font(.system(size: 10)).foregroundColor(.secondary)
                 .frame(width: 52, alignment: .leading)
-            Slider(value: $value, in: range).accentColor(color)
+            ResettableSlider(value: $value, range: range, tint: color, reset: reset)
             Text(String(format: "%.2f", value))
                 .font(.system(size: 9)).foregroundColor(.secondary).monospacedDigit()
                 .frame(width: 28, alignment: .trailing)
         }
+        .contentShape(Rectangle())
+        .simultaneousGesture(TapGesture(count: 2).onEnded { if let r = reset { value = r } })
+        .help(reset == nil ? "" : "Double-click to reset")
     }
 }
