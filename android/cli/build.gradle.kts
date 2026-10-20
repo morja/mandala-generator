@@ -15,7 +15,8 @@ dependencies {
 application {
     mainClass.set("com.mathis.mandala.cli.MainKt")
     applicationName = "mandala"
-    applicationDefaultJvmArgs = listOf("-Xmx3g")
+    // Headless: text is drawn with AWT, which otherwise opens a Dock app on macOS and takes the focus.
+    applicationDefaultJvmArgs = listOf("-Xmx3g", "-Djava.awt.headless=true")
 }
 
 tasks.test {
@@ -26,4 +27,5 @@ tasks.test {
         exclude("**/ParityTest*")
     }
     systemProperty("mandala.root", rootProject.projectDir.absolutePath)
+    systemProperty("java.awt.headless", "true")
 }

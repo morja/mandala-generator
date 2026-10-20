@@ -22,6 +22,11 @@ import kotlin.math.sqrt
  */
 internal class EffectsLayer(private val par: Parallel, private val fx: LayerEffects) {
 
+    private companion object {
+        /** Blur of the local contrast (clarity) step, in output pixels. */
+        const val LOCAL_CONTRAST_SIGMA = 96.0
+    }
+
     fun apply(image: Image8, s: EffectsLayerSettings): Image8 {
         var result = if (hasChain(s)) chain(image, s) else image
         val size = result.width
@@ -36,176 +41,222 @@ internal class EffectsLayer(private val par: Parallel, private val fx: LayerEffe
             s.grain > 0.001 || s.brightness != 0.5 || s.contrast != 0.5 || s.relief > 0
 
     // ── The Core Image chain ─────────────────────────────────────────────
+    // Computed in strips of rows, so only one strip is held as floats. Everything before bloom works
+    // per pixel or per row ([Pre]), so those rows can be computed wherever they are needed: once for
+    // bloom's reference copy and once per strip. Local contrast blurs each strip with an overlap as
+    // wide as its blur reads; relief reads one row above and below. Every pixel goes through the
+    // same operations in the same order as with one image for the whole chain.
 
     private fun chain(image: Image8, s: EffectsLayerSettings): Image8 {
-        val size = image.width
-        var w = FloatImage(size, image.height)
-        par.forRange(image.height) { from, until ->
-            val row = FloatArray(size * 3)
-            for (y in from until until) {
-                WorkingSpace.readRow(image, y, row)
-                System.arraycopy(row, 0, w.data, y * size * 3, size * 3)
+        val width = image.width
+        val height = image.height
+        val n = width * 3
+        val pre = Pre(s, width, height)
+        val source = object : RowSource {
+            override val width get() = width
+            override val height get() = height
+            override fun readRow(y: Int, out: FloatArray) {
+                WorkingSpace.readRow(image, y, out)
+                pre.apply(out, y)
             }
         }
+        val bloom = if (s.bloom > 0.001) {
+            val passes = listOf(LayerEffects.BlurPass(40.0, 0.55 * s.bloom), LayerEffects.BlurPass(144.0, 0.30 * s.bloom))
+            fx.referenceBlurOverlay(source, width, passes)
+        } else {
+            null
+        }
+        val contrastReach = if (s.localContrast > 0.001) Filters.blurReach(LOCAL_CONTRAST_SIGMA) else 0
+        val reliefReach = if (s.relief > 0) 1 else 0
+        val core = max(PixelBuffer.STRIP_ROWS, 2 * contrastReach)
+        val adjust = s.brightness != 0.5 || s.contrast != 0.5
+        val bright = ((s.brightness - 0.5) * 0.6).toFloat()
+        val contrast = (0.5 + s.contrast * 1.5).toFloat()
 
-        if (s.vignette > 0) vignette(w, s.vignette * 2.5, 0.4 + s.vignette * 0.6)
-        if (s.dimming > 0) darkSpots(w, s.dimmingSeed, (s.dimming * 10).toInt() + 3, 0.3, 0.08) { rng -> s.dimming * (rng.nextDouble() * 0.5 + 0.3) }
-        if (s.erasure > 0) darkSpots(w, s.erasureSeed, (s.erasure * 6).toInt() + 1, 0.15, 0.04) { rng -> min(1.0, s.erasure * (rng.nextDouble() * 0.4 + 0.6)) }
-        if (s.highlights > 0) highlights(w, s)
-        if (s.chromatic > 0) chromatic(w, size * s.chromatic * 0.012)
-        perPixel(w) { c ->
-            if (s.wash > 0.001) {
-                val t = s.wash.toFloat()
-                saturate(c, max(0f, 1f - t * 0.4f))
-                val k = 1f - t * 0.3f
-                for (i in 0..2) c[i] = c[i] * k + t * 0.3f
+        // Strips read the input around them, so the result goes into a separate image.
+        val out = Image8(width, height, Encoding.SRGB)
+        for (y0 in 0 until height step core) {
+            val y1 = min(height, y0 + core)
+            // Rows relief reads, and around them the rows the local contrast blur reads.
+            val top = max(0, y0 - reliefReach)
+            val bottom = min(height, y1 + reliefReach)
+            val lo = max(0, top - contrastReach)
+            val hi = min(height, bottom + contrastReach)
+            var w = FloatImage(width, hi - lo)
+            par.forRange(hi - lo) { from, until ->
+                val row = FloatArray(n)
+                for (r in from until until) {
+                    source.readRow(lo + r, row)
+                    System.arraycopy(row, 0, w.data, r * n, n)
+                }
             }
-            if (s.sepia > 0.001) {
-                val l = 0.2125f * c[0] + 0.7154f * c[1] + 0.0721f * c[2]
-                val i = s.sepia.toFloat()
-                c[0] += (MeasuredCurves.sepia(MeasuredCurves.sepiaR, l) - c[0]) * i
-                c[1] += (MeasuredCurves.sepia(MeasuredCurves.sepiaG, l) - c[1]) * i
-                c[2] += (MeasuredCurves.sepia(MeasuredCurves.sepiaB, l) - c[2]) * i
+            if (bloom != null) {
+                Filters.resampleRows(bloom.asRowSource(), width, height, lo, hi, par) { y, over ->
+                    val o = (y - lo) * n
+                    for (k in 0 until n) {
+                        val a = w.data[o + k]
+                        w.data[o + k] = a + over[k] - a * over[k]
+                    }
+                }
             }
-            if (s.fade > 0.001) {
-                val lift = (s.fade * 0.22).toFloat()
-                for (i in 0..2) c[i] = c[i] * (1f - lift) + lift
+            // From here on only rows [top, bottom) are needed.
+            w = if (contrastReach > 0) localContrast(w, top - lo, bottom - lo, s.localContrast.toFloat()) else w.rows(top - lo, bottom - lo)
+            par.forRange(bottom - top) { from, until ->
+                for (r in from until until) {
+                    if (s.grain > 0.001) grainRow(w, r, top + r, s.grain)
+                    if (adjust) for (i in r * n until (r + 1) * n) w.data[i] = (w.data[i] - 0.5f) * contrast + 0.5f + bright
+                }
             }
-        }
-        if (s.bloom > 0.001) bloom(w, s.bloom)
-        if (s.localContrast > 0.001) localContrast(w, s.localContrast.toFloat())
-        if (s.grain > 0.001) grain(w, s.grain)
-        if (s.brightness != 0.5 || s.contrast != 0.5) {
-            val b = ((s.brightness - 0.5) * 0.6).toFloat()
-            val k = (0.5 + s.contrast * 1.5).toFloat()
-            perPixel(w) { c -> for (i in 0..2) c[i] = (c[i] - 0.5f) * k + 0.5f + b }
-        }
-        if (s.relief > 0) w = relief(w, s.reliefAngle, s.relief)
-
-        val out = Image8(size, image.height, Encoding.SRGB)
-        par.forRange(image.height) { from, until ->
-            val row = FloatArray(size * 3)
-            for (y in from until until) {
-                System.arraycopy(w.data, y * size * 3, row, 0, size * 3)
-                WorkingSpace.writeRow(row, out, y)
+            par.forRange(y1 - y0) { from, until ->
+                val row = FloatArray(n)
+                for (y in y0 + from until y0 + until) {
+                    if (s.relief > 0) reliefRow(w, y - top, top, height, s.reliefAngle, s.relief, row) else System.arraycopy(w.data, (y - top) * n, row, 0, n)
+                    WorkingSpace.writeRow(row, out, y)
+                }
             }
         }
         return out
     }
 
-    private inline fun perPixel(w: FloatImage, crossinline f: (FloatArray) -> Unit) {
-        par.forRange(w.height) { from, until ->
-            val c = FloatArray(3)
-            for (p in from * w.width until until * w.width) {
-                val o = p * 3
-                c[0] = w.data[o]; c[1] = w.data[o + 1]; c[2] = w.data[o + 2]
-                f(c)
-                w.data[o] = c[0]; w.data[o + 1] = c[1]; w.data[o + 2] = c[2]
-            }
-        }
-    }
+    private fun FloatImage.rows(from: Int, until: Int): FloatImage =
+        if (from == 0 && until == height) this else FloatImage(width, until - from, data.copyOfRange(from * width * 3, until * width * 3))
 
     private fun saturate(c: FloatArray, s: Float) {
         val l = 0.2125f * c[0] + 0.7154f * c[1] + 0.0721f * c[2]
         for (i in 0..2) c[i] = l + (c[i] - l) * s
     }
 
-    /** CIVignette: factor by distance from the centre over the shorter side, to the power of the intensity. */
-    private fun vignette(w: FloatImage, intensity: Double, radius: Double) {
-        val size = min(w.width, w.height).toFloat()
-        val cx = w.width / 2f
-        val cy = w.height / 2f
-        val r = radius.toFloat()
-        val i = intensity
-        par.forRange(w.height) { from, until ->
-            for (y in from until until) {
-                val dy = y + 0.5f - cy
-                for (x in 0 until w.width) {
-                    val dx = x + 0.5f - cx
-                    val f = MeasuredCurves.vignette(sqrt(dx * dx + dy * dy) / size, r).toDouble().pow(i).toFloat()
-                    val o = (y * w.width + x) * 3
-                    w.data[o] *= f; w.data[o + 1] *= f; w.data[o + 2] *= f
-                }
-            }
-        }
-    }
+    /** One spot of dimming, erasure or highlights: a radial gradient around (cx, cy) with radius r1. */
+    private class Spot(val cx: Double, val cy: Double, val r1: Double, val dark: Float, val colour: FloatArray?)
 
     /**
-     * Dimming and erasure: grey radial gradients (1 - dark at the centre to white at r1) multiplied in.
-     * Centres are in Core Image coordinates, whose y axis points up.
+     * Vignette, dimming, erasure, highlights, chromatic shift and the per-pixel colour steps, applied
+     * to one row at a time. Each of them reads only its own pixel or its own row.
      */
-    private fun darkSpots(w: FloatImage, seed: ULong, count: Int, rMax: Double, rMin: Double, dark: (SeededRng) -> Double) {
-        val rng = SeededRng(seed)
-        val size = w.width.toDouble()
-        repeat(count) {
-            val cx = rng.nextDouble() * size
-            val cy = rng.nextDouble() * size
-            val r1 = size * (rng.nextDouble() * rMax + rMin)
-            val d = dark(rng).toFloat()
-            radial(w, cx, w.height - cy, r1) { t, c ->
-                val g = (1f - d) + d * t
-                c[0] *= g; c[1] *= g; c[2] *= g
+    private inner class Pre(private val s: EffectsLayerSettings, private val width: Int, private val height: Int) {
+        private val spots: List<Spot> = buildList {
+            if (s.dimming > 0) addAll(darkSpots(s.dimmingSeed, (s.dimming * 10).toInt() + 3, 0.3, 0.08) { rng -> s.dimming * (rng.nextDouble() * 0.5 + 0.3) })
+            if (s.erasure > 0) addAll(darkSpots(s.erasureSeed, (s.erasure * 6).toInt() + 1, 0.15, 0.04) { rng -> min(1.0, s.erasure * (rng.nextDouble() * 0.4 + 0.6)) })
+            if (s.highlights > 0) addAll(highlights())
+        }
+        private val vignetteSize = min(width, height).toFloat()
+        private val shift = width * s.chromatic * 0.012
+        private val colour = ThreadLocal.withInitial { FloatArray(3) }
+        private val channels = ThreadLocal.withInitial { Array(2) { FloatArray(width) } }
+
+        fun apply(row: FloatArray, y: Int) {
+            if (s.vignette > 0) vignette(row, y, s.vignette * 2.5, 0.4 + s.vignette * 0.6)
+            for (spot in spots) radial(row, y, spot)
+            if (s.chromatic > 0) chromatic(row)
+            if (s.wash > 0.001 || s.sepia > 0.001 || s.fade > 0.001) colourSteps(row)
+        }
+
+        /** CIVignette: factor by distance from the centre over the shorter side, to the power of the intensity. */
+        private fun vignette(row: FloatArray, y: Int, intensity: Double, radius: Double) {
+            val cx = width / 2f
+            val cy = height / 2f
+            val r = radius.toFloat()
+            val dy = y + 0.5f - cy
+            for (x in 0 until width) {
+                val dx = x + 0.5f - cx
+                val f = MeasuredCurves.vignette(sqrt(dx * dx + dy * dy) / vignetteSize, r).toDouble().pow(intensity).toFloat()
+                val o = x * 3
+                row[o] *= f; row[o + 1] *= f; row[o + 2] *= f
             }
         }
-    }
 
-    private fun highlights(w: FloatImage, s: EffectsLayerSettings) {
-        val rng = SeededRng(s.highlightsSeed)
-        val size = w.width.toDouble()
-        repeat((s.highlights * 8).toInt() + 2) {
-            val cx = rng.nextDouble() * size
-            val cy = rng.nextDouble() * size
-            val r1 = size * (rng.nextDouble() * 0.12 + 0.02)
-            val br = s.highlights * (rng.nextDouble() * 0.4 + 0.2)
-            val col = Rgb.fromSrgb(br, br * 0.9, br * 0.8)
-            val c0 = floatArrayOf(col.r.toFloat(), col.g.toFloat(), col.b.toFloat())
-            radial(w, cx, w.height - cy, r1) { t, c ->
-                for (i in 0..2) {
-                    val o = c0[i] * (1f - t)
-                    c[i] = c[i] + o - c[i] * o
-                }
+        /**
+         * Dimming and erasure: grey radial gradients (1 - dark at the centre to white at r1) multiplied in.
+         * Centres are in Core Image coordinates, whose y axis points up.
+         */
+        private fun darkSpots(seed: ULong, count: Int, rMax: Double, rMin: Double, dark: (SeededRng) -> Double): List<Spot> {
+            val rng = SeededRng(seed)
+            val size = width.toDouble()
+            return List(count) {
+                val cx = rng.nextDouble() * size
+                val cy = rng.nextDouble() * size
+                val r1 = size * (rng.nextDouble() * rMax + rMin)
+                Spot(cx, height - cy, r1, dark(rng).toFloat(), null)
             }
         }
-    }
 
-    /** Applies `f(t, colour)` inside the circle; t runs 0 at the centre to 1 at r1 (outside the gradient is constant). */
-    private inline fun radial(w: FloatImage, cx: Double, cy: Double, r1: Double, crossinline f: (Float, FloatArray) -> Unit) {
-        val y0 = max(0, floor(cy - r1).toInt())
-        val y1 = min(w.height, (cy + r1).toInt() + 2)
-        val x0 = max(0, floor(cx - r1).toInt())
-        val x1 = min(w.width, (cx + r1).toInt() + 2)
-        if (y0 >= y1 || x0 >= x1) return
-        par.forRange(y1 - y0) { from, until ->
-            val c = FloatArray(3)
-            for (yy in from until until) {
-                val y = y0 + yy
-                val dy = y + 0.5 - cy
-                for (x in x0 until x1) {
-                    val dx = x + 0.5 - cx
-                    val d = sqrt(dx * dx + dy * dy)
-                    if (d >= r1) continue
-                    val o = (y * w.width + x) * 3
-                    c[0] = w.data[o]; c[1] = w.data[o + 1]; c[2] = w.data[o + 2]
-                    f((d / r1).toFloat(), c)
-                    w.data[o] = c[0]; w.data[o + 1] = c[1]; w.data[o + 2] = c[2]
-                }
+        private fun highlights(): List<Spot> {
+            val rng = SeededRng(s.highlightsSeed)
+            val size = width.toDouble()
+            return List((s.highlights * 8).toInt() + 2) {
+                val cx = rng.nextDouble() * size
+                val cy = rng.nextDouble() * size
+                val r1 = size * (rng.nextDouble() * 0.12 + 0.02)
+                val br = s.highlights * (rng.nextDouble() * 0.4 + 0.2)
+                val col = Rgb.fromSrgb(br, br * 0.9, br * 0.8)
+                Spot(cx, height - cy, r1, 0f, floatArrayOf(col.r.toFloat(), col.g.toFloat(), col.b.toFloat()))
             }
         }
-    }
 
-    /** Red moves left, blue right by `shift` pixels (bilinear, zero outside). */
-    private fun chromatic(w: FloatImage, shift: Double) {
-        val width = w.width
-        par.forRange(w.height) { from, until ->
-            val r = FloatArray(width)
-            val b = FloatArray(width)
-            for (y in from until until) {
-                val row = y * width * 3
-                for (x in 0 until width) { r[x] = w.data[row + x * 3]; b[x] = w.data[row + x * 3 + 2] }
-                for (x in 0 until width) {
-                    w.data[row + x * 3] = sample(r, x + shift)
-                    w.data[row + x * 3 + 2] = sample(b, x - shift)
+        /** The spot's gradient inside its circle; t runs 0 at the centre to 1 at r1 (outside it changes nothing). */
+        private fun radial(row: FloatArray, y: Int, spot: Spot) {
+            val (cx, cy, r1) = Triple(spot.cx, spot.cy, spot.r1)
+            val y0 = max(0, floor(cy - r1).toInt())
+            val y1 = min(height, (cy + r1).toInt() + 2)
+            val x0 = max(0, floor(cx - r1).toInt())
+            val x1 = min(width, (cx + r1).toInt() + 2)
+            if (y < y0 || y >= y1 || x0 >= x1) return
+            val c = colour.get()
+            val dy = y + 0.5 - cy
+            for (x in x0 until x1) {
+                val dx = x + 0.5 - cx
+                val d = sqrt(dx * dx + dy * dy)
+                if (d >= r1) continue
+                val o = x * 3
+                c[0] = row[o]; c[1] = row[o + 1]; c[2] = row[o + 2]
+                val t = (d / r1).toFloat()
+                val c0 = spot.colour
+                if (c0 == null) {
+                    val g = (1f - spot.dark) + spot.dark * t
+                    c[0] *= g; c[1] *= g; c[2] *= g
+                } else {
+                    for (i in 0..2) {
+                        val v = c0[i] * (1f - t)
+                        c[i] = c[i] + v - c[i] * v
+                    }
                 }
+                row[o] = c[0]; row[o + 1] = c[1]; row[o + 2] = c[2]
+            }
+        }
+
+        /** Red moves left, blue right by `shift` pixels (bilinear, zero outside). */
+        private fun chromatic(row: FloatArray) {
+            val (r, b) = channels.get()
+            for (x in 0 until width) { r[x] = row[x * 3]; b[x] = row[x * 3 + 2] }
+            for (x in 0 until width) {
+                row[x * 3] = sample(r, x + shift)
+                row[x * 3 + 2] = sample(b, x - shift)
+            }
+        }
+
+        private fun colourSteps(row: FloatArray) {
+            val c = colour.get()
+            for (p in 0 until width) {
+                val o = p * 3
+                c[0] = row[o]; c[1] = row[o + 1]; c[2] = row[o + 2]
+                if (s.wash > 0.001) {
+                    val t = s.wash.toFloat()
+                    saturate(c, max(0f, 1f - t * 0.4f))
+                    val k = 1f - t * 0.3f
+                    for (i in 0..2) c[i] = c[i] * k + t * 0.3f
+                }
+                if (s.sepia > 0.001) {
+                    val l = 0.2125f * c[0] + 0.7154f * c[1] + 0.0721f * c[2]
+                    val i = s.sepia.toFloat()
+                    c[0] += (MeasuredCurves.sepia(MeasuredCurves.sepiaR, l) - c[0]) * i
+                    c[1] += (MeasuredCurves.sepia(MeasuredCurves.sepiaG, l) - c[1]) * i
+                    c[2] += (MeasuredCurves.sepia(MeasuredCurves.sepiaB, l) - c[2]) * i
+                }
+                if (s.fade > 0.001) {
+                    val lift = (s.fade * 0.22).toFloat()
+                    for (i in 0..2) c[i] = c[i] * (1f - lift) + lift
+                }
+                row[o] = c[0]; row[o + 1] = c[1]; row[o + 2] = c[2]
             }
         }
     }
@@ -218,35 +269,27 @@ internal class EffectsLayer(private val par: Parallel, private val fx: LayerEffe
         return a + (b - a) * f
     }
 
-    private fun bloom(w: FloatImage, bloom: Double) {
-        val passes = listOf(LayerEffects.BlurPass(40.0, 0.55 * bloom), LayerEffects.BlurPass(144.0, 0.30 * bloom))
-        val overlay = fx.referenceBlurOverlay(w.asRowSource(), w.width, passes) ?: return
-        val n = w.width * 3
-        Filters.resampleRows(overlay.asRowSource(), w.width, w.height, par) { y, over ->
-            val o = y * n
-            for (k in 0 until n) {
-                val a = w.data[o + k]
-                w.data[o + k] = a + over[k] - a * over[k]
-            }
-        }
-    }
-
-    /** Clarity: high pass against a 96 px blur, softened by `amount`, soft-light blended over the image. */
-    private fun localContrast(w: FloatImage, amount: Float) {
-        val blurred = w.copy()
-        Filters.blurInPlace(blurred, 96.0, par)
+    /**
+     * Clarity: high pass against a 96 px blur, softened by `amount`, soft-light blended over the image.
+     * Blurs the whole strip `w` and returns its rows [from, until) with the effect applied.
+     */
+    private fun localContrast(w: FloatImage, from: Int, until: Int, amount: Float): FloatImage {
+        val result = w.rows(from, until).let { if (it === w) it.copy() else it }
+        Filters.blurInPlace(w, LOCAL_CONTRAST_SIGMA, par)
         val bias = 0.5f * (1f - amount)
-        val d = w.data
-        val bl = blurred.data
-        par.forRange(w.height) { from, until ->
-            for (k in from * w.width * 3 until until * w.width * 3) {
+        val d = result.data
+        val bl = w.data
+        val offset = from * w.width * 3
+        par.forRange(result.height) { lo, hi ->
+            for (k in lo * w.width * 3 until hi * w.width * 3) {
                 // The high pass is the sum of two opaque images, so its alpha is 2 (measured): the colour
                 // matrix scales the unpremultiplied half, adds the bias, and soft light then blends
                 // with alpha 2, i.e. 2 * softLight - base.
-                val top = (d[k] - bl[k] + 0.5f) / 2f * amount + bias
+                val top = (d[k] - bl[offset + k] + 0.5f) / 2f * amount + bias
                 d[k] = 2f * softLight(d[k], top) - d[k]
             }
         }
+        return result
     }
 
     /** W3C soft light (matches Core Image's CISoftLightBlendMode in measurements). */
@@ -256,70 +299,63 @@ internal class EffectsLayer(private val par: Parallel, private val fx: LayerEffe
         return a + (2f * b - 1f) * (dA - a)
     }
 
-    /** Film grain. Core Image's random pattern is Apple's own; amount and offset match. */
-    private fun grain(w: FloatImage, grain: Double) {
+    /** Film grain on row `r` of `w`, which is canvas row `y`. Core Image's random pattern is Apple's own; amount and offset match. */
+    private fun grainRow(w: FloatImage, r: Int, y: Int, grain: Double) {
         val amount = (grain * 0.28).toFloat()
         val bias = (-grain * 0.14).toFloat()
-        par.forRange(w.height) { from, until ->
-            for (y in from until until) {
-                for (x in 0 until w.width) {
-                    val o = (y * w.width + x) * 3
-                    w.data[o] += Filters.hash01(x, y, 101).toFloat() * amount + bias
-                    w.data[o + 1] += Filters.hash01(x, y, 102).toFloat() * amount + bias
-                    w.data[o + 2] += Filters.hash01(x, y, 103).toFloat() * amount + bias
-                }
-            }
+        for (x in 0 until w.width) {
+            val o = (r * w.width + x) * 3
+            w.data[o] += Filters.hash01(x, y, 101).toFloat() * amount + bias
+            w.data[o + 1] += Filters.hash01(x, y, 102).toFloat() * amount + bias
+            w.data[o + 2] += Filters.hash01(x, y, 103).toFloat() * amount + bias
         }
     }
 
-    /** Directional emboss (3 x 3 convolution plus 0.5, zero outside) applied with hard light. */
-    private fun relief(w: FloatImage, angleFraction: Double, relief: Double): FloatImage {
+    /**
+     * Directional emboss (3 x 3 convolution plus 0.5, zero outside the canvas) applied with hard light,
+     * for row `r` of `w` (canvas row `top + r` of a canvas `height` rows tall) into `out`.
+     */
+    private fun reliefRow(w: FloatImage, r: Int, top: Int, height: Int, angleFraction: Double, relief: Double, out: FloatArray) {
         val angle = angleFraction * PI * 2
         val ca = cos(angle)
         val sa = sin(angle)
-        val r = relief * 2.0
+        val rf = relief * 2.0
         // Rows of the kernel run top to bottom on screen.
         val k = floatArrayOf(
-            ((-ca - sa) * r).toFloat(), (-sa * r).toFloat(), ((ca - sa) * r).toFloat(),
-            (-ca * r).toFloat(), 0f, (ca * r).toFloat(),
-            ((-ca + sa) * r).toFloat(), (sa * r).toFloat(), ((ca + sa) * r).toFloat(),
+            ((-ca - sa) * rf).toFloat(), (-sa * rf).toFloat(), ((ca - sa) * rf).toFloat(),
+            (-ca * rf).toFloat(), 0f, (ca * rf).toFloat(),
+            ((-ca + sa) * rf).toFloat(), (sa * rf).toFloat(), ((ca + sa) * rf).toFloat(),
         )
-        val out = FloatImage(w.width, w.height)
         val width = w.width
-        val height = w.height
-        par.forRange(height) { from, until ->
-            for (y in from until until) {
-                for (x in 0 until width) {
-                    // Core Image convolves premultiplied RGBA and adds the bias to alpha as well, so the
-                    // emboss has alpha 0.5 inside and other values (even above 1 or below 0) at the
-                    // border. Measured: alpha is used unclamped, the unpremultiplied colour is clamped
-                    // to [0, 1] and taken as 0 where alpha is not positive.
-                    var a = 0.5f
-                    var ki = 0
-                    for (ky in -1..1) for (kx in -1..1) {
-                        if (y + ky in 0 until height && x + kx in 0 until width) a += k[ki]
+        val y = top + r
+        for (x in 0 until width) {
+            // Core Image convolves premultiplied RGBA and adds the bias to alpha as well, so the
+            // emboss has alpha 0.5 inside and other values (even above 1 or below 0) at the
+            // border. Measured: alpha is used unclamped, the unpremultiplied colour is clamped
+            // to [0, 1] and taken as 0 where alpha is not positive.
+            var a = 0.5f
+            var ki = 0
+            for (ky in -1..1) for (kx in -1..1) {
+                if (y + ky in 0 until height && x + kx in 0 until width) a += k[ki]
+                ki++
+            }
+            for (c in 0..2) {
+                var sum = 0.5f
+                ki = 0
+                for (ky in -1..1) {
+                    val yy = y + ky
+                    for (kx in -1..1) {
+                        val xx = x + kx
+                        if (yy in 0 until height && xx in 0 until width) sum += k[ki] * w.data[((yy - top) * width + xx) * 3 + c]
                         ki++
                     }
-                    for (c in 0..2) {
-                        var sum = 0.5f
-                        ki = 0
-                        for (ky in -1..1) {
-                            val yy = y + ky
-                            for (kx in -1..1) {
-                                val xx = x + kx
-                                if (yy in 0 until height && xx in 0 until width) sum += k[ki] * w.data[(yy * width + xx) * 3 + c]
-                                ki++
-                            }
-                        }
-                        val base = w.data[(y * width + x) * 3 + c]
-                        val top = if (a > 0f) (sum / a).coerceIn(0f, 1f) else 0f
-                        val hard = if (top <= 0.5f) 2f * base * top else 1f - 2f * (1f - base) * (1f - top)
-                        out.data[(y * width + x) * 3 + c] = (1f - a) * base + a * hard
-                    }
                 }
+                val base = w.data[(r * width + x) * 3 + c]
+                val tp = if (a > 0f) (sum / a).coerceIn(0f, 1f) else 0f
+                val hard = if (tp <= 0.5f) 2f * base * tp else 1f - 2f * (1f - base) * (1f - tp)
+                out[x * 3 + c] = (1f - a) * base + a * hard
             }
         }
-        return out
     }
 
     // ── Light layers drawn after the chain ───────────────────────────────
