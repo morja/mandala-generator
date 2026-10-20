@@ -66,6 +66,7 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -116,7 +117,12 @@ fun EditorScreen(vm: EditorViewModel, onAbout: () -> Unit = {}) {
         vm.events.collect { event ->
             when (event) {
                 is EditorEvent.Message -> {
-                    val result = snackbar.showSnackbar(event.text, actionLabel = if (event.canUndo) "Undo" else null)
+                    // With an action Compose would keep the message until it is tapped; let it go on its own.
+                    val result = snackbar.showSnackbar(
+                        event.text,
+                        actionLabel = if (event.canUndo) "Undo" else null,
+                        duration = if (event.canUndo) SnackbarDuration.Long else SnackbarDuration.Short,
+                    )
                     if (result == SnackbarResult.ActionPerformed) vm.undo()
                 }
                 is EditorEvent.ShareImage -> {
