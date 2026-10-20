@@ -18,7 +18,7 @@ android {
     compileSdk = 37
 
     defaultConfig {
-        applicationId = "com.mathis.mandala"
+        applicationId = "one.tearoom.mandala"
         minSdk = 29
         targetSdk = 36
         versionCode = 1
@@ -28,7 +28,7 @@ android {
     signingConfigs {
         if (keystoreProperties.isFile) {
             create("upload") {
-                storeFile = file(homePath(keystore.getProperty("storeFile") ?: "~/.keystore/mandala-upload.jks"))
+                storeFile = file(homePath(keystore.getProperty("storeFile") ?: "~/.keystore/mandalagenerator-upload.jks"))
                 storePassword = keystore.getProperty("storePassword")
                 keyAlias = keystore.getProperty("keyAlias") ?: "upload"
                 keyPassword = keystore.getProperty("keyPassword") ?: keystore.getProperty("storePassword")

@@ -14,7 +14,7 @@ Prepared 20 October 2026 for the first Android release. Nothing here has been en
 | Contact email | mail@tearoom.one |
 | Website | https://www.tearoom.one/en/apps/mandala-generator |
 | Privacy policy | https://www.tearoom.one/en/apps/privacy/mandala-generator |
-| Package name | `com.mathis.mandala` (from `android/app/build.gradle.kts`; fixed with the first upload) |
+| Package name | `one.tearoom.mandala` (`applicationId` in `android/app/build.gradle.kts`; the Play Console app exists with it since 20 October 2026 and it cannot change. The Kotlin namespace stays `com.mathis.mandala.app`.) |
 
 The two tearoom.one pages exist in the website repository (commit "Add Mandala Generator to the apps, with its privacy policy") but are not deployed yet.
 
@@ -103,13 +103,13 @@ Version 1.0 (`versionName` "1.0", `versionCode` 1, in `android/app/build.gradle.
 1. Create `android/keystore.properties` (git-ignored, like `*.jks`; never commit it):
 
    ```properties
-   storeFile=~/.keystore/mandala-upload.jks
+   storeFile=~/.keystore/mandalagenerator-upload.jks
    storePassword=…
    keyAlias=upload
    keyPassword=…
    ```
 
-   `storeFile` defaults to `~/.keystore/mandala-upload.jks` and `keyAlias` to `upload`; `keyPassword` defaults to `storePassword`. A leading `~/` means the home folder. On 20 October 2026 the folder held `~/.keystore/mandalagenerator-upload.jks`; if that is the upload key, set `storeFile` to it.
+   `storeFile` defaults to `~/.keystore/mandalagenerator-upload.jks` and `keyAlias` to `upload`; `keyPassword` defaults to `storePassword`. A leading `~/` means the home folder.
 2. Build the bundle from the repository root:
 
    ```bash
@@ -123,7 +123,7 @@ Without `keystore.properties`, release builds are signed with the local debug ke
 ## What Mathis does himself
 
 1. Create the upload key (keep it outside the repository and back it up), unless it exists already, and fill `android/keystore.properties` (see above):
-   `keytool -genkeypair -v -keystore ~/.keystore/mandala-upload.jks -alias upload -keyalg RSA -keysize 4096 -validity 10000`
+   `keytool -genkeypair -v -keystore ~/.keystore/mandalagenerator-upload.jks -alias upload -keyalg RSA -keysize 4096 -validity 10000`
 2. In the Play Console: create the app (name, default language, app, free) and accept the declarations.
 3. Enrol in Play App Signing with the first upload of an app bundle (AAB).
 4. Deploy tearoom.one so that the privacy policy URL works.
