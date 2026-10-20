@@ -11,7 +11,7 @@ Prepared 20 October 2026 for the first Android release. Nothing here has been en
 | App or game | App |
 | Free or paid | Free (with one in-app product) |
 | Category | Art & Design |
-| Contact email | mail@tearoom.one |
+| Contact email | apps@tearoom.one |
 | Website | https://www.tearoom.one/en/apps/mandala-generator |
 | Privacy policy | https://www.tearoom.one/en/apps/privacy/mandala-generator |
 | Package name | `one.tearoom.mandala` (`applicationId` in `android/app/build.gradle.kts`; the Play Console app exists with it since 20 October 2026 and it cannot change. The Kotlin namespace stays `com.mathis.mandala.app`.) |
