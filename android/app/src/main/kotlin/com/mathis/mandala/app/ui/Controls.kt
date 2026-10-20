@@ -50,6 +50,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.selected
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mathis.mandala.app.DrawTool
+import com.mathis.mandala.app.MoveTarget
 import com.mathis.mandala.app.Editing
 import com.mathis.mandala.app.Editing.strokeCount
 import com.mathis.mandala.app.EditorViewModel
@@ -82,11 +83,24 @@ private enum class ControlTab(val label: String) { LAYERS("Layers"), SCENE("Scen
  * Each tab keeps its scroll position and open groups while another one is shown.
  */
 @Composable
-internal fun ControlTabs(params: MandalaParameters, selected: Int, vm: EditorViewModel, modifier: Modifier = Modifier) {
+internal fun ControlTabs(
+    params: MandalaParameters,
+    selected: Int,
+    vm: EditorViewModel,
+    modifier: Modifier = Modifier,
+    proOwned: Boolean = false,
+    onShowPro: () -> Unit = {},
+) {
     var tab by rememberSaveable { mutableStateOf(ControlTab.LAYERS) }
     val tabs = rememberSaveableStateHolder()
-    // Drawing on the canvas only while the Draw tab is shown.
-    LaunchedEffect(tab) { if (tab != ControlTab.DRAW) vm.setDrawTool(null) }
+    val moveTarget by vm.moveTarget.collectAsStateWithLifecycle()
+    // Drawing on the canvas only while the Draw tab is shown; moving only while its tab is.
+    LaunchedEffect(tab) {
+        if (tab != ControlTab.DRAW) vm.setDrawTool(null)
+        if (tab != ControlTab.LAYERS && moveTarget == MoveTarget.LAYER) vm.setMoveTarget(null)
+        if (tab != ControlTab.EMBLEM && moveTarget == MoveTarget.EMBLEM) vm.setMoveTarget(null)
+    }
+    val position = PositionInput(proOwned, moveTarget, vm::setMoveTarget, onShowPro)
     Column(modifier) {
         PrimaryTabRow(selectedTabIndex = tab.ordinal) {
             for (option in ControlTab.entries) {
@@ -99,9 +113,9 @@ internal fun ControlTabs(params: MandalaParameters, selected: Int, vm: EditorVie
         tabs.SaveableStateProvider(tab) {
             Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(top = Spacing.xs, bottom = Spacing.lg)) {
                 when (tab) {
-                    ControlTab.LAYERS -> LayersTab(params, selected.coerceIn(0, params.layers.lastIndex), vm)
+                    ControlTab.LAYERS -> LayersTab(params, selected.coerceIn(0, params.layers.lastIndex), vm, position)
                     ControlTab.SCENE -> SceneTab(params, vm)
-                    ControlTab.EMBLEM -> EmblemTab(params.emblemLayer, vm)
+                    ControlTab.EMBLEM -> EmblemTab(params.emblemLayer, vm, position)
                     ControlTab.TEXT -> TextTab(params.textLayer, vm)
                     ControlTab.DRAW -> DrawTab(params, vm)
                 }
@@ -113,7 +127,7 @@ internal fun ControlTabs(params: MandalaParameters, selected: Int, vm: EditorVie
 // ── Layers ──
 
 @Composable
-private fun LayersTab(params: MandalaParameters, selected: Int, vm: EditorViewModel) {
+private fun LayersTab(params: MandalaParameters, selected: Int, vm: EditorViewModel, position: PositionInput) {
     val layers = params.layers
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.xs), modifier = Modifier.padding(top = Spacing.sm)) {
         for (i in layers.indices.reversed()) {
@@ -138,7 +152,47 @@ private fun LayersTab(params: MandalaParameters, selected: Int, vm: EditorViewMo
         Box(Modifier.weight(1f))
         IconButton(onClick = vm::randomizeSelected) { Icon(EditorIcons.Dice, contentDescription = "Randomize layer ${selected + 1}") }
     }
-    LayerControls(layers[selected], vm::updateSelected)
+    LayerControls(layers[selected], vm::updateSelected, position)
+}
+
+/** What the position controls need: whether Pro is owned, the move mode, and the Pro sheet. */
+private class PositionInput(
+    val proOwned: Boolean,
+    val moveTarget: MoveTarget?,
+    val setMoveTarget: (MoveTarget?) -> Unit,
+    val showPro: () -> Unit,
+)
+
+/**
+ * Where a layer or the emblem sits (ADR-0011): X and Y as fractions of the image from its centre,
+ * "Centre", and moving it by hand on the image. Pro; without it a note opens the Pro sheet.
+ */
+@Composable
+private fun PositionGroup(x: Double, y: Double, target: MoveTarget, input: PositionInput, onChange: (Double, Double) -> Unit) {
+    val t = LocalTokens.current
+    val centred = x == 0.0 && y == 0.0
+    Group("Position", summary = if (centred) "Centred" else "Moved") {
+        if (!input.proOwned) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text("Moving layers and the emblem comes with Pro.", style = MaterialTheme.typography.bodySmall, color = t.textMuted,
+                    modifier = Modifier.weight(1f))
+                TextButton(onClick = input.showPro) { Text("About Pro") }
+            }
+            return@Group
+        }
+        val range = (-Editing.MAX_OFFSET).toFloat()..Editing.MAX_OFFSET.toFloat()
+        ValueSlider("Across", x, range, default = 0.0) { v -> onChange(v, y) }
+        ValueSlider("Up and down", y, range, default = 0.0) { v -> onChange(x, v) }
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            TextButton(onClick = { onChange(0.0, 0.0) }, enabled = !centred) { Text("Centre") }
+            Box(Modifier.weight(1f))
+            if (input.moveTarget == target) {
+                FilledTonalButton(onClick = { input.setMoveTarget(null) }) { Text("Done") }
+            } else {
+                Button(onClick = { input.setMoveTarget(target) }) { Text("Move on image") }
+            }
+        }
+    }
 }
 
 @Composable
@@ -186,7 +240,7 @@ private fun LayerRow(
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun LayerControls(layer: StyleLayer, update: ((StyleLayer) -> StyleLayer) -> Unit) {
+private fun LayerControls(layer: StyleLayer, update: ((StyleLayer) -> StyleLayer) -> Unit, position: PositionInput) {
     val t = LocalTokens.current
     Group("Style", summary = layer.style.displayName) {
         for ((group, styles) in Editing.styleGroups) {
@@ -217,6 +271,7 @@ private fun LayerControls(layer: StyleLayer, update: ((StyleLayer) -> StyleLayer
         ValueSlider("Density", layer.density, default = StyleLayer().density) { v -> update { it.copy(density = v) } }
         ValueSlider("Ripple", layer.ripple, default = StyleLayer().ripple) { v -> update { it.copy(ripple = v) } }
     }
+    PositionGroup(layer.offsetX, layer.offsetY, MoveTarget.LAYER, position) { x, y -> update { it.copy(offsetX = x, offsetY = y) } }
     Group("Light and colour") {
         ValueSlider("Glow", layer.glowIntensity, default = StyleLayer().glowIntensity) { v -> update { it.copy(glowIntensity = v) } }
         ValueSlider("Colour drift", layer.colorDrift, default = StyleLayer().colorDrift) { v -> update { it.copy(colorDrift = v) } }
@@ -364,7 +419,7 @@ private fun EffectsGroup(
 /** One motif large in the centre, with the controls of the macOS emblem card. */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun EmblemTab(em: EmblemLayerSettings, vm: EditorViewModel) {
+private fun EmblemTab(em: EmblemLayerSettings, vm: EditorViewModel, position: PositionInput) {
     val update = vm::updateEmblem
     val defaults = EmblemLayerSettings()
     val t = LocalTokens.current
@@ -429,6 +484,7 @@ private fun EmblemTab(em: EmblemLayerSettings, vm: EditorViewModel) {
             update { it.copy(rotation = v) }
         }
     }
+    PositionGroup(em.offsetX, em.offsetY, MoveTarget.EMBLEM, position) { x, y -> update { it.copy(offsetX = x, offsetY = y) } }
     val palette = BuiltInPalettes.all[em.paletteIndex.coerceIn(0, BuiltInPalettes.all.lastIndex)]
     Group("Colour", summary = palette.name) {
         FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.sm), verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {

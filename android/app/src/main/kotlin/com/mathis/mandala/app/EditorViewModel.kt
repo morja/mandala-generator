@@ -18,6 +18,7 @@ import com.mathis.mandala.app.Editing.updateDrawing
 import com.mathis.mandala.app.Editing.updateGraffiti
 import com.mathis.mandala.app.Editing.duplicateLayer
 import com.mathis.mandala.app.Editing.moveLayer
+import com.mathis.mandala.app.Editing.movedBy
 import com.mathis.mandala.app.Editing.newVariation
 import com.mathis.mandala.app.Editing.removeLayer
 import com.mathis.mandala.app.Editing.newPattern
@@ -326,6 +327,29 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
 
     fun randomizeSelected() = _params.update { it.randomLayer(_selected.value, Random) }
 
+    // ── Positions of layers and the emblem (ADR-0011) ──
+
+    private val _moveTarget = MutableStateFlow<MoveTarget?>(null)
+
+    /** What drags on the canvas move: the selected layer or the emblem; null while they do not. Pro only. */
+    val moveTarget: StateFlow<MoveTarget?> = _moveTarget.asStateFlow()
+
+    fun setMoveTarget(target: MoveTarget?) {
+        if (target != null && !pro.state.value.owned) return
+        _moveTarget.value = target
+        if (target != null) _drawTool.value = null
+    }
+
+    /** Moves, sizes and turns the move target by a gesture on the canvas (fractions of its width). */
+    fun moveBy(dx: Double, dy: Double, zoom: Double, turnDegrees: Double) {
+        if (!pro.state.value.owned) return
+        when (_moveTarget.value) {
+            MoveTarget.LAYER -> updateSelected { it.movedBy(dx, dy, zoom, turnDegrees) }
+            MoveTarget.EMBLEM -> updateEmblem { it.movedBy(dx, dy, zoom, turnDegrees) }
+            null -> Unit
+        }
+    }
+
     // ── Drawing by hand ──
 
     private val _drawTool = MutableStateFlow<DrawTool?>(null)
@@ -335,6 +359,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
 
     fun setDrawTool(tool: DrawTool?) {
         _drawTool.value = tool
+        if (tool != null) _moveTarget.value = null
     }
 
     fun updateDrawing(change: (DrawingLayerSettings) -> DrawingLayerSettings) = _params.update { it.updateDrawing(change) }
