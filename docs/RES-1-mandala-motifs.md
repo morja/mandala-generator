@@ -90,13 +90,16 @@ The text layer can show `ॐ` (U+0950) today: Android draws it with its Devanaga
 5. Lotus and bhupura (as style and as an emblem frame).
 6. Ornament bands, then the exact Sri Yantra.
 
-## 7. Open decisions for Mathis
+## 7. Decisions
 
-- "Lebensbaum": the organic tree in a circle, the Kabbalah diagram, or both?
-- Emblem layer, yes or no (instead of only new styles)?
-- Shared motif data for both apps, and where it lives?
-- Mac first, or Kotlin first for new motifs (affects ADR-0004)?
-- Om outline: draw our own, or convert from an OFL font?
+Mathis, 20 October 2026:
+
+- **Mac first**, then port to Kotlin, so he can try new motifs on the Mac first.
+- **Mac favourites may change** where that buys a better, clearer app. Existing features stay; only what does not work (such as the Om, Flower of Life and Sri Yantra drawings in Symbols) may be redrawn. ADR-0004 parity then follows the new Mac look.
+- **Tree of Life = the organic tree in a circle.** The Kabbalah diagram is not wanted for now.
+- **Om:** our own outline, usable in several renderings. Not via the text layer.
+- **Emblem layer:** likely yes, because it needs other controls than a style layer.
+- **Shared motif data:** undecided; recommendation in the reply was to copy fixed outlines (such as the Om path) as constants into both renderers instead of a shared data folder.
 
 ## Sources
 
