@@ -14,6 +14,8 @@ Format: `- **What** · What for and why · Alternative without approval · Recom
 
 ## Approved
 
+20 October 2026 (Mathis, RES-2 "everything as recommended"): layer and emblem positions in the settings, Mac first, editing them is Pro (ADR-0011).
+
 20 October 2026 (Mathis, after the first portrait renders): centred backgrounds (auto, radial gradient, sunburst) follow the mandala's centre, the auto background also its size (ADR-0010, point 6).
 
 20 October 2026 (Mathis, after SPIKE-1): strips in every render step that works on a full-size image; Pro 2048 px wide in every format; framing by hand only with Pro; no 4096 square for now (ADR-0010, PLAN-2).

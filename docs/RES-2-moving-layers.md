@@ -2,7 +2,7 @@
 
 Research, 20 October 2026. Question from Mathis: what would it take to move each layer on its own, not only in the export but in the mandala itself, so that many elements can sit in different places?
 
-A small prototype exists on the local branch `spike/layer-offsets` (renderer only, not for merging). Everything else below is a proposal.
+A small prototype exists on the local branch `spike/layer-offsets` (renderer only, not for merging). Decided by Mathis on 20 October 2026, everything as recommended; see the end and [ADR-0011](adr/0011-layer-positions.md).
 
 ## Short answer
 
@@ -77,3 +77,13 @@ The export framing (ADR-0010) stays on top: it moves and zooms the whole composi
 3. The emblem's position as well (recommended)?
 4. Mac first, as the rule says (recommended; the Mac part is small), or Android first as an exception?
 5. More elements (higher limit, copies, several emblems): decide after trying positions?
+
+## Decisions (20 October 2026, Mathis: "everything as recommended")
+
+1. Positions are saved in the mandala, not only set in the export.
+2. Editing positions is Pro.
+3. The emblem gets a position as well.
+4. Mac first.
+5. More elements are decided after trying positions.
+
+Recorded in [ADR-0011](adr/0011-layer-positions.md).
