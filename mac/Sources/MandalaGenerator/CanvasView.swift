@@ -304,13 +304,16 @@ struct CanvasView: View {
 // MARK: - Move overlay
 
 /// Handles for moving the layers and the emblem (ADR-0011): a numbered dot at each centre and a
-/// faint ring of about the layer's size. Dragging a dot moves that layer; the image is rendered
-/// again when the drag ends.
+/// faint ring of about the layer's size. Dragging a dot moves that layer with the pointer; the
+/// image is rendered again whenever the pointer rests for a moment and when the drag ends.
 struct LayerMoveOverlay: View {
     @Binding var parameters: MandalaParameters
-    /// The handle being dragged: a layer index, or -1 for the emblem.
+    /// The handle being dragged (a layer index, or -1 for the emblem) and where the pointer grabbed
+    /// it, relative to its centre, so the dot does not jump to the pointer.
     @State private var dragging: Int? = nil
-    @State private var dragOffset: CGSize = .zero
+    @State private var grab: CGSize = .zero
+
+    private static let space = "layerMoveOverlay"
 
     var body: some View {
         GeometryReader { geo in
@@ -328,16 +331,17 @@ struct LayerMoveOverlay: View {
                 }
             }
             .frame(width: geo.size.width, height: geo.size.height)
+            // Measured in the overlay's own space, which does not move while a handle does.
+            .coordinateSpace(name: Self.space)
         }
     }
 
     private func handle(label: String, x: Double, y: Double, ring: Double, index: Int, side: CGFloat) -> some View {
-        let moving = dragging == index
-        let cx = CGFloat(0.5 + x) * side + (moving ? dragOffset.width : 0)
-        let cy = CGFloat(0.5 + y) * side + (moving ? dragOffset.height : 0)
+        let cx = CGFloat(0.5 + x) * side
+        let cy = CGFloat(0.5 + y) * side
         return ZStack {
             Circle()
-                .stroke(Color.white.opacity(0.35), lineWidth: 1)
+                .stroke(Color.white.opacity(dragging == index ? 0.6 : 0.35), lineWidth: 1)
                 .frame(width: CGFloat(ring * 2) * side, height: CGFloat(ring * 2) * side)
                 .allowsHitTesting(false)
             ZStack {
@@ -348,23 +352,18 @@ struct LayerMoveOverlay: View {
             .frame(width: 22, height: 22)
             .contentShape(Circle())
             .gesture(
-                DragGesture()
+                DragGesture(minimumDistance: 0, coordinateSpace: .named(Self.space))
                     .onChanged { v in
-                        dragging = index
-                        dragOffset = v.translation
+                        if dragging != index {
+                            dragging = index
+                            grab = CGSize(width: v.startLocation.x - cx, height: v.startLocation.y - cy)
+                        }
+                        move(index, to: v.location, side: side)
                     }
                     .onEnded { v in
-                        let nx = max(-1, min(1, x + Double(v.translation.width / side)))
-                        let ny = max(-1, min(1, y + Double(v.translation.height / side)))
-                        if index >= 0, index < parameters.layers.count {
-                            parameters.layers[index].offsetX = nx
-                            parameters.layers[index].offsetY = ny
-                        } else if index == -1 {
-                            parameters.emblemLayer.offsetX = nx
-                            parameters.emblemLayer.offsetY = ny
-                        }
+                        move(index, to: v.location, side: side)
                         dragging = nil
-                        dragOffset = .zero
+                        grab = .zero
                     }
             )
             .onHover { hovering in
@@ -372,6 +371,20 @@ struct LayerMoveOverlay: View {
             }
         }
         .position(x: cx, y: cy)
+    }
+
+    /// Puts the handle's centre under the pointer (minus where it was grabbed) and stores the offset.
+    private func move(_ index: Int, to location: CGPoint, side: CGFloat) {
+        guard side > 0 else { return }
+        let nx = max(-1, min(1, Double((location.x - grab.width) / side) - 0.5))
+        let ny = max(-1, min(1, Double((location.y - grab.height) / side) - 0.5))
+        if index >= 0, index < parameters.layers.count {
+            parameters.layers[index].offsetX = nx
+            parameters.layers[index].offsetY = ny
+        } else if index == -1 {
+            parameters.emblemLayer.offsetX = nx
+            parameters.emblemLayer.offsetY = ny
+        }
     }
 }
 
