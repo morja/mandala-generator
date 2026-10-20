@@ -37,6 +37,7 @@ import com.mathis.mandala.core.EffectsLayerSettings
 import com.mathis.mandala.core.EmblemLayerSettings
 import com.mathis.mandala.core.GraffitiLayerSettings
 import com.mathis.mandala.core.Favorite
+import com.mathis.mandala.core.Framing
 import com.mathis.mandala.core.Image8
 import com.mathis.mandala.core.MacFile
 import com.mathis.mandala.core.Quote
@@ -51,11 +52,13 @@ import com.mathis.mandala.core.StyleLayer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -74,6 +77,15 @@ data class PreviewState(
     val error: String? = null,
     /** Parts of the settings the Android renderer cannot draw yet. */
     val warnings: List<String> = emptyList(),
+)
+
+/** The preview in the save sheet and the framing it was drawn with (to move it while a finger moves). */
+data class FramePreviewState(
+    val image: ImageBitmap? = null,
+    val rendering: Boolean = true,
+    val framing: Framing = Framing(),
+    val width: Int = 0,
+    val height: Int = 0,
 )
 
 /** One-off things for the screen to do. */
@@ -135,6 +147,35 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
 
     fun buyPro(activity: android.app.Activity) = pro.buy(activity)
 
+    // ── Save sheet (ADR-0010) ──
+
+    private val saveStore = SaveChoiceStore(application)
+    private val _saveChoice = MutableStateFlow(saveStore.load())
+    val saveChoice: StateFlow<SaveChoice> = _saveChoice.asStateFlow()
+
+    private val _screenAspect = MutableStateFlow(DEFAULT_SCREEN_ASPECT)
+    val screenAspect: StateFlow<Double> = _screenAspect.asStateFlow()
+
+    private val _saveOpen = MutableStateFlow(false)
+    private val _framePreview = MutableStateFlow(FramePreviewState())
+    val framePreview: StateFlow<FramePreviewState> = _framePreview.asStateFlow()
+
+    fun setScreenAspect(aspect: Double) { _screenAspect.value = aspect }
+
+    fun setSaveOpen(open: Boolean) { _saveOpen.value = open }
+
+    fun setSaveFormat(format: Editing.SaveFormat) = _saveChoice.update { it.copy(format = format) }
+
+    /** Moving and zooming the mandala is part of Pro; without it the mandala stays centred. */
+    fun setFraming(framing: Framing) {
+        if (pro.state.value.owned) _saveChoice.update { it.copy(framing = framing.clamped()) }
+    }
+
+    fun setTextFollowsMandala(follows: Boolean) = _saveChoice.update { it.copy(textFollowsMandala = follows) }
+
+    /** The framing the images are drawn with: the chosen one with Pro, centred without. */
+    private fun effectiveFraming(choice: SaveChoice): Framing = if (pro.state.value.owned) choice.framing else Framing()
+
     override fun onCleared() {
         pro.close()
         super.onCleared()
@@ -164,7 +205,20 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         viewModelScope.launch {
             _favorites.drop(1).collectLatest { f -> withContext(Dispatchers.IO) { runCatching { favoritesStore.save(f) } } }
         }
+        viewModelScope.launch {
+            @OptIn(FlowPreview::class)
+            _saveChoice.drop(1).debounce(SAVE_DELAY_MS).collectLatest { c -> withContext(Dispatchers.IO) { runCatching { saveStore.save(c) } } }
+        }
+        viewModelScope.launch {
+            // The save sheet's preview, only while the sheet is open.
+            @OptIn(FlowPreview::class)
+            combine(_params, _saveChoice, _screenAspect, _saveOpen, pro.state) { p, c, a, open, pr -> if (open) FrameRequest(p, c, a, pr.owned) else null }
+                .debounce(FRAME_DEBOUNCE_MS)
+                .collectLatest { request -> if (request != null) renderFramePreview(request) }
+        }
     }
+
+    private data class FrameRequest(val params: MandalaParameters, val choice: SaveChoice, val aspect: Double, val pro: Boolean)
 
     // ── Layers ──
 
@@ -401,26 +455,39 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
 
     // ── Images ──
 
-    fun exportToGallery() = renderFullSize(large = false) { image, fileName ->
-        withContext(Dispatchers.IO) { GalleryExport.savePng(getApplication(), image, fileName) }
-        message("Saved to Pictures/${GalleryExport.FOLDER}")
-    }
-
-    /** Pro: 2048 px, drawn without supersampling so it needs no more memory than the normal export. */
-    fun exportLargeToGallery() {
-        if (!pro.state.value.owned) return
-        renderFullSize(large = true) { image, fileName ->
+    /**
+     * Saves in the chosen format and framing: 1024 px wide, or with Pro (`large`) 2048 px wide, drawn
+     * without supersampling so it needs no more memory than the normal export.
+     */
+    fun saveImage(large: Boolean) {
+        if (large && !pro.state.value.owned) return
+        val choice = _saveChoice.value
+        val (w, h) = Editing.exportSize(choice.format, _screenAspect.value, large)
+        renderFullSize(w, h, large, effectiveFraming(choice), choice.textFollowsMandala) { image, fileName ->
             withContext(Dispatchers.IO) { GalleryExport.savePng(getApplication(), image, fileName) }
-            message("Saved ${Editing.LARGE_EXPORT_SIZE} px to Pictures/${GalleryExport.FOLDER}")
+            message("Saved $w × $h to Pictures/${GalleryExport.FOLDER}")
         }
     }
 
-    fun shareImage() = renderFullSize(large = false) { image, fileName ->
+    /** Sets the image as wallpaper in the phone screen format, at the largest size the user may save. */
+    fun setWallpaper(target: WallpaperTarget) {
+        val choice = _saveChoice.value
+        val large = pro.state.value.owned
+        val (w, h) = Editing.exportSize(Editing.SaveFormat.SCREEN, _screenAspect.value, large)
+        renderFullSize(w, h, large, effectiveFraming(choice), choice.textFollowsMandala) { image, _ ->
+            withContext(Dispatchers.IO) { Wallpapers.set(getApplication(), image, target) }
+            // Android recreates the screen when the wallpaper changes; a message sent right away is lost with it.
+            delay(WALLPAPER_MESSAGE_DELAY_MS)
+            message("Wallpaper set")
+        }
+    }
+
+    fun shareImage() = renderFullSize(Editing.EXPORT_SIZE, Editing.EXPORT_SIZE, large = false, Framing(), textFollows = false) { image, fileName ->
         val uri = withContext(Dispatchers.IO) { ImageShare.prepare(getApplication(), image, fileName) }
         _events.send(EditorEvent.ShareImage(uri))
     }
 
-    private fun renderFullSize(large: Boolean, then: suspend (Image8, String) -> Unit) {
+    private fun renderFullSize(width: Int, height: Int, large: Boolean, framing: Framing, textFollows: Boolean, then: suspend (Image8, String) -> Unit) {
         if (_busy.value) return
         val snapshot = _params.value
         _busy.value = true
@@ -428,7 +495,10 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
             try {
                 val image = withContext(Dispatchers.Default) {
                     val options = RenderOptions(
-                        outputSize = if (large) Editing.LARGE_EXPORT_SIZE else Editing.EXPORT_SIZE,
+                        width = width,
+                        height = height,
+                        framing = framing,
+                        textFollowsMandala = textFollows,
                         supersample = !large,
                         threads = threads,
                         textRenderer = textRenderer,
@@ -436,8 +506,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
                     )
                     MandalaRenderer.render(snapshot, options).image
                 }
-                val name = Editing.fileName(snapshot)
-                then(image, if (large) name.removeSuffix(".png") + "-${Editing.LARGE_EXPORT_SIZE}.png" else name)
+                then(image, Editing.fileName(snapshot, width, height))
             } catch (e: OutOfMemoryError) {
                 message("Not enough memory for this image.")
             } catch (e: Exception) {
@@ -450,6 +519,29 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
 
     private fun message(text: String, canUndo: Boolean = false, undo: (() -> Unit)? = null) {
         _events.trySend(EditorEvent.Message(text, canUndo, undo))
+    }
+
+    private suspend fun renderFramePreview(request: FrameRequest) {
+        val (w, h) = Editing.size(request.choice.format, request.aspect, Editing.FRAME_PREVIEW_WIDTH)
+        val framing = if (request.pro) request.choice.framing else Framing()
+        _framePreview.update { it.copy(rendering = true) }
+        try {
+            val result = withContext(Dispatchers.Default) {
+                val job = coroutineContext.job
+                MandalaRenderer.render(
+                    request.params,
+                    RenderOptions(
+                        width = w, height = h, framing = framing, textFollowsMandala = request.choice.textFollowsMandala,
+                        threads = threads, textRenderer = textRenderer, imageLoader = imageLoader, isCancelled = { !job.isActive },
+                    ),
+                )
+            }
+            _framePreview.value = FramePreviewState(result.image.toBitmap().asImageBitmap(), rendering = false, framing = framing, width = w, height = h)
+        } catch (e: RenderCancelledException) {
+            // A newer framing is already being rendered.
+        } catch (e: OutOfMemoryError) {
+            _framePreview.update { it.copy(rendering = false) }
+        }
     }
 
     private suspend fun renderPreview(params: MandalaParameters) {
@@ -475,6 +567,11 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         const val DEBOUNCE_MS = 150L
         const val SAVE_DELAY_MS = 400L
         const val HISTORY_DELAY_MS = 700L
+        const val FRAME_DEBOUNCE_MS = 60L
+        const val WALLPAPER_MESSAGE_DELAY_MS = 1500L
+
+        /** Until the screen reports its own: a common 20:9 phone. */
+        const val DEFAULT_SCREEN_ASPECT = 20.0 / 9.0
         const val STARTER_FAVORITES = "starter-favorites.json"
 
         fun randomSeed(): ULong = Random.nextLong().toULong()

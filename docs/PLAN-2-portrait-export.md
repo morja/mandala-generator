@@ -50,6 +50,8 @@ Decided after [SPIKE-1](SPIKE-1-banded-rendering.md): strips in every step that 
 4. **"Set as wallpaper"** from the framing step through Android's `WallpaperManager` (home screen, lock screen or both). Needs the permission `SET_WALLPAPER`, which Android grants without asking; no new package.
 5. **Pro and docs:** labels with the real size per format, Pro sheet text, ADR-0007 "How it is built" updated, ADR-0010 accepted.
 
+   **Steps 3 to 5 done on 20 October 2026** (branch `feature/save-sheet`). The save icon opens the save sheet (`ui/SaveSheet.kt`): format chips, the frame with drag, pinch and double tap (Pro), the quote switch when there is a quote, "Save · W × H", "Save large · W × H" (Pro) and "Set as wallpaper". Messages show inside the sheet; the sheet stays open when Android recreates the screen after a wallpaper change. "Save large" left the menu. Rules and sizes in `Editing.kt` (`SaveFormat`, `exportSize`, `moved`, `zoomedAround`, tested in `EditingTest`); the choice is kept in shared preferences (`SaveChoice.kt`). `MemoryBudgetTest` now checks the tallest format, 2048 × 4779 (21:9) at zoom 4, and the free 1024 × 2389. Tried in an Android 14 emulator (1080 × 2340): formats, dragging, saving (`…-1024x2219.png` with the mandala where it was placed), wallpaper on the home screen, light theme and a tablet-sized window. Not tried: pinch (the emulator's input tool has one finger), the sheet without Pro (debug builds count as Pro), a real phone.
+
 Step 0 first; it changes no image and can be merged on its own. Steps 1 and 2 belong together; step 3 needs step 1. `MemoryBudgetTest` gets the case 2048 × 4437 zoomed in with step 1.
 
 ## Decisions (20 October 2026, Mathis: "everything as recommended")

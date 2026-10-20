@@ -8,6 +8,7 @@ import com.mathis.mandala.core.DrawingLayerSettings
 import com.mathis.mandala.core.EffectsLayerSettings
 import com.mathis.mandala.core.EmblemLayerSettings
 import com.mathis.mandala.core.GraffitiLayerSettings
+import com.mathis.mandala.core.Framing
 import com.mathis.mandala.core.MandalaParameters
 import com.mathis.mandala.core.MandalaRenderer
 import com.mathis.mandala.core.MandalaStyle
@@ -195,6 +196,55 @@ object Editing {
         val first = params.layers.first()
         val sym = if (first.symmetry > 1) "-x${first.symmetry}" else ""
         return "mandala-$styles-p${first.paletteIndex}$sym-${settingsHash(params)}.png"
+    }
+
+    // ── Saving in a format (ADR-0010) ──
+
+    /** Formats offered when saving. The phone screen follows the device's aspect ratio. */
+    enum class SaveFormat(val label: String) { SQUARE("Square"), SCREEN("This screen"), FOUR_FIVE("4:5") }
+
+    /** Tallest screen the phone screen format follows (21:9); `MemoryBudgetTest` checks this height at 2048 px. */
+    const val MAX_SCREEN_ASPECT = 21.0 / 9.0
+
+    /** Width of the preview in the save sheet. */
+    const val FRAME_PREVIEW_WIDTH = 360
+
+    /** Height over width of `format`; `screenAspect` is the device's (taller side over shorter side). */
+    fun aspect(format: SaveFormat, screenAspect: Double): Double = when (format) {
+        SaveFormat.SQUARE -> 1.0
+        SaveFormat.FOUR_FIVE -> 1.25
+        SaveFormat.SCREEN -> screenAspect.coerceIn(1.0, MAX_SCREEN_ASPECT)
+    }
+
+    /** Width and height of an image of `format` that is `width` pixels wide. */
+    fun size(format: SaveFormat, screenAspect: Double, width: Int): Pair<Int, Int> =
+        width to Math.round(width * aspect(format, screenAspect)).toInt()
+
+    /** Output size when saving: 1024 px wide, or 2048 px with Pro. */
+    fun exportSize(format: SaveFormat, screenAspect: Double, large: Boolean): Pair<Int, Int> =
+        size(format, screenAspect, if (large) LARGE_EXPORT_SIZE else EXPORT_SIZE)
+
+    /** File name with the size added for anything but the normal square. */
+    fun fileName(params: MandalaParameters, width: Int, height: Int): String {
+        val name = fileName(params)
+        return when {
+            width == height && width == EXPORT_SIZE -> name
+            width == height -> name.removeSuffix(".png") + "-$width.png"
+            else -> name.removeSuffix(".png") + "-${width}x$height.png"
+        }
+    }
+
+    /** The framing moved by (dx, dy), given as fractions of the frame's width and height. */
+    fun Framing.moved(dx: Double, dy: Double): Framing = copy(centreX = centreX + dx, centreY = centreY + dy).clamped()
+
+    /**
+     * The framing zoomed by `factor` around the point (px, py), given as fractions of the frame: the
+     * point under the fingers stays where it is.
+     */
+    fun Framing.zoomedAround(px: Double, py: Double, factor: Double): Framing {
+        val newZoom = (zoom * factor).coerceIn(Framing.MIN_ZOOM, Framing.MAX_ZOOM)
+        val f = newZoom / zoom
+        return Framing(px + (centreX - px) * f, py + (centreY - py) * f, newZoom).clamped()
     }
 
     private fun settingsHash(params: MandalaParameters): String {

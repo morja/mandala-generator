@@ -2,6 +2,7 @@ package com.mathis.mandala.app.ui
 
 import androidx.activity.compose.LocalActivity
 import com.mathis.mandala.app.ProState
+import com.mathis.mandala.app.screenAspect
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
@@ -76,6 +77,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -109,7 +111,12 @@ fun EditorScreen(
     val drawTool by vm.drawTool.collectAsStateWithLifecycle()
     val history by vm.historyState.collectAsStateWithLifecycle()
     val pro by vm.proState.collectAsStateWithLifecycle()
+    val saveChoice by vm.saveChoice.collectAsStateWithLifecycle()
+    val framePreview by vm.framePreview.collectAsStateWithLifecycle()
+    val phoneAspect by vm.screenAspect.collectAsStateWithLifecycle()
     var showPro by remember { mutableStateOf(false) }
+    // Kept when Android recreates the screen, which setting a wallpaper does.
+    var showSave by rememberSaveable { mutableStateOf(false) }
     val snackbar = remember { SnackbarHostState() }
     val context = LocalContext.current
     var showFavorites by remember { mutableStateOf(false) }
@@ -143,8 +150,28 @@ fun EditorScreen(
         }
     }
 
+    val activity = LocalActivity.current
+    LaunchedEffect(activity) { activity?.let { vm.setScreenAspect(screenAspect(it)) } }
+    LaunchedEffect(showSave) { vm.setSaveOpen(showSave) }
+    if (showSave) {
+        SaveSheet(
+            choice = saveChoice,
+            preview = framePreview,
+            screenAspect = phoneAspect,
+            proOwned = pro.owned,
+            hasQuote = params.textLayer.isEnabled && params.textLayer.text.isNotEmpty(),
+            busy = busy,
+            onFormat = vm::setSaveFormat,
+            onFraming = vm::setFraming,
+            onTextFollows = vm::setTextFollowsMandala,
+            onSave = vm::saveImage,
+            onWallpaper = vm::setWallpaper,
+            onShowPro = { showPro = true },
+            onDismiss = { showSave = false },
+            snackbar = snackbar,
+        )
+    }
     if (showPro) {
-        val activity = LocalActivity.current
         ProSheet(pro, onBuy = { activity?.let(vm::buyPro) }, onDismiss = { showPro = false })
     }
     LaunchedEffect(pro.owned) { if (pro.owned) showPro = false }
@@ -178,18 +205,16 @@ fun EditorScreen(
                 },
                 actions = {
                     IconButton(onClick = vm::surprise) { Icon(EditorIcons.Dice, contentDescription = "Surprise me") }
-                    IconButton(onClick = vm::exportToGallery, enabled = !busy) {
+                    IconButton(onClick = { showSave = true }, enabled = !busy) {
                         if (busy) {
                             CircularProgressIndicator(Modifier.size(Sizes.icon), strokeWidth = Sizes.progress)
                         } else {
-                            Icon(EditorIcons.Save, contentDescription = "Save to gallery", tint = LocalTokens.current.accent)
+                            Icon(EditorIcons.Save, contentDescription = "Save image", tint = LocalTokens.current.accent)
                         }
                     }
                     IconButton(onClick = { showFavorites = true }) { Icon(EditorIcons.Star, contentDescription = "Favourites") }
                     MoreMenu(
                         busy = busy,
-                        proOwned = pro.owned,
-                        onSaveLarge = { if (pro.owned) vm.exportLargeToGallery() else showPro = true },
                         onVariation = vm::newVariation,
                         onNewLayers = vm::randomLayers,
                         onShare = vm::shareImage,
@@ -202,7 +227,7 @@ fun EditorScreen(
                 },
             )
         },
-        snackbarHost = { if (!showFavorites) SnackbarHost(snackbar) },
+        snackbarHost = { if (!showFavorites && !showSave) SnackbarHost(snackbar) },
     ) { padding ->
         BoxWithConstraints(Modifier.padding(padding).fillMaxSize()) {
             if (maxWidth >= Spacing.twoPaneMinWidth) {
@@ -361,8 +386,6 @@ private fun DrawingOverlay(input: DrawingInput, guide: Color) {
 @Composable
 private fun MoreMenu(
     busy: Boolean,
-    proOwned: Boolean,
-    onSaveLarge: () -> Unit,
     onVariation: () -> Unit,
     onNewLayers: () -> Unit,
     onShare: () -> Unit,
@@ -379,11 +402,6 @@ private fun MoreMenu(
             DropdownMenuItem(text = { Text("New variation") }, onClick = { open = false; onVariation() })
             DropdownMenuItem(text = { Text("New layers") }, onClick = { open = false; onNewLayers() })
             HorizontalDivider()
-            DropdownMenuItem(
-                text = { Text(if (proOwned) "Save large (2048 px)" else "Save large (2048 px) · Pro") },
-                enabled = !busy,
-                onClick = { open = false; onSaveLarge() },
-            )
             DropdownMenuItem(text = { Text("Share image") }, enabled = !busy, onClick = { open = false; onShare() })
             DropdownMenuItem(text = { Text("Open file…") }, onClick = { open = false; onOpen() })
             DropdownMenuItem(text = { Text("Save settings…") }, onClick = { open = false; onSaveSettings() })
@@ -407,8 +425,8 @@ private fun ProSheet(pro: ProState, onBuy: () -> Unit, onDismiss: () -> Unit) {
         Column(Modifier.padding(horizontal = Spacing.lg).padding(bottom = Spacing.xl), verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
             Text("Mandala Pro", style = MaterialTheme.typography.titleLarge)
             Text(
-                "Save your mandalas at 2048 × 2048 pixels, sharp enough for prints and wallpapers. " +
-                    "One purchase, no subscription. Everything else stays free.",
+                "Save your mandalas at 2048 pixels wide in every format, sharp enough for prints and wallpapers, " +
+                    "and move and zoom the mandala in the frame. One purchase, no subscription. Everything else stays free.",
                 style = MaterialTheme.typography.bodyMedium,
             )
             Button(onClick = onBuy, enabled = pro.available, modifier = Modifier.fillMaxWidth()) {

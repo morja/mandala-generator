@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <!-- "Set as wallpaper" in the save sheet (ADR-0010); Android grants it without asking. -->
+    <uses-permission android:name="android.permission.SET_WALLPAPER" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"

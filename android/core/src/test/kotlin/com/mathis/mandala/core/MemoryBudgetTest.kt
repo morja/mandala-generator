@@ -46,24 +46,24 @@ class MemoryBudgetTest {
     }
 
     /**
-     * The Pro portrait for a 9:19.5 phone screen (PLAN-2, ADR-0010), zoomed in as far as the app
-     * allows: every layer then covers the whole canvas plus its margin. Fits only because every
-     * full-size step works in strips.
+     * The tallest Pro portrait the app saves (a 21:9 phone screen, PLAN-2, ADR-0010), zoomed in as
+     * far as the app allows: every layer then covers the whole canvas plus its margin. Fits only
+     * because every full-size step works in strips.
      */
     @Test
     fun exportsTheProPortraitZoomedInWithin256MbHeap() {
         val params = SettingsJson.decode(fiveHeavyLayers)
-        val options = RenderOptions(width = 2048, height = 4437, supersample = false, framing = Framing(zoom = Framing.MAX_ZOOM), threads = 4)
+        val options = RenderOptions(width = 2048, height = 4779, supersample = false, framing = Framing(zoom = Framing.MAX_ZOOM), threads = 4)
         val result = MandalaRenderer.render(params, options)
-        assertEquals(4437, result.image.height)
+        assertEquals(4779, result.image.height)
     }
 
     /** The free portrait: 1024 wide, drawn at twice the size like the free square. */
     @Test
     fun exportsTheFreePortraitWithin256MbHeap() {
         val params = SettingsJson.decode(fiveHeavyLayers)
-        val result = MandalaRenderer.render(params, RenderOptions(width = 1024, height = 2219, framing = Framing(centreY = 0.6), threads = 4))
-        assertEquals(2219, result.image.height)
+        val result = MandalaRenderer.render(params, RenderOptions(width = 1024, height = 2389, framing = Framing(centreY = 0.6), threads = 4))
+        assertEquals(2389, result.image.height)
     }
 
     @Test
