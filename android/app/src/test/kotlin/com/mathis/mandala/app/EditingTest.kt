@@ -10,6 +10,13 @@ import com.mathis.mandala.app.Editing.moveLayer
 import com.mathis.mandala.app.Editing.newVariation
 import com.mathis.mandala.app.Editing.removeLayer
 import com.mathis.mandala.app.Editing.updateLayer
+import com.mathis.mandala.app.Editing.newShape
+import com.mathis.mandala.app.Editing.reset
+import com.mathis.mandala.app.Editing.updateEmblem
+import com.mathis.mandala.app.Randomize.randomized
+import com.mathis.mandala.core.EmblemLayerSettings
+import com.mathis.mandala.core.EmblemMotif
+import com.mathis.mandala.core.LayerBlendMode
 import com.mathis.mandala.core.MandalaParameters
 import com.mathis.mandala.core.MandalaRenderer
 import com.mathis.mandala.core.MandalaStyle
@@ -154,5 +161,24 @@ class EditingTest {
         val cleared = p.clearStrokes(DrawTool.SPRAY)
         assertTrue(cleared.graffitiLayer.strokes.isEmpty())
         assertEquals(2, cleared.drawingLayer.strokes.size)
+    }
+
+    @Test
+    fun emblemResetKeepsItOnAndTheDiceKeepSizeAndBlending() {
+        val custom = start.updateEmblem {
+            it.copy(isEnabled = true, motif = EmblemMotif.LOTUS, size = 0.9, rotation = 45.0, blendMode = LayerBlendMode.ADD, opacity = 0.5)
+        }.emblemLayer
+        assertEquals(EmblemLayerSettings(isEnabled = true), custom.reset())
+        repeat(50) { i ->
+            val r = custom.randomized(kotlin.random.Random(i))
+            assertEquals(0.9, r.size, 0.0)
+            assertEquals(45.0, r.rotation, 0.0)
+            assertEquals(LayerBlendMode.ADD, r.blendMode)
+            assertEquals(0.5, r.opacity, 0.0)
+            assertTrue(r.petals in Editing.lotusPetals)
+            assertTrue(r.seed in 1uL..999_999uL)
+            assertTrue(r.colorSpread in 0.0..0.6 && r.glow in 0.2..0.8 && r.organic in 0.2..1.0)
+            assertTrue(custom.newShape(kotlin.random.Random(i)).seed in 1uL..999_999uL)
+        }
     }
 }

@@ -6,6 +6,7 @@ import com.mathis.mandala.core.BuiltInPalettes
 import com.mathis.mandala.core.DrawStroke
 import com.mathis.mandala.core.DrawingLayerSettings
 import com.mathis.mandala.core.EffectsLayerSettings
+import com.mathis.mandala.core.EmblemLayerSettings
 import com.mathis.mandala.core.GraffitiLayerSettings
 import com.mathis.mandala.core.MandalaParameters
 import com.mathis.mandala.core.MandalaRenderer
@@ -128,6 +129,19 @@ object Editing {
     /** Puts a quote in and shows the text layer, like "Random quote" on the Mac. */
     fun TextLayerSettings.withQuote(quote: Quote): TextLayerSettings =
         copy(text = quote.text, customAuthor = quote.author, isEnabled = true)
+
+    fun MandalaParameters.updateEmblem(change: (EmblemLayerSettings) -> EmblemLayerSettings): MandalaParameters =
+        copy(emblemLayer = change(emblemLayer))
+
+    /** Petal counts the macOS Lotus picker offers. */
+    val lotusPetals = listOf(6, 8, 12, 16)
+
+    /** The macOS reset button of the emblem card: all defaults, but it stays on or off. */
+    fun EmblemLayerSettings.reset(): EmblemLayerSettings = EmblemLayerSettings(isEnabled = isEnabled)
+
+    /** A new tree shape, in the range the macOS dice use. */
+    fun EmblemLayerSettings.newShape(random: kotlin.random.Random): EmblemLayerSettings =
+        copy(seed = random.nextLong(1, 1_000_000).toULong())
 
     fun MandalaParameters.updateDrawing(change: (DrawingLayerSettings) -> DrawingLayerSettings): MandalaParameters =
         copy(drawingLayer = change(drawingLayer))

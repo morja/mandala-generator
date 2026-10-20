@@ -27,6 +27,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.ui.composed
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.semantics.CustomAccessibilityAction
+import androidx.compose.ui.semantics.customActions
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -104,15 +113,22 @@ internal fun SwitchRow(label: String, checked: Boolean, onChange: (Boolean) -> U
 }
 
 @Composable
-internal fun ValueSlider(label: String, value: Double, range: ClosedFloatingPointRange<Float> = 0f..1f, onChange: (Double) -> Unit) {
-    SliderRow(label, String.format(Locale.US, "%.2f", value)) {
+internal fun ValueSlider(
+    label: String,
+    value: Double,
+    range: ClosedFloatingPointRange<Float> = 0f..1f,
+    default: Double,
+    display: (Double) -> String = { String.format(Locale.US, "%.2f", it) },
+    onChange: (Double) -> Unit,
+) {
+    SliderRow(label, display(value), onReset = { onChange(default) }) {
         Slider(value = value.toFloat(), onValueChange = { onChange(it.toDouble()) }, valueRange = range)
     }
 }
 
 @Composable
-internal fun SteppedSlider(label: String, value: Int, range: IntRange, onChange: (Int) -> Unit) {
-    SliderRow(label, value.toString()) {
+internal fun SteppedSlider(label: String, value: Int, range: IntRange, default: Int, onChange: (Int) -> Unit) {
+    SliderRow(label, value.toString(), onReset = { onChange(default) }) {
         Slider(
             value = value.toFloat(),
             onValueChange = { onChange(it.roundToInt()) },
@@ -122,11 +138,20 @@ internal fun SteppedSlider(label: String, value: Int, range: IntRange, onChange:
     }
 }
 
-/** Label on the left, slider in the middle, value on the right: one line per setting. */
+/**
+ * Label on the left, slider in the middle, value on the right: one line per setting. A double tap
+ * anywhere on the line puts the setting back to its default (also offered as an accessibility action).
+ */
 @Composable
-private fun SliderRow(label: String, value: String, slider: @Composable () -> Unit) {
+private fun SliderRow(label: String, value: String, onReset: () -> Unit, slider: @Composable () -> Unit) {
     val t = LocalTokens.current
-    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .onDoubleTap(onReset)
+            .semantics { customActions = listOf(CustomAccessibilityAction("Reset $label") { onReset(); true }) },
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
         Text(
             label,
             style = MaterialTheme.typography.bodyMedium,
@@ -146,6 +171,44 @@ private fun SliderRow(label: String, value: String, slider: @Composable () -> Un
     }
 }
 
+/**
+ * Calls `action` on a double tap, watching the pointer before the slider sees it and consuming
+ * nothing, so taps and drags still reach the slider. The slider jumps to the second tap; the reset
+ * on its release then wins.
+ */
+private fun Modifier.onDoubleTap(action: () -> Unit): Modifier = composed {
+    val current by rememberUpdatedState(action)
+    pointerInput(Unit) {
+        val timeout = viewConfiguration.doubleTapTimeoutMillis
+        val slop = viewConfiguration.touchSlop
+        var lastUpTime = -1L
+        var lastUpPosition = Offset.Zero
+        awaitEachGesture {
+            val down = awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
+            val second = lastUpTime >= 0 && down.uptimeMillis - lastUpTime <= timeout &&
+                (down.position - lastUpPosition).getDistance() <= slop * 4
+            var moved = false
+            while (true) {
+                val event = awaitPointerEvent(PointerEventPass.Initial)
+                val change = event.changes.firstOrNull { it.id == down.id } ?: break
+                if ((change.position - down.position).getDistance() > slop) moved = true
+                if (!change.pressed) {
+                    if (moved) {
+                        lastUpTime = -1L
+                    } else if (second) {
+                        lastUpTime = -1L
+                        current()
+                    } else {
+                        lastUpTime = change.uptimeMillis
+                        lastUpPosition = change.position
+                    }
+                    break
+                }
+            }
+        }
+    }
+}
+
 /** Hue, saturation and brightness of one colour, as a nested group with the colour as summary dot. */
 @Composable
 internal fun ColourGroup(
@@ -153,13 +216,15 @@ internal fun ColourGroup(
     hue: Double,
     saturation: Double,
     brightness: Double,
+    /** Defaults of hue, saturation and brightness, for the double-tap reset. */
+    defaults: Triple<Double, Double, Double>,
     initiallyOpen: Boolean = false,
     onChange: (Double, Double, Double) -> Unit,
 ) {
     Group(title, nested = true, initiallyOpen = initiallyOpen, trailing = { ColourDot(hsbColour(hue, saturation, brightness)) }) {
-        ValueSlider("Hue", hue) { v -> onChange(v, saturation, brightness) }
-        ValueSlider("Saturation", saturation) { v -> onChange(hue, v, brightness) }
-        ValueSlider("Brightness", brightness) { v -> onChange(hue, saturation, v) }
+        ValueSlider("Hue", hue, default = defaults.first) { v -> onChange(v, saturation, brightness) }
+        ValueSlider("Saturation", saturation, default = defaults.second) { v -> onChange(hue, v, brightness) }
+        ValueSlider("Brightness", brightness, default = defaults.third) { v -> onChange(hue, saturation, v) }
     }
 }
 
