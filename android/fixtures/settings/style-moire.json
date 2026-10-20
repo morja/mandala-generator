@@ -1,0 +1,26 @@
+{
+  "layers": [
+    {
+      "isEnabled": true,
+      "style": "moire",
+      "scale": 0.75,
+      "paletteIndex": 15,
+      "complexity": 0.6,
+      "density": 0.5,
+      "glowIntensity": 0.6,
+      "colorDrift": 0.4,
+      "ripple": 0.0,
+      "abstractLevel": 0.0,
+      "symmetry": 2,
+      "seed": 2468
+    }
+  ],
+  "baseLayer": {
+    "isEnabled": false
+  },
+  "effectsLayer": {
+    "isEnabled": false
+  },
+  "seed": 97,
+  "outputSize": 512
+}

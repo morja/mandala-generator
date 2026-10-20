@@ -1,0 +1,26 @@
+{
+  "layers": [
+    {
+      "isEnabled": true,
+      "style": "sphereGrid",
+      "scale": 0.75,
+      "paletteIndex": 8,
+      "complexity": 0.6,
+      "density": 0.5,
+      "glowIntensity": 0.6,
+      "colorDrift": 0.4,
+      "ripple": 0.0,
+      "abstractLevel": 0.0,
+      "symmetry": 2,
+      "seed": 4711
+    }
+  ],
+  "baseLayer": {
+    "isEnabled": false
+  },
+  "effectsLayer": {
+    "isEnabled": false
+  },
+  "seed": 1618,
+  "outputSize": 512
+}

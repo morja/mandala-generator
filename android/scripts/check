@@ -1,0 +1,4 @@
+#!/bin/sh
+# Fast check (pre-commit): unit and rule tests, the 256 MB memory test, and the app unit tests.
+set -eu
+./gradlew --quiet :core:test :core:memoryTest :cli:compileTestKotlin :cli:installDist :app:testDebugUnitTest

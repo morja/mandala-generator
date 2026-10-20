@@ -1,0 +1,27 @@
+{
+  "layers": [
+    {
+      "isEnabled": true,
+      "style": "radialMesh",
+      "scale": 0.75,
+      "paletteIndex": 11,
+      "complexity": 0.78,
+      "density": 0.6,
+      "glowIntensity": 0.6,
+      "colorDrift": 0.4,
+      "ripple": 0.15,
+      "abstractLevel": 0.0,
+      "symmetry": 1,
+      "seed": 2468,
+      "spokes": 0
+    }
+  ],
+  "baseLayer": {
+    "isEnabled": false
+  },
+  "effectsLayer": {
+    "isEnabled": false
+  },
+  "seed": 97,
+  "outputSize": 512
+}
