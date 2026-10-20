@@ -36,6 +36,11 @@ Decided after [SPIKE-1](SPIKE-1-banded-rendering.md): strips in every step that 
 ## Steps
 
 0. **Core: strips in every step** (ADR-0010, point 12), before everything else, on today's square renderer. Check: MD5 of every fixture in `android/fixtures/settings/` at 1024 and 2048 identical before and after; `MemoryBudgetTest` stays green with less heap; render time unchanged. The prototype on the local branch `spike/banded-rendering` is the starting point for the layer lines.
+   **Done on 20 October 2026** (branch `feature/render-strips`). Strips for layer lines and attractor points (now recorded, 10 bytes each), the auto background, the drawing layer, graffiti, stars and glitter and the whole effects chain; glow and wash write into the layer image. Results:
+   - All 84 fixtures byte-identical at 1024 px; at 512 px 83, `hand-both` differs by one step of 255 in single pixels (graffiti blur, 98.6 dB). The worst case of `MemoryBudgetTest` is byte-identical at 2048² and 3014².
+   - Minimum heap of the worst case: 2048² from 182 to 134 MB, 3014² (the pixel count of 2048 × 4437) from 348 to 188 MB. `MemoryBudgetTest` has the 3014² case now.
+   - CPU time within a few percent of before (the Mac was under heavy load, so wall-clock times were not comparable).
+   - Not in strips yet, small enough for now: the text layer's masks (up to about 12 bytes per pixel with glow), the emblem mask (1 to 2 bytes per pixel).
 
 1. **Core: canvas and framing.** `RenderOptions` gets width, height, centre and zoom (ADR-0010); backgrounds take width and height; layer buffers are limited to the canvas plus margin; size-dependent values follow the mandala for layers and the canvas for background and effects; supersampling with any factor and an area filter for scaling down. Tests: every fixture in `android/fixtures/settings/` renders byte-identical through the old square path and through square with the default framing; `MemoryBudgetTest` gets one case per format at its largest size, zoomed in as far as the app allows; `ParityTest` unchanged.
 2. **CLI:** width, height, centre and zoom as options, to check results on the desktop and for the docs.
