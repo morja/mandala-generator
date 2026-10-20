@@ -162,38 +162,47 @@ enum EmblemShapes {
     /// A tree whose twigs and roots end evenly spread on the ring. The twig tips are placed on the
     /// ring first; neighbouring tips are then joined pairwise (sometimes in threes) towards the
     /// trunk, which gives the even fan of the classic Tree of Life. `organic` lets the branches
-    /// flow out of each other in curves, sways the trunk and lets the crown reach further down.
+    /// flow out of each other in gnarled curves, adds side twigs and rootlets, sways the trunk and
+    /// lets the crown reach further down. More branching gives more and finer twigs.
     static func treeOfLife(seed: UInt64, branching: Double, roots: Bool, organic: Double = 0) -> EmblemGeometry {
         var rng = SeededRNG(seed: seed)
         var g = EmblemGeometry()
         let top = (x: 0.0, y: -0.10), bottom = (x: 0.0, y: 0.32)
         let sway = organic * rng.nextDouble(in: -0.06...0.06)
+        // The trunk ends exactly where the roots start and leaves both ends vertically, so roots
+        // and crown join without a kink; only its middle sways.
+        let midY = (bottom.y + top.y) / 2
         g.strokes.append(cubicChain([
-            [0, bottom.y + 0.04, 0.13], [sway, 0.22], [-sway, 0.02], [top.x, top.y, 0.095],
-        ], steps: 20))
-        let twigs = 8 + Int((max(0, min(1, branching)) * 32).rounded())
+            [bottom.x, bottom.y, 0.13], [0, bottom.y - 0.07], [sway, midY + 0.07], [sway, midY, 0.085],
+            [sway, midY - 0.07], [0, top.y + 0.07], [top.x, top.y, 0.095],
+        ], steps: 14))
+        let b = max(0, min(1, branching))
+        let twigs = 8 + Int((b * 56).rounded())
         let reach = 0.10 * organic
         branches(into: &g, rng: &rng, origin: top, up: true,
                  from: -.pi * (0.92 + reach), to: -.pi * (0.08 - reach),
-                 tips: twigs, maxWidth: 0.085, pull: 0.85, organic: organic)
+                 tips: twigs, maxWidth: 0.085, pull: 0.85, organic: organic, fineness: b)
         if roots {
             branches(into: &g, rng: &rng, origin: bottom, up: false,
                      from: .pi * (0.14 - reach * 0.4), to: .pi * (0.86 + reach * 0.4),
-                     tips: max(4, twigs / 2), maxWidth: 0.08, pull: 0.7, organic: organic)
+                     tips: max(4, twigs / 2), maxWidth: 0.08, pull: 0.7, organic: organic, fineness: b)
         }
         return g
     }
 
     private static func branches(into g: inout EmblemGeometry, rng: inout SeededRNG,
                                  origin: (x: Double, y: Double), up: Bool, from lo: Double, to hi: Double,
-                                 tips n: Int, maxWidth: Double, pull: Double, organic: Double) {
+                                 tips n: Int, maxWidth: Double, pull: Double, organic: Double, fineness: Double) {
         let step = (hi - lo) / Double(n)
         var tipPoints: [(x: Double, y: Double)] = []
         for i in 0..<n {
             let a = lo + step * (Double(i) + 0.5) + rng.nextDouble(in: -0.3...0.3) * step
             tipPoints.append((cos(a) * ringRadius, sin(a) * ringRadius))
         }
-        func width(_ count: Int) -> Double { 0.012 + maxWidth * (Double(count) / Double(n)).squareRoot() }
+        // Twigs get finer the more of them there are.
+        let twigWidth = 0.012 - 0.006 * fineness
+        let tipWidth = 0.008 - 0.004 * fineness
+        func width(_ count: Int) -> Double { twigWidth + maxWidth * (Double(count) / Double(n)).squareRoot() }
 
         // Build the branching from the tips towards the trunk.
         func node(_ a: Int, _ b: Int, depth: Int) -> Branch {
@@ -223,6 +232,41 @@ enum EmblemShapes {
             return unit(mx - b.pos.x, my - b.pos.y)
         }
 
+        /// Bends a branch gently back and forth, keeping both ends in place.
+        func gnarl(_ pts: [EmblemPoint], length: Double) -> [EmblemPoint] {
+            guard organic > 0, pts.count > 2 else { return pts }
+            let amp = min(0.018, organic * 0.06 * length)
+            let freq = rng.nextDouble(in: 0.7...1.5), phase = rng.nextDouble(in: 0...(2 * .pi))
+            return pts.indices.map { i in
+                let a = pts[max(0, i - 1)], b = pts[min(pts.count - 1, i + 1)]
+                let n = unit(-(b.y - a.y), b.x - a.x)
+                let t = Double(i) / Double(pts.count - 1)
+                let off = amp * sin(.pi * t) * sin(2 * .pi * freq * t + phase)
+                var p = pts[i]
+                p.x += n.x * off; p.y += n.y * off
+                return p
+            }
+        }
+
+        /// Short side twigs (or rootlets) that grow off a branch and stop before the ring.
+        func sprigs(along pts: [EmblemPoint], count: Int) {
+            guard organic > 0.1, pts.count > 4 else { return }
+            let chance = organic * (0.25 + 0.6 * fineness) * (count <= 2 ? 1.0 : 0.6)
+            for _ in 0..<2 where rng.nextDouble() < chance {
+                let i = Int(Double(pts.count - 1) * rng.nextDouble(in: 0.3...0.8))
+                let a = pts[max(0, i - 1)], b = pts[min(pts.count - 1, i + 1)]
+                let dir = atan2(b.y - a.y, b.x - a.x) + (rng.nextDouble() < 0.5 ? -1 : 1) * rng.nextDouble(in: 0.45...0.8)
+                let len = rng.nextDouble(in: 0.04...0.09) * (1 - 0.3 * fineness)
+                let p = (x: pts[i].x, y: pts[i].y)
+                let q = (x: p.x + cos(dir) * len, y: p.y + sin(dir) * len)
+                guard hypot(q.x, q.y) < ringRadius - 0.04 else { continue }
+                let bend = rng.nextDouble(in: -0.25...0.25) * len
+                let c = (x: (p.x + q.x) / 2 - sin(dir) * bend, y: (p.y + q.y) / 2 + cos(dir) * bend)
+                let w0 = max(tipWidth, pts[i].w * 0.45)
+                g.strokes.append(cubic(p, c, c, q, w0: w0, w1: tipWidth * 0.6, steps: 10))
+            }
+        }
+
         // Draw from the trunk outwards so every branch continues the direction it came from.
         func draw(_ b: Branch, incoming: (x: Double, y: Double)) {
             for kid in b.kids {
@@ -238,8 +282,10 @@ enum EmblemShapes {
                 let c1 = (x: p.x + d0.x * len * k0 - chord.y * bend * len, y: p.y + d0.y * len * k0 + chord.x * bend * len)
                 let c2 = (x: q.x - d1.x * len * k1 - chord.y * bend * len, y: q.y - d1.y * len * k1 + chord.x * bend * len)
                 let w0 = width(kid.count) * (1 + 0.2 * organic)
-                let w1 = kid.count > 1 ? width(kid.count) * 0.8 : 0.008
-                g.strokes.append(cubic(p, c1, c2, q, w0: w0, w1: w1))
+                let w1 = kid.count > 1 ? width(kid.count) * 0.8 : tipWidth
+                let pts = gnarl(cubic(p, c1, c2, q, w0: w0, w1: w1, steps: 24), length: len)
+                g.strokes.append(pts)
+                if b !== root { sprigs(along: pts, count: kid.count) }   // none right at the trunk
                 draw(kid, incoming: d1)
             }
         }
@@ -402,10 +448,10 @@ enum EmblemShapes {
 
     // MARK: Yin Yang
 
-    /// Yin and yang; `organic` draws the outer circle as an open brush stroke (ensō).
+    /// Yin and yang, always exact and closed. `organic` adds an open brush circle (ensō) around it.
     static func yinYang(organic: Double = 0) -> EmblemGeometry {
         var g = EmblemGeometry()
-        let r = 0.78, h = r / 2, w = 0.03
+        let r = 0.70, h = r / 2, w = 0.03
         func arc(_ cx: Double, _ cy: Double, _ rad: Double, from a0: Double, to a1: Double, steps: Int = 90) -> [(x: Double, y: Double)] {
             (0...steps).map { i in
                 let a = a0 + (a1 - a0) * Double(i) / Double(steps)
@@ -414,21 +460,27 @@ enum EmblemShapes {
         }
         // The S: upper half bulges left, lower half bulges right.
         let s = arc(0, -h, h, from: -.pi / 2, to: -1.5 * .pi) + arc(0, h, h, from: -.pi / 2, to: .pi / 2).dropFirst()
-        // Outer circle, opened by a gap for the brush look.
-        let gap = organic * 0.45
-        let start = -.pi * 0.62
-        let ring = arc(0, 0, r, from: start + gap / 2, to: start + 2 * .pi - gap / 2, steps: 240)
-        let brush: (Double) -> Double = { t in 1 + organic * (0.9 * sin(.pi * t) - 0.35) }
-        g.strokes.append(penWidths(ring.enumerated().map {
-            EmblemPoint(x: $1.x, y: $1.y, w: w * brush(Double($0) / Double(ring.count - 1)))
-        }, organic: organic))
-        g.strokes.append(penWidths(s.map { EmblemPoint(x: $0.x, y: $0.y, w: w * 0.8) }, organic: organic))
-        // Dark half: the right side of the circle and back along the S, with the light eye cut out.
+        g.strokes.append(circle(radius: r, width: w))
+        g.strokes.append(s.map { EmblemPoint(x: $0.x, y: $0.y, w: w * 0.8) })
+        // Filled half: the right side of the circle and back along the S, with the other eye cut out.
         let eye = r * 0.13
-        let darkHalf = arc(0, 0, r, from: -.pi / 2, to: .pi / 2) + s.reversed()
-        g.fills.append([darkHalf, arc(0, -h, eye, from: 0, to: 2 * .pi, steps: 48)])
+        let half = arc(0, 0, r, from: -.pi / 2, to: .pi / 2) + s.reversed()
+        g.fills.append([half, arc(0, -h, eye, from: 0, to: 2 * .pi, steps: 48)])
         g.strokes.append(circle(radius: eye, width: w * 0.7, cx: 0, cy: -h, steps: 60))
         g.dots.append(EmblemDot(x: 0, y: h, r: eye))
+
+        if organic > 0.05 {
+            // Ensō: one brush stroke, starting heavy, thinning out and leaving a gap.
+            let gap = 0.15 + 0.45 * organic
+            let start = -.pi * 0.62
+            let ring = arc(0, 0, 0.81, from: start, to: start + 2 * .pi - gap, steps: 240)
+            let pts = ring.enumerated().map { i, p -> EmblemPoint in
+                let t = Double(i) / Double(ring.count - 1)
+                let brush = 0.25 + 1.2 * pow(sin(.pi * pow(t, 0.55)), 0.8) * (1 - 0.45 * t)
+                return EmblemPoint(x: p.x, y: p.y, w: 0.045 * organic * brush + 0.008)
+            }
+            g.strokes.append(penWidths(pts, organic: organic * 0.6))
+        }
         return g
     }
 
