@@ -65,7 +65,7 @@ class FavoritesTest {
         override fun metrics(font: com.mathis.mandala.core.TextFont) =
             com.mathis.mandala.core.TextRenderer.Metrics(font.sizePx * 0.8f, font.sizePx * 0.2f, 0f)
         override fun width(text: String, font: com.mathis.mandala.core.TextFont) = text.length * font.sizePx * 0.5f
-        override fun drawLines(size: Int, lines: List<com.mathis.mandala.core.PlacedLine>) = FloatArray(size * size)
+        override fun drawLines(width: Int, height: Int, lines: List<com.mathis.mandala.core.PlacedLine>) = FloatArray(width * height)
     }
 
     @Test

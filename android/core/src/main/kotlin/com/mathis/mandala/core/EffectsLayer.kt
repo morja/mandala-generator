@@ -7,6 +7,7 @@ import kotlin.math.floor
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.pow
+import kotlin.math.roundToInt
 import kotlin.math.sin
 import kotlin.math.sqrt
 
@@ -29,10 +30,18 @@ internal class EffectsLayer(private val par: Parallel, private val fx: LayerEffe
 
     fun apply(image: Image8, s: EffectsLayerSettings): Image8 {
         var result = if (hasChain(s)) chain(image, s) else image
-        val size = result.width
-        if (s.stars > 0) result = fx.composite(result, fx.glow(lightLayer(size) { stars(it, s, size) }, 0.28, size), BlendOp.SCREEN)
-        if (s.glitter > 0) result = fx.composite(result, fx.glow(lightLayer(size) { glitter(it, s, size) }, 0.18, size), BlendOp.SCREEN)
+        val w = result.width
+        val h = result.height
+        val side = min(w, h)
+        if (s.stars > 0) result = fx.composite(result, fx.glow(lightLayer(w, h) { stars(it, s, w, h) }, 0.28, side), BlendOp.SCREEN)
+        if (s.glitter > 0) result = fx.composite(result, fx.glow(lightLayer(w, h) { glitter(it, s, w, h) }, 0.18, side), BlendOp.SCREEN)
         return result
+    }
+
+    /** How many of `count` scattered items a canvas gets: as many as a square of its shorter side, scaled by its area. */
+    private fun scaledCount(count: Int, w: Int, h: Int): Int {
+        val side = min(w, h).toDouble()
+        return if (w == h) count else (count * (w.toDouble() * h / (side * side))).roundToInt()
     }
 
     private fun hasChain(s: EffectsLayerSettings) =
@@ -62,7 +71,7 @@ internal class EffectsLayer(private val par: Parallel, private val fx: LayerEffe
         }
         val bloom = if (s.bloom > 0.001) {
             val passes = listOf(LayerEffects.BlurPass(40.0, 0.55 * s.bloom), LayerEffects.BlurPass(144.0, 0.30 * s.bloom))
-            fx.referenceBlurOverlay(source, width, passes)
+            fx.referenceBlurOverlay(source, min(width, height), passes)
         } else {
             null
         }
@@ -171,22 +180,22 @@ internal class EffectsLayer(private val par: Parallel, private val fx: LayerEffe
          */
         private fun darkSpots(seed: ULong, count: Int, rMax: Double, rMin: Double, dark: (SeededRng) -> Double): List<Spot> {
             val rng = SeededRng(seed)
-            val size = width.toDouble()
-            return List(count) {
-                val cx = rng.nextDouble() * size
-                val cy = rng.nextDouble() * size
-                val r1 = size * (rng.nextDouble() * rMax + rMin)
+            val side = min(width, height).toDouble()
+            return List(scaledCount(count, width, height)) {
+                val cx = rng.nextDouble() * width
+                val cy = rng.nextDouble() * height
+                val r1 = side * (rng.nextDouble() * rMax + rMin)
                 Spot(cx, height - cy, r1, dark(rng).toFloat(), null)
             }
         }
 
         private fun highlights(): List<Spot> {
             val rng = SeededRng(s.highlightsSeed)
-            val size = width.toDouble()
-            return List((s.highlights * 8).toInt() + 2) {
-                val cx = rng.nextDouble() * size
-                val cy = rng.nextDouble() * size
-                val r1 = size * (rng.nextDouble() * 0.12 + 0.02)
+            val side = min(width, height).toDouble()
+            return List(scaledCount((s.highlights * 8).toInt() + 2, width, height)) {
+                val cx = rng.nextDouble() * width
+                val cy = rng.nextDouble() * height
+                val r1 = side * (rng.nextDouble() * 0.12 + 0.02)
                 val br = s.highlights * (rng.nextDouble() * 0.4 + 0.2)
                 val col = Rgb.fromSrgb(br, br * 0.9, br * 0.8)
                 Spot(cx, height - cy, r1, 0f, floatArrayOf(col.r.toFloat(), col.g.toFloat(), col.b.toFloat()))
@@ -360,17 +369,19 @@ internal class EffectsLayer(private val par: Parallel, private val fx: LayerEffe
 
     // ── Light layers drawn after the chain ───────────────────────────────
 
-    private fun lightLayer(size: Int, draw: (LineList) -> Unit): Image8 {
+    private fun lightLayer(width: Int, height: Int, draw: (LineList) -> Unit): Image8 {
         val lines = LineList()
         draw(lines)
-        return PixelBuffer.drawInStrips(size, size) { lines.drawInto(it, par) }
+        return PixelBuffer.drawInStrips(width, height) { lines.drawInto(it, par) }
     }
 
     /** Tapered diffraction spikes: four long arms and four shorter, dimmer diagonals. */
-    private fun stars(lines: LineList, s: EffectsLayerSettings, size: Int) {
+    private fun stars(lines: LineList, s: EffectsLayerSettings, width: Int, height: Int) {
         val rng = SeededRng(s.starsSeed)
-        val n = (s.stars * 400).toInt() + 10
-        val wf = size.toFloat()
+        val n = scaledCount((s.stars * 400).toInt() + 10, width, height)
+        val wf = min(width, height).toFloat()
+        val xf = width.toFloat()
+        val yf = height.toFloat()
         val nSeg = 10
         fun arm(x: Float, y: Float, dx: Float, dy: Float, len: Float, b: Float, dimMul: Float) {
             for (seg in 0 until nSeg) {
@@ -381,8 +392,8 @@ internal class EffectsLayer(private val par: Parallel, private val fx: LayerEffe
             }
         }
         repeat(n) {
-            val x = rng.nextFloat() * wf
-            val y = rng.nextFloat() * wf
+            val x = rng.nextFloat() * xf
+            val y = rng.nextFloat() * yf
             val b = s.stars.toFloat() * (rng.nextFloat() * 0.5f + 0.5f) * 10.0f
             val len = rng.nextFloat() * wf * 0.022f + wf * 0.006f
             lines.add(x, y, x + 0.5f, y, b, b * 0.96f, b * 0.9f, b * 0.6f)
@@ -399,13 +410,15 @@ internal class EffectsLayer(private val par: Parallel, private val fx: LayerEffe
     }
 
     /** Dense tiny rainbow sparkles: a cross plus fainter diagonal glints. */
-    private fun glitter(lines: LineList, s: EffectsLayerSettings, size: Int) {
+    private fun glitter(lines: LineList, s: EffectsLayerSettings, width: Int, height: Int) {
         val rng = SeededRng(s.glitterSeed)
-        val n = (s.glitter * 2500).toInt() + 80
-        val wf = size.toFloat()
+        val n = scaledCount((s.glitter * 2500).toInt() + 80, width, height)
+        val wf = min(width, height).toFloat()
+        val xf = width.toFloat()
+        val yf = height.toFloat()
         repeat(n) {
-            val x = rng.nextFloat() * wf
-            val y = rng.nextFloat() * wf
+            val x = rng.nextFloat() * xf
+            val y = rng.nextFloat() * yf
             val hue = rng.nextFloat()
             val bright = s.glitter.toFloat() * (rng.nextFloat() * 0.55f + 0.45f) * 9.0f
             val hi = (hue * 6.0f).toInt() % 6

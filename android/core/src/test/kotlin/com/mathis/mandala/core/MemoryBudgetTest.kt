@@ -46,15 +46,24 @@ class MemoryBudgetTest {
     }
 
     /**
-     * Stand-in for the 2048 x 4437 Pro portrait (PLAN-2, ADR-0010) until the renderer draws other
-     * formats: a square with the same number of pixels, without supersampling. Fits only because
-     * every full-size step works in strips.
+     * The Pro portrait for a 9:19.5 phone screen (PLAN-2, ADR-0010), zoomed in as far as the app
+     * allows: every layer then covers the whole canvas plus its margin. Fits only because every
+     * full-size step works in strips.
      */
     @Test
-    fun exportsThePortraitPixelCountWithin256MbHeap() {
+    fun exportsTheProPortraitZoomedInWithin256MbHeap() {
         val params = SettingsJson.decode(fiveHeavyLayers)
-        val result = MandalaRenderer.render(params, RenderOptions(outputSize = 3014, supersample = false, threads = 4))
-        assertEquals(3014, result.image.width)
+        val options = RenderOptions(width = 2048, height = 4437, supersample = false, framing = Framing(zoom = Framing.MAX_ZOOM), threads = 4)
+        val result = MandalaRenderer.render(params, options)
+        assertEquals(4437, result.image.height)
+    }
+
+    /** The free portrait: 1024 wide, drawn at twice the size like the free square. */
+    @Test
+    fun exportsTheFreePortraitWithin256MbHeap() {
+        val params = SettingsJson.decode(fiveHeavyLayers)
+        val result = MandalaRenderer.render(params, RenderOptions(width = 1024, height = 2219, framing = Framing(centreY = 0.6), threads = 4))
+        assertEquals(2219, result.image.height)
     }
 
     @Test

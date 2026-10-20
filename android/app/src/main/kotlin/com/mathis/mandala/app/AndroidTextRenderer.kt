@@ -40,14 +40,15 @@ class AndroidTextRenderer : TextRenderer {
 
     override fun width(text: String, font: TextFont): Float = paint(font).measureText(text)
 
-    override fun drawLines(size: Int, lines: List<PlacedLine>): FloatArray {
-        val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ALPHA_8)
+    override fun drawLines(width: Int, height: Int, lines: List<PlacedLine>): FloatArray {
+        val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ALPHA_8)
         val canvas = Canvas(bitmap)
         for (line in lines) canvas.drawText(line.text, line.x, line.baseline, paint(line.font))
-        val bytes = java.nio.ByteBuffer.allocate(size * size)
+        val bytes = java.nio.ByteBuffer.allocate(bitmap.rowBytes * height)
         bitmap.copyPixelsToBuffer(bytes)
+        val stride = bitmap.rowBytes
         bitmap.recycle()
         val raw = bytes.array()
-        return FloatArray(size * size) { (raw[it].toInt() and 0xFF) / 255f }
+        return FloatArray(width * height) { (raw[(it / width) * stride + it % width].toInt() and 0xFF) / 255f }
     }
 }

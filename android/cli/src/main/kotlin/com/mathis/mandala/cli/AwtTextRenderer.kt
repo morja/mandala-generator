@@ -41,8 +41,8 @@ class AwtTextRenderer : TextRenderer {
     override fun width(text: String, font: TextFont): Float =
         awtFont(font).getStringBounds(text, scratch.fontRenderContext).width.toFloat()
 
-    override fun drawLines(size: Int, lines: List<PlacedLine>): FloatArray {
-        val img = BufferedImage(size, size, BufferedImage.TYPE_BYTE_GRAY)
+    override fun drawLines(width: Int, height: Int, lines: List<PlacedLine>): FloatArray {
+        val img = BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY)
         val g = img.createGraphics()
         g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON)
         g.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON)
@@ -53,11 +53,11 @@ class AwtTextRenderer : TextRenderer {
         }
         g.dispose()
         val raster = img.raster
-        val out = FloatArray(size * size)
-        val row = IntArray(size)
-        for (y in 0 until size) {
-            raster.getSamples(0, y, size, 1, 0, row)
-            for (x in 0 until size) out[y * size + x] = row[x] / 255f
+        val out = FloatArray(width * height)
+        val row = IntArray(width)
+        for (y in 0 until height) {
+            raster.getSamples(0, y, width, 1, 0, row)
+            for (x in 0 until width) out[y * width + x] = row[x] / 255f
         }
         return out
     }

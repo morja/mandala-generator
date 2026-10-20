@@ -67,7 +67,7 @@ class EmblemLayerTest {
             // A square of half-width 0.5 with a square hole of half-width 0.25 (unit 100 px, 200 px image).
             fun square(h: Double) = listOf(Pt(-h, -h), Pt(h, -h), Pt(h, h), Pt(-h, h))
             g.fills += listOf(square(0.5), square(0.25))
-            val mask = EmblemMask(200, 100.0, 0.0).draw(g, EmblemRendering.FILLED, 0.5, par)
+            val mask = EmblemMask(200, 200, 100.0, 100.0, 100.0, 0.0).draw(g, EmblemRendering.FILLED, 0.5, par)
             fun at(x: Int, y: Int) = mask[y * 200 + x].toInt() and 0xFF
             assertEquals(255, at(60, 100)) // in the ring
             assertEquals(0, at(100, 100)) // in the hole
