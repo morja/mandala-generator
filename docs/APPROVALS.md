@@ -14,6 +14,8 @@ Format: `- **What** · What for and why · Alternative without approval · Recom
 
 ## Approved
 
+20 October 2026 (Mathis, after SPIKE-1): strips in every render step that works on a full-size image; Pro 2048 px wide in every format; framing by hand only with Pro; no 4096 square for now (ADR-0010, PLAN-2).
+
 20 October 2026 (Mathis, PLAN-2 "everything as recommended"): ADR-0010, portrait export with framing; the Android permission `SET_WALLPAPER` for "Set as wallpaper".
 
 20 October 2026 (Mathis approved PLAN-1): one public repository for both apps (ADR-0009); root folders `mac`, `android`, `docs`, `.github`, `.githooks`; ADR-0004's path to the Mac renderer becomes `../mac`.

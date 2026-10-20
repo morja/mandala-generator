@@ -1,8 +1,8 @@
 # PLAN-2 · Portrait export with framing by hand
 
-20 October 2026. Status: approved by Mathis on 20 October 2026, all questions as recommended. Decision draft: [ADR-0010](adr/0010-export-formats-and-framing.md). Nothing is built yet.
+20 October 2026. Status: approved by Mathis on 20 October 2026, all questions as recommended; updated the same day after [SPIKE-1](SPIKE-1-banded-rendering.md): strips first, Pro 2048 wide in portrait, framing only in Pro. Decision draft: [ADR-0010](adr/0010-export-formats-and-framing.md). Nothing is built yet.
 
-Decided by Mathis: portrait is free, Android only, the format is chosen when saving, and the user places the mandala in the frame by dragging and pinching (a section when zoomed in, anywhere on the background when zoomed out).
+Decided by Mathis: portrait is free, Android only, the format is chosen when saving. With Pro the user places the mandala in the frame by dragging and pinching (a section when zoomed in, anywhere on the background when zoomed out); without Pro it is centred.
 
 ## Memory measurement (done)
 
@@ -20,7 +20,7 @@ The renderer only draws squares today, so portrait sizes were measured as square
 
 The limit is about 6.5 megapixels. Today's 2048 export already uses about 220 of the 256 MB (peak readings by sampling are rough; pass or fail is the reliable figure). This is roughly 50 bytes per pixel at the peak, against 3 bytes for the finished `Image8`.
 
-Consequences:
+Consequences (before the decision for strips; see below):
 
 - **Pro at 2048 width does not fit in portrait** with today's pipeline.
 - **The free export does not fit either as it is built today**: 1024 wide, drawn at twice the size and scaled down, is internally 2048 × 4437. The free portrait export therefore draws at a smaller factor (about 1.36 for 9:19.5, so the inside stays at about 4.2 megapixels like today's large export) and scales down with an area filter. That is slightly softer than the free square, still clean.
@@ -31,20 +31,25 @@ Ways to 2048 wide (and to 4096 square, open since ADR-0007), measured in [SPIKE-
 - **Lower the memory per pixel.** First profile where the 50 bytes go (float buffers of the graffiti layer, `PixelBuffer`, blur and bloom intermediates). Possibly enough for 9 megapixels without changing how the picture is drawn.
 - **Banded rendering.** Draw the canvas in horizontal strips with an overlap as wide as the widest effect (glow, bloom). Unlimited size, but every effect that reads its neighbours must be checked for seams; the bigger change.
 
+Decided after [SPIKE-1](SPIKE-1-banded-rendering.md): strips in every step that works on a full-size image. Then the free export is again drawn at twice the size (internally 2048 wide) and the Pro export is that internal image, 2048 wide, in every format.
+
 ## Steps
+
+0. **Core: strips in every step** (ADR-0010, point 12), before everything else, on today's square renderer. Check: MD5 of every fixture in `android/fixtures/settings/` at 1024 and 2048 identical before and after; `MemoryBudgetTest` stays green with less heap; render time unchanged. The prototype on the local branch `spike/banded-rendering` is the starting point for the layer lines.
 
 1. **Core: canvas and framing.** `RenderOptions` gets width, height, centre and zoom (ADR-0010); backgrounds take width and height; layer buffers are limited to the canvas plus margin; size-dependent values follow the mandala for layers and the canvas for background and effects; supersampling with any factor and an area filter for scaling down. Tests: every fixture in `android/fixtures/settings/` renders byte-identical through the old square path and through square with the default framing; `MemoryBudgetTest` gets one case per format at its largest size, zoomed in as far as the app allows; `ParityTest` unchanged.
 2. **CLI:** width, height, centre and zoom as options, to check results on the desktop and for the docs.
-3. **App: framing step.** "Save" opens it: format choice (Square, This phone's screen, 4:5), when there is a quote the choice whether it stays in place or moves with the mandala, the frame with the picture, drag, pinch, double tap to reset, then "Save" and "Save large · Pro". While a finger moves, the last preview is moved and scaled on screen; when it lifts, the preview is drawn again for the new framing. The last format and framing are kept in shared preferences. Design per `design-baseline` and ADR-0006, only existing tokens (new ones need approval); phone portrait and tablet, light and dark, no horizontal scrolling.
+3. **App: framing step.** "Save" opens it: format choice (Square, This phone's screen, 4:5), when there is a quote the choice whether it stays in place or moves with the mandala, the frame with the picture, drag, pinch, double tap to reset, then "Save" and "Save large · Pro". Drag, pinch and double tap only with Pro; without Pro the controls carry a Pro mark and open the Pro sheet. While a finger moves, the last preview is moved and scaled on screen; when it lifts, the preview is drawn again for the new framing. The last format and framing are kept in shared preferences. Design per `design-baseline` and ADR-0006, only existing tokens (new ones need approval); phone portrait and tablet, light and dark, no horizontal scrolling.
 4. **"Set as wallpaper"** from the framing step through Android's `WallpaperManager` (home screen, lock screen or both). Needs the permission `SET_WALLPAPER`, which Android grants without asking; no new package.
 5. **Pro and docs:** labels with the real size per format, Pro sheet text, ADR-0007 "How it is built" updated, ADR-0010 accepted.
 
-Steps 1 and 2 belong together; step 3 needs step 1. Banded rendering or the memory work, if wanted, comes after step 5 and only raises the Pro sizes.
+Step 0 first; it changes no image and can be merged on its own. Steps 1 and 2 belong together; step 3 needs step 1. `MemoryBudgetTest` gets the case 2048 × 4437 zoomed in with step 1.
 
 ## Decisions (20 October 2026, Mathis: "everything as recommended")
 
-1. **Pro size in portrait:** about 1440 wide now (rule in ADR-0010, point 9), not waiting for 2048.
-2. **Memory work later:** Mathis asked for a trial of strip rendering first; result in [SPIKE-1](SPIKE-1-banded-rendering.md): strips per step make 2048 × 4437 fit without extra time; strips through the whole pipeline would cost 2 to 3 times the time.
+1. **Pro size in portrait:** first about 1440 wide; changed after SPIKE-1 to 2048 wide in every format, with strips (ADR-0010, points 9 and 12).
+2. **Strips:** in every step, built first (step 0). Measured in [SPIKE-1](SPIKE-1-banded-rendering.md): byte-identical, same time, 2048 × 4437 fits. No strips through the whole pipeline; 4096 square is not needed for now.
 3. **Text layer:** a choice in the framing step, "stays in place" (default) or "moves with the mandala" (ADR-0010, point 7).
 4. **"Set as wallpaper":** yes, step 4 is part of the work.
 5. **Zoom range:** a quarter to four times the width, the mandala's centre inside the frame.
+6. **Framing by hand is a Pro feature** (ADR-0010, point 4): more reason to buy Pro than resolution alone. Without Pro the chosen format is saved with the mandala centred.
