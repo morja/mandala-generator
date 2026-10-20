@@ -1,0 +1,5 @@
+{"outputSize":512,"layers":[
+ {"style":"roseCurves","scale":0.55,"paletteIndex":2,"glowIntensity":0.6,"symmetry":6,"seed":11,"offsetX":-0.22,"offsetY":-0.2},
+ {"style":"spirograph","scale":0.4,"paletteIndex":5,"glowIntensity":0.5,"symmetry":7,"seed":12,"offsetX":0.27,"offsetY":0.18,"blendMode":"add"},
+ {"style":"floral","scale":0.9,"paletteIndex":8,"glowIntensity":0.4,"symmetry":8,"seed":13,"offsetX":0.05,"offsetY":0.42}],
+ "baseLayer":{"isEnabled":true,"type":"gradient","isRadial":true,"hue":0.7,"saturation":0.6,"brightness":0.25,"hue2":0.75,"saturation2":0.4,"brightness2":0.02}}

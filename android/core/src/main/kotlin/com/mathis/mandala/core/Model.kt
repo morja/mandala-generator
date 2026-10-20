@@ -101,6 +101,9 @@ data class StyleLayer(
     val seed: ULong = 42uL,
     /** Radial Mesh only: brightness of the spokes, 0 = rings only. */
     val spokes: Double = 1.0,
+    /** Where the layer's centre sits, in fractions of the mandala's square from its centre (right, down); 0 = centred (ADR-0011). */
+    val offsetX: Double = 0.0,
+    val offsetY: Double = 0.0,
 )
 
 @Serializable
@@ -323,6 +326,9 @@ data class EmblemLayerSettings(
     val petals: Int = 8,
     /** Degrees, motif and frame together (-180–180). */
     val rotation: Double = 0.0,
+    /** Where the emblem's centre sits, in fractions of the mandala's square from its centre (right, down); 0 = centred (ADR-0011). */
+    val offsetX: Double = 0.0,
+    val offsetY: Double = 0.0,
 )
 
 @Serializable
