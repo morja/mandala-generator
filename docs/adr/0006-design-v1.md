@@ -13,6 +13,7 @@ The mandala brings all the colour. The interface around it stays calm:
 - Palettes are shown as round sweep-gradient swatches of their own colours.
 - Controls in tabs and foldable groups with one-line sliders (20 October 2026), so the phone screen shows the canvas and one area at a time.
 - On phones the canvas takes up to half the screen height (was 42 %, DM-3).
+- On phones the image folds into a small square at the top left while the controls are scrolled up, with the selected layer named beside it; scrolling back to the top or tapping it unfolds it (DM-4 variant A, chosen by Mathis on 21 October 2026). Folding only scales the shown preview; changes made while it is small are drawn at 320 instead of 512 px, and the full size is drawn again on unfolding. Drawing and moving keep the image large.
 - Messages disappear on their own (about 10 s with Undo, a few seconds without); while the favourites sheet is open they show at its top.
 - All values in `app/src/main/kotlin/com/mathis/mandala/app/ui/theme/Tokens.kt`.
 
@@ -21,6 +22,8 @@ The mandala brings all the colour. The interface around it stays calm:
 Follows the `design-baseline` skill: the project's own imagery carries the character; no neon, glow, glass or purple gradients in the interface itself.
 
 ## Rejected
+
+- A button on the image or a drag handle under it for folding the image (DM-4 variants B and C, 21 October 2026): one more control to find; folding while scrolling needs none.
 
 - Following the system's light or dark setting (until 20 October 2026, DM-1): the warm grey dark theme and the light theme let the mandala glow less.
 

@@ -182,13 +182,27 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         super.onCleared()
     }
 
+    private val _previewCompact = MutableStateFlow(false)
+
+    /** Whether the image is folded small above the controls (phones), so the preview can be smaller. */
+    fun setPreviewCompact(compact: Boolean) { _previewCompact.value = compact }
+
+    /** What the shown preview was drawn from, and at which size. */
+    private var renderedParams: MandalaParameters? = null
+    private var renderedSize = 0
+
     private val textRenderer = AndroidTextRenderer()
     private val imageLoader = AndroidImageLoader()
 
     init {
         viewModelScope.launch {
             @OptIn(FlowPreview::class)
-            _params.debounce(DEBOUNCE_MS).collectLatest { renderPreview(it) }
+            // Folding the image small changes nothing to draw; a smaller preview is drawn only for
+            // changes made while it is small, and the full size again only when it unfolds.
+            combine(_params, _previewCompact) { p, c -> p to c }.debounce(DEBOUNCE_MS).collectLatest { (p, compact) ->
+                val size = if (compact) Editing.PREVIEW_SIZE_COMPACT else Editing.PREVIEW_SIZE
+                if (p != renderedParams || renderedSize < size) renderPreview(p, size)
+            }
         }
         viewModelScope.launch {
             @OptIn(FlowPreview::class)
@@ -569,18 +583,20 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
-    private suspend fun renderPreview(params: MandalaParameters) {
+    private suspend fun renderPreview(params: MandalaParameters, size: Int) {
         _preview.update { it.copy(rendering = true, error = null) }
         try {
             val result = withContext(Dispatchers.Default) {
                 val job = coroutineContext.job
                 MandalaRenderer.render(
                     params,
-                    RenderOptions(outputSize = Editing.PREVIEW_SIZE, threads = threads, textRenderer = textRenderer, imageLoader = imageLoader, isCancelled = { !job.isActive }),
+                    RenderOptions(outputSize = size, threads = threads, textRenderer = textRenderer, imageLoader = imageLoader, isCancelled = { !job.isActive }),
                 )
             }
             val bitmap = result.image.toBitmap().asImageBitmap()
             _preview.value = PreviewState(image = bitmap, rendering = false, millis = result.millis, warnings = result.warnings)
+            renderedParams = params
+            renderedSize = size
         } catch (e: RenderCancelledException) {
             // A newer change is already being rendered.
         } catch (e: OutOfMemoryError) {

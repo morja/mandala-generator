@@ -1,5 +1,12 @@
 package com.mathis.mandala.app.ui
 
+import androidx.compose.foundation.clickable
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.runtime.saveable.rememberSaveable
+import kotlinx.coroutines.launch
+import kotlin.math.roundToInt
+import com.mathis.mandala.app.Editing
 import androidx.activity.compose.LocalActivity
 import com.mathis.mandala.app.ProState
 import com.mathis.mandala.app.screenAspect
@@ -245,14 +252,16 @@ fun EditorScreen(
             } else {
                 // The canvas stays in view; only the open tab scrolls, so every change is visible.
                 val canvasMax = maxHeight * 0.5f
-                Column(Modifier.fillMaxSize().padding(horizontal = Spacing.lg)) {
-                    Canvas(
-                        preview,
-                        Modifier.widthIn(max = canvasMax).fillMaxWidth().align(Alignment.CenterHorizontally),
-                        drawing(params, drawTool, vm),
-                        moving(params, selected, moveTarget, vm),
-                    )
-                    ControlTabs(params, selected, vm, Modifier.weight(1f).fillMaxWidth(), pro.owned) { showPro = true }
+                CollapsingCanvas(
+                    preview = preview,
+                    layer = params.layers.getOrNull(selected),
+                    layerNumber = selected + 1,
+                    fullSide = minOf(maxWidth - Spacing.lg * 2, canvasMax),
+                    drawing = drawing(params, drawTool, vm),
+                    move = moving(params, selected, moveTarget, vm),
+                    onCompact = vm::setPreviewCompact,
+                ) { modifier ->
+                    ControlTabs(params, selected, vm, modifier, pro.owned) { showPro = true }
                 }
             }
         }
@@ -312,12 +321,100 @@ private fun moving(params: MandalaParameters, selected: Int, target: MoveTarget?
     }
 }
 
+/**
+ * Phones: the image above the controls folds into a small square at the top left while the controls
+ * are scrolled up, with the selected layer named beside it, and unfolds when they are scrolled back
+ * to the top or the small image is tapped (DM-4, variant A). Folding only scales the shown preview;
+ * past half way the preview is drawn smaller for changes made meanwhile. Drawing and moving keep
+ * the image large.
+ */
 @Composable
-private fun Canvas(preview: PreviewState, modifier: Modifier, drawing: DrawingInput? = null, move: MoveInput? = null) {
+private fun CollapsingCanvas(
+    preview: PreviewState,
+    layer: com.mathis.mandala.core.StyleLayer?,
+    layerNumber: Int,
+    fullSide: androidx.compose.ui.unit.Dp,
+    drawing: DrawingInput?,
+    move: MoveInput?,
+    onCompact: (Boolean) -> Unit,
+    controls: @Composable (Modifier) -> Unit,
+) {
+    val t = LocalTokens.current
+    val density = androidx.compose.ui.platform.LocalDensity.current
+    val scope = androidx.compose.runtime.rememberCoroutineScope()
+    // 0 = full image, 1 = folded small.
+    var fold by rememberSaveable { androidx.compose.runtime.mutableFloatStateOf(0f) }
+    val pinned = drawing != null || move != null
+    val compactSide = fullSide * Editing.COMPACT_CANVAS_FRACTION
+    val range = with(density) { (fullSide - compactSide).toPx() }
+    fun unfold() = scope.launch { androidx.compose.animation.core.animate(fold, 0f) { v, _ -> fold = v } }
+    LaunchedEffect(pinned) { if (pinned && fold > 0f) unfold() }
+    val compact = fold >= 0.5f
+    LaunchedEffect(compact) { onCompact(compact) }
+    val connection = remember(range, pinned) {
+        object : androidx.compose.ui.input.nestedscroll.NestedScrollConnection {
+            // Scrolling up folds the image before the controls move; scrolling down unfolds it once they are at the top.
+            override fun onPreScroll(available: Offset, source: androidx.compose.ui.input.nestedscroll.NestedScrollSource): Offset {
+                if (pinned || range <= 0f || available.y >= 0f) return Offset.Zero
+                val before = fold
+                fold = (fold - available.y / range).coerceIn(0f, 1f)
+                return Offset(0f, -(fold - before) * range)
+            }
+
+            override fun onPostScroll(consumed: Offset, available: Offset, source: androidx.compose.ui.input.nestedscroll.NestedScrollSource): Offset {
+                if (pinned || range <= 0f || available.y <= 0f) return Offset.Zero
+                val before = fold
+                fold = (fold - available.y / range).coerceIn(0f, 1f)
+                return Offset(0f, (before - fold) * range)
+            }
+        }
+    }
+    BoxWithConstraints(Modifier.fillMaxSize().padding(horizontal = Spacing.lg)) {
+        val side = fullSide + (compactSide - fullSide) * fold
+        // Centred when full (if narrower than the screen), at the left when folded.
+        val inset = (maxWidth - fullSide) / 2 * (1f - fold)
+        Column(Modifier.fillMaxSize().nestedScroll(connection)) {
+            Row(verticalAlignment = Alignment.Top, modifier = Modifier.fillMaxWidth().padding(start = inset)) {
+                Canvas(
+                    preview,
+                    Modifier.width(side),
+                    drawing,
+                    move,
+                    showStatus = fold < 0.5f,
+                    onTap = if (fold > 0f && !pinned) ({ unfold() }) else null,
+                )
+                if (fold > 0.5f && layer != null) {
+                    Column(
+                        Modifier.padding(start = Spacing.md).alpha(((fold - 0.5f) * 2f).coerceIn(0f, 1f)),
+                        verticalArrangement = Arrangement.spacedBy(Spacing.xs),
+                    ) {
+                        Text("$layerNumber · ${layer.style.displayName}", style = MaterialTheme.typography.bodyMedium, maxLines = 1)
+                        Text(
+                            "${layer.blendMode.displayName} · ${(layer.opacity * 100).roundToInt()} %",
+                            style = MaterialTheme.typography.bodySmall, color = t.textMuted, maxLines = 1,
+                        )
+                    }
+                }
+            }
+            controls(Modifier.weight(1f).fillMaxWidth())
+        }
+    }
+}
+
+@Composable
+private fun Canvas(
+    preview: PreviewState,
+    modifier: Modifier,
+    drawing: DrawingInput? = null,
+    move: MoveInput? = null,
+    showStatus: Boolean = true,
+    onTap: (() -> Unit)? = null,
+) {
     val t = LocalTokens.current
     Column(modifier.padding(bottom = Spacing.xs), verticalArrangement = Arrangement.spacedBy(Spacing.xs)) {
         Box(
-            Modifier.fillMaxWidth().aspectRatio(1f).clip(RoundedCornerShape(Radius.md)).background(t.canvas),
+            Modifier.fillMaxWidth().aspectRatio(1f).clip(RoundedCornerShape(Radius.md)).background(t.canvas)
+                .then(if (onTap != null) Modifier.clickable(onClickLabel = "Show the image large", onClick = onTap) else Modifier),
             contentAlignment = Alignment.BottomCenter,
         ) {
             preview.image?.let {
@@ -335,6 +432,7 @@ private fun Canvas(preview: PreviewState, modifier: Modifier, drawing: DrawingIn
             move != null -> "Drag to move ${move.label}, pinch to size and turn it"
             else -> null
         }
+        if (!showStatus) return@Column
         if (status != null) {
             Text(status, style = MaterialTheme.typography.bodySmall, color = if (preview.error != null) t.error else t.textMuted)
         }

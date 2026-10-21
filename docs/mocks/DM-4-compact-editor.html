@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DM-4 Compact editor</title>
+<style>
+  :root {
+    --background: #0A0908; --surface: #121110; --surface-raised: #1B1917; --text: #E6E1DB;
+    --text-muted: #9C948B; --outline: #2E2A26; --accent: #D9A15C; --on-accent: #241605;
+    --accent-soft: #2A2117; --canvas: #000000;
+    --xs: 4px; --sm: 8px; --md: 12px; --lg: 16px; --xl: 24px; --r-sm: 8px; --r-md: 12px;
+    --ease: cubic-bezier(.2, .7, .2, 1);
+  }
+  :root[data-theme="light"] {
+    --background: #F7F4EF; --surface: #FFFDFA; --surface-raised: #EFEAE3; --text: #221F1C;
+    --text-muted: #5F5851; --outline: #CFC7BD; --accent: #8A5210; --on-accent: #FFFFFF; --accent-soft: #F3E3CF;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #3a3632; font: 15px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color: var(--text); }
+  .viewer { max-width: 1100px; margin: 0 auto; padding: var(--lg); }
+  .switcher { display: flex; flex-wrap: wrap; gap: var(--sm); align-items: center; margin-bottom: var(--lg); color: #f0ebe4; }
+  .switcher button { font: inherit; padding: 6px 12px; border-radius: 999px; border: 1px solid #6b645c; background: transparent; color: inherit; cursor: pointer; }
+  .switcher button.on { background: #f0ebe4; color: #221F1C; border-color: #f0ebe4; }
+  .switcher .gap { width: var(--lg); }
+  .note { color: #e9e3dc; max-width: 760px; margin: 0 0 var(--lg); }
+  .stage { display: flex; gap: var(--xl); flex-wrap: wrap; align-items: flex-start; }
+
+  .phone { width: 375px; height: 780px; border-radius: 28px; overflow: hidden; background: var(--background); position: relative;
+           display: flex; flex-direction: column; border: 8px solid #1d1b19; flex: none; }
+  .topbar { height: 52px; display: flex; align-items: center; padding: 0 var(--xs); gap: 2px; flex: none; }
+  .icon { width: 40px; height: 40px; display: grid; place-items: center; color: var(--text); }
+  .icon svg { width: 22px; height: 22px; }
+  .icon.accent { color: var(--accent); }
+  .spacer { flex: 1; }
+
+  /* Canvas area: full = width of the phone minus gutters; compact = small square at the left. */
+  .head { position: relative; flex: none; padding: 0 var(--lg); transition: height .32s var(--ease); }
+  .canvas { position: absolute; left: var(--lg); top: 0; border-radius: var(--r-md); background: var(--canvas); overflow: hidden;
+            transition: width .32s var(--ease), height .32s var(--ease); }
+  .canvas img { width: 100%; height: 100%; display: block; }
+  .canvas .chip { position: absolute; right: var(--sm); bottom: var(--sm); width: 34px; height: 34px; border-radius: 50%;
+                  background: var(--surface); color: var(--text); display: grid; place-items: center; cursor: pointer; border: 1px solid var(--outline); }
+  .canvas .chip svg { width: 18px; height: 18px; }
+  .side { position: absolute; top: 0; right: var(--lg); display: flex; flex-direction: column; gap: 2px; opacity: 0; transition: opacity .2s; }
+  .side .name { font-weight: 600; }
+  .side .meta { color: var(--text-muted); font-size: 13px; }
+  .compact .side { opacity: 1; transition-delay: .15s; }
+  .handle { position: absolute; left: 50%; bottom: 2px; transform: translateX(-50%); width: 44px; height: 5px; border-radius: 3px; background: var(--outline); cursor: ns-resize; }
+  .status { color: var(--text-muted); font-size: 12px; position: absolute; left: var(--lg); bottom: 8px; }
+
+  .tabs { display: flex; flex: none; border-bottom: 1px solid var(--outline); margin: 0 var(--lg); }
+  .tabs div { flex: 1; text-align: center; padding: var(--md) 0; font-weight: 600; font-size: 14px; color: var(--text); }
+  .tabs div.on { color: var(--accent); box-shadow: inset 0 -3px 0 var(--accent); }
+  .controls { flex: 1; overflow-y: auto; padding: var(--xs) var(--lg) var(--xl); scrollbar-width: none; }
+  .controls::-webkit-scrollbar { display: none; }
+  .layer { display: flex; align-items: center; gap: var(--md); padding: var(--sm) var(--md); border-radius: var(--r-sm); background: var(--surface); margin-top: var(--xs); }
+  .layer.sel { background: var(--accent-soft); }
+  .swatch { width: 24px; height: 24px; border-radius: 50%; background: conic-gradient(#ff5ea8, #ffb04f, #7cf0a0, #59a8ff, #c27bff, #ff5ea8); flex: none; }
+  .layer .t { flex: 1; } .layer .t div:last-child { color: var(--text-muted); font-size: 13px; }
+  .actions { display: flex; gap: var(--lg); color: var(--accent); font-weight: 600; padding: var(--md) var(--xs); font-size: 14px; }
+  .group { border-bottom: 1px solid var(--outline); padding: var(--md) 0; }
+  .group .gh { display: flex; gap: var(--sm); align-items: baseline; font-weight: 600; }
+  .group .gh span { color: var(--text-muted); font-weight: 400; font-size: 13px; }
+  .row { display: grid; grid-template-columns: 96px 1fr 40px; align-items: center; gap: var(--sm); margin-top: var(--md); font-size: 14px; }
+  .track { height: 6px; border-radius: 3px; background: var(--surface-raised); position: relative; }
+  .track i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 3px; background: var(--accent); }
+  .row b { font-weight: 400; color: var(--text-muted); text-align: right; font-size: 13px; }
+  .caption { color: #e9e3dc; font-size: 13px; margin-top: var(--sm); max-width: 375px; }
+</style>
+</head>
+<body>
+<div class="viewer">
+  <div class="switcher">
+    <button data-v="A" class="on">A · Shrinks while scrolling</button>
+    <button data-v="B">B · Button on the image</button>
+    <button data-v="C">C · Drag the edge</button>
+    <span class="gap"></span>
+    <button data-t="dark" class="on">Dark</button>
+    <button data-t="light">Light</button>
+  </div>
+  <p class="note" id="note"></p>
+  <div class="stage">
+    <div>
+      <div class="phone" id="phone"></div>
+      <p class="caption">Try it: the phone above is live.</p>
+    </div>
+  </div>
+</div>
+
+<template id="screen">
+  <div class="topbar">
+    <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 14 4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg></div>
+    <div class="icon" style="opacity:.4"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 14 5-5-5-5"/><path d="M20 9H10a6 6 0 0 0 0 12h3"/></svg></div>
+    <div class="spacer"></div>
+    <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="9" cy="9" r="1" fill="currentColor"/><circle cx="15" cy="15" r="1" fill="currentColor"/></svg></div>
+    <div class="icon accent"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 4v11m-5-5 5 5 5-5M5 20h14"/></svg></div>
+    <div class="icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/></svg></div>
+    <div class="icon"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg></div>
+  </div>
+  <div class="head">
+    <div class="canvas"><img src="dm-4-mandala.png" alt="Mandala preview"></div>
+    <div class="side"><div class="name">1 · Floral</div><div class="meta">Screen · 100 %</div></div>
+    <div class="status"></div>
+  </div>
+  <div class="tabs"><div class="on">Layers</div><div>Scene</div><div>Emblem</div><div>Text</div><div>Draw</div></div>
+  <div class="controls">
+    <div class="layer"><div class="swatch"></div><div class="t"><div>2 · Spirograph</div><div>Add · 60 %</div></div></div>
+    <div class="layer sel"><div class="swatch"></div><div class="t"><div>1 · Floral</div><div>Screen · 100 %</div></div></div>
+    <div class="actions"><span>Add</span><span>Duplicate</span><span>Delete</span></div>
+    <div class="group"><div class="gh">Style <span>Floral</span></div></div>
+    <div class="group"><div class="gh">Palette <span>Sunset</span></div></div>
+    <div class="group"><div class="gh">Shape</div>
+      <div class="row">Symmetry<div class="track"><i style="width:62%"></i></div><b>6</b></div>
+      <div class="row">Scale<div class="track"><i style="width:70%"></i></div><b>0.80</b></div>
+      <div class="row">Complexity<div class="track"><i style="width:60%"></i></div><b>0.60</b></div>
+      <div class="row">Density<div class="track"><i style="width:50%"></i></div><b>0.50</b></div>
+      <div class="row">Ripple<div class="track"><i style="width:8%"></i></div><b>0.00</b></div>
+    </div>
+    <div class="group"><div class="gh">Position <span>Centred</span></div></div>
+    <div class="group"><div class="gh">Light and colour</div>
+      <div class="row">Glow<div class="track"><i style="width:60%"></i></div><b>0.60</b></div>
+      <div class="row">Colour drift<div class="track"><i style="width:40%"></i></div><b>0.40</b></div>
+      <div class="row">Painted<div class="track"><i style="width:30%"></i></div><b>0.30</b></div>
+      <div class="row">Saturation<div class="track"><i style="width:70%"></i></div><b>0.70</b></div>
+      <div class="row">Brightness<div class="track"><i style="width:50%"></i></div><b>0.50</b></div>
+    </div>
+  </div>
+</template>
+
+<script>
+  const FULL = 343, COMPACT = 112, GAP = 12;          // canvas sides in px at 375 px phone width
+  const notes = {
+    A: "A: scrolling the controls up shrinks the image to a small square at the top left, with the selected layer beside it. Scrolling back to the top, or tapping the small image, brings the full image back. Nothing to learn; it is how many apps fold their header.",
+    B: "B: a small button in the corner of the image switches between the full image and the small square. The size stays until it is tapped again, whatever is scrolled.",
+    C: "C: dragging the edge below the image shrinks or enlarges it; it settles at full or small size. Precise, but the handle is one more thing to discover.",
+  };
+  let variant = "A";
+  const phone = document.getElementById("phone");
+
+  function build() {
+    phone.innerHTML = "";
+    phone.appendChild(document.getElementById("screen").content.cloneNode(true));
+    document.getElementById("note").textContent = notes[variant];
+    const head = phone.querySelector(".head"), canvas = phone.querySelector(".canvas"),
+          side = phone.querySelector(".side"), controls = phone.querySelector(".controls"),
+          status = phone.querySelector(".status");
+    const sideLeft = 16 + COMPACT + GAP;
+    side.style.left = sideLeft + "px";
+
+    function setSize(s, animate) {
+      canvas.style.transition = animate ? "" : "none";
+      head.style.transition = animate ? "" : "none";
+      canvas.style.width = canvas.style.height = s + "px";
+      head.style.height = (s + 28) + "px";
+      phone.classList.toggle("compact", s < FULL * 0.6);
+      side.style.top = "4px";
+      status.textContent = s < FULL * 0.6 ? "" : "";
+    }
+    setSize(FULL, false);
+
+    if (variant === "A") {
+      controls.addEventListener("scroll", () => {
+        const t = Math.min(1, controls.scrollTop / 220);
+        setSize(Math.round(FULL - (FULL - COMPACT) * t), false);
+      });
+      canvas.addEventListener("click", () => { controls.scrollTo({ top: 0, behavior: "smooth" }); });
+    }
+    if (variant === "B") {
+      let compact = false;
+      const chip = document.createElement("div");
+      chip.className = "chip";
+      const shrink = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 14h6v6M20 10h-6V4M14 10l7-7M3 21l7-7"/></svg>';
+      const grow = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>';
+      chip.innerHTML = shrink;
+      chip.title = "Smaller image";
+      chip.addEventListener("click", () => { compact = !compact; setSize(compact ? COMPACT : FULL, true); chip.innerHTML = compact ? grow : shrink; chip.title = compact ? "Larger image" : "Smaller image"; });
+      canvas.appendChild(chip);
+    }
+    if (variant === "C") {
+      const handle = document.createElement("div");
+      handle.className = "handle";
+      head.appendChild(handle);
+      let startY = 0, startS = FULL, size = FULL, dragging = false;
+      handle.addEventListener("pointerdown", e => { dragging = true; startY = e.clientY; startS = size; handle.setPointerCapture(e.pointerId); });
+      handle.addEventListener("pointermove", e => {
+        if (!dragging) return;
+        size = Math.max(COMPACT, Math.min(FULL, startS + (e.clientY - startY)));
+        setSize(size, false);
+      });
+      handle.addEventListener("pointerup", () => { dragging = false; size = size < (FULL + COMPACT) / 2 ? COMPACT : FULL; setSize(size, true); });
+    }
+  }
+
+  document.querySelectorAll("[data-v]").forEach(b => b.addEventListener("click", () => {
+    document.querySelectorAll("[data-v]").forEach(x => x.classList.toggle("on", x === b));
+    variant = b.dataset.v; build();
+  }));
+  document.querySelectorAll("[data-t]").forEach(b => b.addEventListener("click", () => {
+    document.querySelectorAll("[data-t]").forEach(x => x.classList.toggle("on", x === b));
+    document.documentElement.dataset.theme = b.dataset.t;
+  }));
+  build();
+</script>
+</body>
+</html>
