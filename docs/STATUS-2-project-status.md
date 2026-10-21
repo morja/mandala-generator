@@ -38,7 +38,7 @@ Steps in the Play Console:
 
 On the phone:
 
-6. Try the release build on the S23, mainly the preview speed (QA-2, P1).
+6. Done on 21 October 2026: preview speed measured on the S23 (QA-2).
 
 Housekeeping (no release blocker):
 

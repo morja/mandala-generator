@@ -44,6 +44,18 @@ A JFR profile showed where the time goes. Blurring for glow and wash takes 55–
 - **P3:** when a change redraws at least two layers and is expected to take more than a second, a small rough image (160 px, coarse glow) shows first. It has no switch, because the finished image is the same either way.
 - **P4** is the switch "Fast preview" in the menu, on by default. Saved, shared and wallpaper images always use the full 1600 px glow (ADR-0004).
 
-## Still open
+## On the Galaxy S23
 
-- Measure P1 to P4 on the S23 with a release build.
+Measured on the S23 the same evening. Both builds were optimised release builds (R8, not debuggable) with a timing line in the log, installed as `one.tearoom.mandala.debug`. The mandala was the four-layer starter favourite Floral, Wave Interference, Moiré, Sphere Grid. Times are per preview (512 px):
+
+| Change | Before (`main`) | After, Fast preview on | After, Fast preview off |
+|---|---|---|---|
+| App start (every layer drawn) | 4.4 s | 1.9 s | — |
+| Every layer drawn at 1600 px glow | 3.6–4.0 s | — | 2.5 s |
+| One layer randomized | 3.7–3.8 s | 0.4–0.8 s | 0.85–0.9 s |
+| Emblem on | 4.5 s | 0.3 s | 0.6 s |
+| Emblem off | 3.8 s | 0.1 s | 0.1 s |
+
+- With the full glow, a complete redraw is 1.6 times as fast. On the Mac P5 alone gave 1.2 times, so P1 (the slow cores no longer hold up the fast ones) brings about another 1.3 times on the phone.
+- With Fast preview, a complete redraw is 2.3 times as fast.
+- With the layer cache, changes to one layer or the emblem take well under a second instead of about four.
