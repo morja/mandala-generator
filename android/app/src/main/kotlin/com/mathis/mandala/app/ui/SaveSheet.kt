@@ -106,7 +106,7 @@ internal fun SaveSheet(
             }
             // The frame takes the width, but leaves room for the buttons below on a phone.
             val maxFrameHeight = LocalConfiguration.current.screenHeightDp.dp * 0.5f
-            Frame(preview, aspect.toFloat(), framing, enabled = proOwned, maxHeight = maxFrameHeight, onFraming = onFraming)
+            Frame(preview, aspect.toFloat(), framing, enabled = proOwned && !busy, saving = busy, maxHeight = maxFrameHeight, onFraming = onFraming)
             if (proOwned) {
                 Text("Drag to move the mandala, pinch to zoom, double tap to centre it.", style = MaterialTheme.typography.bodySmall, color = t.textMuted)
             } else {
@@ -122,7 +122,6 @@ internal fun SaveSheet(
             }
             // A wallpaper fills the screen, so it is set in the phone screen format; the frame shows it first.
             WallpaperButton(enabled = !busy, onOpen = { if (choice.format != SaveFormat.SCREEN) onFormat(SaveFormat.SCREEN) }, onWallpaper = onWallpaper)
-            if (busy) LinearProgressIndicator(Modifier.fillMaxWidth().height(Sizes.progress))
         }
         SnackbarHost(snackbar, Modifier.align(Alignment.TopCenter))
       }
@@ -139,6 +138,7 @@ private fun Frame(
     aspect: Float,
     framing: Framing,
     enabled: Boolean,
+    saving: Boolean,
     maxHeight: Dp,
     onFraming: (Framing) -> Unit,
 ) {
@@ -185,7 +185,21 @@ private fun Frame(
                     },
                 )
             }
-            if (preview.rendering) LinearProgressIndicator(Modifier.fillMaxWidth().height(Sizes.progress).align(Alignment.BottomCenter))
+            if (saving) {
+                // Over the frame, which is always in view; the buttons below may be scrolled away.
+                Box(Modifier.fillMaxSize().background(t.canvas.copy(alpha = 0.6f)), contentAlignment = Alignment.Center) {
+                    Text(
+                        "Saving…",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = t.text,
+                        modifier = Modifier.clip(RoundedCornerShape(Radius.sm)).background(t.surface)
+                            .padding(horizontal = Spacing.lg, vertical = Spacing.sm),
+                    )
+                }
+                LinearProgressIndicator(Modifier.fillMaxWidth().height(Sizes.progress).align(Alignment.BottomCenter))
+            } else if (preview.rendering) {
+                LinearProgressIndicator(Modifier.fillMaxWidth().height(Sizes.progress).align(Alignment.BottomCenter))
+            }
         }
     }
 }

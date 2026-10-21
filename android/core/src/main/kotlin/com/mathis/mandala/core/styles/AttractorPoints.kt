@@ -44,7 +44,7 @@ class AttractorPoints internal constructor(
                 val py = run.xy[i * 2 + 1]
                 val col = lut[run.colour[i].toInt()]
                 for (s in 0 until symmetry) {
-                    buffer.addPixel(
+                    buffer.addPoint(
                         (cx + px * symCos[s] - py * symSin[s]).toInt(),
                         (cy + px * symSin[s] + py * symCos[s]).toInt(),
                         col[0], col[1], col[2], weight,
