@@ -1,5 +1,7 @@
 # STATUS-1 · Project status and road to the Play Store
 
+Superseded by `STATUS-2-project-status.md` (21 October 2026).
+
 20 October 2026.
 
 ## Where things are

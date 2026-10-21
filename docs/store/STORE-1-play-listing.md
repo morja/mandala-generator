@@ -122,11 +122,12 @@ Without `keystore.properties`, release builds are signed with the local debug ke
 
 ## What Mathis does himself
 
-1. Create the upload key (keep it outside the repository and back it up), unless it exists already, and fill `android/keystore.properties` (see above):
+State on 21 October 2026. The developer account is older than November 2023, so Google's closed test with 12 testers does not apply.
+
+1. Done: upload key and `android/keystore.properties` (release builds are signed with it). To create one again:
    `keytool -genkeypair -v -keystore ~/.keystore/mandalagenerator-upload.jks -alias upload -keyalg RSA -keysize 4096 -validity 10000`
-2. In the Play Console: create the app (name, default language, app, free) and accept the declarations.
+2. Done: the app in the Play Console (name, default language, app, free) and the declarations.
 3. Enrol in Play App Signing with the first upload of an app bundle (AAB).
-4. Deploy tearoom.one so that the privacy policy URL works.
-5. Closed test if the account needs it (personal accounts created after 13 November 2023: 12 testers for 14 days; verify on Google's help pages).
-6. Create the product `pro` and set its price after the first upload.
-7. Screenshots: at least two phone screenshots (and tablet screenshots, recommended) once the emblem layer is in the app.
+4. Done: tearoom.one is deployed; the privacy policy URL works.
+5. Create the product `pro` and set its price after the first upload.
+6. Done: six phone screenshots. Tablet screenshots are recommended, not required.
