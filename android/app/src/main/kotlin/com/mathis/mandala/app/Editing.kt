@@ -55,9 +55,6 @@ object Editing {
 
     const val PREVIEW_SIZE = 512
 
-    /** Preview size while the image is folded small above the controls: quicker to draw. */
-    const val PREVIEW_SIZE_COMPACT = 320
-
     /**
      * Width at which the fast preview blurs glow and wash, instead of the macOS 1600 px. Measured on
      * the starter favourites at preview size: 40 % less time, at least 52 dB PSNR (ADR-0004).

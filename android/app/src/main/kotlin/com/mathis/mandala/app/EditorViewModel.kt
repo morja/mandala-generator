@@ -202,10 +202,8 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         super.onCleared()
     }
 
-    private val _previewCompact = MutableStateFlow(false)
-
-    /** Whether the image is folded small above the controls (phones), so the preview can be smaller. */
-    fun setPreviewCompact(compact: Boolean) { _previewCompact.value = compact }
+    /** Previews rendered recently, by their settings; about 1 MB each. */
+    private val recentPreviews = RecentImages<MandalaParameters, PreviewState>(RECENT_PREVIEWS)
 
     private val appearance = Appearance(application)
     private val _fastPreview = MutableStateFlow(appearance.fastPreview)
@@ -215,34 +213,40 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
 
     fun setFastPreview(on: Boolean) {
         appearance.fastPreview = on
+        // The kept previews were drawn with the other glow.
+        recentPreviews.clear()
         _fastPreview.value = on
     }
 
-    /** What the shown preview was drawn from, and how. */
+    /** What the last rendered preview was drawn from, and how. */
     private var renderedParams: MandalaParameters? = null
-    private var renderedSize = 0
     private var renderedFast = false
     /** How long the last preview took per layer it drew, to guess the next one's time. */
     private var millisPerLayer = 0L
 
-    /** The layer images of the last preview, so a change to one layer redraws only that one. */
+    /** The layer images of the last rendered preview, so a change to one layer redraws only that one. */
     private val previewCache = LayerCache()
+
+    /** Save sheet previews rendered recently, by everything they were rendered from. */
+    private val recentFrames = RecentImages<FrameRequest, FramePreviewState>(RECENT_FRAMES)
 
     private val textRenderer = AndroidTextRenderer()
     private val imageLoader = AndroidImageLoader()
 
     init {
         viewModelScope.launch {
-            @OptIn(FlowPreview::class)
-            // Folding the image small changes nothing to draw; a smaller preview is drawn only for
-            // changes made while it is small, and the full size again only when it unfolds.
-            combine(_params, _previewCompact, _fastPreview) { p, c, f -> Triple(p, c, f) }.debounce(DEBOUNCE_MS).collectLatest { (p, compact, fast) ->
-                val size = if (compact) Editing.PREVIEW_SIZE_COMPACT else Editing.PREVIEW_SIZE
-                if (p != renderedParams || renderedSize < size || fast != renderedFast) {
-                    val redrawn = if (renderedSize == size && renderedFast == fast) redrawnLayers(p) else p.layers.count { it.isEnabled }
-                    if (redrawn >= Editing.QUICK_MIN_LAYERS && millisPerLayer * redrawn > Editing.QUICK_AFTER_MS) renderQuickPreview(p)
-                    renderPreview(p, size, fast, redrawn)
+            // A state shown recently (history, undo, a switch flipped back) comes back at once;
+            // anything else is rendered once the settings rest for a moment.
+            combine(_params, _fastPreview) { p, f -> p to f }.collectLatest { (p, fast) ->
+                val known = recentPreviews[p]
+                if (known != null) {
+                    _preview.value = known
+                    return@collectLatest
                 }
+                delay(DEBOUNCE_MS)
+                val redrawn = if (renderedFast == fast) redrawnLayers(p) else p.layers.count { it.isEnabled }
+                if (redrawn >= Editing.QUICK_MIN_LAYERS && millisPerLayer * redrawn > Editing.QUICK_AFTER_MS) renderQuickPreview(p)
+                renderPreview(p, fast, redrawn)
             }
         }
         viewModelScope.launch {
@@ -470,6 +474,10 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
     }
 
     fun applyFavorite(favorite: Favorite) {
+        // Its thumbnail stands in until the preview is rendered.
+        if (recentPreviews[favorite.parameters] == null) {
+            Thumbnails.decode(favorite.thumbnailData)?.let { thumb -> _preview.update { it.copy(image = thumb, rendering = true) } }
+        }
         replace(favorite.parameters)
         message("Favourite applied", canUndo = true)
     }
@@ -623,6 +631,10 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
     }
 
     private suspend fun renderFramePreview(request: FrameRequest) {
+        recentFrames[request]?.let {
+            _framePreview.value = it
+            return
+        }
         val (w, h) = Editing.size(request.choice.format, request.aspect, Editing.FRAME_PREVIEW_WIDTH)
         val framing = if (request.pro) request.choice.framing else Framing()
         _framePreview.update { it.copy(rendering = true) }
@@ -638,6 +650,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
                 )
             }
             _framePreview.value = FramePreviewState(result.image.toBitmap().asImageBitmap(), rendering = false, framing = framing, width = w, height = h)
+            recentFrames[request] = _framePreview.value
         } catch (e: RenderCancelledException) {
             // A newer framing is already being rendered.
         } catch (e: OutOfMemoryError) {
@@ -672,7 +685,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
-    private suspend fun renderPreview(params: MandalaParameters, size: Int, fast: Boolean, redrawn: Int) {
+    private suspend fun renderPreview(params: MandalaParameters, fast: Boolean, redrawn: Int) {
         _preview.update { it.copy(rendering = true, error = null) }
         try {
             val result = withContext(Dispatchers.Default) {
@@ -680,7 +693,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
                 MandalaRenderer.render(
                     params,
                     RenderOptions(
-                        outputSize = size, threads = threads, textRenderer = textRenderer, imageLoader = imageLoader,
+                        outputSize = Editing.PREVIEW_SIZE, threads = threads, textRenderer = textRenderer, imageLoader = imageLoader,
                         isCancelled = { !job.isActive }, layerCache = previewCache,
                         glowReferenceWidth = if (fast) Editing.FAST_GLOW_REFERENCE else RenderOptions().glowReferenceWidth,
                     ),
@@ -688,8 +701,8 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
             }
             val bitmap = result.image.toBitmap().asImageBitmap()
             _preview.value = PreviewState(image = bitmap, rendering = false, millis = result.millis, warnings = result.warnings)
+            recentPreviews[params] = _preview.value
             renderedParams = params
-            renderedSize = size
             renderedFast = fast
             millisPerLayer = result.millis / maxOf(1, redrawn)
         } catch (e: RenderCancelledException) {
@@ -705,6 +718,8 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         const val SAVE_DELAY_MS = 400L
         const val HISTORY_DELAY_MS = 700L
         const val FRAME_DEBOUNCE_MS = 60L
+        const val RECENT_PREVIEWS = 30
+        const val RECENT_FRAMES = 6
         const val WALLPAPER_MESSAGE_DELAY_MS = 1500L
 
         /** Until the screen reports its own: a common 20:9 phone. */
