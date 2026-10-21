@@ -161,9 +161,28 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
     private val _framePreview = MutableStateFlow(FramePreviewState())
     val framePreview: StateFlow<FramePreviewState> = _framePreview.asStateFlow()
 
-    fun setScreenAspect(aspect: Double) { _screenAspect.value = aspect }
+    /** The screen's shorter side in pixels; a wallpaper may reuse a saved image at least this wide. */
+    private var screenShortSide = 0
 
-    fun setSaveOpen(open: Boolean) { _saveOpen.value = open }
+    fun setScreen(aspect: Double, shortSide: Int) {
+        _screenAspect.value = aspect
+        screenShortSide = shortSide
+    }
+
+    fun setSaveOpen(open: Boolean) {
+        _saveOpen.value = open
+        if (!open) lastExport = null
+    }
+
+    /**
+     * The image the save sheet rendered last and what it was rendered from. While the sheet stays
+     * open, saving again or setting the wallpaper reuses it instead of rendering again.
+     */
+    private data class ExportKey(
+        val params: MandalaParameters, val framing: Framing, val textFollows: Boolean,
+        val width: Int, val height: Int, val supersample: Boolean,
+    )
+    private var lastExport: Pair<ExportKey, Image8>? = null
 
     fun setSaveFormat(format: Editing.SaveFormat) = _saveChoice.update { it.copy(format = format) }
 
@@ -494,12 +513,20 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
-    /** Sets the image as wallpaper in the phone screen format, at the largest size the user may save. */
+    /**
+     * Sets the image as wallpaper in the phone screen format, at the largest size the user may save;
+     * an image of this screen format just saved is reused when it is at least as wide as the screen.
+     */
     fun setWallpaper(target: WallpaperTarget) {
         val choice = _saveChoice.value
         val large = pro.state.value.owned
         val (w, h) = Editing.exportSize(Editing.SaveFormat.SCREEN, _screenAspect.value, large)
-        renderFullSize(w, h, large, effectiveFraming(choice), choice.textFollowsMandala) { image, _ ->
+        val framing = effectiveFraming(choice)
+        val reuse = { k: ExportKey ->
+            k.params == _params.value && k.framing == framing && k.textFollows == choice.textFollowsMandala &&
+                k.width >= screenShortSide && kotlin.math.abs(k.height.toDouble() / k.width - h.toDouble() / w) < 0.002
+        }
+        renderFullSize(w, h, large, framing, choice.textFollowsMandala, reuse) { image, _ ->
             withContext(Dispatchers.IO) { Wallpapers.set(getApplication(), image, target) }
             // Android recreates the screen when the wallpaper changes; a message sent right away is lost with it.
             delay(WALLPAPER_MESSAGE_DELAY_MS)
@@ -512,12 +539,24 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         _events.send(EditorEvent.ShareImage(uri))
     }
 
-    private fun renderFullSize(width: Int, height: Int, large: Boolean, framing: Framing, textFollows: Boolean, then: suspend (Image8, String) -> Unit) {
+    private fun renderFullSize(
+        width: Int, height: Int, large: Boolean, framing: Framing, textFollows: Boolean,
+        reuse: ((ExportKey) -> Boolean)? = null,
+        then: suspend (Image8, String) -> Unit,
+    ) {
         if (_busy.value) return
         val snapshot = _params.value
+        val key = ExportKey(snapshot, framing, textFollows, width, height, !large)
+        val cached = lastExport?.takeIf { (k, _) -> k == key || reuse?.invoke(k) == true }?.second
         _busy.value = true
         viewModelScope.launch {
             try {
+                if (cached != null) {
+                    then(cached, Editing.fileName(snapshot, cached.width, cached.height))
+                    return@launch
+                }
+                // Free the previous image first; the new render needs the memory more.
+                lastExport = null
                 val image = withContext(Dispatchers.Default) {
                     val options = RenderOptions(
                         width = width,
@@ -531,6 +570,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
                     )
                     MandalaRenderer.render(snapshot, options).image
                 }
+                if (_saveOpen.value) lastExport = key to image
                 then(image, Editing.fileName(snapshot, width, height))
             } catch (e: OutOfMemoryError) {
                 message("Not enough memory for this image.")

@@ -67,13 +67,16 @@ object Wallpapers {
     }
 }
 
-/** The device screen's taller side over its shorter side, whatever the orientation. */
-fun screenAspect(activity: Activity): Double {
+/** The device screen's size in pixels, whatever the orientation: (shorter side, longer side). */
+fun screenSize(activity: Activity): Pair<Int, Int> {
     val (w, h) = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
         activity.windowManager.maximumWindowMetrics.bounds.let { it.width() to it.height() }
     } else {
         @Suppress("DEPRECATION")
         DisplayMetrics().also { activity.windowManager.defaultDisplay.getRealMetrics(it) }.let { it.widthPixels to it.heightPixels }
     }
-    return if (min(w, h) <= 0) 1.0 else max(w, h).toDouble() / min(w, h)
+    return min(w, h) to max(w, h)
 }
+
+/** The device screen's taller side over its shorter side. */
+fun screenAspect(activity: Activity): Double = screenSize(activity).let { (s, l) -> if (s <= 0) 1.0 else l.toDouble() / s }

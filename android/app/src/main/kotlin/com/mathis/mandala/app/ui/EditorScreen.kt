@@ -3,6 +3,7 @@ package com.mathis.mandala.app.ui
 import androidx.activity.compose.LocalActivity
 import com.mathis.mandala.app.ProState
 import com.mathis.mandala.app.screenAspect
+import com.mathis.mandala.app.screenSize
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
@@ -154,7 +155,7 @@ fun EditorScreen(
     }
 
     val activity = LocalActivity.current
-    LaunchedEffect(activity) { activity?.let { vm.setScreenAspect(screenAspect(it)) } }
+    LaunchedEffect(activity) { activity?.let { vm.setScreen(screenAspect(it), screenSize(it).first) } }
     LaunchedEffect(showSave) { vm.setSaveOpen(showSave) }
     if (showSave) {
         SaveSheet(
