@@ -37,6 +37,11 @@ android {
     }
 
     buildTypes {
+        // Own package id and name, so a debug build sits next to the store or release app on a phone
+        // (Android only replaces an app with one of the same signature).
+        debug {
+            applicationIdSuffix = ".debug"
+        }
         release {
             isMinifyEnabled = true
             isShrinkResources = true
