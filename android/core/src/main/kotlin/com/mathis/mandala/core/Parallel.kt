@@ -19,9 +19,12 @@ class Parallel(val threads: Int) : AutoCloseable {
         futures.forEach { it.get() }
     }
 
-    /** Splits [0, count) into contiguous ranges, one per thread. */
+    /**
+     * Splits [0, count) into contiguous ranges, several per thread: on phones with fast and slow
+     * cores, one range per thread would leave the fast cores waiting for the slow ones.
+     */
     fun forRange(count: Int, body: (from: Int, until: Int) -> Unit) {
-        val n = maxOf(1, minOf(threads, count))
+        val n = maxOf(1, minOf(if (pool == null) 1 else threads * CHUNKS_PER_THREAD, count))
         val step = (count + n - 1) / n
         forEachChunk(n) { c ->
             val from = c * step
@@ -32,5 +35,9 @@ class Parallel(val threads: Int) : AutoCloseable {
 
     override fun close() {
         pool?.shutdown()
+    }
+
+    private companion object {
+        const val CHUNKS_PER_THREAD = 4
     }
 }
