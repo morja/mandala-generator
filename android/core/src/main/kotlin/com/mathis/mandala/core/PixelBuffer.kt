@@ -29,6 +29,12 @@ class PixelBuffer private constructor(
     private val rejectX: Float,
     private val rejectY: Float,
     private val rejectLimit: Float,
+    /**
+     * Width of lines and points in pixels. 1 is the macOS port's hairline; above it lines are drawn
+     * as that many parallel hairlines, so a mandala drawn larger than the normal export looks
+     * enlarged instead of thinner (ADR-0010).
+     */
+    private val lineWidth: Float = 1f,
 ) {
     constructor(width: Int, height: Int) : this(width, height, FloatArray(width * height * 3), 0, height, 0, 0f, 0f, (max(width, height) * 4).toFloat())
 
@@ -37,7 +43,7 @@ class PixelBuffer private constructor(
     val rowsUntil: Int get() = bandHi
 
     fun band(from: Int, until: Int): PixelBuffer =
-        PixelBuffer(width, height, data, max(bandLo, from), min(bandHi, until), originY, rejectX, rejectY, rejectLimit)
+        PixelBuffer(width, height, data, max(bandLo, from), min(bandHi, until), originY, rejectX, rejectY, rejectLimit, lineWidth)
 
     /** True when a vertical span [yMin, yMax] can touch this view's rows. */
     fun touchesRows(yMin: Float, yMax: Float): Boolean = yMax >= bandLo - 2 && yMin <= bandHi + 1
@@ -55,12 +61,37 @@ class PixelBuffer private constructor(
         data[base + 2] += b * weight
     }
 
+    /** A point of `lineWidth` pixels: one pixel, or a small square of them for wider lines. */
+    fun addPoint(x: Int, y: Int, r: Float, g: Float, b: Float, weight: Float) {
+        if (lineWidth <= 1f) return addPixel(x, y, r, g, b, weight)
+        val k = max(1, Math.round(lineWidth))
+        val start = -(k - 1) / 2
+        for (dy in start until start + k) for (dx in start until start + k) addPixel(x + dx, y + dy, r, g, b, weight)
+    }
+
+    /** A line of `lineWidth` pixels: one hairline, or that many parallel ones about a pixel apart. */
+    fun addLine(x0: Float, y0: Float, x1: Float, y1: Float, r: Float, g: Float, b: Float, weight: Float) {
+        if (lineWidth <= 1f) return addHairline(x0, y0, x1, y1, r, g, b, weight)
+        val dx = x1 - x0
+        val dy = y1 - y0
+        val len = sqrt(dx * dx + dy * dy)
+        if (!(len > 0f)) return addHairline(x0, y0, x1, y1, r, g, b, weight)
+        val nx = -dy / len
+        val ny = dx / len
+        val k = max(1, Math.round(lineWidth))
+        val step = lineWidth / k
+        for (i in 0 until k) {
+            val off = (i - (k - 1) * 0.5f) * step
+            addHairline(x0 + nx * off, y0 + ny * off, x1 + nx * off, y1 + ny * off, r, g, b, weight)
+        }
+    }
+
     /**
      * Wu anti-aliased line with additive blending. Rejects non-finite and far out-of-range input:
      * by default ends four buffer sizes away; a buffer that shows a part of a larger mandala buffer
      * measures that in the larger buffer's coordinates, so the same lines are kept.
      */
-    fun addLine(x0In: Float, y0In: Float, x1In: Float, y1In: Float, r: Float, g: Float, b: Float, weight: Float) {
+    private fun addHairline(x0In: Float, y0In: Float, x1In: Float, y1In: Float, r: Float, g: Float, b: Float, weight: Float) {
         if (!x0In.isFinite() || !y0In.isFinite() || !x1In.isFinite() || !y1In.isFinite()) return
         val limit = rejectLimit
         val ax = x0In + rejectX; val ay = y0In + rejectY; val bx = x1In + rejectX; val by = y1In + rejectY
@@ -152,7 +183,7 @@ class PixelBuffer private constructor(
         val ny = dx / len
         val half = thickness * 0.5f
         for (t in 1 until thickness) {
-            val off = (t - half) * 0.6f
+            val off = (t - half) * 0.6f * lineWidth
             val w = weight * (1f - t.toFloat() / thickness * 0.5f)
             addLine(x0 + nx * off, y0 + ny * off, x1 + nx * off, y1 + ny * off, r, g, b, w)
         }
@@ -176,18 +207,20 @@ class PixelBuffer private constructor(
         const val STRIP_ROWS = 256
 
         /** A buffer for rows [from, until) of a width x height canvas. */
-        fun strip(width: Int, height: Int, from: Int, until: Int, reject: Reject = Reject.of(width, height)): PixelBuffer =
-            PixelBuffer(width, height, FloatArray(width * (until - from) * 3), from, until, from, reject.x, reject.y, reject.limit)
+        fun strip(width: Int, height: Int, from: Int, until: Int, reject: Reject = Reject.of(width, height), lineWidth: Float = 1f): PixelBuffer =
+            PixelBuffer(width, height, FloatArray(width * (until - from) * 3), from, until, from, reject.x, reject.y, reject.limit, lineWidth)
 
         /**
          * Draws a width x height canvas strip by strip into an 8-bit image, so only one strip is
          * held as floats. `draw` must draw the whole picture into the strip it gets; drawing
          * clipped to the strip's rows gives every pixel the same sums as one full buffer.
          */
-        fun drawInStrips(width: Int, height: Int, reject: Reject = Reject.of(width, height), draw: (PixelBuffer) -> Unit): Image8 {
+        fun drawInStrips(
+            width: Int, height: Int, reject: Reject = Reject.of(width, height), lineWidth: Float = 1f, draw: (PixelBuffer) -> Unit,
+        ): Image8 {
             val out = Image8(width, height, Encoding.DISPLAY_P3)
             for (y0 in 0 until height step STRIP_ROWS) {
-                val strip = strip(width, height, y0, min(height, y0 + STRIP_ROWS), reject)
+                val strip = strip(width, height, y0, min(height, y0 + STRIP_ROWS), reject, lineWidth)
                 draw(strip)
                 strip.writeRows(out)
             }
