@@ -6,7 +6,7 @@
 
 **Both apps** live in this public GPL-3.0 repository (ADR-0009).
 
-**Android app, version 1.0.1 (code 2):**
+**Android app, version 1.1.0 (code 3) on the branch `feature/render-speed`:**
 
 - **Renderer:** all 36 styles, backgrounds, effects, text, drawing, graffiti and emblem layers. It is parity-tested against the macOS renderer (ADR-0004).
 - **Editor:** phone and tablet layouts, with a compact phone layout (DM-4 A).
@@ -30,8 +30,8 @@
 
 Steps in the Play Console:
 
-1. Build the bundle and upload it to a testing or production track. If version code 2 was uploaded before, raise `versionCode` first.
-2. Play App Signing comes with that first upload.
+1. Version 1.0.1 (code 2) is already on Google Play: the S23 has it from the Play Store. The branch `feature/render-speed` raises the version to 1.1.0 (code 3). Build that bundle and upload it.
+2. Play App Signing: check in the Play Console that it is active (it came with the first upload).
 3. Create the product `pro` (STORE-1) and set its price. ADR-0007 suggests 1 to 3 euros.
 4. Fill in Data safety, Content rating and Target audience with the answers in STORE-1.
 5. Buy Pro once from an internal test track (a licence tester gets it free) and check that Save large unlocks.
