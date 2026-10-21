@@ -1,5 +1,7 @@
 package com.mathis.mandala.app.ui
 
+import kotlinx.coroutines.launch
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.draw.alpha
@@ -324,10 +326,11 @@ private fun moving(params: MandalaParameters, selected: Int, target: MoveTarget?
 }
 
 /**
- * Phones: a button in the image's corner folds it into a small square at the top left, with the
- * what the open tab is about beside it, so the controls get the room; the button or a tap on the small
- * image brings it back (DM-4, variant B). The size stays as chosen while the controls scroll.
- * Folding only scales the shown preview, so it never renders. Drawing and moving keep it large.
+ * Phones: a button in the image's bottom right corner folds it into a small square at the top left,
+ * with what the open tab is about beside it, so the controls get the room; the button, a tap on the
+ * small image, or pulling the controls down once they are at the top brings it back (DM-4, variant
+ * B). The size stays as chosen while the controls scroll. Folding only scales the shown preview,
+ * so it never renders. Drawing and moving keep it large.
  */
 @Composable
 private fun FoldingCanvas(
@@ -341,28 +344,63 @@ private fun FoldingCanvas(
     val t = LocalTokens.current
     var small by rememberSaveable { mutableStateOf(false) }
     val pinned = drawing != null || move != null
-    // 0 = full image, 1 = small.
-    val fold by androidx.compose.animation.core.animateFloatAsState(if (small && !pinned) 1f else 0f, label = "fold")
+    // 0 = full image, 1 = small; follows a pull while the finger is down.
+    val foldAnim = remember { androidx.compose.animation.core.Animatable(if (small) 1f else 0f) }
+    LaunchedEffect(small, pinned) { foldAnim.animateTo(if (small && !pinned) 1f else 0f) }
+    val fold = foldAnim.value
     val compactSide = fullSide * Editing.COMPACT_CANVAS_FRACTION
+    val range = with(androidx.compose.ui.platform.LocalDensity.current) { (fullSide - compactSide).toPx() }
+    val scope = androidx.compose.runtime.rememberCoroutineScope()
+    // Pulling down past the top of the controls grows the small image with the finger; let go past a
+    // third of the way and it becomes large. Only a drag counts, not a fling that reaches the top.
+    val pull = remember { floatArrayOf(0f) }
+    val connection = remember(small, pinned, range) {
+        object : androidx.compose.ui.input.nestedscroll.NestedScrollConnection {
+            override fun onPreScroll(available: Offset, source: androidx.compose.ui.input.nestedscroll.NestedScrollSource): Offset {
+                if (pull[0] <= 0f || available.y >= 0f) return Offset.Zero
+                val used = maxOf(available.y, -pull[0])
+                pull[0] += used
+                scope.launch { foldAnim.snapTo((1f - pull[0] / range).coerceIn(0f, 1f)) }
+                return Offset(0f, used)
+            }
+
+            override fun onPostScroll(consumed: Offset, available: Offset, source: androidx.compose.ui.input.nestedscroll.NestedScrollSource): Offset {
+                if (!small || pinned || range <= 0f || available.y <= 0f ||
+                    source != androidx.compose.ui.input.nestedscroll.NestedScrollSource.UserInput
+                ) return Offset.Zero
+                pull[0] += available.y
+                scope.launch { foldAnim.snapTo((1f - pull[0] / range).coerceIn(0f, 1f)) }
+                return Offset(0f, available.y)
+            }
+
+            override suspend fun onPreFling(available: androidx.compose.ui.unit.Velocity): androidx.compose.ui.unit.Velocity {
+                if (pull[0] <= 0f) return androidx.compose.ui.unit.Velocity.Zero
+                val enough = pull[0] > range / 3f
+                pull[0] = 0f
+                if (enough) small = false else foldAnim.animateTo(1f)
+                return available
+            }
+        }
+    }
     BoxWithConstraints(Modifier.fillMaxSize().padding(horizontal = Spacing.lg)) {
         val side = fullSide + (compactSide - fullSide) * fold
         // Centred when full (if narrower than the screen), at the left when small.
         val inset = (maxWidth - fullSide) / 2 * (1f - fold)
-        Column(Modifier.fillMaxSize()) {
+        Column(Modifier.fillMaxSize().nestedScroll(connection)) {
             Row(verticalAlignment = Alignment.Top, modifier = Modifier.fillMaxWidth().padding(start = inset)) {
-                Box(Modifier.width(side)) {
-                    Canvas(
-                        preview,
-                        Modifier.fillMaxWidth(),
-                        drawing,
-                        move,
-                        showStatus = fold < 0.5f,
-                        onTap = if (small && !pinned) ({ small = false }) else null,
-                    )
+                Canvas(
+                    preview,
+                    Modifier.width(side),
+                    drawing,
+                    move,
+                    showStatus = fold < 0.5f,
+                    onTap = if (small && !pinned) ({ small = false }) else null,
+                ) {
+                    // Bottom right, where the thumb reaches it.
                     if (!pinned) {
                         Box(
                             Modifier
-                                .align(Alignment.TopEnd)
+                                .align(Alignment.BottomEnd)
                                 .padding(Spacing.xs)
                                 .clip(CircleShape)
                                 .background(t.surface)
@@ -401,6 +439,7 @@ private fun Canvas(
     move: MoveInput? = null,
     showStatus: Boolean = true,
     onTap: (() -> Unit)? = null,
+    corner: @Composable androidx.compose.foundation.layout.BoxScope.() -> Unit = {},
 ) {
     val t = LocalTokens.current
     Column(modifier.padding(bottom = Spacing.xs), verticalArrangement = Arrangement.spacedBy(Spacing.xs)) {
@@ -414,6 +453,7 @@ private fun Canvas(
             }
             if (drawing != null) DrawingOverlay(drawing, t.accent)
             if (move != null) MoveOverlay(move, t.accent, t.canvas)
+            corner()
             if (preview.rendering) {
                 LinearProgressIndicator(Modifier.fillMaxWidth().height(Sizes.progress))
             }
