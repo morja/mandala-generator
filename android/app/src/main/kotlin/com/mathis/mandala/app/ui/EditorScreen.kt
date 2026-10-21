@@ -260,7 +260,6 @@ fun EditorScreen(
                     fullSide = minOf(maxWidth - Spacing.lg * 2, canvasMax),
                     drawing = drawing(params, drawTool, vm),
                     move = moving(params, selected, moveTarget, vm),
-                    onCompact = vm::setPreviewCompact,
                 ) { modifier ->
                     ControlTabs(params, selected, vm, modifier, pro.owned) { showPro = true }
                 }
@@ -325,9 +324,8 @@ private fun moving(params: MandalaParameters, selected: Int, target: MoveTarget?
 /**
  * Phones: the image above the controls folds into a small square at the top left while the controls
  * are scrolled up, with the selected layer named beside it, and unfolds when they are scrolled back
- * to the top or the small image is tapped (DM-4, variant A). Folding only scales the shown preview;
- * past half way the preview is drawn smaller for changes made meanwhile. Drawing and moving keep
- * the image large.
+ * to the top or the small image is tapped (DM-4, variant A). Folding only scales the shown preview,
+ * so it never renders. Drawing and moving keep the image large.
  */
 @Composable
 private fun CollapsingCanvas(
@@ -337,7 +335,6 @@ private fun CollapsingCanvas(
     fullSide: androidx.compose.ui.unit.Dp,
     drawing: DrawingInput?,
     move: MoveInput?,
-    onCompact: (Boolean) -> Unit,
     controls: @Composable (Modifier) -> Unit,
 ) {
     val t = LocalTokens.current
@@ -350,8 +347,6 @@ private fun CollapsingCanvas(
     val range = with(density) { (fullSide - compactSide).toPx() }
     fun unfold() = scope.launch { androidx.compose.animation.core.animate(fold, 0f) { v, _ -> fold = v } }
     LaunchedEffect(pinned) { if (pinned && fold > 0f) unfold() }
-    val compact = fold >= 0.5f
-    LaunchedEffect(compact) { onCompact(compact) }
     val connection = remember(range, pinned) {
         object : androidx.compose.ui.input.nestedscroll.NestedScrollConnection {
             // Scrolling up folds the image before the controls move; scrolling down unfolds it once they are at the top.

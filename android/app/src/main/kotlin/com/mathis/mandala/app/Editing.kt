@@ -55,9 +55,6 @@ object Editing {
 
     const val PREVIEW_SIZE = 512
 
-    /** Preview size while the image is folded small above the controls: quicker to draw. */
-    const val PREVIEW_SIZE_COMPACT = 320
-
     /** Side of the small image above the controls, as a fraction of the full one. */
     const val COMPACT_CANVAS_FRACTION = 0.32f
     const val EXPORT_SIZE = 1024
