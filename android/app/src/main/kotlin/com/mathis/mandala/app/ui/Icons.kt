@@ -26,6 +26,9 @@ object EditorIcons {
     val Expand = icon("M16.59,8.59L12,13.17 7.41,8.59 6,10l6,6 6,-6z")
     val Less = icon("M12,8l-6,6 1.41,1.41L12,10.83l4.59,4.58L18,14z")
     val Close = icon("M19,6.41L17.59,5 12,10.59 6.41,5 5,6.41 10.59,12 5,17.59 6.41,19 12,13.41 17.59,19 19,17.59 13.41,12z")
+    /** Make the image small / large again (Material "close fullscreen" and "open in full"). */
+    val Shrink = icon("M22,3.41l-5.29,5.29L20,12h-8V4l3.29,3.29L20.59,2L22,3.41zM3.41,22l5.29,-5.29L12,20v-8H4l3.29,3.29L2,20.59L3.41,22z")
+    val Enlarge = icon("M21,11V3h-8l3.29,3.29l-10,10L3,13v8h8l-3.29,-3.29l10,-10L21,11z")
     val Visible = icon(EYE)
     val Hidden = icon(EYE, strike = true)
 
