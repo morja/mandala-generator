@@ -256,16 +256,16 @@ fun EditorScreen(
             } else {
                 // The canvas stays in view; only the open tab scrolls, so every change is visible.
                 val canvasMax = maxHeight * 0.5f
+                var header by remember { mutableStateOf<ControlHeader?>(null) }
                 CollapsingCanvas(
                     preview = preview,
-                    layer = params.layers.getOrNull(selected),
-                    layerNumber = selected + 1,
+                    header = header,
                     fullSide = minOf(maxWidth - Spacing.lg * 2, canvasMax),
                     drawing = drawing(params, drawTool, vm),
                     move = moving(params, selected, moveTarget, vm),
                     onCompact = vm::setPreviewCompact,
                 ) { modifier ->
-                    ControlTabs(params, selected, vm, modifier, pro.owned) { showPro = true }
+                    ControlTabs(params, selected, vm, modifier, pro.owned, onShowPro = { showPro = true }, onHeader = { header = it })
                 }
             }
         }
@@ -327,7 +327,7 @@ private fun moving(params: MandalaParameters, selected: Int, target: MoveTarget?
 
 /**
  * Phones: the image above the controls folds into a small square at the top left while the controls
- * are scrolled up, with the selected layer named beside it, and unfolds when they are scrolled back
+ * are scrolled up, with what the open tab is about beside it, and unfolds when they are scrolled back
  * to the top or the small image is tapped (DM-4, variant A). Folding only scales the shown preview;
  * past half way the preview is drawn smaller for changes made meanwhile. Drawing and moving keep
  * the image large.
@@ -335,8 +335,7 @@ private fun moving(params: MandalaParameters, selected: Int, target: MoveTarget?
 @Composable
 private fun CollapsingCanvas(
     preview: PreviewState,
-    layer: com.mathis.mandala.core.StyleLayer?,
-    layerNumber: Int,
+    header: ControlHeader?,
     fullSide: androidx.compose.ui.unit.Dp,
     drawing: DrawingInput?,
     move: MoveInput?,
@@ -387,16 +386,13 @@ private fun CollapsingCanvas(
                     showStatus = fold < 0.5f,
                     onTap = if (fold > 0f && !pinned) ({ unfold() }) else null,
                 )
-                if (fold > 0.5f && layer != null) {
+                if (fold > 0.5f && header != null) {
                     Column(
                         Modifier.padding(start = Spacing.md).alpha(((fold - 0.5f) * 2f).coerceIn(0f, 1f)),
                         verticalArrangement = Arrangement.spacedBy(Spacing.xs),
                     ) {
-                        Text("$layerNumber · ${layer.style.displayName}", style = MaterialTheme.typography.bodyMedium, maxLines = 1)
-                        Text(
-                            "${layer.blendMode.displayName} · ${(layer.opacity * 100).roundToInt()} %",
-                            style = MaterialTheme.typography.bodySmall, color = t.textMuted, maxLines = 1,
-                        )
+                        Text(header.title, style = MaterialTheme.typography.bodyMedium, maxLines = 1)
+                        Text(header.detail, style = MaterialTheme.typography.bodySmall, color = t.textMuted, maxLines = 1)
                     }
                 }
             }
@@ -615,7 +611,7 @@ private fun FavoritesSheet(
 ) {
     val t = LocalTokens.current
     ModalBottomSheet(onDismissRequest = onDismiss) {
-      // Messages show inside the sheet while it is open; behind it they would be hidden. They sit at
+      // Messages show inside the sheet while it is open; behind it they would be hidden. They sit near
       // the top, because the sheet's lower part can be below the screen while it is half open.
       Box {
         Column(Modifier.padding(horizontal = Spacing.lg).padding(bottom = Spacing.xl)) {
@@ -623,6 +619,8 @@ private fun FavoritesSheet(
                 Text("Favourites", style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
                 Button(onClick = onAdd, enabled = canAdd) { Text("Add current") }
             }
+            // Below the title, so a message does not cover "Add current"; it takes no room while empty.
+            SnackbarHost(snackbar)
             if (favorites.isEmpty()) {
                 Text(
                     "No favourites yet. Add the current mandala, or open the favourites file of the Mac app " +
@@ -643,7 +641,6 @@ private fun FavoritesSheet(
                 }
             }
         }
-        SnackbarHost(snackbar, Modifier.align(Alignment.TopCenter))
       }
     }
 }

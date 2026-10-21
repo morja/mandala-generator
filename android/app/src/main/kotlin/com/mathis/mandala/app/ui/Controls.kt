@@ -6,6 +6,8 @@ import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.selection.toggleable
+import androidx.compose.ui.semantics.Role
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -78,6 +80,19 @@ import kotlin.math.roundToInt
 
 private enum class ControlTab(val label: String) { LAYERS("Layers"), SCENE("Scene"), EMBLEM("Emblem"), TEXT("Text"), DRAW("Draw") }
 
+/** What the open tab is about, in two short lines (beside the folded image on phones). */
+internal data class ControlHeader(val title: String, val detail: String)
+
+private fun header(tab: ControlTab, params: MandalaParameters, selected: Int): ControlHeader = when (tab) {
+    ControlTab.LAYERS -> params.layers.getOrNull(selected)?.let { l ->
+        ControlHeader("${selected + 1} · ${l.style.displayName}", "${l.blendMode.displayName} · ${(l.opacity * 100).roundToInt()} %")
+    } ?: ControlHeader(tab.label, "No layers")
+    ControlTab.SCENE -> ControlHeader(tab.label, if (params.baseLayer.isEnabled) backgroundName(params.baseLayer.type) else "No background")
+    ControlTab.EMBLEM -> ControlHeader(tab.label, if (params.emblemLayer.isEnabled) params.emblemLayer.motif.displayName else "Off")
+    ControlTab.TEXT -> ControlHeader(tab.label, if (params.textLayer.isEnabled) params.textLayer.customAuthor.ifEmpty { "On" } else "Off")
+    ControlTab.DRAW -> ControlHeader(tab.label, "${params.drawingLayer.strokes.size} lines · ${params.graffitiLayer.strokes.size} spray")
+}
+
 /**
  * The controls below (or beside) the canvas, in five tabs so only one area is on screen at a time.
  * Each tab keeps its scroll position and open groups while another one is shown.
@@ -90,8 +105,11 @@ internal fun ControlTabs(
     modifier: Modifier = Modifier,
     proOwned: Boolean = false,
     onShowPro: () -> Unit = {},
+    onHeader: (ControlHeader) -> Unit = {},
 ) {
     var tab by rememberSaveable { mutableStateOf(ControlTab.LAYERS) }
+    val header = header(tab, params, selected)
+    LaunchedEffect(header) { onHeader(header) }
     val tabs = rememberSaveableStateHolder()
     val moveTarget by vm.moveTarget.collectAsStateWithLifecycle()
     // Drawing on the canvas only while the Draw tab is shown; moving only while its tab is.
@@ -168,7 +186,9 @@ private class PositionInput(
  * "Centre", and moving it by hand on the image. Pro; without it a note opens the Pro sheet.
  */
 @Composable
-private fun PositionGroup(x: Double, y: Double, target: MoveTarget, input: PositionInput, onChange: (Double, Double) -> Unit) {
+private fun PositionGroup(
+    x: Double, y: Double, target: MoveTarget, input: PositionInput, hidden: Boolean = false, onChange: (Double, Double) -> Unit,
+) {
     val t = LocalTokens.current
     val centred = x == 0.0 && y == 0.0
     Group("Position", summary = if (centred) "Centred" else "Moved") {
@@ -181,6 +201,9 @@ private fun PositionGroup(x: Double, y: Double, target: MoveTarget, input: Posit
             return@Group
         }
         val range = (-Editing.MAX_OFFSET).toFloat()..Editing.MAX_OFFSET.toFloat()
+        if (hidden) {
+            Text("This layer is hidden. Show it to see where it moves.", style = MaterialTheme.typography.bodySmall, color = t.textMuted)
+        }
         ValueSlider("Across", x, range, default = 0.0) { v -> onChange(v, y) }
         ValueSlider("Up and down", y, range, default = 0.0) { v -> onChange(x, v) }
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -189,7 +212,7 @@ private fun PositionGroup(x: Double, y: Double, target: MoveTarget, input: Posit
             if (input.moveTarget == target) {
                 FilledTonalButton(onClick = { input.setMoveTarget(null) }) { Text("Done") }
             } else {
-                Button(onClick = { input.setMoveTarget(target) }) { Text("Move on image") }
+                Button(onClick = { input.setMoveTarget(target) }, enabled = !hidden) { Text("Move on image") }
             }
         }
     }
@@ -271,7 +294,7 @@ private fun LayerControls(layer: StyleLayer, update: ((StyleLayer) -> StyleLayer
         ValueSlider("Density", layer.density, default = StyleLayer().density) { v -> update { it.copy(density = v) } }
         ValueSlider("Ripple", layer.ripple, default = StyleLayer().ripple) { v -> update { it.copy(ripple = v) } }
     }
-    PositionGroup(layer.offsetX, layer.offsetY, MoveTarget.LAYER, position) { x, y -> update { it.copy(offsetX = x, offsetY = y) } }
+    PositionGroup(layer.offsetX, layer.offsetY, MoveTarget.LAYER, position, hidden = !layer.isEnabled) { x, y -> update { it.copy(offsetX = x, offsetY = y) } }
     Group("Light and colour") {
         ValueSlider("Glow", layer.glowIntensity, default = StyleLayer().glowIntensity) { v -> update { it.copy(glowIntensity = v) } }
         ValueSlider("Colour drift", layer.colorDrift, default = StyleLayer().colorDrift) { v -> update { it.copy(colorDrift = v) } }
@@ -424,7 +447,11 @@ private fun EmblemTab(em: EmblemLayerSettings, vm: EditorViewModel, position: Po
     val defaults = EmblemLayerSettings()
     val t = LocalTokens.current
     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-        Text("Show emblem", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
+        // The label switches too; the dice and reset buttons beside it keep their own taps.
+        Text(
+            "Show emblem", style = MaterialTheme.typography.bodyMedium,
+            modifier = Modifier.weight(1f).toggleable(value = em.isEnabled, role = Role.Switch) { on -> update { it.copy(isEnabled = on) } },
+        )
         if (em.isEnabled) {
             IconButton(onClick = vm::randomizeEmblem) { Icon(EditorIcons.Dice, contentDescription = "Random emblem") }
             TextButton(onClick = vm::resetEmblem) { Text("Reset") }
