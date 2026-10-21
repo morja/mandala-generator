@@ -40,6 +40,7 @@ import com.mathis.mandala.core.GraffitiLayerSettings
 import com.mathis.mandala.core.Favorite
 import com.mathis.mandala.core.Framing
 import com.mathis.mandala.core.Image8
+import com.mathis.mandala.core.LayerCache
 import com.mathis.mandala.core.MacFile
 import com.mathis.mandala.core.Quote
 import com.mathis.mandala.core.Quotes
@@ -206,9 +207,26 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
     /** Whether the image is folded small above the controls (phones), so the preview can be smaller. */
     fun setPreviewCompact(compact: Boolean) { _previewCompact.value = compact }
 
-    /** What the shown preview was drawn from, and at which size. */
+    private val appearance = Appearance(application)
+    private val _fastPreview = MutableStateFlow(appearance.fastPreview)
+
+    /** Whether the preview blurs its glow at a smaller size (quicker, a touch softer; saved images never). */
+    val fastPreview: StateFlow<Boolean> = _fastPreview.asStateFlow()
+
+    fun setFastPreview(on: Boolean) {
+        appearance.fastPreview = on
+        _fastPreview.value = on
+    }
+
+    /** What the shown preview was drawn from, and how. */
     private var renderedParams: MandalaParameters? = null
     private var renderedSize = 0
+    private var renderedFast = false
+    /** How long the last preview took per layer it drew, to guess the next one's time. */
+    private var millisPerLayer = 0L
+
+    /** The layer images of the last preview, so a change to one layer redraws only that one. */
+    private val previewCache = LayerCache()
 
     private val textRenderer = AndroidTextRenderer()
     private val imageLoader = AndroidImageLoader()
@@ -218,9 +236,13 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
             @OptIn(FlowPreview::class)
             // Folding the image small changes nothing to draw; a smaller preview is drawn only for
             // changes made while it is small, and the full size again only when it unfolds.
-            combine(_params, _previewCompact) { p, c -> p to c }.debounce(DEBOUNCE_MS).collectLatest { (p, compact) ->
+            combine(_params, _previewCompact, _fastPreview) { p, c, f -> Triple(p, c, f) }.debounce(DEBOUNCE_MS).collectLatest { (p, compact, fast) ->
                 val size = if (compact) Editing.PREVIEW_SIZE_COMPACT else Editing.PREVIEW_SIZE
-                if (p != renderedParams || renderedSize < size) renderPreview(p, size)
+                if (p != renderedParams || renderedSize < size || fast != renderedFast) {
+                    val redrawn = if (renderedSize == size && renderedFast == fast) redrawnLayers(p) else p.layers.count { it.isEnabled }
+                    if (redrawn >= Editing.QUICK_MIN_LAYERS && millisPerLayer * redrawn > Editing.QUICK_AFTER_MS) renderQuickPreview(p)
+                    renderPreview(p, size, fast, redrawn)
+                }
             }
         }
         viewModelScope.launch {
@@ -623,23 +645,57 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
-    private suspend fun renderPreview(params: MandalaParameters, size: Int) {
+    /** Visible layers the next preview cannot take from the last one. */
+    private fun redrawnLayers(params: MandalaParameters): Int {
+        val before = renderedParams?.takeIf { it.seed == params.seed }?.layers.orEmpty()
+        return params.layers.count { it.isEnabled && it !in before }
+    }
+
+    /** A small, rough image while a slow change is drawn; not kept as the preview's result. */
+    private suspend fun renderQuickPreview(params: MandalaParameters) {
+        try {
+            val result = withContext(Dispatchers.Default) {
+                val job = coroutineContext.job
+                MandalaRenderer.render(
+                    params,
+                    RenderOptions(
+                        outputSize = Editing.QUICK_SIZE, glowReferenceWidth = Editing.QUICK_GLOW_REFERENCE, threads = threads,
+                        textRenderer = textRenderer, imageLoader = imageLoader, isCancelled = { !job.isActive },
+                    ),
+                )
+            }
+            _preview.update { it.copy(image = result.image.toBitmap().asImageBitmap(), rendering = true, error = null) }
+        } catch (e: RenderCancelledException) {
+            // A newer change is already being rendered.
+        } catch (e: OutOfMemoryError) {
+            // The full preview reports it.
+        }
+    }
+
+    private suspend fun renderPreview(params: MandalaParameters, size: Int, fast: Boolean, redrawn: Int) {
         _preview.update { it.copy(rendering = true, error = null) }
         try {
             val result = withContext(Dispatchers.Default) {
                 val job = coroutineContext.job
                 MandalaRenderer.render(
                     params,
-                    RenderOptions(outputSize = size, threads = threads, textRenderer = textRenderer, imageLoader = imageLoader, isCancelled = { !job.isActive }),
+                    RenderOptions(
+                        outputSize = size, threads = threads, textRenderer = textRenderer, imageLoader = imageLoader,
+                        isCancelled = { !job.isActive }, layerCache = previewCache,
+                        glowReferenceWidth = if (fast) Editing.FAST_GLOW_REFERENCE else RenderOptions().glowReferenceWidth,
+                    ),
                 )
             }
             val bitmap = result.image.toBitmap().asImageBitmap()
             _preview.value = PreviewState(image = bitmap, rendering = false, millis = result.millis, warnings = result.warnings)
             renderedParams = params
             renderedSize = size
+            renderedFast = fast
+            millisPerLayer = result.millis / maxOf(1, redrawn)
         } catch (e: RenderCancelledException) {
             // A newer change is already being rendered.
         } catch (e: OutOfMemoryError) {
+            previewCache.clear()
             _preview.update { it.copy(rendering = false, error = "Not enough memory for the preview.") }
         }
     }

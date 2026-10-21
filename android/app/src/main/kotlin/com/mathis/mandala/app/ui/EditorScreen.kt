@@ -125,6 +125,7 @@ fun EditorScreen(
     val saveChoice by vm.saveChoice.collectAsStateWithLifecycle()
     val framePreview by vm.framePreview.collectAsStateWithLifecycle()
     val phoneAspect by vm.screenAspect.collectAsStateWithLifecycle()
+    val fastPreview by vm.fastPreview.collectAsStateWithLifecycle()
     var showPro by remember { mutableStateOf(false) }
     // Kept when Android recreates the screen, which setting a wallpaper does.
     var showSave by rememberSaveable { mutableStateOf(false) }
@@ -233,6 +234,8 @@ fun EditorScreen(
                         onSaveSettings = { saveSettings.launch(vm.suggestedSettingsName()) },
                         lightTheme = lightTheme,
                         onLightTheme = onLightTheme,
+                        fastPreview = fastPreview,
+                        onFastPreview = vm::setFastPreview,
                         onAbout = onAbout,
                     )
                 },
@@ -543,6 +546,8 @@ private fun MoreMenu(
     onSaveSettings: () -> Unit,
     lightTheme: Boolean,
     onLightTheme: (Boolean) -> Unit,
+    fastPreview: Boolean,
+    onFastPreview: (Boolean) -> Unit,
     onAbout: () -> Unit,
 ) {
     var open by remember { mutableStateOf(false) }
@@ -561,6 +566,12 @@ private fun MoreMenu(
                 trailingIcon = { Checkbox(checked = lightTheme, onCheckedChange = null) },
                 onClick = { open = false; onLightTheme(!lightTheme) },
             )
+            // The saved image always gets the full glow; only the preview is drawn faster.
+            DropdownMenuItem(
+                text = { Text("Fast preview") },
+                trailingIcon = { Checkbox(checked = fastPreview, onCheckedChange = null) },
+                onClick = { open = false; onFastPreview(!fastPreview) },
+            )
             DropdownMenuItem(text = { Text("About") }, onClick = { open = false; onAbout() })
         }
     }
@@ -573,7 +584,7 @@ private fun ProSheet(pro: ProState, onBuy: () -> Unit, onDismiss: () -> Unit) {
     val t = LocalTokens.current
     ModalBottomSheet(onDismissRequest = onDismiss) {
         Column(Modifier.padding(horizontal = Spacing.lg).padding(bottom = Spacing.xl), verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
-            Text("Mandala Pro", style = MaterialTheme.typography.titleLarge)
+            Text("Mandala Generator Pro", style = MaterialTheme.typography.titleLarge)
             Text(
                 "Save your mandalas at 2048 pixels wide in every format, sharp enough for prints and wallpapers, " +
                     "and move and zoom the mandala in the frame. One purchase, no subscription. Everything else stays free.",

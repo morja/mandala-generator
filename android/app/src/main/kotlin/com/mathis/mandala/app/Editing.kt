@@ -58,6 +58,21 @@ object Editing {
     /** Preview size while the image is folded small above the controls: quicker to draw. */
     const val PREVIEW_SIZE_COMPACT = 320
 
+    /**
+     * Width at which the fast preview blurs glow and wash, instead of the macOS 1600 px. Measured on
+     * the starter favourites at preview size: 40 % less time, at least 52 dB PSNR (ADR-0004).
+     */
+    const val FAST_GLOW_REFERENCE = 800
+
+    /**
+     * A rough image first, when a change redraws at least this many layers and is expected to take
+     * longer than [QUICK_AFTER_MS]: small and with a coarse glow, replaced by the full one when ready.
+     */
+    const val QUICK_MIN_LAYERS = 2
+    const val QUICK_AFTER_MS = 1000L
+    const val QUICK_SIZE = 160
+    const val QUICK_GLOW_REFERENCE = 320
+
     /** Side of the small image above the controls, as a fraction of the full one. */
     const val COMPACT_CANVAS_FRACTION = 0.32f
     const val EXPORT_SIZE = 1024
