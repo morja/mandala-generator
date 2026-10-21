@@ -17,19 +17,29 @@ import kotlin.math.sin
  * the result matches the enlarged-and-cropped macOS output. `offset` is where this image sits
  * inside that larger area (noise and grain are sampled there).
  */
-internal class LayerEffects(private val par: Parallel) {
+internal class LayerEffects(
+    private val par: Parallel,
+    /**
+     * Width at which glow and wash are blurred. The macOS renderer's 1600 px by default; the app's
+     * fast preview uses less, which is quicker and softens the glow slightly (ADR-0004).
+     */
+    private val referenceWidth: Int = REFERENCE_WIDTH,
+) {
 
     data class BlurPass(val radius: Double, val strength: Double)
 
-    private companion object {
+    companion object {
+        /** The macOS renderer's reference width; blur radii are given in its pixels. */
+        const val REFERENCE_WIDTH = 1600
+
         /** Core height of one strip of the painted effect; the overlap comes on top. */
-        const val STRIP_ROWS = 512
+        private const val STRIP_ROWS = 512
 
         /**
          * Reference images larger than this (a square up to 1700 px) are blurred in strips of rows,
          * so a tall canvas does not hold several full reference copies at once.
          */
-        const val REF_TILE_AREA = 1700 * 1700
+        private const val REF_TILE_AREA = 1700 * 1700
     }
 
     private val rowScratch = ThreadLocal<FloatArray>()
@@ -56,12 +66,15 @@ internal class LayerEffects(private val par: Parallel) {
     private fun referenceBlurOverlay(source: Image8, effectWidth: Int, passes: List<BlurPass>, extra: ((FloatImage) -> FloatImage?)? = null): FloatImage? =
         referenceBlurOverlay(source.asRowSource(), effectWidth, passes, extra)
 
+    /** Radii in reference pixels become this many working pixels each (1 at the default width). */
+    private val refScale = referenceWidth.toDouble() / REFERENCE_WIDTH
+
     fun referenceBlurOverlay(source: RowSource, effectWidth: Int, passes: List<BlurPass>, extra: ((FloatImage) -> FloatImage?)? = null): FloatImage? {
-        val sf = 1600.0 / effectWidth
+        val sf = referenceWidth.toDouble() / effectWidth
         val scaled = abs(sf - 1.0) > 0.005
         val refW = if (scaled) (source.width * sf).roundToInt() else source.width
         val refH = if (scaled) (source.height * sf).roundToInt() else source.height
-        val active = passes.filter { it.radius >= 0.5 }
+        val active = passes.filter { it.radius >= 0.5 }.map { if (refScale == 1.0) it else it.copy(radius = it.radius * refScale) }
         if (extra == null && refW.toLong() * refH > REF_TILE_AREA) return tiledOverlay(source, refW, refH, active)
         val work = Filters.resampleToFloat(source, refW, refH, par)
         var overlay: FloatImage? = null
@@ -157,7 +170,7 @@ internal class LayerEffects(private val par: Parallel) {
         val chromatic: ((FloatImage) -> FloatImage?)? = if (amount > 0.15) { work ->
             Filters.colorControls(work.data, 0, work.data.size, minOf(4.0, 1.0 + amount * 3.0), 0.0, 1.0)
             if (45.0 * a >= 0.5) {
-                Filters.blurInPlace(work, 45.0 * a, par)
+                Filters.blurInPlace(work, 45.0 * a * refScale, par)
                 val s = (amount * 0.25).toFloat()
                 for (k in work.data.indices) work.data[k] *= s
                 work

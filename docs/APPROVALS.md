@@ -14,6 +14,8 @@ Format: `- **What** · What for and why · Alternative without approval · Recom
 
 ## Approved
 
+21 October 2026 (Mathis, after QA-2): the app's preview may blur its glow at a smaller width than the macOS renderer, as the switch "Fast preview" in the menu; saved images keep the full glow (ADR-0004).
+
 20 October 2026 (Mathis, RES-2 "everything as recommended"): layer and emblem positions in the settings, Mac first, editing them is Pro (ADR-0011).
 
 20 October 2026 (Mathis, after the first portrait renders): centred backgrounds (auto, radial gradient, sunburst) follow the mandala's centre, the auto background also its size (ADR-0010, point 6).

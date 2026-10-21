@@ -124,6 +124,7 @@ fun EditorScreen(
     val saveChoice by vm.saveChoice.collectAsStateWithLifecycle()
     val framePreview by vm.framePreview.collectAsStateWithLifecycle()
     val phoneAspect by vm.screenAspect.collectAsStateWithLifecycle()
+    val fastPreview by vm.fastPreview.collectAsStateWithLifecycle()
     var showPro by remember { mutableStateOf(false) }
     // Kept when Android recreates the screen, which setting a wallpaper does.
     var showSave by rememberSaveable { mutableStateOf(false) }
@@ -232,6 +233,8 @@ fun EditorScreen(
                         onSaveSettings = { saveSettings.launch(vm.suggestedSettingsName()) },
                         lightTheme = lightTheme,
                         onLightTheme = onLightTheme,
+                        fastPreview = fastPreview,
+                        onFastPreview = vm::setFastPreview,
                         onAbout = onAbout,
                     )
                 },
@@ -252,15 +255,15 @@ fun EditorScreen(
             } else {
                 // The canvas stays in view; only the open tab scrolls, so every change is visible.
                 val canvasMax = maxHeight * 0.5f
+                var header by remember { mutableStateOf<ControlHeader?>(null) }
                 FoldingCanvas(
                     preview = preview,
-                    layer = params.layers.getOrNull(selected),
-                    layerNumber = selected + 1,
+                    header = header,
                     fullSide = minOf(maxWidth - Spacing.lg * 2, canvasMax),
                     drawing = drawing(params, drawTool, vm),
                     move = moving(params, selected, moveTarget, vm),
                 ) { modifier ->
-                    ControlTabs(params, selected, vm, modifier, pro.owned) { showPro = true }
+                    ControlTabs(params, selected, vm, modifier, pro.owned, onShowPro = { showPro = true }, onHeader = { header = it })
                 }
             }
         }
@@ -322,15 +325,14 @@ private fun moving(params: MandalaParameters, selected: Int, target: MoveTarget?
 
 /**
  * Phones: a button in the image's corner folds it into a small square at the top left, with the
- * selected layer named beside it, so the controls get the room; the button or a tap on the small
+ * what the open tab is about beside it, so the controls get the room; the button or a tap on the small
  * image brings it back (DM-4, variant B). The size stays as chosen while the controls scroll.
  * Folding only scales the shown preview, so it never renders. Drawing and moving keep it large.
  */
 @Composable
 private fun FoldingCanvas(
     preview: PreviewState,
-    layer: com.mathis.mandala.core.StyleLayer?,
-    layerNumber: Int,
+    header: ControlHeader?,
     fullSide: androidx.compose.ui.unit.Dp,
     drawing: DrawingInput?,
     move: MoveInput?,
@@ -376,16 +378,13 @@ private fun FoldingCanvas(
                         }
                     }
                 }
-                if (fold > 0.5f && layer != null) {
+                if (fold > 0.5f && header != null) {
                     Column(
                         Modifier.padding(start = Spacing.md).alpha(((fold - 0.5f) * 2f).coerceIn(0f, 1f)),
                         verticalArrangement = Arrangement.spacedBy(Spacing.xs),
                     ) {
-                        Text("$layerNumber · ${layer.style.displayName}", style = MaterialTheme.typography.bodyMedium, maxLines = 1)
-                        Text(
-                            "${layer.blendMode.displayName} · ${(layer.opacity * 100).roundToInt()} %",
-                            style = MaterialTheme.typography.bodySmall, color = t.textMuted, maxLines = 1,
-                        )
+                        Text(header.title, style = MaterialTheme.typography.bodyMedium, maxLines = 1)
+                        Text(header.detail, style = MaterialTheme.typography.bodySmall, color = t.textMuted, maxLines = 1)
                     }
                 }
             }
@@ -535,6 +534,8 @@ private fun MoreMenu(
     onSaveSettings: () -> Unit,
     lightTheme: Boolean,
     onLightTheme: (Boolean) -> Unit,
+    fastPreview: Boolean,
+    onFastPreview: (Boolean) -> Unit,
     onAbout: () -> Unit,
 ) {
     var open by remember { mutableStateOf(false) }
@@ -553,6 +554,12 @@ private fun MoreMenu(
                 trailingIcon = { Checkbox(checked = lightTheme, onCheckedChange = null) },
                 onClick = { open = false; onLightTheme(!lightTheme) },
             )
+            // The saved image always gets the full glow; only the preview is drawn faster.
+            DropdownMenuItem(
+                text = { Text("Fast preview") },
+                trailingIcon = { Checkbox(checked = fastPreview, onCheckedChange = null) },
+                onClick = { open = false; onFastPreview(!fastPreview) },
+            )
             DropdownMenuItem(text = { Text("About") }, onClick = { open = false; onAbout() })
         }
     }
@@ -565,7 +572,7 @@ private fun ProSheet(pro: ProState, onBuy: () -> Unit, onDismiss: () -> Unit) {
     val t = LocalTokens.current
     ModalBottomSheet(onDismissRequest = onDismiss) {
         Column(Modifier.padding(horizontal = Spacing.lg).padding(bottom = Spacing.xl), verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
-            Text("Mandala Pro", style = MaterialTheme.typography.titleLarge)
+            Text("Mandala Generator Pro", style = MaterialTheme.typography.titleLarge)
             Text(
                 "Save your mandalas at 2048 pixels wide in every format, sharp enough for prints and wallpapers, " +
                     "and move and zoom the mandala in the frame. One purchase, no subscription. Everything else stays free.",
@@ -596,7 +603,7 @@ private fun FavoritesSheet(
 ) {
     val t = LocalTokens.current
     ModalBottomSheet(onDismissRequest = onDismiss) {
-      // Messages show inside the sheet while it is open; behind it they would be hidden. They sit at
+      // Messages show inside the sheet while it is open; behind it they would be hidden. They sit near
       // the top, because the sheet's lower part can be below the screen while it is half open.
       Box {
         Column(Modifier.padding(horizontal = Spacing.lg).padding(bottom = Spacing.xl)) {
@@ -604,6 +611,8 @@ private fun FavoritesSheet(
                 Text("Favourites", style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
                 Button(onClick = onAdd, enabled = canAdd) { Text("Add current") }
             }
+            // Below the title, so a message does not cover "Add current"; it takes no room while empty.
+            SnackbarHost(snackbar)
             if (favorites.isEmpty()) {
                 Text(
                     "No favourites yet. Add the current mandala, or open the favourites file of the Mac app " +
@@ -624,7 +633,6 @@ private fun FavoritesSheet(
                 }
             }
         }
-        SnackbarHost(snackbar, Modifier.align(Alignment.TopCenter))
       }
     }
 }

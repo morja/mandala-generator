@@ -40,6 +40,7 @@ import com.mathis.mandala.core.GraffitiLayerSettings
 import com.mathis.mandala.core.Favorite
 import com.mathis.mandala.core.Framing
 import com.mathis.mandala.core.Image8
+import com.mathis.mandala.core.LayerCache
 import com.mathis.mandala.core.MacFile
 import com.mathis.mandala.core.Quote
 import com.mathis.mandala.core.Quotes
@@ -204,6 +205,28 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
     /** Previews rendered recently, by their settings; about 1 MB each. */
     private val recentPreviews = RecentImages<MandalaParameters, PreviewState>(RECENT_PREVIEWS)
 
+    private val appearance = Appearance(application)
+    private val _fastPreview = MutableStateFlow(appearance.fastPreview)
+
+    /** Whether the preview blurs its glow at a smaller size (quicker, a touch softer; saved images never). */
+    val fastPreview: StateFlow<Boolean> = _fastPreview.asStateFlow()
+
+    fun setFastPreview(on: Boolean) {
+        appearance.fastPreview = on
+        // The kept previews were drawn with the other glow.
+        recentPreviews.clear()
+        _fastPreview.value = on
+    }
+
+    /** What the last rendered preview was drawn from, and how. */
+    private var renderedParams: MandalaParameters? = null
+    private var renderedFast = false
+    /** How long the last preview took per layer it drew, to guess the next one's time. */
+    private var millisPerLayer = 0L
+
+    /** The layer images of the last rendered preview, so a change to one layer redraws only that one. */
+    private val previewCache = LayerCache()
+
     /** Save sheet previews rendered recently, by everything they were rendered from. */
     private val recentFrames = RecentImages<FrameRequest, FramePreviewState>(RECENT_FRAMES)
 
@@ -214,14 +237,16 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         viewModelScope.launch {
             // A state shown recently (history, undo, a switch flipped back) comes back at once;
             // anything else is rendered once the settings rest for a moment.
-            _params.collectLatest { p ->
+            combine(_params, _fastPreview) { p, f -> p to f }.collectLatest { (p, fast) ->
                 val known = recentPreviews[p]
                 if (known != null) {
                     _preview.value = known
                     return@collectLatest
                 }
                 delay(DEBOUNCE_MS)
-                renderPreview(p)
+                val redrawn = if (renderedFast == fast) redrawnLayers(p) else p.layers.count { it.isEnabled }
+                if (redrawn >= Editing.QUICK_MIN_LAYERS && millisPerLayer * redrawn > Editing.QUICK_AFTER_MS) renderQuickPreview(p)
+                renderPreview(p, fast, redrawn)
             }
         }
         viewModelScope.launch {
@@ -633,22 +658,57 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
-    private suspend fun renderPreview(params: MandalaParameters) {
+    /** Visible layers the next preview cannot take from the last one. */
+    private fun redrawnLayers(params: MandalaParameters): Int {
+        val before = renderedParams?.takeIf { it.seed == params.seed }?.layers.orEmpty()
+        return params.layers.count { it.isEnabled && it !in before }
+    }
+
+    /** A small, rough image while a slow change is drawn; not kept as the preview's result. */
+    private suspend fun renderQuickPreview(params: MandalaParameters) {
+        try {
+            val result = withContext(Dispatchers.Default) {
+                val job = coroutineContext.job
+                MandalaRenderer.render(
+                    params,
+                    RenderOptions(
+                        outputSize = Editing.QUICK_SIZE, glowReferenceWidth = Editing.QUICK_GLOW_REFERENCE, threads = threads,
+                        textRenderer = textRenderer, imageLoader = imageLoader, isCancelled = { !job.isActive },
+                    ),
+                )
+            }
+            _preview.update { it.copy(image = result.image.toBitmap().asImageBitmap(), rendering = true, error = null) }
+        } catch (e: RenderCancelledException) {
+            // A newer change is already being rendered.
+        } catch (e: OutOfMemoryError) {
+            // The full preview reports it.
+        }
+    }
+
+    private suspend fun renderPreview(params: MandalaParameters, fast: Boolean, redrawn: Int) {
         _preview.update { it.copy(rendering = true, error = null) }
         try {
             val result = withContext(Dispatchers.Default) {
                 val job = coroutineContext.job
                 MandalaRenderer.render(
                     params,
-                    RenderOptions(outputSize = Editing.PREVIEW_SIZE, threads = threads, textRenderer = textRenderer, imageLoader = imageLoader, isCancelled = { !job.isActive }),
+                    RenderOptions(
+                        outputSize = Editing.PREVIEW_SIZE, threads = threads, textRenderer = textRenderer, imageLoader = imageLoader,
+                        isCancelled = { !job.isActive }, layerCache = previewCache,
+                        glowReferenceWidth = if (fast) Editing.FAST_GLOW_REFERENCE else RenderOptions().glowReferenceWidth,
+                    ),
                 )
             }
             val bitmap = result.image.toBitmap().asImageBitmap()
             _preview.value = PreviewState(image = bitmap, rendering = false, millis = result.millis, warnings = result.warnings)
             recentPreviews[params] = _preview.value
+            renderedParams = params
+            renderedFast = fast
+            millisPerLayer = result.millis / maxOf(1, redrawn)
         } catch (e: RenderCancelledException) {
             // A newer change is already being rendered.
         } catch (e: OutOfMemoryError) {
+            previewCache.clear()
             _preview.update { it.copy(rendering = false, error = "Not enough memory for the preview.") }
         }
     }

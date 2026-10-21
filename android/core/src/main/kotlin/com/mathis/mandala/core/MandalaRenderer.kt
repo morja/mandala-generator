@@ -43,6 +43,13 @@ data class RenderOptions(
     val imageLoader: ImageLoader? = null,
     /** Polled between steps; when it returns true the render stops with [RenderCancelledException]. */
     val isCancelled: () -> Boolean = { false },
+    /** Reuses the images of layers that did not change since the last render with this cache. */
+    val layerCache: LayerCache? = null,
+    /**
+     * Width in pixels at which glow, wash and other soft light are blurred. The default is the macOS
+     * renderer's; a smaller one is faster and softens the light slightly (the app's fast preview).
+     */
+    val glowReferenceWidth: Int = 1600,
 )
 
 fun interface ImageLoader {
@@ -91,7 +98,7 @@ object MandalaRenderer {
         val dY = place.centreY - bufH / 2.0
 
         Parallel(max(1, options.threads)).use { par ->
-            val fx = LayerEffects(par)
+            val fx = LayerEffects(par, options.glowReferenceWidth)
 
             // ── Background ──
             val base = params.baseLayer
@@ -113,6 +120,8 @@ object MandalaRenderer {
 
             // ── Layers ──
             fun checkpoint() { if (options.isCancelled()) throw RenderCancelledException() }
+            val cache = options.layerCache
+            cache?.begin()
 
             for ((li, layer) in params.layers.withIndex()) {
                 checkpoint()
@@ -122,6 +131,23 @@ object MandalaRenderer {
                     continue
                 }
                 val palette = palettes[layer.paletteIndex.coerceIn(0, palettes.size - 1)]
+                val op = when (layer.blendMode) {
+                    LayerBlendMode.SCREEN -> BlendOp.SCREEN
+                    LayerBlendMode.ADD -> BlendOp.ADD
+                    LayerBlendMode.NORMAL -> BlendOp.LIGHTEN
+                    LayerBlendMode.MULTIPLY -> BlendOp.MULTIPLY
+                }
+                val cacheKey = cache?.let {
+                    LayerCache.Key(
+                        layer, if (layer.seed == 0uL) li else -1, params.seed, palette,
+                        bufW, bufH, place.centreX, place.centreY, mandalaSize, options.glowReferenceWidth,
+                    )
+                }
+                val cached = cacheKey?.let { cache.get(it) }
+                if (cached != null) {
+                    composite = fx.composite(composite, cached.image, op, cached.x0, cached.y0)
+                    continue
+                }
                 val layerSeed = if (layer.seed == 0uL) {
                     params.seed + (li + 1).toULong() * 0x9e3779b97f4a7c15uL
                 } else {
@@ -143,12 +169,6 @@ object MandalaRenderer {
                 // A moved layer shows parts beyond the centred square, so it gets the full one (ADR-0011).
                 val moved = layer.offsetX != 0.0 || layer.offsetY != 0.0
                 val size = if (rotated || moved) effectWidth else min(effectWidth, mandalaSize + 2 * margin)
-                val op = when (layer.blendMode) {
-                    LayerBlendMode.SCREEN -> BlendOp.SCREEN
-                    LayerBlendMode.ADD -> BlendOp.ADD
-                    LayerBlendMode.NORMAL -> BlendOp.LIGHTEN
-                    LayerBlendMode.MULTIPLY -> BlendOp.MULTIPLY
-                }
 
                 // That square of side `size` sits around the mandala centre at (sx0, sy0) on the
                 // canvas. Only the part that can reach the canvas is drawn: for an unrotated layer the
@@ -231,8 +251,11 @@ object MandalaRenderer {
                 img = fx.colourGrade(img, layer.saturation, layer.brightness)
                 if (rotated) img = fx.rotate(img, layer.rotation * Math.PI * 2, cx, cy)
                 if (layer.opacity < 0.999) img = fx.opacity(img, layer.opacity)
+                // Blending reads the layer image without changing it, so it can be kept.
+                if (cacheKey != null) cache.put(cacheKey, LayerCache.Entry(img, view[0], view[1]))
                 composite = fx.composite(composite, img, op, view[0], view[1])
             }
+            cache?.finish()
 
             // ── Hand-made layers ──
             val hand = HandLayers(par, fx)

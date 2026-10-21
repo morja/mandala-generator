@@ -16,5 +16,7 @@ class RecentImages<K, V>(private val max: Int) {
         entries[key] = value
     }
 
+    fun clear() = entries.clear()
+
     val size: Int get() = entries.size
 }

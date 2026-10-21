@@ -49,29 +49,33 @@ internal object Filters {
             val line = Line(w, sigma)
             for (y in from until until) {
                 System.arraycopy(d, y * w * 3, line.src, 0, w * 3)
-                line.blur()
-                System.arraycopy(line.dst, 0, d, y * w * 3, w * 3)
+                // A black row stays black (and is already zero in place).
+                if (line.blur()) System.arraycopy(line.dst, 0, d, y * w * 3, w * 3)
             }
         }
-        // Columns, in blocks so reads stay cache friendly
+        // Columns, a block of them at a time: the block is gathered row by row so reads stay
+        // cache friendly, then each column is blurred on its own.
         val block = 16
         val blocks = (w + block - 1) / block
         par.forRange(blocks) { from, until ->
             val line = Line(h, sigma)
+            val cols = FloatArray(h * block * 3)
             for (b in from until until) {
                 val x0 = b * block
-                val x1 = min(w, x0 + block)
-                for (x in x0 until x1) {
+                val bw = min(w, x0 + block) - x0
+                for (y in 0 until h) System.arraycopy(d, (y * w + x0) * 3, cols, y * bw * 3, bw * 3)
+                for (c in 0 until bw) {
                     for (y in 0 until h) {
-                        val i = (y * w + x) * 3
-                        line.src[y * 3] = d[i]; line.src[y * 3 + 1] = d[i + 1]; line.src[y * 3 + 2] = d[i + 2]
+                        val i = (y * bw + c) * 3
+                        line.src[y * 3] = cols[i]; line.src[y * 3 + 1] = cols[i + 1]; line.src[y * 3 + 2] = cols[i + 2]
                     }
-                    line.blur()
+                    if (!line.blur()) continue
                     for (y in 0 until h) {
-                        val i = (y * w + x) * 3
-                        d[i] = line.dst[y * 3]; d[i + 1] = line.dst[y * 3 + 1]; d[i + 2] = line.dst[y * 3 + 2]
+                        val i = (y * bw + c) * 3
+                        cols[i] = line.dst[y * 3]; cols[i + 1] = line.dst[y * 3 + 1]; cols[i + 2] = line.dst[y * 3 + 2]
                     }
                 }
+                for (y in 0 until h) System.arraycopy(cols, y * bw * 3, d, (y * w + x0) * 3, bw * 3)
             }
         }
     }
@@ -89,9 +93,11 @@ internal object Filters {
         val dst = FloatArray(n * 3)
         private val kernel = if (sigma <= 6.0) gaussianKernel(sigma) else null
         private val radii = if (kernel == null) boxRadiiForGauss(sigma) else null
-        private val prefix = if (kernel == null) DoubleArray(n + 1) else null
+        private val prefix = if (kernel == null) DoubleArray((n + 1) * 3) else null
 
-        fun blur() {
+        /** Blurs `src` into `dst`; returns false (and leaves `dst` alone) for an all-black line. */
+        fun blur(): Boolean {
+            if (src.all { it == 0f }) return false
             if (kernel != null) {
                 convolve(src, dst, n, kernel)
             } else {
@@ -100,6 +106,7 @@ internal object Filters {
                 boxPass(dst, src, n, r[1], prefix)
                 boxPass(src, dst, n, r[2], prefix)
             }
+            return true
         }
     }
 
@@ -122,10 +129,14 @@ internal object Filters {
             var sr = 0f; var sg = 0f; var sb = 0f
             val lo = max(0, x - r)
             val hi = min(n - 1, x + r)
-            for (xx in lo..hi) {
-                val wgt = k[xx - x + r]
-                val i = xx * 3
+            // Same order of additions everywhere; only the index arithmetic is hoisted.
+            var ki = lo - x + r
+            var i = lo * 3
+            val end = hi * 3
+            while (i <= end) {
+                val wgt = k[ki++]
                 sr += src[i] * wgt; sg += src[i + 1] * wgt; sb += src[i + 2] * wgt
+                i += 3
             }
             val o = x * 3
             dst[o] = sr; dst[o + 1] = sg; dst[o + 2] = sb
@@ -144,17 +155,23 @@ internal object Filters {
         return IntArray(n) { if (it < m) (wl - 1) / 2 else (wu - 1) / 2 }
     }
 
-    /** Box blur of one interleaved RGB line, zero outside. */
+    /** Box blur of one interleaved RGB line, zero outside. `prefix` holds (n + 1) * 3 values. */
     private fun boxPass(src: FloatArray, dst: FloatArray, n: Int, r: Int, prefix: DoubleArray) {
         val norm = 1.0 / (2 * r + 1)
-        for (c in 0 until 3) {
-            prefix[0] = 0.0
-            for (x in 0 until n) prefix[x + 1] = prefix[x] + src[x * 3 + c]
-            for (x in 0 until n) {
-                val lo = max(0, x - r)
-                val hi = min(n, x + r + 1)
-                dst[x * 3 + c] = ((prefix[hi] - prefix[lo]) * norm).toFloat()
-            }
+        prefix[0] = 0.0; prefix[1] = 0.0; prefix[2] = 0.0
+        for (x in 0 until n) {
+            val p = x * 3
+            prefix[p + 3] = prefix[p] + src[p]
+            prefix[p + 4] = prefix[p + 1] + src[p + 1]
+            prefix[p + 5] = prefix[p + 2] + src[p + 2]
+        }
+        for (x in 0 until n) {
+            val lo = max(0, x - r) * 3
+            val hi = min(n, x + r + 1) * 3
+            val o = x * 3
+            dst[o] = ((prefix[hi] - prefix[lo]) * norm).toFloat()
+            dst[o + 1] = ((prefix[hi + 1] - prefix[lo + 1]) * norm).toFloat()
+            dst[o + 2] = ((prefix[hi + 2] - prefix[lo + 2]) * norm).toFloat()
         }
     }
 
