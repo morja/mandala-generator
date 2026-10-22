@@ -4179,10 +4179,8 @@ struct MandalaRenderer {
 
         // Glow — applied to pure text (cloud and shadow are separate) so they don't
         // corrupt the glow source. Uses wider radii than the mandala-layer glow for a
-        // soft luminous bloom rather than an unsharp-mask look. Only Multiply keeps it inside
-        // the overlay (a soft coloured shadow); otherwise the glow is light screened on top at
-        // the end (textGlowPasses), as its blurred alpha made it invisible or dark before.
-        if settings.glow > 0.005 && settings.blendMode == .multiply {
+        // soft luminous bloom rather than an unsharp-mask look.
+        if settings.glow > 0.005 {
             let ciImage = CIImage(cgImage: overlayImage)
             let ctx = CIContext(options: [.workingColorSpace: CGColorSpace(name: CGColorSpace.displayP3) as Any])
             let iF = CGFloat(settings.glow)
@@ -4223,9 +4221,6 @@ struct MandalaRenderer {
             }
         }
 
-        // The glow's light source: the text with blur and brightness boost, before opacity.
-        let glowSource = overlayImage
-
         // Opacity
         if settings.opacity < 0.999 {
             overlayImage = applyLayerOpacity(image: overlayImage, opacity: settings.opacity)
@@ -4260,24 +4255,7 @@ struct MandalaRenderer {
             }
         }
 
-        let blended = blendComposite(base: result, overlay: overlayImage, mode: blendFilter)
-        guard settings.blendMode != .multiply,
-              let passes = textGlowPasses(settings.glow, opacity: settings.opacity) else { return blended }
-        return screenGlowLight(base: blended, source: glowSource, passes: passes)
-    }
-
-    /// The text glow as light (radii in reference-1600px pixels), faded with the text, or nil for none.
-    /// The two wide passes have three times their former strength, so the glow is clearly visible on
-    /// busy mandalas; the narrow one keeps its strength, so the letters stay readable.
-    static func textGlowPasses(_ glow: Double, opacity: Double) -> [(radius: CGFloat, strength: CGFloat)]? {
-        guard glow > 0.005 else { return nil }
-        let iF = CGFloat(glow)
-        let k = CGFloat(glow * max(0, min(1, opacity)))
-        return [
-            (10.0 * iF * 3.0, 0.9 * k),
-            (35.0 * iF * 3.0, 1.5 * k),
-            (70.0 * iF * 3.0, 0.6 * k),
-        ]
+        return blendComposite(base: result, overlay: overlayImage, mode: blendFilter)
     }
 
     private static func renderTextToCGImage(settings: TextLayerSettings, size: Int) -> CGImage? {
