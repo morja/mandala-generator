@@ -13,9 +13,10 @@ import kotlin.math.sqrt
 
 /**
  * The emblem layer of the macOS app (EmblemLayer.swift): the emblem geometry drawn as an 8-bit
- * coverage mask, coloured from a palette by distance from the centre, then glow and opacity, then
- * blended over the image. The overlay is premultiplied (alpha = coverage) and never stored: its
- * rows are computed from the mask where the glow and the blend need them.
+ * coverage mask, coloured from a palette by distance from the centre, faded by its opacity and
+ * blended over the image; its glow is light screened on top. The overlay is premultiplied
+ * (alpha = coverage) and never stored: its rows are computed from the mask where the glow and the
+ * blend need them.
  */
 internal class EmblemLayer(private val par: Parallel, private val fx: LayerEffects) {
 
@@ -26,7 +27,8 @@ internal class EmblemLayer(private val par: Parallel, private val fx: LayerEffec
         val geometry = EmblemShapes.geometry(s)
         // Unit space → pixels: the frame ring (radius 0.92) gets a diameter of `size` × canvas.
         val unit = s.size.coerceIn(0.1, 1.0) * size * 0.5 / EmblemShapes.RING_RADIUS
-        val glowReach = if (s.glow > 0) 3 * 60.0 * s.glow * size / 1600 else 0.0
+        // Three times the widest glow pass (Multiply: 60 × glow, otherwise 20 × (1 + 2 × glow)).
+        val glowReach = if (s.glow > 0) 3 * max(60.0 * s.glow, 20.0 * (1 + 2 * s.glow)) * size / 1600 else 0.0
         // Its own offset from the mandala centre (ADR-0011).
         val centreX = place.centreX + s.offsetX * size
         val centreY = place.centreY + s.offsetY * size
@@ -41,12 +43,12 @@ internal class EmblemLayer(private val par: Parallel, private val fx: LayerEffec
         val palette = palettes[s.paletteIndex.coerceIn(0, palettes.size - 1)]
         val colour = ColourSource(mask, w, h, ecx, ecy, lut(palette), s.colorPosition, s.colorSpread, unit)
         val op = s.blendMode
-        // Alpha only matters where the overlay covers the image: source-over and multiply.
-        val needsAlpha = op == LayerBlendMode.NORMAL || op == LayerBlendMode.MULTIPLY
-        val passes = glowPasses(s.glow)
-
-        // Core Image's glow keeps the blurred alpha unscaled and sums it over the passes.
-        val glowAlpha: ByteArray? = if (needsAlpha && passes != null) {
+        val multiply = op == LayerBlendMode.MULTIPLY
+        // The glow: blurred light of the coloured emblem, faded with it, screened on top after the blend.
+        // Multiply darkens, so there the glow stays inside the overlay as a soft coloured shadow: the
+        // macOS applyGlow, whose Core Image glow keeps the blurred alpha unscaled and sums it over the passes.
+        val passes = if (multiply) multiplyGlowPasses(s.glow) else glowPasses(s.glow, s.opacity)
+        val glowAlpha: ByteArray? = if (multiply && passes != null) {
             val alphaPasses = passes.map { LayerEffects.BlurPass(it.radius, 1.0) }
             fx.referenceBlurOverlay(AlphaSource(mask, w, h), size, alphaPasses)?.let { ref ->
                 ByteArray(w * h).also { out ->
@@ -81,16 +83,18 @@ internal class EmblemLayer(private val par: Parallel, private val fx: LayerEffec
                     val j = x * 3 + ch
                     val k = (x + area[0]) * 3 + ch
                     var sc = c[j]
-                    if (over != null) sc = sc + over[j] - sc * over[j]
+                    if (multiply && over != null) sc = sc + over[j] - sc * over[j]
                     sc = sc.coerceIn(0f, 1f) * fade
                     val d = row[k]
                     // Blend formulas for a premultiplied overlay on an opaque base.
-                    row[k] = when (op) {
+                    var v = when (op) {
                         LayerBlendMode.NORMAL -> sc + d * (1 - a)
                         LayerBlendMode.SCREEN -> d + sc - d * sc
                         LayerBlendMode.ADD -> d + sc
                         LayerBlendMode.MULTIPLY -> d * (1 - a + sc)
                     }
+                    if (!multiply && over != null) v = v + over[j] - v * over[j]
+                    row[k] = v
                 }
             }
             WorkingSpace.writeRow(row, out, y + area[1])
@@ -114,8 +118,24 @@ internal class EmblemLayer(private val par: Parallel, private val fx: LayerEffec
         return out
     }
 
-    /** The three glow passes of the macOS applyGlow (radii in 1600 px reference pixels), or null for none. */
-    private fun glowPasses(intensity: Double): List<LayerEffects.BlurPass>? {
+    /**
+     * The emblem's glow passes (radii in 1600 px reference pixels), faded with the emblem, or null for
+     * none. Strength rises with the square root of the glow and the reach starts at a third of its
+     * full width, as in the macOS glowPasses.
+     */
+    private fun glowPasses(glow: Double, opacity: Double): List<LayerEffects.BlurPass>? {
+        if (glow <= 0) return null
+        val r = 1 + 2 * glow
+        val k = sqrt(glow) * opacity.coerceIn(0.0, 1.0)
+        return listOf(
+            LayerEffects.BlurPass(2.0 * r, 1.0 * k),
+            LayerEffects.BlurPass(8.0 * r, 0.4 * k),
+            LayerEffects.BlurPass(20.0 * r, 0.15 * k),
+        )
+    }
+
+    /** The three glow passes of the macOS applyGlow, used with Multiply (radii in 1600 px reference pixels). */
+    private fun multiplyGlowPasses(intensity: Double): List<LayerEffects.BlurPass>? {
         if (intensity <= 0) return null
         val i = intensity
         return listOf(
@@ -123,6 +143,16 @@ internal class EmblemLayer(private val par: Parallel, private val fx: LayerEffec
             LayerEffects.BlurPass(8.0 * i * 3.0, 0.4 * i),
             LayerEffects.BlurPass(20.0 * i * 3.0, 0.15 * i),
         )
+    }
+
+    /** The coverage as a grey image, for blurring the alpha channel like the colour. */
+    private class AlphaSource(private val mask: ByteArray, override val width: Int, override val height: Int) : RowSource {
+        override fun readRow(y: Int, out: FloatArray) {
+            for (x in 0 until width) {
+                val a = (mask[y * width + x].toInt() and 0xFF) / 255f
+                out[x * 3] = a; out[x * 3 + 1] = a; out[x * 3 + 2] = a
+            }
+        }
     }
 
     /**
@@ -179,15 +209,6 @@ internal class EmblemLayer(private val par: Parallel, private val fx: LayerEffec
         }
     }
 
-    /** The coverage as a grey image, for blurring the alpha channel like the colour. */
-    private class AlphaSource(private val mask: ByteArray, override val width: Int, override val height: Int) : RowSource {
-        override fun readRow(y: Int, out: FloatArray) {
-            for (x in 0 until width) {
-                val a = (mask[y * width + x].toInt() and 0xFF) / 255f
-                out[x * 3] = a; out[x * 3 + 1] = a; out[x * 3 + 2] = a
-            }
-        }
-    }
 }
 
 /**
