@@ -173,7 +173,7 @@ private fun LayersTab(params: MandalaParameters, selected: Int, vm: EditorViewMo
         Box(Modifier.weight(1f))
         IconButton(onClick = vm::randomizeSelected) { Icon(EditorIcons.DieOne, contentDescription = "Randomize layer ${selected + 1}") }
     }
-    LayerControls(layers[selected], vm::updateSelected, position)
+    LayerControls(layers[selected], vm::updateSelected, position, onVary = vm::varySelected)
 }
 
 /** What the position controls need: whether Pro is owned, the move mode, and the Pro sheet. */
@@ -266,15 +266,15 @@ private fun LayerRow(
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun LayerControls(layer: StyleLayer, update: ((StyleLayer) -> StyleLayer) -> Unit, position: PositionInput) {
+private fun LayerControls(layer: StyleLayer, update: ((StyleLayer) -> StyleLayer) -> Unit, position: PositionInput, onVary: () -> Unit) {
     val t = LocalTokens.current
-    Group("Style", summary = layer.style.displayName) {
-        for ((group, styles) in Editing.styleGroups) {
-            Text(group, style = MaterialTheme.typography.bodySmall, color = t.textMuted, modifier = Modifier.padding(top = Spacing.xs))
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
-                for (style in styles) {
-                    FilterChip(selected = layer.style == style, onClick = { update { it.copy(style = style) } }, label = { Text(style.displayName) })
-                }
+    // The second die keeps the style; the one in the layer row picks a new style too.
+    Group("Style", summary = layer.style.displayName, trailing = {
+        IconButton(onClick = onVary) { Icon(EditorIcons.DieOne, contentDescription = "New ${layer.style.displayName} variant", tint = t.accent) }
+    }) {
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+            for (style in Editing.stylesByName) {
+                FilterChip(selected = layer.style == style, onClick = { update { it.copy(style = style) } }, label = { Text(style.displayName) })
             }
         }
     }
@@ -289,7 +289,7 @@ private fun LayerControls(layer: StyleLayer, update: ((StyleLayer) -> StyleLayer
     Group("Shape", initiallyOpen = true) {
         SteppedSlider("Symmetry", layer.symmetry, 1..8, default = StyleLayer().symmetry) { v -> update { it.copy(symmetry = v) } }
         ValueSlider("Scale", layer.scale, Editing.Ranges.layerScale.floats(), default = StyleLayer().scale) { v -> update { it.copy(scale = v) } }
-        ValueSlider("Complexity", layer.complexity, Editing.Ranges.layerComplexity.floats(), default = StyleLayer().complexity) { v -> update { it.copy(complexity = v) } }
+        ValueSlider("Complexity", layer.complexity, Editing.Ranges.layerComplexity(layer.style).floats(), default = StyleLayer().complexity) { v -> update { it.copy(complexity = v) } }
         // Only where the style uses them; hidden values stay as they are.
         if (layer.style in Editing.densityStyles) {
             ValueSlider("Density", layer.density, default = StyleLayer().density) { v -> update { it.copy(density = v) } }

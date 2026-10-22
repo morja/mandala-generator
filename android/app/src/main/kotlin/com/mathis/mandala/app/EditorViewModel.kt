@@ -9,6 +9,7 @@ import androidx.lifecycle.viewModelScope
 import com.mathis.mandala.app.Editing.addLayer
 import com.mathis.mandala.app.Randomize.randomAll
 import com.mathis.mandala.app.Randomize.randomLayer
+import com.mathis.mandala.app.Randomize.randomVariant
 import com.mathis.mandala.app.Randomize.randomLayers
 import com.mathis.mandala.app.Editing.addStroke
 import com.mathis.mandala.app.Editing.clearStrokes
@@ -520,6 +521,9 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
     }
 
     fun randomizeSelected() = _params.update { it.randomLayer(_selected.value, Random) }
+
+    /** A new variant of the selected layer in the same style. */
+    fun varySelected() = _params.update { it.randomVariant(_selected.value, Random) }
 
     // ── Positions of layers and the emblem (ADR-0011) ──
 

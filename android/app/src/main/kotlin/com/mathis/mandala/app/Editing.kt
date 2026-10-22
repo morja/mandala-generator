@@ -24,30 +24,11 @@ import com.mathis.mandala.core.TextLayerSettings
  * are unit-tested on the JVM. Layers are drawn in list order: the first one lies at the bottom.
  */
 object Editing {
-    /** Style groups as in the macOS app; only styles the renderer has ported are offered. */
-    val styleGroups: List<Pair<String, List<MandalaStyle>>> = listOf(
-        "Parametric curves" to listOf(
-            MandalaStyle.SPIROGRAPH, MandalaStyle.ROSE_CURVES, MandalaStyle.FLORAL, MandalaStyle.BUTTERFLY,
-            MandalaStyle.EPITROCHOID, MandalaStyle.LISSAJOUS, MandalaStyle.HYPOCYCLOID, MandalaStyle.PHYLLOTAXIS,
-            MandalaStyle.FRACTAL, MandalaStyle.SUPERFORMULA, MandalaStyle.WAVE_INTERFERENCE,
-        ),
-        "Geometric and pattern" to listOf(
-            MandalaStyle.GEOMETRIC, MandalaStyle.SACRED_GEOMETRY, MandalaStyle.SUNBURST, MandalaStyle.STAR_BURST,
-            MandalaStyle.STRING_ART, MandalaStyle.SPIDER_WEB, MandalaStyle.WEAVE, MandalaStyle.RADIAL_MESH, MandalaStyle.MOIRE,
-        ),
-        "Organic and flow" to listOf(
-            MandalaStyle.FLOW_FIELD, MandalaStyle.TENDRIL, MandalaStyle.VORONOI, MandalaStyle.STRANGE_ATTRACTOR,
-            MandalaStyle.CONSTELLATION_WEB, MandalaStyle.DEEP_NEBULA, MandalaStyle.INTERFERENCE_BLOOM,
-        ),
-        "3D" to listOf(
-            MandalaStyle.HYPERBOLOID, MandalaStyle.TORUS, MandalaStyle.NAUTILUS, MandalaStyle.SPHERE_GRID,
-            MandalaStyle.TORUS_KNOT, MandalaStyle.TESSERACT,
-        ),
-        "Special" to listOf(MandalaStyle.UNIVERSE, MandalaStyle.SYMBOLS, MandalaStyle.MIXED),
-    ).map { (name, list) -> name to list.filter { it in MandalaRenderer.supportedStyles } }.filter { it.second.isNotEmpty() }
-
     /** All offered styles in macOS order. */
     val styles: List<MandalaStyle> = MandalaStyle.entries.filter { it in MandalaRenderer.supportedStyles }
+
+    /** The style picker's order: by name, so a style is found where its name says. */
+    val stylesByName: List<MandalaStyle> = styles.sortedBy { it.displayName }
 
     /** Background types the renderer can draw; "off" is a disabled base layer. */
     val backgrounds = listOf(
@@ -102,6 +83,11 @@ object Editing {
     object Ranges {
         val layerScale = 0.2..1.2
         val layerComplexity = 0.15..1.0
+        /** Strange Attractor adds a run of points per complexity step; above about 0.5 it burns to a white disc. */
+        val attractorComplexity = 0.15..0.5
+
+        fun layerComplexity(style: MandalaStyle): ClosedFloatingPointRange<Double> =
+            if (style == MandalaStyle.STRANGE_ATTRACTOR) attractorComplexity else layerComplexity
         val layerPainted = 0.25..0.85
         val layerBrightness = 0.15..0.85
         val emblemSize = 0.2..0.9
