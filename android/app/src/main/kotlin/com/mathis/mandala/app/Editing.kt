@@ -18,8 +18,6 @@ import com.mathis.mandala.core.SprayStroke
 import com.mathis.mandala.core.Quote
 import com.mathis.mandala.core.StyleLayer
 import com.mathis.mandala.core.TextLayerSettings
-import kotlin.math.abs
-import kotlin.math.max
 
 /**
  * Editing rules of the editor, following the macOS app where it has rules. Pure functions, so they
@@ -396,22 +394,15 @@ object Editing {
     }
 
     /**
-     * The framing without placing by hand, free in every format: the mandala centred and fitting the
-     * shorter side ("Show whole"), or the longer one, so its rays fill the frame ("Fill"; the default
-     * for a wallpaper). `aspect` is height over width.
+     * The framing an image of `aspect` (height over width) is drawn with: the one placed by hand only
+     * with Pro; otherwise "Show whole" (centred, fitting the shorter side) or "Fill" (zoomed until the
+     * mandala's large layers cover the corners; the default for a wallpaper).
      */
-    fun presetFraming(fill: Boolean, aspect: Double): Framing =
-        if (fill) Framing(zoom = max(aspect, 1 / aspect).coerceAtMost(Framing.MAX_ZOOM)) else Framing()
-
-    /** Which preset `framing` is ("Fill" true, "Show whole" false), or null once moved or zoomed by hand. */
-    fun presetOf(framing: Framing, aspect: Double): Boolean? = listOf(false, true).firstOrNull { fill ->
-        val p = presetFraming(fill, aspect)
-        abs(framing.centreX - p.centreX) < PRESET_TOLERANCE && abs(framing.centreY - p.centreY) < PRESET_TOLERANCE &&
-            abs(framing.zoom - p.zoom) < PRESET_TOLERANCE
+    fun framingFor(choice: SaveChoice, params: MandalaParameters, aspect: Double, pro: Boolean): Framing = when {
+        choice.fit == Fit.HAND && pro -> choice.framing
+        choice.fit == Fit.FILL -> Framing(zoom = MandalaRenderer.fillZoom(params, aspect))
+        else -> Framing()
     }
-
-    /** Framings are kept as floats; a preset read back differs from the computed one in the last digits. */
-    private const val PRESET_TOLERANCE = 1e-4
 
     /** The framing moved by (dx, dy), given as fractions of the frame's width and height. */
     fun Framing.moved(dx: Double, dy: Double): Framing = copy(centreX = centreX + dx, centreY = centreY + dy).clamped()

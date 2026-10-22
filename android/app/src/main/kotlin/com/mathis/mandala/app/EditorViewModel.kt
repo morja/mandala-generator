@@ -58,6 +58,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -65,6 +66,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
@@ -199,31 +201,28 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
     )
     private var lastExport: Pair<ExportKey, Image8>? = null
 
-    /** A framing still on a preset ("Show whole" or "Fill") follows the new format's shape; one placed by hand stays. */
-    fun setSaveFormat(format: Editing.SaveFormat) = _saveChoice.update { c ->
-        val preset = Editing.presetOf(c.framing, aspectOf(c.format))
-        c.copy(format = format, framing = preset?.let { Editing.presetFraming(it, aspectOf(format)) } ?: c.framing)
-    }
+    fun setSaveFormat(format: Editing.SaveFormat) = _saveChoice.update { it.copy(format = format) }
 
-    /** "Fill" or "Show whole", free in every format; with Pro it also resets the framing placed by hand. */
-    fun setFill(fill: Boolean) = _saveChoice.update { c ->
-        c.copy(fill = fill, framing = if (pro.state.value.owned) Editing.presetFraming(fill, aspectOf(c.format)) else c.framing)
-    }
+    /** "Fill" or "Show whole", free in every format; with Pro it ends placing by hand. */
+    fun setFill(fill: Boolean) = _saveChoice.update { it.copy(fit = if (fill) Fit.FILL else Fit.WHOLE) }
 
     private fun aspectOf(format: Editing.SaveFormat) = Editing.aspect(format, _screenAspect.value)
 
-    /** Moving and zooming the mandala is part of Pro; without it the mandala stays centred. */
+    /** Moving and zooming the mandala is part of Pro; without it the mandala stays on its preset. */
     fun setFraming(framing: Framing) {
-        if (pro.state.value.owned) _saveChoice.update { it.copy(framing = framing.clamped()) }
+        if (pro.state.value.owned) _saveChoice.update { it.copy(framing = framing.clamped(), fit = Fit.HAND) }
     }
 
     fun setTextFollowsMandala(follows: Boolean) = _saveChoice.update { it.copy(textFollowsMandala = follows) }
 
-    /** The framing the images are drawn with: the one placed by hand with Pro, the chosen preset without. */
+    /** The framing the save sheet shows and images are drawn with, for the current mandala. */
+    val shownFraming: StateFlow<Framing> = combine(_saveChoice, _params, _screenAspect, pro.state) { c, p, a, pr ->
+        Editing.framingFor(c, p, Editing.aspect(c.format, a), pr.owned)
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, Framing())
+
     private fun effectiveFraming(choice: SaveChoice): Framing = framingFor(choice, aspectOf(choice.format), pro.state.value.owned)
 
-    private fun framingFor(choice: SaveChoice, aspect: Double, pro: Boolean): Framing =
-        if (pro) choice.framing else Editing.presetFraming(choice.fill, aspect)
+    private fun framingFor(choice: SaveChoice, aspect: Double, pro: Boolean): Framing = Editing.framingFor(choice, _params.value, aspect, pro)
 
     override fun onCleared() {
         pro.close()
@@ -641,7 +640,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         val large = pro.state.value.owned
         val (w, h) = Editing.exportSize(Editing.SaveFormat.SCREEN, _screenAspect.value, large)
         val screen = aspectOf(Editing.SaveFormat.SCREEN)
-        val framing = if (filled) Editing.presetFraming(true, screen) else framingFor(choice, screen, large)
+        val framing = framingFor(if (filled) choice.copy(fit = Fit.FILL) else choice, screen, large)
         val reuse = { k: ExportKey ->
             k.params == _params.value && k.framing == framing && k.textFollows == choice.textFollowsMandala &&
                 k.width >= screenShortSide && kotlin.math.abs(k.height.toDouble() / k.width - h.toDouble() / w) < 0.002
@@ -732,7 +731,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
             return
         }
         val (w, h) = Editing.size(request.choice.format, request.aspect, Editing.FRAME_PREVIEW_WIDTH)
-        val framing = framingFor(request.choice, Editing.aspect(request.choice.format, request.aspect), request.pro)
+        val framing = Editing.framingFor(request.choice, request.params, Editing.aspect(request.choice.format, request.aspect), request.pro)
         _framePreview.update { it.copy(rendering = true) }
         try {
             val result = withContext(Dispatchers.Default) {

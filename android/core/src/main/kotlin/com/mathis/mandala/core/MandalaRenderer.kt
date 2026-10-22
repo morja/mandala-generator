@@ -88,7 +88,7 @@ object MandalaRenderer {
         // around the framing's centre; background and effects layer belong to the canvas.
         val place = Placement.of(options.framing, bufW, bufH)
         val mandalaSize = place.size
-        val baseRadius = mandalaSize * 0.72
+        val baseRadius = mandalaSize * BASE_RADIUS
         // Same lines spread over a larger canvas give a lower mean; this linear factor cancels it.
         val brightnessScale = mandalaSize / 1600f
         // Offset of the mandala centre from the canvas centre (zero with the default framing).
@@ -452,6 +452,29 @@ object MandalaRenderer {
 
     /** The largest style reach drawn, in layer radii: beyond this even Deep Nebula ends. */
     internal const val STYLE_REACH_CAP = 2.5
+
+    /**
+     * The zoom (ADR-0010) at which the mandala fills a canvas of `aspect` (height over width) with its
+     * own lines: each of its large layers (at least 80 % of the largest scale; small accents do not
+     * count) covers the corners. Thin ray ends do not count as cover, so a style is taken to fill
+     * 90 % of its reach. Between 1 (the mandala already fills the canvas, as Deep Nebula does) and
+     * fitting the longer side.
+     */
+    fun fillZoom(params: MandalaParameters, aspect: Double): Double {
+        val longer = max(aspect, 1 / aspect)
+        val corner = 0.5 * sqrt(1 + longer * longer)
+        val layers = params.layers.filter { it.isEnabled && it.style in supportedStyles }
+        val largest = layers.maxOfOrNull { it.scale.coerceIn(0.1, 1.2) } ?: return longer
+        val cover = layers.filter { it.scale.coerceIn(0.1, 1.2) >= 0.8 * largest }
+            .minOf { BASE_RADIUS * it.scale.coerceIn(0.1, 1.2) * styleReach(it.style) * FILL_SHARE }
+        return (corner / cover).coerceIn(1.0, longer)
+    }
+
+    /** Radius of a layer at scale 1, in mandala sizes (as on the Mac). */
+    private const val BASE_RADIUS = 0.72
+
+    /** Share of a style's reach that still looks filled: the outermost tenth is mostly ray ends. */
+    private const val FILL_SHARE = 0.9
 
     /** Buffer size up to which lines are hairlines: the preview's (512 px drawn at twice the size), as on the Mac. */
     private const val LINE_REFERENCE_SIZE = 1024

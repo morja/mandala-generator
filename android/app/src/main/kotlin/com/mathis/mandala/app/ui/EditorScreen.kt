@@ -123,6 +123,7 @@ fun EditorScreen(
     val pro by vm.proState.collectAsStateWithLifecycle()
     val saveChoice by vm.saveChoice.collectAsStateWithLifecycle()
     val framePreview by vm.framePreview.collectAsStateWithLifecycle()
+    val shownFraming by vm.shownFraming.collectAsStateWithLifecycle()
     val phoneAspect by vm.screenAspect.collectAsStateWithLifecycle()
     val fastPreview by vm.fastPreview.collectAsStateWithLifecycle()
     val candidate by vm.candidate.collectAsStateWithLifecycle()
@@ -177,6 +178,7 @@ fun EditorScreen(
     if (showSave) {
         SaveSheet(
             choice = saveChoice,
+            framing = shownFraming,
             preview = framePreview,
             screenAspect = phoneAspect,
             proOwned = pro.owned,

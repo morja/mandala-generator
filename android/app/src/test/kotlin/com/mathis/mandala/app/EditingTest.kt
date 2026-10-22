@@ -231,18 +231,17 @@ class EditingTest {
     }
 
     @Test
-    fun fillFitsTheLongerSideAndShowWholeTheShorterOne() {
+    fun framingFollowsTheFitAndPlacingByHandNeedsPro() {
         val phone = 2340.0 / 1080
-        assertEquals(Framing(), Editing.presetFraming(false, phone))
-        assertEquals(phone, Editing.presetFraming(true, phone).zoom, 1e-9)
-        // Landscape fills its width; a square looks the same either way.
-        assertEquals(16.0 / 9, Editing.presetFraming(true, 9.0 / 16).zoom, 1e-9)
-        assertEquals(Framing(), Editing.presetFraming(true, 1.0))
-        // A preset read back as floats is still recognised; one placed by hand is none.
-        val stored = Editing.presetFraming(true, phone).let { Framing(it.centreX.toFloat().toDouble(), it.centreY.toFloat().toDouble(), it.zoom.toFloat().toDouble()) }
-        assertEquals(true, Editing.presetOf(stored, phone))
-        assertEquals(false, Editing.presetOf(Framing(), phone))
-        assertEquals(null, Editing.presetOf(Framing().moved(0.1, 0.0), phone))
+        val mandala = SettingsJson.decode("""{"layers":[{"style":"starBurst"},{"style":"hyperboloid"}]}""")
+        val byHand = Framing(0.4, 0.6, 2.0)
+        assertEquals(Framing(), Editing.framingFor(SaveChoice(fit = Fit.WHOLE, framing = byHand), mandala, phone, pro = true))
+        val fill = Editing.framingFor(SaveChoice(fit = Fit.FILL), mandala, phone, pro = false)
+        assertEquals(MandalaRenderer.fillZoom(mandala, phone), fill.zoom, 1e-9)
+        assertEquals(0.5, fill.centreX, 1e-9)
+        // Placed by hand: kept with Pro, "Show whole" without.
+        assertEquals(byHand, Editing.framingFor(SaveChoice(fit = Fit.HAND, framing = byHand), mandala, phone, pro = true))
+        assertEquals(Framing(), Editing.framingFor(SaveChoice(fit = Fit.HAND, framing = byHand), mandala, phone, pro = false))
     }
 
     @Test
