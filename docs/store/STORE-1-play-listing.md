@@ -1,6 +1,6 @@
 # STORE-1 · Google Play listing and Play Console answers
 
-Prepared 20 October 2026 for the first Android release; entered in the Play Console the same day. Updated 22 October 2026 for version 1.1 and later (save formats, wallpaper, what Pro adds, starter favourites) and entered in the Play Console the same day; the screenshots there are still the 20 October ones. Graphics in this folder: `play-icon-512.png` (512×512, 32-bit PNG), `play-feature-graphic.png` (1024×500), and six phone screenshots in `screenshots/` (1080×1920, cropped from Mathis' Galaxy S23 without the status bar): Flower of Life, Flow Field, Lotus emblem, quote, favourites, drawing. AI asset declaration: "Don't label assets" (icon and feature graphic are rendered by the app, screenshots are real).
+Prepared 20 October 2026 for the first Android release; entered in the Play Console the same day. Updated 22 October 2026 for version 1.1 and later (save formats, wallpaper, what Pro adds, starter favourites) and entered in the Play Console the same day; the screenshots there are still the 20 October ones. Graphics in this folder: `play-icon-512.png` (512×512, 32-bit PNG), `play-feature-graphic.png` (1024×500), and seven phone screenshots in `screenshots/` (1080×2160, the longest side Google allows, cropped from Mathis' Galaxy S23 without the status bar and the gesture bar; taken 22 October 2026): Flower of Life emblem, favourites, quote, layers, new mandala with preview, save formats, menu. AI asset declaration: "Don't label assets" (icon and feature graphic are rendered by the app, screenshots are real).
 
 ## App details
 
@@ -122,20 +122,19 @@ Version and code are in `android/app/build.gradle.kts` (on 22 October 2026: 1.1.
 
 Without `keystore.properties`, release builds are signed with the local debug key, so `assembleRelease` keeps working for tests on devices; Google Play rejects a bundle signed that way. Release builds are shrunk with R8 (minify and resource shrinking); the R8 mapping file is part of the bundle, so the Play Console shows readable stack traces.
 
-## Screenshots with the starter favourites
+## Screenshots
 
-The six screenshots from 20 October show favourites that are no longer among the starters and the editor before the fold button. New set, taken on the S23 like before (1080 × 1920 without the status bar), each from a starter favourite:
+Taken on 22 October 2026 with the starter favourites and the current editor, in this order:
 
-1. Om emblem (favourite 2), Emblem tab open.
-2. Flower of Life emblem (favourite 6), Emblem tab open.
-3. Lotus with the Gibran quote (favourite 8), Text tab open.
-4. The Rumi quote "This is the House of Love" (favourite 4), Text tab open.
-5. Favourites sheet, scrolled to the top.
-6. Flow Field (favourite 17), Layers tab open.
-7. Save sheet with the ratio menu and Set as wallpaper.
-8. Drawing in rotated symmetry (as now).
+1. Flower of Life emblem (favourite 6), Emblem tab.
+2. Favourites sheet, from the top.
+3. The Rumi quote "This is the House of Love" (favourite 4), Text tab.
+4. Hypocycloid, Universe and Phyllotaxis (favourite 21), Layers tab.
+5. Menu > New layers: the new mandala next to the current one before it replaces it.
+6. Save sheet in the screen format, with Save and Save large.
+7. Menu with Favourite, Share, Wallpaper and the dice for a new mandala.
 
-Google Play takes up to eight phone screenshots. All quotes shown are public domain (ADR-0007): Gibran's The Prophet (1923, Gibran died 1931), Rumi in Nicholson's translation (1898, Nicholson died 1945).
+The German listing has no screenshots of its own and shows these. All quotes shown are public domain (ADR-0007): Rumi in Nicholson's translation (1898, Nicholson died 1945), and in the favourites Gibran's The Prophet (1923, Gibran died 1931) and Whitman.
 
 ## What Mathis does himself
 
@@ -144,7 +143,7 @@ State on 22 October 2026, read from the Play Console through the API: production
 1. Done: upload key and `android/keystore.properties`. To create one again:
    `keytool -genkeypair -v -keystore ~/.keystore/mandalagenerator-upload.jks -alias upload -keyalg RSA -keysize 4096 -validity 10000`
 2. Done: the app in the Play Console, Play App Signing (with the first upload), tearoom.one with the privacy policy, the product `pro` with its price.
-3. Take the new screenshots (list above) and replace the six in the console.
+3. Done on 22 October 2026: the seven new screenshots, uploaded through the API in place of the six from 20 October.
 4. Done on 22 October 2026 (through the API): the listing texts above in English and German, and the product's new description in English and German.
 5. Done on 20 October 2026 (checked in the console on 22 October): all ten App content declarations. Data safety "doesn't collect or share data" (data that Google Play's billing collects itself need not be declared, Play Console Help); target audience 13 and over; content ratings ESRB Everyone, PEGI 3, USK 0, and ClassInd 14+ in Brazil only because of in-app purchases.
    Sign in details (app access) says "restricted" with promo codes for Pro, which is right for a paid product; Google's reviewers read its instructions. Mathis updated them on 22 October 2026 to the save button in the top bar, then "Save large".
