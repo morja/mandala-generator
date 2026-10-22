@@ -14,7 +14,6 @@ import com.mathis.mandala.app.screenAspect
 import com.mathis.mandala.app.screenSize
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.gestures.awaitEachGesture
@@ -46,7 +45,6 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SnackbarResult
@@ -127,6 +125,8 @@ fun EditorScreen(
     val framePreview by vm.framePreview.collectAsStateWithLifecycle()
     val phoneAspect by vm.screenAspect.collectAsStateWithLifecycle()
     val fastPreview by vm.fastPreview.collectAsStateWithLifecycle()
+    val candidate by vm.candidate.collectAsStateWithLifecycle()
+    var showMenu by remember { mutableStateOf(false) }
     var showPro by remember { mutableStateOf(false) }
     // Kept when Android recreates the screen, which setting a wallpaper does.
     var showSave by rememberSaveable { mutableStateOf(false) }
@@ -137,8 +137,8 @@ fun EditorScreen(
     // it reports) or opening a sheet. Its Undo would no longer fit anyway.
     var messageFor by remember { mutableStateOf<MandalaParameters?>(null) }
     LaunchedEffect(params) { if (messageFor != null && params != messageFor) snackbar.currentSnackbarData?.dismiss() }
-    LaunchedEffect(showSave, showFavorites, showPro) {
-        if (showSave || showFavorites || showPro) snackbar.currentSnackbarData?.dismiss()
+    LaunchedEffect(showSave, showFavorites, showPro, showMenu) {
+        if (showSave || showFavorites || showPro || showMenu) snackbar.currentSnackbarData?.dismiss()
     }
 
     val openFile = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri -> uri?.let(vm::openFile) }
@@ -198,6 +198,33 @@ fun EditorScreen(
     }
     LaunchedEffect(pro.owned) { if (pro.owned) showPro = false }
 
+    if (showMenu) {
+        // Every entry but the dice closes the sheet, so its result or message shows.
+        fun closing(action: () -> Unit): () -> Unit = { showMenu = false; vm.closeCandidate(); action() }
+        MenuSheet(
+            params = params,
+            image = preview.image,
+            candidate = candidate,
+            busy = busy,
+            fastPreview = fastPreview,
+            lightTheme = lightTheme,
+            actions = MenuActions(
+                onFavourite = closing(vm::addFavorite),
+                onShare = closing(vm::shareImage),
+                onWallpaper = { target -> showMenu = false; vm.closeCandidate(); vm.setWallpaper(target) },
+                onTryNew = vm::tryNew,
+                onUseNew = { showMenu = false; vm.useCandidate() },
+                onBackToMenu = vm::closeCandidate,
+                onOpen = closing { openFile.launch(arrayOf("application/json", "text/plain", "application/octet-stream")) },
+                onSaveSettings = closing { saveSettings.launch(vm.suggestedSettingsName()) },
+                onFastPreview = vm::setFastPreview,
+                onLightTheme = onLightTheme,
+                onAbout = closing(onAbout),
+            ),
+            onDismiss = { showMenu = false; vm.closeCandidate() },
+        )
+    }
+
     if (showFavorites) {
         FavoritesSheet(
             favorites = favorites,
@@ -226,7 +253,7 @@ fun EditorScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = vm::surprise) { Icon(EditorIcons.Dice, contentDescription = "Surprise me") }
+                    IconButton(onClick = vm::surprise) { Icon(EditorIcons.DieFive, contentDescription = "Surprise me") }
                     IconButton(onClick = { showSave = true }, enabled = !busy) {
                         if (busy) {
                             CircularProgressIndicator(Modifier.size(Sizes.icon), strokeWidth = Sizes.progress)
@@ -235,19 +262,7 @@ fun EditorScreen(
                         }
                     }
                     IconButton(onClick = { showFavorites = true }) { Icon(EditorIcons.Star, contentDescription = "Favourites") }
-                    MoreMenu(
-                        busy = busy,
-                        onVariation = vm::newVariation,
-                        onNewLayers = vm::randomLayers,
-                        onShare = vm::shareImage,
-                        onOpen = { openFile.launch(arrayOf("application/json", "text/plain", "application/octet-stream")) },
-                        onSaveSettings = { saveSettings.launch(vm.suggestedSettingsName()) },
-                        lightTheme = lightTheme,
-                        onLightTheme = onLightTheme,
-                        fastPreview = fastPreview,
-                        onFastPreview = vm::setFastPreview,
-                        onAbout = onAbout,
-                    )
+                    IconButton(onClick = { showMenu = true }) { Icon(EditorIcons.More, contentDescription = "More") }
                 },
             )
         },
@@ -570,47 +585,6 @@ private fun MoveOverlay(input: MoveInput, guide: Color, halo: Color) {
         drawCircle(guide, current.radius * size.width, c, style = Stroke(width = 3f))
         drawCircle(halo, 10f, c)
         drawCircle(guide, 7f, c)
-    }
-}
-
-@Composable
-private fun MoreMenu(
-    busy: Boolean,
-    onVariation: () -> Unit,
-    onNewLayers: () -> Unit,
-    onShare: () -> Unit,
-    onOpen: () -> Unit,
-    onSaveSettings: () -> Unit,
-    lightTheme: Boolean,
-    onLightTheme: (Boolean) -> Unit,
-    fastPreview: Boolean,
-    onFastPreview: (Boolean) -> Unit,
-    onAbout: () -> Unit,
-) {
-    var open by remember { mutableStateOf(false) }
-    Box {
-        IconButton(onClick = { open = true }) { Icon(EditorIcons.More, contentDescription = "More") }
-        DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
-            DropdownMenuItem(text = { Text("New variation") }, onClick = { open = false; onVariation() })
-            DropdownMenuItem(text = { Text("New layers") }, onClick = { open = false; onNewLayers() })
-            HorizontalDivider()
-            DropdownMenuItem(text = { Text("Share image") }, enabled = !busy, onClick = { open = false; onShare() })
-            DropdownMenuItem(text = { Text("Open file…") }, onClick = { open = false; onOpen() })
-            DropdownMenuItem(text = { Text("Save settings…") }, onClick = { open = false; onSaveSettings() })
-            HorizontalDivider()
-            DropdownMenuItem(
-                text = { Text("Light theme") },
-                trailingIcon = { Checkbox(checked = lightTheme, onCheckedChange = null) },
-                onClick = { open = false; onLightTheme(!lightTheme) },
-            )
-            // The saved image always gets the full glow; only the preview is drawn faster.
-            DropdownMenuItem(
-                text = { Text("Fast preview") },
-                trailingIcon = { Checkbox(checked = fastPreview, onCheckedChange = null) },
-                onClick = { open = false; onFastPreview(!fastPreview) },
-            )
-            DropdownMenuItem(text = { Text("About") }, onClick = { open = false; onAbout() })
-        }
     }
 }
 
