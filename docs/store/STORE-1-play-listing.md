@@ -147,7 +147,7 @@ State on 22 October 2026, read from the Play Console through the API: production
 3. Take the new screenshots (list above) and replace the six in the console.
 4. Done on 22 October 2026 (through the API): the listing texts above in English and German, and the product's new description in English and German.
 5. Done on 20 October 2026 (checked in the console on 22 October): all ten App content declarations. Data safety "doesn't collect or share data" (data that Google Play's billing collects itself need not be declared, Play Console Help); target audience 13 and over; content ratings ESRB Everyone, PEGI 3, USK 0, and ClassInd 14+ in Brazil only because of in-app purchases.
-   Open: Sign in details (app access) says "restricted" with promo codes for Pro, which is right for a paid product, but its instructions still say "Menu > Save large (2048 px)". Saving is now the save button in the top bar, then "Save large". Replace that phrase by hand in the console, keeping the codes.
+   Sign in details (app access) says "restricted" with promo codes for Pro, which is right for a paid product; Google's reviewers read its instructions. Mathis updated them on 22 October 2026 to the save button in the top bar, then "Save large".
 6. Build a new bundle from `main` (raise the version, for example 1.2.0, code 4), put it on the internal track and buy Pro once with a licence tester.
 7. Promote that release to production and send it for review.
 
