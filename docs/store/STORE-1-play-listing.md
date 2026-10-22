@@ -2,11 +2,13 @@
 
 Prepared 20 October 2026 for the first Android release; entered in the Play Console the same day. Updated 22 October 2026 for version 1.1 and later (save formats, wallpaper, what Pro adds, starter favourites) and entered in the Play Console the same day; the screenshots there are still the 20 October ones. Graphics in this folder: `play-icon-512.png` (512×512, 32-bit PNG), `play-feature-graphic.png` (1024×500), and seven phone screenshots in `screenshots/` (1080×2160, the longest side Google allows, cropped from Mathis' Galaxy S23 without the status bar and the gesture bar; taken 22 October 2026): layers, Om emblem, a mandala as lock screen wallpaper, quote, favourites, save formats, new mandala with preview. AI asset declaration: "Don't label assets" (icon and feature graphic are rendered by the app, screenshots are real).
 
+Renamed on 22 October 2026 from "Mandala Generator" to "Dahlia – Mandala Maker" (ADR-0012): app name, both full descriptions and the Pro product name. Not yet entered in the Play Console; the website pages and their URLs still use "mandala-generator".
+
 ## App details
 
 | Field | Value |
 |---|---|
-| App name | Mandala Generator |
+| App name | Dahlia – Mandala Maker (22 characters, max. 30; ADR-0012) |
 | Default language | English (United States); German as a translation |
 | App or game | App |
 | Free or paid | Free (with one in-app product) |
@@ -26,7 +28,7 @@ The two tearoom.one pages exist in the website repository (commit "Add Mandala G
 
 **Full description:**
 
-> Mandala Generator draws glowing mandalas from mathematical curves, light and symbols.
+> Dahlia draws glowing mandalas from mathematical curves, light and symbols.
 >
 > Build each mandala from up to five layers. Every layer has its own style – spirographs, rose curves, sacred geometry, flow fields, 3D forms and more, 36 in all – with its own symmetry, palette and glow. Roll the dice for new combinations; the history arrows take you back.
 >
@@ -40,7 +42,7 @@ The two tearoom.one pages exist in the website repository (commit "Add Mandala G
 >
 > No account, no ads, no tracking. Your mandalas stay on your device.
 >
-> Mandala Generator is open source under the GNU GPL 3.0: https://github.com/morja/mandala-generator
+> Dahlia is open source under the GNU GPL 3.0: https://github.com/morja/mandala-generator
 
 ## Store listing, German
 
@@ -50,7 +52,7 @@ The two tearoom.one pages exist in the website repository (commit "Add Mandala G
 
 **Ausführliche Beschreibung:**
 
-> Mandala Generator zeichnet leuchtende Mandalas aus mathematischen Kurven, Licht und Symbolen.
+> Dahlia zeichnet leuchtende Mandalas aus mathematischen Kurven, Licht und Symbolen.
 >
 > Jedes Mandala entsteht aus bis zu fünf Ebenen. Jede Ebene hat ihren eigenen Stil – Spirographen, Rosenkurven, heilige Geometrie, Strömungsfelder, 3D-Formen und mehr, insgesamt 36 – mit eigener Symmetrie, Farbpalette und eigenem Leuchten. Der Würfel schlägt neue Kombinationen vor, mit den Verlaufspfeilen kommst du zurück.
 >
@@ -64,7 +66,7 @@ The two tearoom.one pages exist in the website repository (commit "Add Mandala G
 >
 > Kein Konto, keine Werbung, kein Tracking. Deine Mandalas bleiben auf deinem Gerät.
 >
-> Mandala Generator ist Open Source unter der GNU GPL 3.0: https://github.com/morja/mandala-generator
+> Dahlia ist Open Source unter der GNU GPL 3.0: https://github.com/morja/mandala-generator
 
 ## In-app product
 
@@ -72,7 +74,7 @@ The two tearoom.one pages exist in the website repository (commit "Add Mandala G
 |---|---|
 | Product ID | `pro` (must match `ProPurchases.kt`) |
 | Type | One-time product, non-consumable |
-| Name (EN / DE) | Mandala Generator Pro |
+| Name (EN / DE) | Dahlia Pro |
 | Description (EN) | Save at 2048 px for prints and wallpapers, frame the mandala by hand, and move layers and the emblem. One-time purchase, no subscription. |
 | Beschreibung (DE) | Speichere mit 2048 px für Drucke und Hintergrundbilder, richte das Mandala im Bild aus und verschiebe Ebenen und Emblem. Einmaliger Kauf, kein Abo. |
 | Price | 1.99 € in Germany (US 1.89 $), set in the Play Console |

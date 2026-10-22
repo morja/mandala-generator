@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Debug builds show their own name next to the store app. -->
-    <string name="app_name">Mandala Debug</string>
+    <string name="app_name">Dahlia Debug</string>
 </resources>

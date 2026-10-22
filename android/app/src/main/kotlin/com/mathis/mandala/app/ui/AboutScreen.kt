@@ -100,14 +100,14 @@ fun AboutScreen(onClose: () -> Unit) {
                         contentDescription = null,
                         modifier = Modifier.size(Sizes.favourite).clip(CircleShape),
                     )
-                    Text("Mandala Generator", style = MaterialTheme.typography.titleLarge)
+                    Text("Dahlia – Mandala Maker", style = MaterialTheme.typography.titleLarge)
                     Text(version, style = MaterialTheme.typography.bodyMedium, color = t.textMuted)
                 }
 
                 AboutSection("Licence") {
                     Paragraph("Copyright © 2026 Mathis Koblin")
                     Paragraph(
-                        "Mandala Generator is free software: you can redistribute it and/or modify it under the terms of the " +
+                        "Dahlia is free software: you can redistribute it and/or modify it under the terms of the " +
                             "GNU General Public License as published by the Free Software Foundation, version 3. It comes " +
                             "without any warranty.",
                     )

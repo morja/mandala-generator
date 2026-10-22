@@ -241,7 +241,7 @@ fun EditorScreen(
             // only fits next to them on wide screens.
             val wide = LocalConfiguration.current.screenWidthDp.dp >= Spacing.twoPaneMinWidth
             TopAppBar(
-                title = { if (wide) Text("Mandala") },
+                title = { if (wide) Text("Dahlia") },
                 navigationIcon = {
                     Row {
                         IconButton(onClick = vm::goBack, enabled = history.canGoBack) { Icon(EditorIcons.Back, contentDescription = "Back") }
@@ -593,7 +593,7 @@ private fun ProSheet(pro: ProState, onBuy: () -> Unit, onDismiss: () -> Unit) {
     val t = LocalTokens.current
     ModalBottomSheet(onDismissRequest = onDismiss) {
         Column(Modifier.padding(horizontal = Spacing.lg).padding(bottom = Spacing.xl), verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
-            Text("Mandala Generator Pro", style = MaterialTheme.typography.titleLarge)
+            Text("Dahlia Pro", style = MaterialTheme.typography.titleLarge)
             Text(
                 "Save your mandalas at 2048 pixels wide in every format, sharp enough for prints and wallpapers, " +
                     "move and zoom the mandala in the frame, and move layers and the emblem. One purchase, no subscription. " +
