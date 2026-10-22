@@ -75,13 +75,25 @@ The two tearoom.one pages exist in the website repository (commit "Add Mandala G
 | Product ID | `pro` (must match `ProPurchases.kt`) |
 | Type | One-time product, non-consumable |
 | Name (EN / DE) | Dahlia Pro |
-| Description (EN) | Save at 2048 px for prints and wallpapers, frame the mandala by hand, and move layers and the emblem. One-time purchase, no subscription. |
-| Beschreibung (DE) | Speichere mit 2048 px für Drucke und Hintergrundbilder, richte das Mandala im Bild aus und verschiebe Ebenen und Emblem. Einmaliger Kauf, kein Abo. |
-| Price | 1.99 € in Germany (US 1.89 $), set in the Play Console |
+| Description (EN) | 2048 px images, framing by hand, moving layers, SVG line drawings, brightness and contrast, home and lock screen as a pair, a daily and a live wallpaper. One-time purchase. |
+| Beschreibung (DE) | 2048 px, Mandala ausrichten, Ebenen verschieben, SVG-Linien, Helligkeit und Kontrast, Start- und Sperrbildschirm als Paar, tägliches und Live-Hintergrundbild. Einmaliger Kauf. |
+| Price | 2.99 € in Germany from version 1.3 (before 1.99 €): base price 2.51 € for all 174 countries, set in the Play Console on 22 October 2026 (US 2.79 $) |
 
 In the Play Console since 22 October 2026: active, with these descriptions in English and German.
 
 Google Play lets you create in-app products only after a build that contains the billing permission has been uploaded (any testing track).
+
+## Release notes for 1.3.0 (code 6)
+
+English (255 characters, max. 500):
+
+> Version 1.3: Pro now dims or brightens your wallpaper, sets home and lock screen as a pair, changes the wallpaper every morning and adds a live wallpaper that turns slowly. Saved portraits now fill the screen or show the whole mandala, without hard edges.
+
+German (301 characters):
+
+> Version 1.3: Pro dunkelt dein Hintergrundbild ab oder hellt es auf, setzt Start- und Sperrbildschirm als Paar, wechselt das Hintergrundbild jeden Morgen und bringt einen Live-Hintergrund, der sich langsam dreht. Hochformate füllen jetzt den Bildschirm oder zeigen das ganze Mandala, ohne harte Kanten.
+
+No new declarations in App content: the daily wallpaper's `RECEIVE_BOOT_COMPLETED` and the live wallpaper service collect no data.
 
 ## App content (Policy → App content)
 
@@ -155,5 +167,6 @@ State on 22 October 2026, read from the Play Console through the API: production
    Sign in details (app access) says "restricted" with promo codes for Pro, which is right for a paid product; Google's reviewers read its instructions. Mathis updated them on 22 October 2026 to the save button in the top bar, then "Save large".
 6. Build a new bundle from `main` (raise the version, for example 1.2.0, code 4), put it on the internal track and buy Pro once with a licence tester.
 7. Promote that release to production and send it for review.
+   State on 22 October 2026: a production release **draft** "6 (1.3.0)" with the release notes above (English and German) is saved in the Play Console. Open before sending it for review: choose the production countries (Production → Countries / regions; none yet, which the release reports as an error); the warning about missing native debug symbols comes from libraries and does not block. The listing texts and the Pro product description above are not yet entered in the Play Console.
 
 Tablet screenshots are recommended, not required.
