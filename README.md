@@ -4,6 +4,10 @@ Generates neon light-painting mandala images, with every parameter controllable 
 
 ![Mandala Generator](mac/sample-image.jpg)
 
+<img src="docs/images/live-wallpaper.gif" alt="A mandala as live wallpaper on an Android phone, turning and changing colour" width="240">
+
+On Android the app is called Dahlia – Mandala Maker. With Pro, a mandala can also be a live wallpaper that turns slowly, breathes and drifts through its colours (shown here sped up).
+
 | | |
 |---|---|
 | [`mac/`](mac/README.md) | macOS app (Swift, SwiftUI, Core Image). Download from the [latest release](https://github.com/morja/mandala-generator/releases/latest). |
