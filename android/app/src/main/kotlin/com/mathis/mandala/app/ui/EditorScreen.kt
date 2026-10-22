@@ -10,6 +10,8 @@ import kotlin.math.roundToInt
 import com.mathis.mandala.app.Editing
 import androidx.activity.compose.LocalActivity
 import com.mathis.mandala.app.ProState
+import com.mathis.mandala.app.ProRequest
+import androidx.compose.material3.OutlinedButton
 import com.mathis.mandala.app.screenAspect
 import com.mathis.mandala.app.screenSize
 import com.mathis.mandala.app.pairLabel
@@ -132,7 +134,9 @@ fun EditorScreen(
     val fastPreview by vm.fastPreview.collectAsStateWithLifecycle()
     val candidate by vm.candidate.collectAsStateWithLifecycle()
     var showMenu by remember { mutableStateOf(false) }
-    var showPro by remember { mutableStateOf(false) }
+    val proRequest by vm.proRequest.collectAsStateWithLifecycle()
+    val missingPro by vm.missingPro.collectAsStateWithLifecycle()
+    val favouriteCount by vm.favouriteCount.collectAsStateWithLifecycle()
     var showPair by remember { mutableStateOf(false) }
     var showLive by remember { mutableStateOf(false) }
     val live by vm.live.collectAsStateWithLifecycle()
@@ -140,8 +144,8 @@ fun EditorScreen(
     val daily by vm.daily.collectAsStateWithLifecycle()
     LaunchedEffect(showPair) { vm.setPairOpen(showPair) }
     // The wallpaper pair is Pro; without it the entry opens the Pro sheet.
-    val openPair = { if (pro.owned) showPair = true else showPro = true }
-    val openLive = { if (pro.owned) showLive = true else showPro = true }
+    val openPair = { if (pro.owned) showPair = true else vm.showPro() }
+    val openLive = { if (pro.owned) showLive = true else vm.showPro() }
     // Kept when Android recreates the screen, which setting a wallpaper does.
     var showSave by rememberSaveable { mutableStateOf(false) }
     val snackbar = remember { SnackbarHostState() }
@@ -151,8 +155,8 @@ fun EditorScreen(
     // it reports) or opening a sheet. Its Undo would no longer fit anyway.
     var messageFor by remember { mutableStateOf<MandalaParameters?>(null) }
     LaunchedEffect(params) { if (messageFor != null && params != messageFor) snackbar.currentSnackbarData?.dismiss() }
-    LaunchedEffect(showSave, showFavorites, showPro, showMenu) {
-        if (showSave || showFavorites || showPro || showMenu) snackbar.currentSnackbarData?.dismiss()
+    LaunchedEffect(showSave, showFavorites, proRequest, showMenu) {
+        if (showSave || showFavorites || proRequest != null || showMenu) snackbar.currentSnackbarData?.dismiss()
     }
 
     val openFile = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri -> uri?.let(vm::openFile) }
@@ -214,7 +218,7 @@ fun EditorScreen(
             onLive = { showSave = false; openLive() },
             hasPointLayers = VectorExport.hasPointLayers(params),
             onLineDrawing = { look -> lineDrawingLook = look; saveLineDrawing.launch(vm.suggestedLineDrawingName(look)) },
-            onShowPro = { showPro = true },
+            onShowPro = vm::showPro,
             onDismiss = { showSave = false },
             snackbar = snackbar,
         )
@@ -244,10 +248,10 @@ fun EditorScreen(
             onDismiss = { showLive = false },
         )
     }
-    if (showPro) {
-        ProSheet(pro, onBuy = { activity?.let(vm::buyPro) }, onDismiss = { showPro = false })
+    proRequest?.let { request ->
+        ProSheet(pro, request, onBuy = { activity?.let(vm::buyPro) }, onWithout = vm::continueWithoutPro, onDismiss = vm::closePro)
     }
-    LaunchedEffect(pro.owned) { if (pro.owned) showPro = false }
+    LaunchedEffect(pro.owned) { if (pro.owned) vm.closePro() }
 
     if (showMenu) {
         // Every entry but the dice closes the sheet, so its result or message shows.
@@ -273,7 +277,7 @@ fun EditorScreen(
                     daily.on && daily.lastName != null -> "Today: ${daily.lastName}"
                     else -> "Your favourites in turn, on lock and home screen"
                 },
-                onDaily = { on -> if (pro.owned) vm.setDaily(on) else showPro = true },
+                onDaily = { on -> if (pro.owned) vm.setDaily(on) else vm.showPro() },
                 onTryNew = vm::tryNew,
                 onUseNew = { showMenu = false; vm.useCandidate() },
                 onBackToMenu = vm::closeCandidate,
@@ -291,6 +295,7 @@ fun EditorScreen(
         FavoritesSheet(
             favorites = favorites,
             canAdd = preview.image != null,
+            count = favouriteCount,
             onAdd = vm::addFavorite,
             onApply = { vm.applyFavorite(it); showFavorites = false },
             onDelete = { vm.removeFavorite(it.id) },
@@ -341,9 +346,10 @@ fun EditorScreen(
                     // The square canvas takes the smaller of width and remaining height.
                     BoxWithConstraints(Modifier.weight(1f).fillMaxHeight(), contentAlignment = Alignment.TopCenter) {
                         val side = minOf(maxWidth, maxHeight - Sizes.statusLine)
-                        Canvas(preview, Modifier.width(side), drawing(params, drawTool, vm), moving(params, selected, moveTarget, vm))
+                        Canvas(preview, Modifier.width(side), drawing(params, drawTool, vm), moving(params, selected, moveTarget, vm),
+                            proMark = if (missingPro.isNotEmpty()) vm::showPro else null)
                     }
-                    ControlTabs(params, selected, vm, Modifier.width(Spacing.controlsWidth).fillMaxHeight(), pro.owned, onShowPro = { showPro = true })
+                    ControlTabs(params, selected, vm, Modifier.width(Spacing.controlsWidth).fillMaxHeight(), pro.owned, onShowPro = { vm.showPro() })
                 }
             } else {
                 // The canvas stays in view; only the open tab scrolls, so every change is visible.
@@ -355,8 +361,9 @@ fun EditorScreen(
                     fullSide = minOf(maxWidth - Spacing.lg * 2, canvasMax),
                     drawing = drawing(params, drawTool, vm),
                     move = moving(params, selected, moveTarget, vm),
+                    proMark = if (missingPro.isNotEmpty()) vm::showPro else null,
                 ) { modifier ->
-                    ControlTabs(params, selected, vm, modifier, pro.owned, onShowPro = { showPro = true }, onHeader = { header = it })
+                    ControlTabs(params, selected, vm, modifier, pro.owned, onShowPro = { vm.showPro() }, onHeader = { header = it })
                 }
             }
         }
@@ -430,6 +437,7 @@ private fun FoldingCanvas(
     fullSide: androidx.compose.ui.unit.Dp,
     drawing: DrawingInput?,
     move: MoveInput?,
+    proMark: (() -> Unit)?,
     controls: @Composable (Modifier) -> Unit,
 ) {
     val t = LocalTokens.current
@@ -486,6 +494,8 @@ private fun FoldingCanvas(
                     move,
                     showStatus = fold < 0.5f,
                     onTap = if (small && !pinned) ({ small = false }) else null,
+                    // Too small to tap when folded; the controls still carry their marks.
+                    proMark = proMark.takeIf { fold < 0.5f },
                 ) {
                     // Bottom right, where the thumb reaches it.
                     if (!pinned) {
@@ -530,6 +540,8 @@ private fun Canvas(
     move: MoveInput? = null,
     showStatus: Boolean = true,
     onTap: (() -> Unit)? = null,
+    /** Shown while the mandala uses Pro features the user does not own (ADR-0016); opens the Pro sheet. */
+    proMark: (() -> Unit)? = null,
     corner: @Composable androidx.compose.foundation.layout.BoxScope.() -> Unit = {},
 ) {
     val t = LocalTokens.current
@@ -544,6 +556,21 @@ private fun Canvas(
             }
             if (drawing != null) DrawingOverlay(drawing, t.accent)
             if (move != null) MoveOverlay(move, t.accent, t.canvas)
+            if (proMark != null) {
+                Text(
+                    "Pro",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = t.accent,
+                    modifier = Modifier
+                        .align(Alignment.TopStart)
+                        .padding(Spacing.sm)
+                        .clip(CircleShape)
+                        .background(t.surface)
+                        .clickable(onClickLabel = "What needs Pro", onClick = proMark)
+                        .padding(horizontal = Spacing.md, vertical = Spacing.xs)
+                        .semantics { contentDescription = "This mandala uses Pro features" },
+                )
+            }
             corner()
             if (preview.rendering) {
                 LinearProgressIndicator(Modifier.fillMaxWidth().height(Sizes.progress))
@@ -655,23 +682,43 @@ private fun MoveOverlay(input: MoveInput, guide: Color, halo: Color) {
     }
 }
 
-/** What Pro adds, and the purchase button with Google Play's price. */
+/**
+ * What Pro adds and the purchase button with Google Play's price (ADR-0016). Opened for a step the
+ * mandala's Pro features block, it names them and offers the step without them.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun ProSheet(pro: ProState, onBuy: () -> Unit, onDismiss: () -> Unit) {
+private fun ProSheet(pro: ProState, request: ProRequest, onBuy: () -> Unit, onWithout: () -> Unit, onDismiss: () -> Unit) {
     val t = LocalTokens.current
     ModalBottomSheet(onDismissRequest = onDismiss) {
         Column(Modifier.padding(horizontal = Spacing.lg).padding(bottom = Spacing.xl), verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
             Text("Dahlia Pro", style = MaterialTheme.typography.titleLarge)
+            if (request.features.isNotEmpty()) {
+                Text(
+                    if (request.action != null) "This mandala uses what comes with Pro. To keep it as it is, get Pro:"
+                    else "This mandala uses what comes with Pro:",
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+                Column(Modifier.padding(start = Spacing.md)) {
+                    for (feature in request.features) Text("· ${feature.label}", style = MaterialTheme.typography.bodyMedium)
+                }
+            }
+            request.note?.let { Text(it, style = MaterialTheme.typography.bodyMedium) }
             Text(
-                "Save your mandalas at 2048 pixels wide in every format, sharp enough for prints and wallpapers, " +
-                    "move and zoom the mandala in the frame, move layers and the emblem, and save line drawings as SVG. " +
-                    "One purchase, no subscription. " +
-                    "Everything else stays free.",
-                style = MaterialTheme.typography.bodyMedium,
+                "Pro adds up to five layers, emblems, text and quotes, moving layers and the emblem, and as many favourites as you like. " +
+                    "Save at 2048 pixels wide with the mandala placed by hand and adjusted, and as a line drawing. " +
+                    "Wallpapers: home and lock as a pair, a new one every day, and a live wallpaper. " +
+                    "Try everything before you buy. One purchase, no subscription.",
+                style = MaterialTheme.typography.bodySmall,
+                color = t.textMuted,
             )
             Button(onClick = onBuy, enabled = pro.available, modifier = Modifier.fillMaxWidth()) {
                 Text(if (pro.price != null) "Buy for ${pro.price}" else "Buy Pro")
+            }
+            if (request.features.isNotEmpty()) {
+                OutlinedButton(onClick = onWithout, modifier = Modifier.fillMaxWidth()) {
+                    Text(request.action?.let { "$it without them" } ?: "Remove them")
+                }
             }
             if (!pro.available) {
                 Text("Pro is sold through Google Play and is not available in this installation right now.",
@@ -687,6 +734,8 @@ private fun ProSheet(pro: ProState, onBuy: () -> Unit, onDismiss: () -> Unit) {
 private fun FavoritesSheet(
     favorites: List<Favorite>,
     canAdd: Boolean,
+    /** Own favourites and how many are free, without Pro; null with it. */
+    count: Pair<Int, Int>?,
     onAdd: () -> Unit,
     onApply: (Favorite) -> Unit,
     onDelete: (Favorite) -> Unit,
@@ -701,7 +750,11 @@ private fun FavoritesSheet(
         Column(Modifier.padding(horizontal = Spacing.lg).padding(bottom = Spacing.xl)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text("Favourites", style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
-                Button(onClick = onAdd, enabled = canAdd) { Text("Add current") }
+                Button(onClick = onAdd, enabled = canAdd) { Text(if (count != null && count.first >= count.second) "Add current · Pro" else "Add current") }
+            }
+            if (count != null) {
+                Text("${count.first} of ${count.second} of your own without Pro; the examples do not count.",
+                    style = MaterialTheme.typography.bodySmall, color = t.textMuted)
             }
             // Below the title, so a message does not cover "Add current"; it takes no room while empty.
             MessageHost(snackbar)

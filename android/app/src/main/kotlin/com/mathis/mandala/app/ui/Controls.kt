@@ -77,6 +77,7 @@ import com.mathis.mandala.core.GraffitiLayerSettings
 import com.mathis.mandala.core.MandalaParameters
 import com.mathis.mandala.core.Quote
 import com.mathis.mandala.core.Quotes
+import com.mathis.mandala.core.ProFeatures
 import com.mathis.mandala.core.StyleLayer
 import com.mathis.mandala.core.TextLayerSettings
 import kotlin.math.roundToInt
@@ -137,7 +138,7 @@ internal fun ControlTabs(
                     ControlTab.LAYERS -> LayersTab(params, selected.coerceIn(0, params.layers.lastIndex), vm, position)
                     ControlTab.SCENE -> SceneTab(params, vm)
                     ControlTab.EMBLEM -> EmblemTab(params.emblemLayer, vm, position)
-                    ControlTab.TEXT -> TextTab(params.textLayer, vm)
+                    ControlTab.TEXT -> TextTab(params.textLayer, vm, position)
                     ControlTab.DRAW -> DrawTab(params, vm)
                 }
             }
@@ -165,10 +166,16 @@ private fun LayersTab(params: MandalaParameters, selected: Int, vm: EditorViewMo
             )
         }
     }
+    // Without Pro a third visible layer can be tried; keeping the mandala then needs Pro (ADR-0016).
+    val shown = layers.count { it.isEnabled }
+    val proMark = if (!position.proOwned && shown >= ProFeatures.FREE_LAYERS) " · Pro" else ""
+    if (!position.proOwned && shown > ProFeatures.FREE_LAYERS) {
+        ProNote("More than two layers come with Pro. Try them as you like; keeping the mandala needs Pro.", position.showPro)
+    }
     // Actions on the selected (highlighted) layer; its settings follow below.
     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-        TextButton(onClick = vm::addLayer, enabled = layers.size < Editing.MAX_LAYERS) { Text("Add") }
-        TextButton(onClick = vm::duplicateSelected, enabled = layers.size < Editing.MAX_LAYERS) { Text("Duplicate") }
+        TextButton(onClick = vm::addLayer, enabled = layers.size < Editing.MAX_LAYERS) { Text("Add$proMark") }
+        TextButton(onClick = vm::duplicateSelected, enabled = layers.size < Editing.MAX_LAYERS) { Text("Duplicate$proMark") }
         TextButton(onClick = vm::removeSelected, enabled = layers.size > 1) { Text("Delete") }
         Box(Modifier.weight(1f))
         IconButton(onClick = vm::randomizeSelected) { Icon(EditorIcons.DieOne, contentDescription = "Randomize layer ${selected + 1}") }
@@ -176,7 +183,16 @@ private fun LayersTab(params: MandalaParameters, selected: Int, vm: EditorViewMo
     LayerControls(layers[selected], vm::updateSelected, position, onVary = vm::varySelected)
 }
 
-/** What the position controls need: whether Pro is owned, the move mode, and the Pro sheet. */
+/** A muted line saying what comes with Pro, with a link to the Pro sheet. */
+@Composable
+private fun ProNote(text: String, showPro: () -> Unit) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Text(text, style = MaterialTheme.typography.bodySmall, color = LocalTokens.current.textMuted, modifier = Modifier.weight(1f))
+        TextButton(onClick = showPro) { Text("About Pro") }
+    }
+}
+
+/** What the Pro-marked controls need: whether Pro is owned, the move mode, and the Pro sheet. */
 private class PositionInput(
     val proOwned: Boolean,
     val moveTarget: MoveTarget?,
@@ -194,15 +210,8 @@ private fun PositionGroup(
 ) {
     val t = LocalTokens.current
     val centred = x == 0.0 && y == 0.0
-    Group("Position", summary = if (centred) "Centred" else "Moved") {
-        if (!input.proOwned) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("Moving layers and the emblem comes with Pro.", style = MaterialTheme.typography.bodySmall, color = t.textMuted,
-                    modifier = Modifier.weight(1f))
-                TextButton(onClick = input.showPro) { Text("About Pro") }
-            }
-            return@Group
-        }
+    Group("Position", summary = when { centred -> "Centred"; input.proOwned -> "Moved"; else -> "Moved · Pro" }) {
+        if (!input.proOwned) ProNote("Moving layers comes with Pro. Try it as you like; keeping the mandala needs Pro.", input.showPro)
         val range = (-Editing.MAX_OFFSET).toFloat()..Editing.MAX_OFFSET.toFloat()
         if (hidden) {
             Text("This layer is hidden. Show it to see where it moves.", style = MaterialTheme.typography.bodySmall, color = t.textMuted)
@@ -463,7 +472,7 @@ private fun EmblemTab(em: EmblemLayerSettings, vm: EditorViewModel, position: Po
     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
         // The label switches too; the dice and reset buttons beside it keep their own taps.
         Text(
-            "Show emblem", style = MaterialTheme.typography.bodyMedium,
+            if (position.proOwned) "Show emblem" else "Show emblem · Pro", style = MaterialTheme.typography.bodyMedium,
             modifier = Modifier.weight(1f).toggleable(value = em.isEnabled, role = Role.Switch) { on -> update { it.switched(on) } },
         )
         if (em.isEnabled) {
@@ -477,6 +486,7 @@ private fun EmblemTab(em: EmblemLayerSettings, vm: EditorViewModel, position: Po
             style = MaterialTheme.typography.bodySmall, color = t.textMuted)
         return
     }
+    if (!position.proOwned) ProNote("The emblem comes with Pro. Try it as you like; keeping the mandala needs Pro.", position.showPro)
     Group("Motif", summary = em.motif.displayName, initiallyOpen = true) {
         FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
             for (motif in EmblemMotif.entries) {
@@ -557,11 +567,11 @@ private fun ChipLine(caption: String, chips: @Composable () -> Unit) {
 /** Text over the mandala: quotes from the macOS app's collection or own text, with font and light. */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun TextTab(text: TextLayerSettings, vm: EditorViewModel) {
+private fun TextTab(text: TextLayerSettings, vm: EditorViewModel, position: PositionInput) {
     val update = vm::updateText
     var choosing by remember { mutableStateOf(false) }
     val myQuotes by vm.myQuotes.collectAsStateWithLifecycle()
-    SwitchRow("Show text", text.isEnabled) { on -> if (on && text.text.isEmpty()) vm.randomQuote() else update { it.copy(isEnabled = on) } }
+    SwitchRow(if (position.proOwned) "Show text" else "Show text · Pro", text.isEnabled) { on -> if (on && text.text.isEmpty()) vm.randomQuote() else update { it.copy(isEnabled = on) } }
     if (choosing) {
         QuoteDialog(
             myQuotes = myQuotes,
@@ -571,6 +581,7 @@ private fun TextTab(text: TextLayerSettings, vm: EditorViewModel) {
         )
     }
     if (!text.isEnabled) return
+    if (!position.proOwned) ProNote("Text and quotes come with Pro. Try them as you like; keeping the mandala needs Pro.", position.showPro)
     Row(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
         OutlinedButton(onClick = vm::randomQuote) { Text("Random quote") }
         OutlinedButton(onClick = { choosing = true }) { Text("Choose quote") }
