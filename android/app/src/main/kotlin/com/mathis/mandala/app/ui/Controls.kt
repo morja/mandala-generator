@@ -166,11 +166,11 @@ private fun LayersTab(params: MandalaParameters, selected: Int, vm: EditorViewMo
             )
         }
     }
-    // Without Pro a third visible layer can be tried; keeping the mandala then needs Pro (ADR-0016).
+    // Without Pro a fourth visible layer can be tried; keeping the mandala then needs Pro (ADR-0016).
     val shown = layers.count { it.isEnabled }
     val proMark = if (!position.proOwned && shown >= ProFeatures.FREE_LAYERS) " · Pro" else ""
     if (!position.proOwned && shown > ProFeatures.FREE_LAYERS) {
-        ProNote("More than two layers come with Pro. Try them as you like; keeping the mandala needs Pro.", position.showPro)
+        ProNote("More than three layers come with Pro. Try them as you like; keeping the mandala needs Pro.", position.showPro)
     }
     // Actions on the selected (highlighted) layer; its settings follow below.
     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {

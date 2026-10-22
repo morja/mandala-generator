@@ -12,19 +12,14 @@ object Favorites {
     fun remove(list: List<Favorite>, id: String): List<Favorite> = list.filterNot { it.id == id }
 
     /** The list after an import, how many were added, and how many new ones did not fit. */
-    data class Merged(val list: List<Favorite>, val added: Int, val left: Int)
+    data class Merged(val list: List<Favorite>, val added: Int)
 
-    /** Adds imported favourites that are not there yet (same id), at most `room` of them (ADR-0016). */
-    fun merge(list: List<Favorite>, imported: List<Favorite>, room: Int = Int.MAX_VALUE): Merged {
+    /** Adds imported favourites that are not there yet (same id). */
+    fun merge(list: List<Favorite>, imported: List<Favorite>): Merged {
         val known = list.mapTo(HashSet()) { it.id }
         val fresh = imported.filter { known.add(it.id) }
-        val kept = fresh.take(room.coerceAtLeast(0))
-        return Merged(list + kept, kept.size, fresh.size - kept.size)
+        return Merged(list + fresh, fresh.size)
     }
-
-    /** How many more own favourites fit under `limit`; the built-in starters (`starterIds`) do not count. */
-    fun room(list: List<Favorite>, starterIds: Set<String>, limit: Int): Int =
-        (limit - list.count { it.id !in starterIds }).coerceAtLeast(0)
 }
 
 /** Keeps the favourites in one file in the macOS app's format, so the files are interchangeable. */

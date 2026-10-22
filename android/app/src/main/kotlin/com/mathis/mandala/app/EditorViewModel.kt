@@ -230,22 +230,6 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         request.then?.invoke()
     }
 
-    /** Favourites the user keeps beyond the built-in starters, which do not count towards the free five. */
-    private val starterIds: Set<String> by lazy {
-        runCatching { application.assets.open(STARTER_FAVORITES).use { SettingsJson.decodeFavorites(it.reader().readText()) }.mapTo(HashSet()) { it.id } }
-            .getOrDefault(emptySet())
-    }
-
-    /** How many more favourites fit without Pro; unlimited with it. */
-    private fun favouriteRoom(): Int =
-        if (pro.state.value.owned) Int.MAX_VALUE else Favorites.room(_favorites.value, starterIds, ProFeatures.FREE_FAVOURITES)
-
-    /** Own favourites (not starters) and how many are free, for the favourites sheet; null with Pro. */
-    @OptIn(ExperimentalCoroutinesApi::class)
-    val favouriteCount: StateFlow<Pair<Int, Int>?> = combine(_favorites, pro.state) { f, pr ->
-        if (pr.owned) null else f.count { it.id !in starterIds } to ProFeatures.FREE_FAVOURITES
-    }.stateIn(viewModelScope, SharingStarted.Eagerly, null)
-
     // ── Save sheet (ADR-0010) ──
 
     private val saveStore = SaveChoiceStore(application)
@@ -663,13 +647,6 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
     // ── Favourites ──
 
     fun addFavorite() {
-        if (favouriteRoom() <= 0) {
-            _proRequest.value = ProRequest(
-                note = "You keep ${ProFeatures.FREE_FAVOURITES} favourites of your own without Pro, besides the examples. " +
-                    "Delete one to make room, or get Pro for as many as you like.",
-            )
-            return
-        }
         if (!mayKeep("Keep as favourite", ::addFavorite)) return
         val image = _preview.value.image ?: return
         val favorite = Favorite(
@@ -723,19 +700,15 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
                     }
                 }
                 is MacFile.Favorites -> {
-                    val room = favouriteRoom()
                     var added = 0
-                    var left = 0
                     _favorites.update { current ->
-                        val merged = Favorites.merge(current, file.favorites, room)
+                        val merged = Favorites.merge(current, file.favorites)
                         added = merged.added
-                        left = merged.left
                         merged.list
                     }
-                    val already = file.favorites.size - added - left
+                    val already = file.favorites.size - added
                     val alreadyNote = if (already > 0) " ($already were already there)" else ""
-                    val proNote = if (left > 0) ". $left more fit with Pro" else ""
-                    message("Imported $added favourites$alreadyNote$proNote")
+                    message("Imported $added favourites$alreadyNote")
                 }
                 null -> message("This is not a Mandala settings or favourites file.")
             }
