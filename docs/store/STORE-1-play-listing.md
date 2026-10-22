@@ -77,7 +77,7 @@ The two tearoom.one pages exist in the website repository (commit "Add Mandala G
 | Name (EN / DE) | Dahlia Pro |
 | Description (EN) | 2048 px images, framing by hand, moving layers, SVG line drawings, brightness and contrast, home and lock screen as a pair, a daily and a live wallpaper. One-time purchase. |
 | Beschreibung (DE) | 2048 px, Mandala ausrichten, Ebenen verschieben, SVG-Linien, Helligkeit und Kontrast, Start- und Sperrbildschirm als Paar, tägliches und Live-Hintergrundbild. Einmaliger Kauf. |
-| Price | 2.99 € in Germany from version 1.3 (before 1.99 €), set in the Play Console |
+| Price | 2.99 € in Germany from version 1.3 (before 1.99 €): base price 2.51 € for all 174 countries, set in the Play Console on 22 October 2026 (US 2.79 $) |
 
 In the Play Console since 22 October 2026: active, with these descriptions in English and German.
 
@@ -167,5 +167,6 @@ State on 22 October 2026, read from the Play Console through the API: production
    Sign in details (app access) says "restricted" with promo codes for Pro, which is right for a paid product; Google's reviewers read its instructions. Mathis updated them on 22 October 2026 to the save button in the top bar, then "Save large".
 6. Build a new bundle from `main` (raise the version, for example 1.2.0, code 4), put it on the internal track and buy Pro once with a licence tester.
 7. Promote that release to production and send it for review.
+   State on 22 October 2026: a production release **draft** "6 (1.3.0)" with the release notes above (English and German) is saved in the Play Console. Open before sending it for review: choose the production countries (Production → Countries / regions; none yet, which the release reports as an error); the warning about missing native debug symbols comes from libraries and does not block. The listing texts and the Pro product description above are not yet entered in the Play Console.
 
 Tablet screenshots are recommended, not required.
