@@ -70,7 +70,7 @@ internal class EffectsLayer(private val par: Parallel, private val fx: LayerEffe
             }
         }
         val bloom = if (s.bloom > 0.001) {
-            val passes = listOf(LayerEffects.BlurPass(40.0, 0.55 * s.bloom), LayerEffects.BlurPass(144.0, 0.30 * s.bloom))
+            val passes = listOf(LayerEffects.BlurPass(40.0, 1.10 * s.bloom), LayerEffects.BlurPass(144.0, 0.60 * s.bloom))
             fx.referenceBlurOverlay(source, min(width, height), passes)
         } else {
             null

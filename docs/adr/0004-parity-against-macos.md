@@ -15,6 +15,7 @@ Status: proposed, 19 October 2026
 | Painted effect (`abstractLevel`) | The macOS code asks for a CITurbulence displacement first, but Core Image has no filter of that name, so that step never runs there; the port skips it too (found 19 October 2026, before that the port displaced with its own noise and reached 21–27 dB). Above 0.3 the grain uses CIRandomGenerator, whose pattern is not reproduced (see APPROVALS.md). | `painted-default`: about 46 dB. `painted-heavy`: about 28 dB, from the grain pattern only. Mac favourites without grain effects: 43–55 dB. |
 | Layer buffer size | macOS always enlarges each layer buffer to the full radius. Kotlin does so only for rotated layers and otherwise adds a margin as wide as the effects reach (ADR-0002). | Light from lines far outside the frame (beyond three sigma of the stronger glow passes) is missing at the outermost pixels. Not measurable in the fixtures. |
 | Effects: grain | CIRandomGenerator is Apple's own; amount and offset match. | `fx-grain`: about 36 dB, same look. |
+| Effects: bloom near the border | Core Image's resampling and blur see transparent pixels outside the canvas, so its bloom fades a little more towards the outermost rows and columns. | `fx-bloom`: 48 dB before, about 43 dB since the bloom gain was doubled (TUNE-1); differences only within a few pixels of the border. |
 | Effects: chromatic | Core Image's two additions leave alpha 3, which its final colour conversion takes into account. Not reproduced (no favourite uses chromatic). | `fx-chromatic`: about 43 dB, slightly darker. |
 | Strange Attractor | Chaotic iteration amplifies the last-bit differences between Apple's and Java's sin/cos. | `style-strange-attractor`: about 19 dB per pixel, same shape and density. |
 | Constellation Web | A few random keep-or-skip decisions sit on a rounding edge. | `style-constellation-web`: about 37 dB, a handful of lines differ. |
@@ -42,6 +43,7 @@ Accidents that made a slider useless, and effects that were too weak to see, wer
 - **Relief** no longer turns the image grey: the emboss convolves colour only (CIConvolutionRGB3X3, alpha stays 1) and repeats the edge pixels. `fx-relief`: about 53 dB, default threshold.
 - **Chromatic** repeats the edge pixels where red and blue are shifted in from outside, so no stripe remains at the left and right edges. `fx-chromatic`: about 43 dB as before.
 - **Vignette** uses a fixed CIVignette radius of 1 (the measured table's strongest column) and intensity 3.75 × the value instead of 2.5 ×. `fx-vignette` 58 dB, `fx-brightness-contrast` 56 dB.
+- **Bloom** has twice the former gain (passes 1.1 and 0.6 × the value instead of 0.55 and 0.3), so it shows on dark images. `fx-bloom`: about 43 dB, threshold 42 (see the table).
 
 ## Consequences
 

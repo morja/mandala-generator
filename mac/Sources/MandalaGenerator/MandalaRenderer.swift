@@ -1142,11 +1142,12 @@ struct MandalaRenderer {
 
         // ── Bloom — multi-scale soft glow (two passes: medium + wide) ──
         if settings.bloom > 0.001 {
-            // Radii in reference-1600px pixels (= 1600 * 0.025 and 1600 * 0.090)
+            // Radii in reference-1600px pixels (= 1600 * 0.025 and 1600 * 0.090).
+            // Twice the former gain, so bloom shows on dark images too.
             let bF = CGFloat(settings.bloom)
             let bloomPasses: [(radius: CGFloat, strength: CGFloat)] = [
-                (40.0,  0.55 * bF),   // medium glow
-                (144.0, 0.30 * bF),   // wide atmospheric haze
+                (40.0,  1.10 * bF),   // medium glow
+                (144.0, 0.60 * bF),   // wide atmospheric haze
             ]
             if let bloomOverlay = referenceBlurOverlay(source: ci, passes: bloomPasses),
                let screen = CIFilter(name: "CIScreenBlendMode") {
