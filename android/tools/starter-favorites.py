@@ -18,7 +18,7 @@ import tempfile
 import uuid
 
 # Mac favourites by index, or a file name in tools/starter-favorites/. Shown first: the icon's mandala.
-PICKS = [3, "om.json", 5, 17, 1, "flower-of-life.json", 14, 6, "lotus-gibran.json", 8, 9, 10, 11,
+PICKS = [3, "om.json", 5, 17, 1, "flower-of-life.json", 14, "lotus-gibran.json", 7, 8, 9, 10, 11,
          0, 2, 19, 20, 23, 25, 26, 29]
 
 # The app ships only public-domain quotes (ADR-0007), so the text favourites get new ones.

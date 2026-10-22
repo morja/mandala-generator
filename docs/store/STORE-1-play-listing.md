@@ -128,7 +128,7 @@ The six screenshots from 20 October show favourites that are no longer among the
 
 1. Om emblem (favourite 2), Emblem tab open.
 2. Flower of Life emblem (favourite 6), Emblem tab open.
-3. Lotus with the Gibran quote (favourite 9), Text tab open.
+3. Lotus with the Gibran quote (favourite 8), Text tab open.
 4. The Rumi quote "This is the House of Love" (favourite 4), Text tab open.
 5. Favourites sheet, scrolled to the top.
 6. Flow Field (favourite 17), Layers tab open.
