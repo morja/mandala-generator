@@ -1336,14 +1336,17 @@ struct MandalaRenderer {
         if settings.glitter > 0 {
             let glitterBuffer = PixelBuffer(width: bufferSize, height: bufferSize)
             var rng = SeededRNG(seed: settings.glitterSeed)
-            let nGlitter = Int(settings.glitter * 2500) + 80
+            // The slider runs over 0.2–0.6 of the former range: visible from the first step, calmer
+            // at the top; values around 0.33 look as before.
+            let amount = 0.2 + 0.4 * settings.glitter
+            let nGlitter = Int(amount * 2500) + 80
             let wf = Float(bufferSize)
 
             for _ in 0..<nGlitter {
                 let x = rng.nextFloat() * wf
                 let y = rng.nextFloat() * wf
                 let hue = rng.nextFloat()
-                let bright = Float(settings.glitter) * (rng.nextFloat() * 0.55 + 0.45) * 9.0
+                let bright = Float(amount) * (rng.nextFloat() * 0.55 + 0.45) * 9.0
                 // HSV → RGB inline
                 let hi = Int(hue * 6.0) % 6
                 let f  = hue * 6.0 - Float(Int(hue * 6.0))

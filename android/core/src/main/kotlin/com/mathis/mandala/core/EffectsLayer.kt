@@ -423,10 +423,14 @@ internal class EffectsLayer(private val par: Parallel, private val fx: LayerEffe
         }
     }
 
-    /** Dense tiny rainbow sparkles: a cross plus fainter diagonal glints. */
+    /**
+     * Dense tiny rainbow sparkles: a cross plus fainter diagonal glints. The slider runs over 0.2–0.6
+     * of the former range (visible from the first step, calmer at the top; about 0.33 as before).
+     */
     private fun glitter(lines: LineList, s: EffectsLayerSettings, width: Int, height: Int) {
         val rng = SeededRng(s.glitterSeed)
-        val n = scaledCount((s.glitter * 2500).toInt() + 80, width, height)
+        val amount = 0.2 + 0.4 * s.glitter
+        val n = scaledCount((amount * 2500).toInt() + 80, width, height)
         val wf = min(width, height).toFloat()
         val xf = width.toFloat()
         val yf = height.toFloat()
@@ -434,7 +438,7 @@ internal class EffectsLayer(private val par: Parallel, private val fx: LayerEffe
             val x = rng.nextFloat() * xf
             val y = rng.nextFloat() * yf
             val hue = rng.nextFloat()
-            val bright = s.glitter.toFloat() * (rng.nextFloat() * 0.55f + 0.45f) * 9.0f
+            val bright = amount.toFloat() * (rng.nextFloat() * 0.55f + 0.45f) * 9.0f
             val hi = (hue * 6.0f).toInt() % 6
             val f = hue * 6.0f - (hue * 6.0f).toInt().toFloat()
             val q = 1.0f - f
