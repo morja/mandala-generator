@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DM-11 Save sheet</title>
+<style>
+  :root {
+    --background: #0A0908; --surface: #121110; --surface-raised: #1B1917; --text: #E6E1DB;
+    --text-muted: #9C948B; --outline: #2E2A26; --accent: #D9A15C; --on-accent: #241605;
+    --accent-soft: #2A2117; --canvas: #000000; --scrim: rgba(0,0,0,.55);
+    --xs: 4px; --sm: 8px; --md: 12px; --lg: 16px; --xl: 24px; --r-sm: 8px; --r-md: 12px;
+  }
+  :root[data-theme="light"] {
+    --background: #F7F4EF; --surface: #FFFDFA; --surface-raised: #EFEAE3; --text: #221F1C;
+    --text-muted: #5F5851; --outline: #CFC7BD; --accent: #8A5210; --on-accent: #FFFFFF; --accent-soft: #F3E3CF;
+    --scrim: rgba(0,0,0,.35);
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #3a3632; font: 15px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color: var(--text); }
+  .viewer { max-width: 1100px; margin: 0 auto; padding: var(--lg); }
+  .switcher { display: flex; flex-wrap: wrap; gap: var(--sm); align-items: center; margin-bottom: var(--lg); color: #f0ebe4; }
+  .switcher button { font: inherit; padding: 6px 12px; border-radius: 999px; border: 1px solid #6b645c; background: transparent; color: inherit; cursor: pointer; }
+  .switcher button.on { background: #f0ebe4; color: #221F1C; border-color: #f0ebe4; }
+  .switcher .gap { width: var(--lg); }
+  .note { color: #e9e3dc; max-width: 760px; margin: 0 0 var(--lg); }
+  .note p { margin: 0 0 var(--sm); }
+  .stage { display: flex; gap: var(--xl); flex-wrap: wrap; align-items: flex-start; }
+
+  /* Phone with the editor dimmed behind the sheet. */
+  .phone { width: 375px; height: 800px; border-radius: 28px; overflow: hidden; background: var(--background); position: relative;
+           border: 8px solid #1d1b19; flex: none; }
+  .behind { position: absolute; inset: 0; background: var(--canvas) url(dm-4-mandala.png) center 60px / 100% auto no-repeat; }
+  .behind::after { content: ""; position: absolute; inset: 0; background: var(--scrim); }
+  .sheet { position: absolute; left: 0; right: 0; bottom: 0; top: 36px; background: var(--surface); border-radius: 20px 20px 0 0;
+           display: flex; flex-direction: column; }
+  .grab { width: 36px; height: 4px; border-radius: 2px; background: var(--outline); margin: 10px auto 6px; flex: none; }
+  .scroll { flex: 1; overflow-y: auto; padding: 0 var(--lg) var(--lg); scrollbar-width: none; }
+  .scroll::-webkit-scrollbar { display: none; }
+  .bar { flex: none; padding: var(--md) var(--lg) var(--lg); border-top: 1px solid var(--outline); background: var(--surface); display: flex; flex-direction: column; gap: var(--sm); }
+  .bar .row2 { display: flex; gap: var(--sm); }
+
+  h2 { font-size: 18px; font-weight: 600; margin: var(--xs) 0 var(--md); }
+  .head { display: flex; align-items: center; justify-content: space-between; }
+  .head h2 { margin-bottom: var(--md); }
+
+  /* Segmented control: equal parts, one row. */
+  .seg { display: flex; border: 1px solid var(--outline); border-radius: 999px; padding: 3px; gap: 2px; }
+  .seg button { flex: 1; font: inherit; font-size: 14px; border: 0; background: transparent; color: var(--text); padding: 7px 6px; border-radius: 999px;
+                cursor: pointer; white-space: nowrap; display: flex; align-items: center; justify-content: center; gap: 4px; }
+  .seg button.on { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+  .seg button small { font-size: 12px; color: var(--text-muted); font-weight: 400; }
+  .seg button.on small { color: inherit; opacity: .8; }
+  .seg.small button { font-size: 13px; padding: 4px 10px; }
+  .chev { width: 14px; height: 14px; }
+
+  /* The frame. */
+  .framewrap { display: flex; justify-content: center; margin: var(--md) 0 var(--sm); position: relative; }
+  .frame { position: relative; border-radius: var(--r-md); background: var(--canvas); overflow: hidden; transition: width .25s, height .25s; }
+  .frame img { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); transition: width .25s; }
+  .frame .fit { position: absolute; left: 50%; bottom: var(--sm); transform: translateX(-50%); background: rgba(18,17,16,.82); border-color: rgba(255,255,255,.14); }
+  .frame .fit button { color: #E6E1DB; }
+  .frame .fit button.on { background: #E6E1DB; color: #221F1C; }
+  .hint { color: var(--text-muted); font-size: 12px; text-align: center; margin: 0 0 var(--md); }
+
+  /* Rows. */
+  .line { display: flex; align-items: center; gap: var(--md); padding: var(--md) 0; border-top: 1px solid var(--outline); cursor: pointer; }
+  .line .t { flex: 1; min-width: 0; }
+  .line .t div:last-child { color: var(--text-muted); font-size: 13px; }
+  .line svg { width: 20px; height: 20px; color: var(--text-muted); flex: none; transition: transform .2s; }
+  .line.open > svg { transform: rotate(180deg); }
+  .dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); margin-left: 6px; vertical-align: middle; }
+  .adjust { display: none; padding: 0 0 var(--md); }
+  .adjust.open { display: block; }
+  .slider { display: grid; grid-template-columns: 84px 1fr 48px; align-items: center; gap: var(--sm); margin-top: var(--sm); font-size: 14px; }
+  .track { height: 4px; border-radius: 2px; background: var(--surface-raised); position: relative; }
+  .track i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 2px; background: var(--accent); }
+  .track b { position: absolute; top: 50%; width: 16px; height: 16px; margin: -8px 0 0 -8px; border-radius: 50%; background: var(--accent); }
+  .track u { position: absolute; top: -3px; width: 2px; height: 10px; background: var(--text-muted); opacity: .6; }
+  .slider span { color: var(--text-muted); text-align: right; font-size: 13px; }
+  .reset { color: var(--accent); font-size: 13px; font-weight: 600; margin-top: var(--sm); text-align: right; }
+  .switch { width: 36px; height: 20px; border-radius: 10px; background: var(--accent); position: relative; flex: none; }
+  .switch::after { content: ""; position: absolute; right: 3px; top: 3px; width: 14px; height: 14px; border-radius: 50%; background: var(--on-accent); }
+  .label { font-size: 13px; color: var(--text-muted); margin: var(--md) 0 var(--sm); }
+
+  .btn { font: inherit; font-weight: 600; font-size: 15px; border-radius: 999px; padding: 12px 16px; cursor: pointer; text-align: center; flex: 1; }
+  .btn.primary { background: var(--accent); color: var(--on-accent); border: 0; }
+  .btn.secondary { background: transparent; color: var(--text); border: 1px solid var(--outline); }
+  .btn small { font-weight: 400; opacity: .8; }
+  .textlink { color: var(--accent); font-weight: 600; font-size: 14px; }
+
+  /* Variant B: tabs. */
+  .tabs { display: flex; border-bottom: 1px solid var(--outline); margin: 0 calc(-1 * var(--lg)) var(--sm); padding: 0 var(--lg); }
+  .tabs div { flex: 1; text-align: center; padding: var(--sm) 0 var(--md); font-weight: 600; font-size: 14px; color: var(--text-muted); cursor: pointer; }
+  .tabs div.on { color: var(--accent); box-shadow: inset 0 -3px 0 var(--accent); }
+  .choice { display: flex; align-items: center; gap: var(--md); padding: 10px var(--md); border: 1px solid var(--outline); border-radius: var(--r-sm); margin-top: var(--sm); cursor: pointer; }
+  .choice.on { border-color: var(--accent); background: var(--accent-soft); }
+  .choice .r { width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--text-muted); flex: none; }
+  .choice.on .r { border: 5px solid var(--accent); }
+  .choice .t div:last-child { color: var(--text-muted); font-size: 13px; }
+  .pro { font-size: 12px; color: var(--accent); border: 1px solid var(--accent); border-radius: 999px; padding: 0 6px; margin-left: 6px; }
+  .lines { position: absolute; inset: 0; background: url(dm-4-mandala.png) center / 100% no-repeat; filter: grayscale(1) contrast(2.2) brightness(1.2); }
+  .lines.white { filter: grayscale(1) invert(1) contrast(1.6); background-color: #fff; }
+
+  .caption { color: #e9e3dc; font-size: 13px; margin-top: var(--sm); max-width: 375px; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<div class="viewer">
+  <div class="switcher">
+    <button data-v="A" class="on">A · One page, save bar at the bottom</button>
+    <button data-v="B">B · Tabs: image, wallpaper, line drawing</button>
+    <span class="gap"></span>
+    <button data-t="dark" class="on">Dark</button>
+    <button data-t="light">Light</button>
+  </div>
+  <div class="note" id="note"></div>
+
+  <div class="stage">
+    <div>
+      <div class="phone">
+        <div class="behind"></div>
+        <div class="sheet" id="sheet"></div>
+      </div>
+      <div class="caption" id="caption"></div>
+    </div>
+  </div>
+</div>
+
+<template id="tplA">
+  <div class="grab"></div>
+  <div class="scroll">
+    <h2>Save image</h2>
+    <div class="seg" data-format>
+      <button data-f="1">Square</button>
+      <button data-f="screen" class="on">Screen</button>
+      <button data-f="0.8">4:5 <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg></button>
+    </div>
+    <div class="framewrap">
+      <div class="frame" data-frame>
+        <img src="dm-4-mandala.png" alt="">
+        <div class="seg small fit" data-fit><button class="on" data-fill="0">Whole</button><button data-fill="1">Fill</button></div>
+      </div>
+    </div>
+    <p class="hint">Drag to move, pinch to zoom, double tap to centre.</p>
+
+    <div class="line" data-toggle>
+      <div class="t"><div>Adjust<span class="dot"></span></div><div>Brightness 148 %, contrast 65 %, saturation 153 %</div></div>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+    </div>
+    <div class="adjust">
+      <div class="slider">Brightness<div class="track"><u style="left:33%"></u><i style="width:82%"></i><b style="left:82%"></b></div><span>148 %</span></div>
+      <div class="slider">Contrast<div class="track"><u style="left:50%"></u><i style="width:16%"></i><b style="left:16%"></b></div><span>65 %</span></div>
+      <div class="slider">Saturation<div class="track"><u style="left:50%"></u><i style="width:76%"></i><b style="left:76%"></b></div><span>153 %</span></div>
+      <div class="reset">Reset</div>
+    </div>
+    <div class="line">
+      <div class="t"><div>Quote moves with the mandala</div></div>
+      <div class="switch"></div>
+    </div>
+    <div class="line">
+      <div class="t"><div>Line drawing as SVG</div><div>Square, lines only, for plotters and colouring</div></div>
+      <span class="textlink">Save</span>
+    </div>
+  </div>
+  <div class="bar">
+    <div class="seg" data-size>
+      <button class="on">1024 × 2219</button>
+      <button>Large <small>2048 × 4437</small></button>
+    </div>
+    <div class="row2">
+      <button class="btn secondary">Wallpaper</button>
+      <button class="btn primary">Save</button>
+    </div>
+  </div>
+</template>
+
+<template id="tplB">
+  <div class="grab"></div>
+  <div class="scroll">
+    <div class="tabs" data-tabs><div class="on" data-tab="img">Image</div><div data-tab="wall">Wallpaper</div><div data-tab="svg">Line drawing</div></div>
+
+    <section data-pane="img">
+      <div class="seg" data-format>
+        <button data-f="1">Square</button>
+        <button data-f="screen" class="on">Screen</button>
+        <button data-f="0.8">4:5 <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg></button>
+      </div>
+      <div class="framewrap"><div class="frame" data-frame><img src="dm-4-mandala.png" alt="">
+        <div class="seg small fit" data-fit><button class="on" data-fill="0">Whole</button><button data-fill="1">Fill</button></div></div></div>
+      <p class="hint">Drag to move, pinch to zoom, double tap to centre.</p>
+      <div class="line" data-toggle>
+        <div class="t"><div>Adjust<span class="dot"></span></div><div>Brightness 148 %, contrast 65 %, saturation 153 %</div></div>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+      </div>
+      <div class="adjust">
+        <div class="slider">Brightness<div class="track"><u style="left:33%"></u><i style="width:82%"></i><b style="left:82%"></b></div><span>148 %</span></div>
+        <div class="slider">Contrast<div class="track"><u style="left:50%"></u><i style="width:16%"></i><b style="left:16%"></b></div><span>65 %</span></div>
+        <div class="slider">Saturation<div class="track"><u style="left:50%"></u><i style="width:76%"></i><b style="left:76%"></b></div><span>153 %</span></div>
+        <div class="reset">Reset</div>
+      </div>
+    </section>
+
+    <section data-pane="wall" hidden>
+      <div class="framewrap"><div class="frame" data-frame data-fixed="screen"><img src="dm-4-mandala.png" alt="">
+        <div class="seg small fit" data-fit><button class="on" data-fill="0">Whole</button><button data-fill="1">Fill</button></div></div></div>
+      <p class="hint">The wallpaper always has the shape of this screen.</p>
+      <div class="label">Set on</div>
+      <div class="choice on"><div class="r"></div><div class="t"><div>Home and lock screen</div></div></div>
+      <div class="choice"><div class="r"></div><div class="t"><div>Home screen</div></div></div>
+      <div class="choice"><div class="r"></div><div class="t"><div>Lock screen</div></div></div>
+      <div class="choice"><div class="r"></div><div class="t"><div>A pair<span class="pro">Pro</span></div><div>Different mandalas on home and lock screen</div></div></div>
+      <div class="choice"><div class="r"></div><div class="t"><div>Moving wallpaper<span class="pro">Pro</span></div><div>Layers turn slowly</div></div></div>
+    </section>
+
+    <section data-pane="svg" hidden>
+      <div class="framewrap"><div class="frame" style="width:250px;height:250px"><div class="lines" data-lines></div></div></div>
+      <p class="hint">Layers and emblem as lines, without glow, effects, background and quote.</p>
+      <div class="label">Look</div>
+      <div class="choice on" data-look="0"><div class="r"></div><div class="t"><div>Colour on black</div></div></div>
+      <div class="choice" data-look="1"><div class="r"></div><div class="t"><div>Dark on white</div><div>For plotters and colouring</div></div></div>
+    </section>
+  </div>
+  <div class="bar">
+    <div class="seg" data-size data-for="img">
+      <button class="on">1024 × 2219</button>
+      <button>Large <small>2048 × 4437</small></button>
+    </div>
+    <div class="row2"><button class="btn primary" data-main>Save</button></div>
+  </div>
+</template>
+
+<script>
+  const notes = {
+    A: `<p><b>A.</b> Everything stays on one page, but the sheet now fits on a phone without scrolling the main action away. The format is a segmented control, Whole and Fill sit on the frame, the three sliders fold into “Adjust” (the dot shows a changed value). Size, Save and Wallpaper stay fixed at the bottom. The SVG drawing becomes a quiet row at the end.</p>`,
+    B: `<p><b>B.</b> Three tabs for three different results. Each tab has only its own options and one button at the bottom. Wallpaper shows its choices (home, lock, pair, moving) right away instead of in a menu, and the line drawing gets its own square preview, so it is clear that the format and adjustments do not apply to it.</p>`,
+  };
+  const captions = {
+    A: 'Tap “Adjust” to open the sliders; the format and Whole/Fill change the frame.',
+    B: 'Tap the tabs. The bottom button changes with the tab.',
+  };
+  let v = 'A';
+  const sheet = document.getElementById('sheet');
+
+  function frameSize(f) {
+    const ratio = f === 'screen' ? 2219 / 1024 : 1 / parseFloat(f);   // height / width
+    const maxH = v === 'A' ? 330 : 360, maxW = 320;
+    let w = maxW, h = w * ratio;
+    if (h > maxH) { h = maxH; w = h / ratio; }
+    return [w, h];
+  }
+  function setFrame(frame, f, fill) {
+    const [w, h] = frameSize(f);
+    frame.style.width = w + 'px'; frame.style.height = h + 'px';
+    frame.dataset.f = f;
+    frame.querySelector('img').style.width = (fill ? Math.max(w, h) * 1.05 : Math.min(w, h) * 1.15) + 'px';
+  }
+
+  function render() {
+    sheet.innerHTML = document.getElementById('tpl' + v).innerHTML;
+    document.getElementById('note').innerHTML = notes[v];
+    document.getElementById('caption').textContent = captions[v];
+    sheet.querySelectorAll('[data-frame]').forEach(fr => setFrame(fr, fr.dataset.fixed || 'screen', false));
+
+    sheet.querySelectorAll('[data-format]').forEach(seg => seg.addEventListener('click', e => {
+      const b = e.target.closest('button'); if (!b) return;
+      seg.querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b));
+      const fr = seg.parentElement.querySelector('[data-frame]');
+      const fill = fr.querySelector('[data-fill="1"]').classList.contains('on');
+      setFrame(fr, b.dataset.f, fill);
+      fr.querySelector('[data-fit]').hidden = b.dataset.f === '1';
+    }));
+    sheet.querySelectorAll('[data-fit]').forEach(seg => seg.addEventListener('click', e => {
+      const b = e.target.closest('button'); if (!b) return;
+      seg.querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b));
+      const fr = seg.closest('[data-frame]');
+      setFrame(fr, fr.dataset.f, b.dataset.fill === '1');
+    }));
+    sheet.querySelectorAll('[data-size]').forEach(seg => seg.addEventListener('click', e => {
+      const b = e.target.closest('button'); if (!b) return;
+      seg.querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b));
+    }));
+    sheet.querySelectorAll('[data-toggle]').forEach(row => row.addEventListener('click', () => {
+      row.classList.toggle('open'); row.nextElementSibling.classList.toggle('open');
+    }));
+    sheet.querySelectorAll('.choice').forEach(c => c.addEventListener('click', () => {
+      c.parentElement.querySelectorAll('.choice').forEach(x => x.classList.toggle('on', x === c));
+      if (c.dataset.look) sheet.querySelector('[data-lines]').classList.toggle('white', c.dataset.look === '1');
+    }));
+    const tabs = sheet.querySelector('[data-tabs]');
+    if (tabs) tabs.addEventListener('click', e => {
+      const t = e.target.closest('[data-tab]'); if (!t) return;
+      tabs.querySelectorAll('[data-tab]').forEach(x => x.classList.toggle('on', x === t));
+      sheet.querySelectorAll('[data-pane]').forEach(p => p.hidden = p.dataset.pane !== t.dataset.tab);
+      sheet.querySelector('[data-for="img"]').hidden = t.dataset.tab !== 'img';
+      sheet.querySelector('[data-main]').textContent =
+        { img: 'Save', wall: 'Set as wallpaper', svg: 'Save SVG' }[t.dataset.tab];
+    });
+  }
+
+  document.querySelectorAll('[data-v]').forEach(b => b.addEventListener('click', () => {
+    v = b.dataset.v;
+    document.querySelectorAll('[data-v]').forEach(x => x.classList.toggle('on', x === b));
+    render();
+  }));
+  document.querySelectorAll('[data-t]').forEach(b => b.addEventListener('click', () => {
+    document.documentElement.dataset.theme = b.dataset.t;
+    document.querySelectorAll('[data-t]').forEach(x => x.classList.toggle('on', x === b));
+  }));
+  render();
+</script>
+</body>
+</html>
