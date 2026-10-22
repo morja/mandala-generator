@@ -78,6 +78,8 @@ internal fun Group(
     trailing: (@Composable () -> Unit)? = null,
     /** Whether the group is open; passed in when the caller lays out other parts by it. */
     openState: MutableState<Boolean> = rememberSaveable { mutableStateOf(initiallyOpen) },
+    /** The line below the group; off where something else already separates it. */
+    divider: Boolean = !nested,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val t = LocalTokens.current
@@ -104,8 +106,8 @@ internal fun Group(
             )
             trailing?.invoke()
         }
-        if (open) Column(Modifier.padding(bottom = Spacing.sm), content = content)
-        if (!nested) HorizontalDivider(color = t.outline)
+        if (open) Column(Modifier.padding(bottom = if (divider) Spacing.sm else Spacing.xs), content = content)
+        if (divider) HorizontalDivider(color = t.outline)
     }
 }
 
