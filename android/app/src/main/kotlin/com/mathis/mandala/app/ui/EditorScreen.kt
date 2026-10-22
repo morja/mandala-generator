@@ -261,7 +261,7 @@ fun EditorScreen(
                         val side = minOf(maxWidth, maxHeight - Sizes.statusLine)
                         Canvas(preview, Modifier.width(side), drawing(params, drawTool, vm), moving(params, selected, moveTarget, vm))
                     }
-                    ControlTabs(params, selected, vm, Modifier.width(Spacing.controlsWidth).fillMaxHeight(), pro.owned) { showPro = true }
+                    ControlTabs(params, selected, vm, Modifier.width(Spacing.controlsWidth).fillMaxHeight(), pro.owned, onShowPro = { showPro = true })
                 }
             } else {
                 // The canvas stays in view; only the open tab scrolls, so every change is visible.
