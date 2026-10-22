@@ -87,6 +87,8 @@ Google Play lets you create in-app products only after a build that contains the
 
 The free line moved (ADR-0016, amended): three layers free instead of two, no limit on favourites. Same notes as 1.4.0, since 1.4.0 never went public.
 
+On the internal track and **released to production** on 22 October 2026 (status completed, through the API; Mathis chose the countries in the Play Console beforehand). It replaced the unsent 1.3.1 draft; Google's review follows. The first public version.
+
 ## Release notes for 1.4.0 (code 8)
 
 The first public release (ADR-0016); 1.3.1 was never sent for review. On the internal track since 22 October 2026 (uploaded through the API with these notes); git tag `android-v1.4.0`. Production still has the unsent 1.3.1 draft.
