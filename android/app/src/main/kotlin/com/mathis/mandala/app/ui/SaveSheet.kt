@@ -60,6 +60,7 @@ import com.mathis.mandala.app.Fit
 import com.mathis.mandala.app.FramePreviewState
 import com.mathis.mandala.app.SaveChoice
 import com.mathis.mandala.app.WallpaperTarget
+import com.mathis.mandala.app.liveLabel
 import com.mathis.mandala.app.pairLabel
 import com.mathis.mandala.app.ui.theme.LocalTokens
 import com.mathis.mandala.app.ui.theme.Radius
@@ -95,6 +96,7 @@ internal fun SaveSheet(
     onFill: (Boolean) -> Unit,
     onFinish: (Finish) -> Unit,
     onPair: () -> Unit,
+    onLive: () -> Unit,
     hasPointLayers: Boolean,
     onLineDrawing: (VectorExport.Look) -> Unit,
     onShowPro: () -> Unit,
@@ -149,9 +151,11 @@ internal fun SaveSheet(
             WallpaperButton(
                 enabled = !busy,
                 pairLabel = pairLabel(proOwned),
+                liveLabel = liveLabel(proOwned),
                 onOpen = { if (choice.format != SaveFormat.SCREEN) onFormat(SaveFormat.SCREEN) },
                 onWallpaper = onWallpaper,
                 onPair = onPair,
+                onLive = onLive,
             )
             LineDrawingButton(proOwned, enabled = !busy, onLineDrawing = onLineDrawing, onShowPro = onShowPro)
             Text(
@@ -302,7 +306,15 @@ private fun LineDrawingButton(proOwned: Boolean, enabled: Boolean, onLineDrawing
 }
 
 @Composable
-private fun WallpaperButton(enabled: Boolean, pairLabel: String, onOpen: () -> Unit, onWallpaper: (WallpaperTarget) -> Unit, onPair: () -> Unit) {
+private fun WallpaperButton(
+    enabled: Boolean,
+    pairLabel: String,
+    liveLabel: String,
+    onOpen: () -> Unit,
+    onWallpaper: (WallpaperTarget) -> Unit,
+    onPair: () -> Unit,
+    onLive: () -> Unit,
+) {
     var open by remember { mutableStateOf(false) }
     Box {
         OutlinedButton(onClick = { onOpen(); open = true }, enabled = enabled, modifier = Modifier.fillMaxWidth()) { Text("Set as wallpaper") }
@@ -311,6 +323,7 @@ private fun WallpaperButton(enabled: Boolean, pairLabel: String, onOpen: () -> U
                 DropdownMenuItem(text = { Text(target.label) }, onClick = { open = false; onWallpaper(target) })
             }
             DropdownMenuItem(text = { Text(pairLabel) }, onClick = { open = false; onPair() })
+            DropdownMenuItem(text = { Text(liveLabel) }, onClick = { open = false; onLive() })
         }
     }
 }

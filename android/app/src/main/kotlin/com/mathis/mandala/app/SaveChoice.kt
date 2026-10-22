@@ -98,6 +98,9 @@ enum class WallpaperTarget(val label: String, val flags: Int) {
     BOTH("Home and lock screen", WallpaperManager.FLAG_SYSTEM or WallpaperManager.FLAG_LOCK),
 }
 
+/** The menu entry for the live wallpaper (ADR-0014), marked when it opens the Pro sheet. */
+fun liveLabel(pro: Boolean): String = if (pro) "Live wallpaper" else "Live wallpaper · Pro"
+
 /** The menu entry for the wallpaper pair (ADR-0014), marked when it opens the Pro sheet. */
 fun pairLabel(pro: Boolean): String = if (pro) "Home and lock, as a pair" else "Home and lock, as a pair · Pro"
 

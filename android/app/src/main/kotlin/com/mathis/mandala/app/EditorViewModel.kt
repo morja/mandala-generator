@@ -801,6 +801,29 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
+    /** How the live wallpaper moves (ADR-0014, Pro). */
+    private val _live = MutableStateFlow(LiveWallpaper.settings(application))
+    val live: StateFlow<LiveSettings> = _live.asStateFlow()
+
+    fun setLiveSettings(settings: LiveSettings) {
+        if (!pro.state.value.owned) return
+        _live.value = settings
+        LiveWallpaper.setSettings(getApplication(), settings)
+    }
+
+    /**
+     * Gives the live wallpaper the current mandala. Returns true when it is already on the phone (it
+     * then fades over by itself); otherwise the screen opens Android's preview, where it is set.
+     */
+    fun useForLiveWallpaper(): Boolean {
+        if (!pro.state.value.owned) return false
+        val app = getApplication<Application>()
+        LiveWallpaper.setMandala(app, _params.value)
+        val active = LiveWallpaper.isActive(app)
+        if (active) message("The live wallpaper shows this mandala in a moment")
+        return active
+    }
+
     /** The pair sheet's two small screens, only while it is open. */
     private val _pairOpen = MutableStateFlow(false)
     private val _pairPreview = MutableStateFlow(PairPreview())

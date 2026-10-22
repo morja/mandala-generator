@@ -64,6 +64,8 @@ internal class MenuActions(
     /** Opens the pair sheet, or the Pro sheet without Pro; `pairLabel` says which. */
     val onPair: () -> Unit,
     val pairLabel: String,
+    val onLive: () -> Unit,
+    val liveLabel: String,
     /** The daily wallpaper (ADR-0014, Pro): whether it is on, what the line below says, and the switch. */
     val dailyOn: Boolean,
     val dailySubtitle: String,
@@ -141,6 +143,7 @@ private fun KeepRow(busy: Boolean, actions: MenuActions) {
                     DropdownMenuItem(text = { Text(target.label) }, onClick = { open = false; actions.onWallpaper(target) })
                 }
                 DropdownMenuItem(text = { Text(actions.pairLabel) }, onClick = { open = false; actions.onPair() })
+                DropdownMenuItem(text = { Text(actions.liveLabel) }, onClick = { open = false; actions.onLive() })
             }
         }
     }

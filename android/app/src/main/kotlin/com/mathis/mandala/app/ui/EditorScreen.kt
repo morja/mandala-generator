@@ -13,6 +13,8 @@ import com.mathis.mandala.app.ProState
 import com.mathis.mandala.app.screenAspect
 import com.mathis.mandala.app.screenSize
 import com.mathis.mandala.app.pairLabel
+import com.mathis.mandala.app.liveLabel
+import com.mathis.mandala.app.LiveWallpaper
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.ui.platform.LocalConfiguration
@@ -132,11 +134,14 @@ fun EditorScreen(
     var showMenu by remember { mutableStateOf(false) }
     var showPro by remember { mutableStateOf(false) }
     var showPair by remember { mutableStateOf(false) }
+    var showLive by remember { mutableStateOf(false) }
+    val live by vm.live.collectAsStateWithLifecycle()
     val pairPreview by vm.pairPreview.collectAsStateWithLifecycle()
     val daily by vm.daily.collectAsStateWithLifecycle()
     LaunchedEffect(showPair) { vm.setPairOpen(showPair) }
     // The wallpaper pair is Pro; without it the entry opens the Pro sheet.
     val openPair = { if (pro.owned) showPair = true else showPro = true }
+    val openLive = { if (pro.owned) showLive = true else showPro = true }
     // Kept when Android recreates the screen, which setting a wallpaper does.
     var showSave by rememberSaveable { mutableStateOf(false) }
     val snackbar = remember { SnackbarHostState() }
@@ -206,6 +211,7 @@ fun EditorScreen(
             onFill = vm::setFill,
             onFinish = vm::setFinish,
             onPair = { showSave = false; openPair() },
+            onLive = { showSave = false; openLive() },
             hasPointLayers = VectorExport.hasPointLayers(params),
             onLineDrawing = { look -> lineDrawingLook = look; saveLineDrawing.launch(vm.suggestedLineDrawingName(look)) },
             onShowPro = { showPro = true },
@@ -224,6 +230,18 @@ fun EditorScreen(
             onSet = vm::setWallpaperPair,
             onDismiss = { showPair = false },
             snackbar = snackbar,
+        )
+    }
+    if (showLive) {
+        LiveSheet(
+            settings = live,
+            onSettings = vm::setLiveSettings,
+            onSet = {
+                showLive = false
+                // Android previews it and sets it when the user agrees; once on, it follows by itself.
+                if (!vm.useForLiveWallpaper()) runCatching { context.startActivity(LiveWallpaper.pickIntent(context)) }
+            },
+            onDismiss = { showLive = false },
         )
     }
     if (showPro) {
@@ -247,6 +265,8 @@ fun EditorScreen(
                 onWallpaper = { target -> showMenu = false; vm.closeCandidate(); vm.setWallpaper(target, filled = true) },
                 onPair = { showMenu = false; vm.closeCandidate(); openPair() },
                 pairLabel = pairLabel(pro.owned),
+                onLive = { showMenu = false; vm.closeCandidate(); openLive() },
+                liveLabel = liveLabel(pro.owned),
                 dailyOn = daily.on,
                 dailySubtitle = when {
                     !pro.owned -> "Your favourites in turn, every morning · Pro"
