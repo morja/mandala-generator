@@ -134,7 +134,7 @@ Taken on 22 October 2026 with the starter favourites and the current editor. The
 6. Save sheet in the screen format, with Save and Save large.
 7. Menu > New layers: the new mandala next to the current one before it replaces it.
 
-Open: a screenshot of drawing in rotated symmetry (Draw tab) as an eighth. Samsung marks the lock screen with "AI-generated content" at the bottom; the app writes no such metadata (the saved PNG has only IHDR, sBIT and sRGB), and the crop removes the label.
+No drawing screenshot (Mathis, 22 October 2026). Samsung marks the lock screen with "AI-generated content" at the bottom; the app writes no such metadata (the saved PNG has only IHDR, sBIT and sRGB), and the crop removes the label.
 
 `docs/mocks/DM-8-store-preview.html` shows the listing with these texts and screenshots as a local page (light and dark, English and German), since Google shows the real page only after the first review.
 
