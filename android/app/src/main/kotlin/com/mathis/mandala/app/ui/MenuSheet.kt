@@ -61,6 +61,9 @@ internal class MenuActions(
     val onFavourite: () -> Unit,
     val onShare: () -> Unit,
     val onWallpaper: (WallpaperTarget) -> Unit,
+    /** Opens the pair sheet, or the Pro sheet without Pro; `pairLabel` says which. */
+    val onPair: () -> Unit,
+    val pairLabel: String,
     val onTryNew: (NewKind) -> Unit,
     val onUseNew: () -> Unit,
     val onBackToMenu: () -> Unit,
@@ -133,6 +136,7 @@ private fun KeepRow(busy: Boolean, actions: MenuActions) {
                 for (target in WallpaperTarget.entries) {
                     DropdownMenuItem(text = { Text(target.label) }, onClick = { open = false; actions.onWallpaper(target) })
                 }
+                DropdownMenuItem(text = { Text(actions.pairLabel) }, onClick = { open = false; actions.onPair() })
             }
         }
     }

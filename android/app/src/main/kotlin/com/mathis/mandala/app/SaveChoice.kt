@@ -21,7 +21,15 @@ data class SaveChoice(
     val fit: Fit = Fit.WHOLE,
     /** Pro: brightness, contrast and saturation of the saved image or wallpaper (ADR-0014). */
     val finish: Finish = Finish(),
-)
+    /** Pro, the wallpaper pair: the home screen's brightness relative to the lock screen (ADR-0014). */
+    val homeBrightness: Double = DEFAULT_HOME_BRIGHTNESS,
+) {
+    companion object {
+        /** Darker than the lock screen, so the icons on the home screen stay readable. */
+        const val DEFAULT_HOME_BRIGHTNESS = 0.6
+        const val MIN_HOME_BRIGHTNESS = 0.2
+    }
+}
 
 /** How the mandala sits in the frame (ADR-0010): free presets, or placed by hand with Pro. */
 enum class Fit {
@@ -52,7 +60,8 @@ class SaveChoiceStore(context: Context) {
             prefs.getFloat(KEY_CONTRAST, 1f).toDouble(),
             prefs.getFloat(KEY_SATURATION, 1f).toDouble(),
         ).clamped()
-        return SaveChoice(format, framing, prefs.getBoolean(KEY_TEXT_FOLLOWS, false), fit, finish)
+        val home = prefs.getFloat(KEY_HOME_BRIGHTNESS, SaveChoice.DEFAULT_HOME_BRIGHTNESS.toFloat()).toDouble().coerceIn(SaveChoice.MIN_HOME_BRIGHTNESS, 1.0)
+        return SaveChoice(format, framing, prefs.getBoolean(KEY_TEXT_FOLLOWS, false), fit, finish, home)
     }
 
     fun save(choice: SaveChoice) = prefs.edit()
@@ -65,6 +74,7 @@ class SaveChoiceStore(context: Context) {
         .putFloat(KEY_BRIGHTNESS, choice.finish.brightness.toFloat())
         .putFloat(KEY_CONTRAST, choice.finish.contrast.toFloat())
         .putFloat(KEY_SATURATION, choice.finish.saturation.toFloat())
+        .putFloat(KEY_HOME_BRIGHTNESS, choice.homeBrightness.toFloat())
         .apply()
 
     private companion object {
@@ -77,6 +87,7 @@ class SaveChoiceStore(context: Context) {
         const val KEY_BRIGHTNESS = "finish_brightness"
         const val KEY_CONTRAST = "finish_contrast"
         const val KEY_SATURATION = "finish_saturation"
+        const val KEY_HOME_BRIGHTNESS = "home_brightness"
     }
 }
 
@@ -87,11 +98,22 @@ enum class WallpaperTarget(val label: String, val flags: Int) {
     BOTH("Home and lock screen", WallpaperManager.FLAG_SYSTEM or WallpaperManager.FLAG_LOCK),
 }
 
+/** The menu entry for the wallpaper pair (ADR-0014), marked when it opens the Pro sheet. */
+fun pairLabel(pro: Boolean): String = if (pro) "Home and lock, as a pair" else "Home and lock, as a pair · Pro"
+
 object Wallpapers {
-    fun set(context: Context, image: Image8, target: WallpaperTarget) {
+    fun set(context: Context, image: Image8, target: WallpaperTarget) = set(context, image, target.flags)
+
+    /** The pair (ADR-0014): one image on the lock screen, another on the home screen. */
+    fun setPair(context: Context, lock: Image8, home: Image8) {
+        set(context, lock, WallpaperManager.FLAG_LOCK)
+        set(context, home, WallpaperManager.FLAG_SYSTEM)
+    }
+
+    private fun set(context: Context, image: Image8, flags: Int) {
         val bitmap = image.toBitmap()
         try {
-            WallpaperManager.getInstance(context).setBitmap(bitmap, null, true, target.flags)
+            WallpaperManager.getInstance(context).setBitmap(bitmap, null, true, flags)
         } finally {
             bitmap.recycle()
         }

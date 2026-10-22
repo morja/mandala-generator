@@ -12,6 +12,7 @@ import androidx.activity.compose.LocalActivity
 import com.mathis.mandala.app.ProState
 import com.mathis.mandala.app.screenAspect
 import com.mathis.mandala.app.screenSize
+import com.mathis.mandala.app.pairLabel
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.ui.platform.LocalConfiguration
@@ -130,6 +131,11 @@ fun EditorScreen(
     val candidate by vm.candidate.collectAsStateWithLifecycle()
     var showMenu by remember { mutableStateOf(false) }
     var showPro by remember { mutableStateOf(false) }
+    var showPair by remember { mutableStateOf(false) }
+    val pairPreview by vm.pairPreview.collectAsStateWithLifecycle()
+    LaunchedEffect(showPair) { vm.setPairOpen(showPair) }
+    // The wallpaper pair is Pro; without it the entry opens the Pro sheet.
+    val openPair = { if (pro.owned) showPair = true else showPro = true }
     // Kept when Android recreates the screen, which setting a wallpaper does.
     var showSave by rememberSaveable { mutableStateOf(false) }
     val snackbar = remember { SnackbarHostState() }
@@ -198,10 +204,24 @@ fun EditorScreen(
             onWallpaper = { vm.setWallpaper(it) },
             onFill = vm::setFill,
             onFinish = vm::setFinish,
+            onPair = { showSave = false; openPair() },
             hasPointLayers = VectorExport.hasPointLayers(params),
             onLineDrawing = { look -> lineDrawingLook = look; saveLineDrawing.launch(vm.suggestedLineDrawingName(look)) },
             onShowPro = { showPro = true },
             onDismiss = { showSave = false },
+            snackbar = snackbar,
+        )
+    }
+    if (showPair) {
+        PairSheet(
+            preview = pairPreview,
+            screenAspect = Editing.aspect(Editing.SaveFormat.SCREEN, phoneAspect),
+            homeBrightness = saveChoice.homeBrightness,
+            busy = busy,
+            export = export,
+            onHomeBrightness = vm::setHomeBrightness,
+            onSet = vm::setWallpaperPair,
+            onDismiss = { showPair = false },
             snackbar = snackbar,
         )
     }
@@ -224,6 +244,8 @@ fun EditorScreen(
                 onFavourite = closing(vm::addFavorite),
                 onShare = closing(vm::shareImage),
                 onWallpaper = { target -> showMenu = false; vm.closeCandidate(); vm.setWallpaper(target, filled = true) },
+                onPair = { showMenu = false; vm.closeCandidate(); openPair() },
+                pairLabel = pairLabel(pro.owned),
                 onTryNew = vm::tryNew,
                 onUseNew = { showMenu = false; vm.useCandidate() },
                 onBackToMenu = vm::closeCandidate,
@@ -279,7 +301,7 @@ fun EditorScreen(
             )
         },
         snackbarHost = {
-            if (!showFavorites && !showSave) {
+            if (!showFavorites && !showSave && !showPair) {
                 // A running export (from the menu) shows where its message will follow.
                 export?.let { ExportNote(it) } ?: MessageHost(snackbar)
             }

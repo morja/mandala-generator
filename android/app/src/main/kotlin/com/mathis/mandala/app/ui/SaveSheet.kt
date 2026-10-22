@@ -60,6 +60,7 @@ import com.mathis.mandala.app.Fit
 import com.mathis.mandala.app.FramePreviewState
 import com.mathis.mandala.app.SaveChoice
 import com.mathis.mandala.app.WallpaperTarget
+import com.mathis.mandala.app.pairLabel
 import com.mathis.mandala.app.ui.theme.LocalTokens
 import com.mathis.mandala.app.ui.theme.Radius
 import com.mathis.mandala.app.ui.theme.Sizes
@@ -93,6 +94,7 @@ internal fun SaveSheet(
     onWallpaper: (WallpaperTarget) -> Unit,
     onFill: (Boolean) -> Unit,
     onFinish: (Finish) -> Unit,
+    onPair: () -> Unit,
     hasPointLayers: Boolean,
     onLineDrawing: (VectorExport.Look) -> Unit,
     onShowPro: () -> Unit,
@@ -144,7 +146,13 @@ internal fun SaveSheet(
                 Text(if (proOwned) "Save large · $lw × $lh" else "Save large · $lw × $lh · Pro")
             }
             // A wallpaper fills the screen, so it is set in the phone screen format; the frame shows it first.
-            WallpaperButton(enabled = !busy, onOpen = { if (choice.format != SaveFormat.SCREEN) onFormat(SaveFormat.SCREEN) }, onWallpaper = onWallpaper)
+            WallpaperButton(
+                enabled = !busy,
+                pairLabel = pairLabel(proOwned),
+                onOpen = { if (choice.format != SaveFormat.SCREEN) onFormat(SaveFormat.SCREEN) },
+                onWallpaper = onWallpaper,
+                onPair = onPair,
+            )
             LineDrawingButton(proOwned, enabled = !busy, onLineDrawing = onLineDrawing, onShowPro = onShowPro)
             Text(
                 "A line drawing of the layers and the emblem, square, without glow, effects, background and quote." +
@@ -294,7 +302,7 @@ private fun LineDrawingButton(proOwned: Boolean, enabled: Boolean, onLineDrawing
 }
 
 @Composable
-private fun WallpaperButton(enabled: Boolean, onOpen: () -> Unit, onWallpaper: (WallpaperTarget) -> Unit) {
+private fun WallpaperButton(enabled: Boolean, pairLabel: String, onOpen: () -> Unit, onWallpaper: (WallpaperTarget) -> Unit, onPair: () -> Unit) {
     var open by remember { mutableStateOf(false) }
     Box {
         OutlinedButton(onClick = { onOpen(); open = true }, enabled = enabled, modifier = Modifier.fillMaxWidth()) { Text("Set as wallpaper") }
@@ -302,6 +310,7 @@ private fun WallpaperButton(enabled: Boolean, onOpen: () -> Unit, onWallpaper: (
             for (target in WallpaperTarget.entries) {
                 DropdownMenuItem(text = { Text(target.label) }, onClick = { open = false; onWallpaper(target) })
             }
+            DropdownMenuItem(text = { Text(pairLabel) }, onClick = { open = false; onPair() })
         }
     }
 }

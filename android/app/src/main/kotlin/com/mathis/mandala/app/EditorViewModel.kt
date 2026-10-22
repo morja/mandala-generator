@@ -103,6 +103,9 @@ data class FramePreviewState(
  */
 data class ExportProgress(val label: String, val share: Float? = null)
 
+/** The pair sheet's lock and home screen (ADR-0014). */
+data class PairPreview(val lock: ImageBitmap? = null, val home: ImageBitmap? = null, val rendering: Boolean = true)
+
 /** How much a new mandala from the menu changes (DM-7): more dots on its die, more change. */
 enum class NewKind(val label: String) { VARIATION("Variation"), LAYERS("New layers"), EVERYTHING("Everything") }
 
@@ -224,6 +227,10 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         if (pro.state.value.owned) _saveChoice.update { it.copy(finish = finish.clamped()) }
     }
 
+    fun setHomeBrightness(brightness: Double) {
+        if (pro.state.value.owned) _saveChoice.update { it.copy(homeBrightness = brightness.coerceIn(SaveChoice.MIN_HOME_BRIGHTNESS, 1.0)) }
+    }
+
     /** The finish exports get: the chosen one with Pro, none without. */
     private fun effectiveFinish(): Finish = if (pro.state.value.owned) _saveChoice.value.finish else Finish()
 
@@ -328,6 +335,11 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         viewModelScope.launch {
             @OptIn(FlowPreview::class)
             _saveChoice.drop(1).debounce(SAVE_DELAY_MS).collectLatest { c -> withContext(Dispatchers.IO) { runCatching { saveStore.save(c) } } }
+        }
+        viewModelScope.launch {
+            // The pair sheet's preview, only while it is open; the finishes follow the sliders at once.
+            combine(_params, _saveChoice, _screenAspect, _pairOpen) { p, c, a, open -> if (open) Triple(p, c, a) else null }
+                .collectLatest { r -> if (r != null) renderPairPreview(r.first, r.second, r.third) }
         }
         viewModelScope.launch {
             // The save sheet's preview, only while the sheet is open.
@@ -727,6 +739,64 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
     fun suggestedLineDrawingName(look: VectorExport.Look): String =
         Editing.fileName(_params.value).removeSuffix(".png") + (if (look == VectorExport.Look.LINES) "-lines" else "") + ".svg"
 
+    /**
+     * The wallpaper pair (ADR-0014, Pro): the mandala filling the screen, as it is on the lock screen
+     * and darker by `homeBrightness` on the home screen; drawn once, finished twice.
+     */
+    fun setWallpaperPair() {
+        if (!pro.state.value.owned) return
+        val choice = _saveChoice.value
+        val (w, h) = Editing.exportSize(Editing.SaveFormat.SCREEN, _screenAspect.value, large = true)
+        val params = _params.value
+        val framing: suspend () -> Framing = { framingFor(choice.copy(fit = Fit.FILL), params, aspectOf(Editing.SaveFormat.SCREEN), pro = true) }
+        renderFullSize("Creating the wallpapers", w, h, large = true, framing, choice.textFollowsMandala, finish = effectiveFinish()) { image, _ ->
+            exportStep("Setting both wallpapers")
+            val home = withContext(Dispatchers.Default) { Finish(brightness = choice.homeBrightness).apply(image, threads) }
+            withContext(Dispatchers.IO) { Wallpapers.setPair(getApplication(), image, home) }
+            _export.value = null
+            delay(WALLPAPER_MESSAGE_DELAY_MS)
+            message("Home and lock screen set")
+        }
+    }
+
+    /** The pair sheet's two small screens, only while it is open. */
+    private val _pairOpen = MutableStateFlow(false)
+    private val _pairPreview = MutableStateFlow(PairPreview())
+    val pairPreview: StateFlow<PairPreview> = _pairPreview.asStateFlow()
+
+    fun setPairOpen(open: Boolean) {
+        _pairOpen.value = open
+    }
+
+    private suspend fun renderPairPreview(params: MandalaParameters, choice: SaveChoice, screenAspect: Double) {
+        val aspect = Editing.aspect(Editing.SaveFormat.SCREEN, screenAspect)
+        val (w, h) = Editing.size(Editing.SaveFormat.SCREEN, screenAspect, PAIR_PREVIEW_WIDTH)
+        val key = params to w * 10_000 + h
+        _pairPreview.update { it.copy(rendering = true) }
+        try {
+            val drawn = lastPair?.takeIf { it.first == key }?.second ?: withContext(Dispatchers.Default) {
+                val zoom = MandalaRenderer.fillZoom(params, aspect, threads)
+                val job = coroutineContext.job
+                MandalaRenderer.render(
+                    params,
+                    RenderOptions(width = w, height = h, framing = Framing(zoom = zoom), threads = threads, textRenderer = textRenderer, imageLoader = imageLoader, isCancelled = { !job.isActive }),
+                ).image
+            }.also { lastPair = key to it }
+            val (lock, home) = withContext(Dispatchers.Default) {
+                val lock = choice.finish.apply(drawn, threads)
+                lock to Finish(brightness = choice.homeBrightness).apply(lock, threads)
+            }
+            _pairPreview.value = PairPreview(lock.toBitmap().asImageBitmap(), home.toBitmap().asImageBitmap(), rendering = false)
+        } catch (e: RenderCancelledException) {
+            // A newer mandala is already being drawn.
+        } catch (e: OutOfMemoryError) {
+            _pairPreview.update { it.copy(rendering = false) }
+        }
+    }
+
+    /** The last pair preview as drawn, before its finishes. */
+    private var lastPair: Pair<Pair<MandalaParameters, Int>, Image8>? = null
+
     /** Shows `label` while Android works on the drawn image, for which there is no share to show. */
     private fun exportStep(label: String) {
         _export.value = ExportProgress(label)
@@ -890,6 +960,8 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         const val RECENT_FRAMES = 6
         const val WALLPAPER_MESSAGE_DELAY_MS = 1500L
         const val FILL_ZOOMS_KEPT = 8
+        /** Shorter side of each screen in the pair sheet. */
+        const val PAIR_PREVIEW_WIDTH = 240
 
         /** Until the screen reports its own: a common 20:9 phone. */
         const val DEFAULT_SCREEN_ASPECT = 20.0 / 9.0
