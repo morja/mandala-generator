@@ -288,11 +288,13 @@ class AppState: ObservableObject {
             .filter { !$0.isEmpty }.joined(separator: "-"))
     }
 
+    // Dice ranges tuned in TUNE-1 so throws are not blown out: no wash, less painting and brightness,
+    // symmetry from 3, a little calmer from the second layer on, only offered palettes. Same as Android.
     func randomizeLayers() {
         randomizeSeed()
         let allStyles = enabledStyles
         let nLayers = Int.random(in: 1...3)
-        let sharedSymmetry = Int.random(in: 1...8)
+        let sharedSymmetry = Int.random(in: ControlChoices.diceSymmetry)
         var newLayers: [StyleLayer] = []
         var usedStyles = Set<String>()
         var usedPalettes = Set<Int>()
@@ -304,27 +306,28 @@ class AppState: ObservableObject {
                 tries += 1
             }
             usedStyles.insert(s.rawValue)
-            var palIdx = Int.random(in: 0..<ColorPalettes.all.count)
+            var palIdx = ControlChoices.offeredPalettes.randomElement() ?? 0
             tries = 0
             while usedPalettes.contains(palIdx) && tries < 20 {
-                palIdx = Int.random(in: 0..<ColorPalettes.all.count)
+                palIdx = ControlChoices.offeredPalettes.randomElement() ?? 0
                 tries += 1
             }
             usedPalettes.insert(palIdx)
+            let calm = li == 0 ? 1.0 : ControlChoices.upperLayerCalm
             newLayers.append(StyleLayer(
                 style: s,
                 scale: li == 0 ? Double.random(in: 0.75...1.0) : Double.random(in: 0.3...0.75),
                 paletteIndex: palIdx,
                 colorOffset: Double.random(in: 0...1),
-                complexity: Double.random(in: 0.2...1.0),
-                density: Double.random(in: 0.2...1.0),
+                complexity: Double.random(in: 0.2...1.0) * calm,
+                density: Double.random(in: 0.2...1.0) * calm,
                 glowIntensity: Double.random(in: 0.2...0.9),
                 colorDrift: Double.random(in: 0.1...0.9),
                 ripple: Double.random(in: 0.0...0.6),
-                wash: Double.random(in: 0.0...0.5),
-                abstractLevel: Double.random(in: 0.1...0.8),
+                wash: 0.0,   // works like a switch (all of it between 0 and 0.05) and whitens the layer
+                abstractLevel: Double.random(in: 0.1...0.5),
                 saturation: Double.random(in: 0.3...1.0),
-                brightness: Double.random(in: 0.3...0.7),
+                brightness: Double.random(in: 0.3...0.6),
                 symmetry: sharedSymmetry,
                 seed: UInt64.random(in: 1...UInt64.max)
             ))
@@ -338,7 +341,7 @@ class AppState: ObservableObject {
         randomizeLayers()
 
         // ── Background ────────────────────────────────────────────────
-        let bgTypes: [BaseLayerType] = [.color, .gradient, .sunburst, .grain]
+        let bgTypes: [BaseLayerType] = [.color, .gradient, .sunburst]   // Grain is no longer offered (TUNE-1)
         parameters.baseLayer.isEnabled = Bool.random()
         parameters.baseLayer.type      = bgTypes.randomElement() ?? .gradient
         parameters.baseLayer.hue       = Double.random(in: 0...1)
@@ -531,17 +534,18 @@ class AppState: ObservableObject {
         let allStyles = enabledStyles
         parameters.layers[index].style          = allStyles.randomElement() ?? .mixed
         parameters.layers[index].seed           = UInt64.random(in: 1...UInt64.max)
-        parameters.layers[index].paletteIndex   = Int.random(in: 0..<ColorPalettes.all.count)
+        let calm = index == 0 ? 1.0 : ControlChoices.upperLayerCalm
+        parameters.layers[index].paletteIndex   = ControlChoices.offeredPalettes.randomElement() ?? 0
         parameters.layers[index].scale          = index == 0 ? Double.random(in: 0.75...1.0) : Double.random(in: 0.3...0.75)
-        parameters.layers[index].complexity     = Double.random(in: 0.2...1.0)
-        parameters.layers[index].density        = Double.random(in: 0.2...1.0)
+        parameters.layers[index].complexity     = Double.random(in: 0.2...1.0) * calm
+        parameters.layers[index].density        = Double.random(in: 0.2...1.0) * calm
         parameters.layers[index].glowIntensity  = Double.random(in: 0.2...0.9)
         parameters.layers[index].colorDrift     = Double.random(in: 0.1...0.9)
         parameters.layers[index].ripple         = Double.random(in: 0.0...0.6)
-        parameters.layers[index].wash           = Double.random(in: 0.0...0.5)
-        parameters.layers[index].abstractLevel  = Double.random(in: 0.1...0.8)
+        parameters.layers[index].wash           = 0.0
+        parameters.layers[index].abstractLevel  = Double.random(in: 0.1...0.5)
         parameters.layers[index].saturation     = Double.random(in: 0.3...1.0)
-        parameters.layers[index].brightness     = Double.random(in: 0.3...0.7)
+        parameters.layers[index].brightness     = Double.random(in: 0.3...0.6)
     }
 
     func randomizeSeed() {
@@ -624,14 +628,13 @@ class AppState: ObservableObject {
                 let baseParams = self.parameters
                 // Build all param variants up-front — vary seed, palettes, and occasionally style
                 let allStyles = self.enabledStyles
-                let allPaletteCount = ColorPalettes.all.count
                 let variants: [(Int, MandalaParameters)] = (0..<count).map { i in
                     var p = baseParams
                     p.resolvedPalettes = self.allPalettes
                     p.seed = UInt64.random(in: 1...UInt64.max)
                     for li in p.layers.indices {
                         p.layers[li].seed = UInt64.random(in: 1...UInt64.max)
-                        p.layers[li].paletteIndex = Int.random(in: 0..<allPaletteCount)
+                        p.layers[li].paletteIndex = ControlChoices.offeredPalettes.randomElement() ?? 0
                         if i % 3 == 0 {
                             p.layers[li].style = allStyles.randomElement() ?? p.layers[li].style
                         }

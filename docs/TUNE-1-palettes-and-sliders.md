@@ -118,3 +118,20 @@ Proposed order: *Light* Brightness, Contrast, Vignette, Bloom · *Tone* Sepia, F
 3. **Slider ranges** (UI only, values in the JSON unchanged): Brightness, Painted, Complexity, Scale, emblem Size and Weight, text Size, Width, Brightness and Cloud size, Glitter.
 4. **Tidier panels:** effects order with "More", Fade and Wash merged, Density and Ripple hidden per style, brighter background defaults, Grain type hidden.
 5. **New palettes** Silver and Earth, Mac first.
+
+## 10. What was changed — UI
+
+22 October 2026, branch `tune/ui`, both apps; renderers untouched, settings JSON unchanged (same fields, same decoder defaults). The rules live in one place per app: `Editing.kt` (Android) and `ControlChoices.swift` (macOS).
+
+1. **Palettes:** the pickers (layer and emblem) offer the 11 palettes of section 1 in that order; on the Mac the custom palettes follow. A hidden palette in use still shows, as selected, at the end of the built-ins. The dice, "add layer" (three steps on in the offered order instead of `(last + 3) % 18`) and the Mac batch export draw only from the offered ones; the Mac emblem dice also from the custom ones, as before.
+2. **Dice** (Android `Randomize.kt`, Mac `AppState.swift`): Wash 0, Painted 0.1–0.5, Brightness 0.3–0.6, Symmetry 3–8, Complexity and Density × 0.8 from the second layer on; the background dice no longer pick Grain. In 20 paired throws (same random draws, old and new ranges; rendered with the command-line renderer) the throws with more than 10 % near-white pixels went from 9 to 2. Both remaining ones contain Strange Attractor, a dense point cloud that still burns out at brightness 0.6.
+3. **Slider ranges:** layer Brightness 0.15–0.85, Painted 0.25–0.85, Complexity 0.15–1, Scale 0.2–1.2 (Mac was 0–1); emblem Size 0.2–0.9, Weight 0.1–1; text Size 0.03–0.12, Width 0.4–1, Brightness 0–2, Cloud size 0–0.7. A saved value outside a range only puts the knob at the end: the value is shown and kept until that slider is moved. Pinching on Android follows the new layer Scale and emblem Size ranges but never pushes a saved value further out, and moving without zooming leaves it alone. The Mac text dice now stay within Size 0.04–0.12.
+4. **Effects:** Light (Brightness, Contrast, Vignette, Bloom) · Tone (Sepia, Fade) · Texture (Clarity, Grain) · Sparkle (Stars, Glitter, New pattern) · More, folded (Highlights, Dimming, Erasure, Relief, Relief angle, Chromatic). "Fade" sets the effects `wash` field; the old `fade` field gets an "Old fade" slider under More only in settings where it is above 0 (once shown it stays while the panel is open). On the Mac "Local Contrast" is now "Clarity" as on Android.
+5. **Density and Ripple** are hidden for styles that ignore them. Density: Spirograph, Rose Curves, Butterfly, Epitrochoid, Lissajous, Hypocycloid, Geometric, Sunburst, String Art. Ripple: Sacred Geometry, Sunburst, Star Burst, String Art, Strange Attractor, Constellation Web, Deep Nebula, Interference Bloom, Hyperboloid, Torus, Nautilus, Universe, Symbols. Ripple works on more styles than section 3 assumed (all curve styles, clearly on most). Found in the renderer code and checked by `StyleControlsTest`, which renders every style with a low and a high value and fails when the tables and the renderer disagree.
+6. **Background:** switched on, or set to another type, while its colours are still the decoder defaults, it starts at brightness 0.35 and 0.08. The colour brightness sliders go 0–0.6. Grain is offered only while it is the current type.
+
+Tests: `PickersAndRangesTest` (offered palettes and order, hidden palette shown, add-layer palettes, Grain, background start, defaults inside the ranges, pinch keeps saved values), `StyleControlsTest`, and dice ranges in `HistoryAndRandomizeTest`.
+
+![Top: 20 throws with the old dice ranges; bottom: the same throws with the new ranges](images/tune-1/dice-before-after.jpg)
+
+Still open: the renderer fixes of section 9 step 2 (another branch), Glitter's slider (left as it is for the renderer remapping), Silver and Earth palettes, and the Strange Attractor throws above (a style-specific brightness cap in the dice, or normalisation in the renderer).

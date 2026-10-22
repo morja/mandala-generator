@@ -63,7 +63,7 @@ class EditingTest {
         assertEquals(1, index)
         val added = p.layers[1]
         assertEquals(Editing.styles[1], added.style)
-        assertEquals(3, added.paletteIndex)
+        assertEquals(4, added.paletteIndex) // three steps on from Psychedelic in the offered order
         assertEquals(0.65, added.scale, 0.0)
         assertEquals(7uL, added.seed)
     }
@@ -224,7 +224,7 @@ class EditingTest {
         assertEquals(1.0, layer.movedBy(5.0, 0.0).offsetX, 1e-9)
         val emblem = EmblemLayerSettings(size = 0.5, rotation = 170.0).movedBy(-0.1, 0.1, zoom = 0.1, turnDegrees = 20.0)
         assertEquals(-0.1, emblem.offsetX, 1e-9)
-        assertEquals(0.1, emblem.size, 1e-9)
+        assertEquals(0.2, emblem.size, 1e-9) // the Size slider's lower end
         assertEquals(-170.0, emblem.rotation, 1e-9)
     }
 
