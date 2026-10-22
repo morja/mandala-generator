@@ -16,7 +16,6 @@ Status: proposed, 19 October 2026
 | Layer buffer size | macOS always enlarges each layer buffer to the full radius. Kotlin does so only for rotated layers and otherwise adds a margin as wide as the effects reach (ADR-0002). | Light from lines far outside the frame (beyond three sigma of the stronger glow passes) is missing at the outermost pixels. Not measurable in the fixtures. |
 | Effects: grain | CIRandomGenerator is Apple's own; amount and offset match. | `fx-grain`: about 36 dB, same look. |
 | Effects: chromatic | Core Image's two additions leave alpha 3, which its final colour conversion takes into account. Not reproduced (no favourite uses chromatic). | `fx-chromatic`: about 43 dB, slightly darker. |
-| Effects: relief border | The emboss alpha at the outermost pixel row. | `fx-relief`: 38 dB overall, 54 dB inside. |
 | Strange Attractor | Chaotic iteration amplifies the last-bit differences between Apple's and Java's sin/cos. | `style-strange-attractor`: about 19 dB per pixel, same shape and density. |
 | Constellation Web | A few random keep-or-skip decisions sit on a rounding edge. | `style-constellation-web`: about 37 dB, a handful of lines differ. |
 | Deep Nebula | Very large thin ellipses (three times the layer radius) magnify last-bit differences. | `style-deep-nebula`: about 35 dB, same look. |
@@ -31,7 +30,6 @@ Status: proposed, 19 October 2026
 
 These look like accidents in the macOS app but define how its images look, so the port keeps them (measured with Core Image, see `EffectsLayer.kt` and `MeasuredCurves.kt`):
 
-- **Relief turns the image light grey.** CIConvolution3X3 adds its bias of 0.5 to alpha too, so the emboss layer is half transparent and lifts everything towards white. No Mac favourite uses relief.
 - **Clarity darkens.** Its high pass is the sum of two opaque images (alpha 2); the colour matrix then scales half the value and soft light blends with alpha 2.
 - **Effects brightness is added after contrast** (CIColorControls order), not before.
 - **CIVignette and CISepiaTone** have no documented formula; both are tabulated from measurements.

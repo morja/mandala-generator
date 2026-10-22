@@ -321,8 +321,9 @@ internal class EffectsLayer(private val par: Parallel, private val fx: LayerEffe
     }
 
     /**
-     * Directional emboss (3 x 3 convolution plus 0.5, zero outside the canvas) applied with hard light,
-     * for row `r` of `w` (canvas row `top + r` of a canvas `height` rows tall) into `out`.
+     * Directional emboss (3 x 3 convolution of the colour plus 0.5, edge pixels repeated outside the
+     * canvas, alpha 1) applied with hard light, for row `r` of `w` (canvas row `top + r` of a canvas
+     * `height` rows tall) into `out`. Flat areas give 0.5, which hard light leaves unchanged.
      */
     private fun reliefRow(w: FloatImage, r: Int, top: Int, height: Int, angleFraction: Double, relief: Double, out: FloatArray) {
         val angle = angleFraction * PI * 2
@@ -338,31 +339,21 @@ internal class EffectsLayer(private val par: Parallel, private val fx: LayerEffe
         val width = w.width
         val y = top + r
         for (x in 0 until width) {
-            // Core Image convolves premultiplied RGBA and adds the bias to alpha as well, so the
-            // emboss has alpha 0.5 inside and other values (even above 1 or below 0) at the
-            // border. Measured: alpha is used unclamped, the unpremultiplied colour is clamped
-            // to [0, 1] and taken as 0 where alpha is not positive.
-            var a = 0.5f
-            var ki = 0
-            for (ky in -1..1) for (kx in -1..1) {
-                if (y + ky in 0 until height && x + kx in 0 until width) a += k[ki]
-                ki++
-            }
             for (c in 0..2) {
                 var sum = 0.5f
-                ki = 0
+                var ki = 0
                 for (ky in -1..1) {
-                    val yy = y + ky
+                    val yy = (y + ky).coerceIn(0, height - 1)
                     for (kx in -1..1) {
-                        val xx = x + kx
-                        if (yy in 0 until height && xx in 0 until width) sum += k[ki] * w.data[((yy - top) * width + xx) * 3 + c]
+                        val xx = (x + kx).coerceIn(0, width - 1)
+                        sum += k[ki] * w.data[((yy - top) * width + xx) * 3 + c]
                         ki++
                     }
                 }
                 val base = w.data[(r * width + x) * 3 + c]
-                val tp = if (a > 0f) (sum / a).coerceIn(0f, 1f) else 0f
-                val hard = if (tp <= 0.5f) 2f * base * tp else 1f - 2f * (1f - base) * (1f - tp)
-                out[x * 3 + c] = (1f - a) * base + a * hard
+                // Core Image's hard light clamps the emboss to [0, 1] (measured).
+                val tp = sum.coerceIn(0f, 1f)
+                out[x * 3 + c] = if (tp <= 0.5f) 2f * base * tp else 1f - 2f * (1f - base) * (1f - tp)
             }
         }
     }

@@ -1239,6 +1239,9 @@ struct MandalaRenderer {
         // ── 3D Relief — directional emboss via Hard Light blend ──
         // Hard Light: emboss < 0.5 → multiply (shadow/darken), emboss > 0.5 → screen (highlight/brighten)
         // Neutral gray (0.5) = identity → no global brightness shift
+        // The emboss convolves colour only (CIConvolutionRGB3X3 keeps alpha at 1; CIConvolution3X3
+        // added the bias to alpha too, which made the overlay half transparent and turned the whole
+        // image grey) and repeats the edge pixels, so flat areas and the border stay neutral.
         if settings.relief > 0 {
             let angle = CGFloat(settings.reliefAngle * .pi * 2)
             let ca = cos(angle), sa = sin(angle)
@@ -1248,7 +1251,7 @@ struct MandalaRenderer {
                 -ca * r,         0,       ca * r,
                 (-ca + sa) * r,  sa * r, (ca + sa) * r
             ]
-            let emboss = ci.applyingFilter("CIConvolution3X3", parameters: [
+            let emboss = ci.clampedToExtent().applyingFilter("CIConvolutionRGB3X3", parameters: [
                 "inputWeights": CIVector(values: w, count: 9),
                 "inputBias":    CGFloat(0.5)
             ]).cropped(to: ext)
