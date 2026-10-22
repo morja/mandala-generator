@@ -17,3 +17,4 @@ ADR-0001 to ADR-0008 were written for the Android repository before both apps mo
 | [0009](0009-one-public-repository.md) | One public repository for both apps | accepted |
 | [0010](0010-export-formats-and-framing.md) | Export formats and framing: portrait images with the mandala placed by hand | accepted |
 | [0011](0011-layer-positions.md) | Layer positions: each layer and the emblem placed on their own | accepted |
+| [0012](0012-app-name-dahlia.md) | App name: Dahlia – Mandala Maker | accepted |

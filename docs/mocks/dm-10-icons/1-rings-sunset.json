@@ -1,0 +1,79 @@
+{
+ "layers": [
+  {
+   "isEnabled": true,
+   "style": "floral",
+   "scale": 0.84,
+   "paletteIndex": 4,
+   "colorOffset": 0.0,
+   "complexity": 0.5,
+   "density": 0.8,
+   "glowIntensity": 0.7,
+   "colorDrift": 0.4,
+   "ripple": 0.0,
+   "wash": 0.0,
+   "abstractLevel": 0.0,
+   "saturation": 0.85,
+   "brightness": 0.6,
+   "rotation": 0.0,
+   "opacity": 1.0,
+   "blendMode": "screen",
+   "symmetry": 12,
+   "seed": 77
+  },
+  {
+   "isEnabled": true,
+   "style": "floral",
+   "scale": 0.5,
+   "paletteIndex": 17,
+   "colorOffset": 0.0,
+   "complexity": 0.5,
+   "density": 0.6,
+   "glowIntensity": 0.7,
+   "colorDrift": 0.4,
+   "ripple": 0.0,
+   "wash": 0.0,
+   "abstractLevel": 0.0,
+   "saturation": 0.85,
+   "brightness": 0.6,
+   "rotation": 0.26,
+   "opacity": 1.0,
+   "blendMode": "screen",
+   "symmetry": 12,
+   "seed": 78
+  },
+  {
+   "isEnabled": true,
+   "style": "phyllotaxis",
+   "scale": 0.18,
+   "paletteIndex": 17,
+   "colorOffset": 0.0,
+   "complexity": 0.6,
+   "density": 0.9,
+   "glowIntensity": 0.7,
+   "colorDrift": 0.4,
+   "ripple": 0.0,
+   "wash": 0.0,
+   "abstractLevel": 0.0,
+   "saturation": 0.85,
+   "brightness": 0.6,
+   "rotation": 0.0,
+   "opacity": 1.0,
+   "blendMode": "screen",
+   "symmetry": 1,
+   "seed": 79
+  }
+ ],
+ "baseLayer": {
+  "isEnabled": false
+ },
+ "effectsLayer": {
+  "isEnabled": true,
+  "bloom": 0.3,
+  "vignette": 0.2,
+  "brightness": 0.5,
+  "contrast": 0.55
+ },
+ "seed": 1000,
+ "outputSize": 512
+}
