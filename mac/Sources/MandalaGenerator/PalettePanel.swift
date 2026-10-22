@@ -155,7 +155,7 @@ struct PalettePanel: View {
 
     private func addLayer() {
         let nextStyle = appState.addLayerStyle()
-        let nextPalette = (appState.parameters.layers.last.map { ($0.paletteIndex + 3) % ColorPalettes.all.count }) ?? 0
+        let nextPalette = ControlChoices.nextPalette(after: appState.parameters.layers.last?.paletteIndex)
         appState.parameters.layers.append(StyleLayer(
             style: nextStyle,
             scale: 0.65,
@@ -324,8 +324,9 @@ private struct LayerCard: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
 
                     LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 3), spacing: 4) {
-                        ForEach(Array(appState.allPalettes.enumerated()), id: \.offset) { idx, pal in
-                            PaletteSwatch(palette: pal, isSelected: layer.paletteIndex == idx)
+                        // Offered palettes (TUNE-1), a hidden one in use, then the custom ones.
+                        ForEach(appState.paletteChoices(including: layer.paletteIndex), id: \.self) { idx in
+                            PaletteSwatch(palette: appState.allPalettes[idx], isSelected: layer.paletteIndex == idx)
                                 .onTapGesture { layer.paletteIndex = idx }
                                 .overlay(
                                     Group {
@@ -403,22 +404,27 @@ private struct LayerCard: View {
                     Divider()
 
                     // Sliders
-                    CardSlider(label: "Scale",       value: $layer.scale,        range: 0...1,     color: .blue, reset: defaults.scale)
-                    CardSlider(label: "Complexity",  value: $layer.complexity,   range: 0...1,     color: .indigo, reset: defaults.complexity)
-                    CardSlider(label: "Density",     value: $layer.density,      range: 0...1,     color: .blue, reset: defaults.density)
+                    // Ranges from TUNE-1; a saved value outside one stays until its slider is moved.
+                    CardSlider(label: "Scale",       value: $layer.scale,        range: 0.2...1.2, color: .blue, reset: defaults.scale)
+                    CardSlider(label: "Complexity",  value: $layer.complexity,   range: 0.15...1,  color: .indigo, reset: defaults.complexity)
+                    if layer.style.usesDensity {
+                        CardSlider(label: "Density", value: $layer.density,      range: 0...1,     color: .blue, reset: defaults.density)
+                    }
                     if layer.style == .radialMesh {
                         CardSlider(label: "Spokes",  value: $layer.spokes,       range: 0...1,     color: .blue, reset: defaults.spokes)
                     }
                     CardSlider(label: "Glow",        value: $layer.glowIntensity,range: 0...1,     color: .yellow, reset: defaults.glowIntensity)
                     CardSlider(label: "Color Drift", value: $layer.colorDrift,   range: 0...1,     color: .purple, reset: defaults.colorDrift)
-                    CardSlider(label: "Ripple",      value: $layer.ripple,       range: 0...1,     color: .cyan, reset: defaults.ripple)
+                    if layer.style.usesRipple {
+                        CardSlider(label: "Ripple",  value: $layer.ripple,       range: 0...1,     color: .cyan, reset: defaults.ripple)
+                    }
                     CardSlider(label: "Wash",        value: $layer.wash,         range: 0...1,     color: .teal, reset: defaults.wash)
 
                     Divider()
 
-                    CardSlider(label: "Abstract",    value: $layer.abstractLevel,range: 0...1,     color: .purple, reset: defaults.abstractLevel)
+                    CardSlider(label: "Abstract",    value: $layer.abstractLevel,range: 0.25...0.85, color: .purple, reset: defaults.abstractLevel)
                     CardSlider(label: "Saturation",  value: $layer.saturation,   range: 0...1,     color: .pink, reset: defaults.saturation)
-                    CardSlider(label: "Brightness",  value: $layer.brightness,   range: 0...1,     color: .yellow, reset: defaults.brightness)
+                    CardSlider(label: "Brightness",  value: $layer.brightness,   range: 0.15...0.85, color: .yellow, reset: defaults.brightness)
                     CardSlider(label: "Rotation",    value: $layer.rotation,     range: 0...1,     color: .mint, reset: defaults.rotation)
                     CardSlider(label: "Position X",  value: $layer.offsetX,      range: -1...1,    color: .mint, reset: defaults.offsetX)
                     CardSlider(label: "Position Y",  value: $layer.offsetY,      range: -1...1,    color: .mint, reset: defaults.offsetY)
