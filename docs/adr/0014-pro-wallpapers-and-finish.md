@@ -1,6 +1,6 @@
 # ADR-0014 · Pro wallpapers and a finishing step
 
-Status: accepted, 22 October 2026 (Mathis, [PLAN-3](../PLAN-3-pro-wallpapers.md) as recommended; price unchanged).
+Status: accepted, 22 October 2026 (Mathis, [PLAN-3](../PLAN-3-pro-wallpapers.md) as recommended; price unchanged). Point 1 is replaced by ADR-0016 (22 October 2026).
 
 ## Decision
 

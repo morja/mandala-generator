@@ -15,6 +15,8 @@ Format: `- **What** · What for and why · Alternative without approval · Recom
 
 ## Approved
 
+22 October 2026 (Mathis, PLAN-5 question by question): ADR-0016, one line between free and Pro for Android and iPhone (two layers, effects free, emblems, text and positions Pro, five favourites, try freely and keep with Pro), 2.99 € on both; Android 1.4 is the first public version.
+
 22 October 2026 (Mathis, PLAN-3): ADR-0014, more for Pro (finish, wallpaper pair, daily and live wallpaper); the permission `RECEIVE_BOOT_COMPLETED` and a `WallpaperService` with `BIND_WALLPAPER` in the manifest.
 
 22 October 2026 (Mathis, after seeing a hard edge on his lock screen): "Show whole" and "Fill" free in every format, wallpapers from the menu filled, Fill zoom measured per mandala (ADR-0010, points 4 and 10); layer buffers as large as each style reaches (ADR-0010).
