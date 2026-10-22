@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DM-5 Menu</title>
+<style>
+  :root {
+    --background: #0A0908; --surface: #121110; --surface-raised: #1B1917; --text: #E6E1DB;
+    --text-muted: #9C948B; --outline: #2E2A26; --accent: #D9A15C; --on-accent: #241605;
+    --accent-soft: #2A2117; --canvas: #000000; --scrim: rgba(0, 0, 0, .55);
+    --xs: 4px; --sm: 8px; --md: 12px; --lg: 16px; --xl: 24px; --r-sm: 8px; --r-md: 12px; --r-lg: 20px;
+    --ease: cubic-bezier(.2, .7, .2, 1);
+    --viewer-bg: #3a3632; --viewer-text: #f0ebe4; --viewer-line: #6b645c;
+  }
+  :root[data-theme="light"] {
+    --background: #F7F4EF; --surface: #FFFDFA; --surface-raised: #EFEAE3; --text: #221F1C;
+    --text-muted: #5F5851; --outline: #CFC7BD; --accent: #8A5210; --on-accent: #FFFFFF; --accent-soft: #F3E3CF;
+    --scrim: rgba(34, 31, 28, .35);
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--viewer-bg); font: 15px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color: var(--text); }
+  .viewer { max-width: 1100px; margin: 0 auto; padding: var(--lg); }
+  .switcher { display: flex; flex-wrap: wrap; gap: var(--sm); align-items: center; margin-bottom: var(--lg); color: var(--viewer-text); }
+  .switcher button { font: inherit; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--viewer-line); background: transparent; color: inherit; cursor: pointer; }
+  .switcher button.on { background: var(--viewer-text); color: #221F1C; border-color: var(--viewer-text); }
+  .switcher .gap { width: var(--lg); }
+  .note { color: var(--viewer-text); max-width: 720px; margin: 0 0 var(--lg); }
+  .caption { color: var(--viewer-text); font-size: 13px; margin-top: var(--sm); }
+
+  /* Phone */
+  .phone { width: min(375px, 100%); height: 780px; border-radius: 28px; overflow: hidden; background: var(--background); position: relative;
+           display: flex; flex-direction: column; border: 8px solid #1d1b19; }
+  .topbar { height: 52px; display: flex; align-items: center; padding: 0 var(--xs); gap: 2px; flex: none; }
+  .icon { width: 40px; height: 40px; display: grid; place-items: center; color: var(--text); border-radius: 50%; }
+  .icon svg { width: 22px; height: 22px; }
+  .icon.accent { color: var(--accent); }
+  .icon.more { cursor: pointer; }
+  .icon.more.open { background: var(--surface-raised); }
+  .spacer { flex: 1; }
+  .canvas { margin: 0 var(--lg); aspect-ratio: 1; border-radius: var(--r-md); background: var(--canvas); overflow: hidden; flex: none; }
+  .canvas img { width: 100%; height: 100%; display: block; }
+  .tabs { display: flex; flex: none; border-bottom: 1px solid var(--outline); margin: var(--sm) var(--lg) 0; }
+  .tabs div { flex: 1; text-align: center; padding: var(--md) 0; font-weight: 600; font-size: 14px; color: var(--text); }
+  .tabs div.on { color: var(--accent); box-shadow: inset 0 -3px 0 var(--accent); }
+  .controls { flex: 1; overflow: hidden; padding: var(--xs) var(--lg); }
+  .layer { display: flex; align-items: center; gap: var(--md); padding: var(--sm) var(--md); border-radius: var(--r-sm); background: var(--accent-soft); margin-top: var(--sm); }
+  .swatch { width: 24px; height: 24px; border-radius: 50%; background: conic-gradient(#ff5ea8, #ffb04f, #7cf0a0, #59a8ff, #c27bff, #ff5ea8); flex: none; }
+  .layer div:last-child { color: var(--text-muted); font-size: 13px; }
+  .group { border-bottom: 1px solid var(--outline); padding: var(--md) 0; font-weight: 600; }
+
+  /* Common menu parts */
+  .scrim { position: absolute; inset: 0; background: var(--scrim); opacity: 0; pointer-events: none; transition: opacity .2s; }
+  .open-menu .scrim { opacity: 1; pointer-events: auto; }
+  .ico { width: 22px; height: 22px; flex: none; }
+  .switch { width: 40px; height: 24px; border-radius: 12px; background: var(--surface-raised); border: 1px solid var(--outline); position: relative; flex: none; transition: background .15s; }
+  .switch::after { content: ""; position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; border-radius: 50%; background: var(--text-muted); transition: left .15s, background .15s; }
+  .switch.on { background: var(--accent); border-color: var(--accent); }
+  .switch.on::after { left: 19px; background: var(--on-accent); }
+
+  /* A: dropdown with icons */
+  .dropdown { position: absolute; top: 52px; right: var(--sm); width: 248px; background: var(--surface-raised); border-radius: var(--r-md);
+              padding: var(--xs) 0; border: 1px solid var(--outline); transform-origin: top right; transform: scale(.96); opacity: 0;
+              pointer-events: none; transition: opacity .15s, transform .15s var(--ease); }
+  .open-menu .dropdown { opacity: 1; transform: none; pointer-events: auto; }
+  .dropdown .item { display: flex; align-items: center; gap: var(--md); padding: 11px var(--lg); cursor: pointer; }
+  .dropdown .item .ico { color: var(--text-muted); }
+  .dropdown .item span { flex: 1; }
+  .dropdown .sep { height: 1px; background: var(--outline); margin: var(--xs) 0; }
+  .dropdown .item:active { background: var(--accent-soft); }
+
+  /* B and C: bottom sheet */
+  .sheet { position: absolute; left: 0; right: 0; bottom: 0; background: var(--surface); border-radius: var(--r-lg) var(--r-lg) 0 0;
+           padding: var(--sm) var(--lg) var(--xl); transform: translateY(100%); transition: transform .28s var(--ease); }
+  .open-menu .sheet { transform: none; }
+  .sheet .grip { width: 36px; height: 4px; border-radius: 2px; background: var(--outline); margin: 0 auto var(--md); }
+  .tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--sm); }
+  .tile { background: var(--surface-raised); border-radius: var(--r-md); padding: var(--md) var(--sm); display: flex; flex-direction: column;
+          align-items: center; gap: var(--sm); text-align: center; font-size: 13px; cursor: pointer; min-height: 84px; justify-content: center; }
+  .tile .ico { color: var(--accent); width: 26px; height: 26px; }
+  .tile:active { background: var(--accent-soft); }
+  .rows { margin-top: var(--md); border-top: 1px solid var(--outline); }
+  .rows .row { display: flex; align-items: center; gap: var(--md); padding: var(--md) 0; border-bottom: 1px solid var(--outline); cursor: pointer; }
+  .rows .row .ico { color: var(--text-muted); }
+  .rows .row .txt { flex: 1; }
+  .rows .row .txt small { display: block; color: var(--text-muted); font-size: 12px; }
+  .rows .row:last-child { border-bottom: 0; }
+  .chev { color: var(--text-muted); width: 18px; height: 18px; }
+
+  /* C: the sheet opens on the mandala itself */
+  .current { display: flex; gap: var(--md); align-items: center; margin-bottom: var(--md); }
+  .current img { width: 56px; height: 56px; border-radius: var(--r-sm); flex: none; }
+  .current .name { font-weight: 600; }
+  .current .meta { color: var(--text-muted); font-size: 13px; }
+  .actions { display: flex; gap: var(--sm); }
+  .actions .pill { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: var(--md) 0; border-radius: var(--r-md);
+                   background: var(--surface-raised); font-size: 12px; cursor: pointer; }
+  .actions .pill .ico { color: var(--accent); }
+  .actions .pill.main { background: var(--accent); color: var(--on-accent); }
+  .actions .pill.main .ico { color: var(--on-accent); }
+  .seg { display: flex; background: var(--surface-raised); border-radius: 999px; padding: 3px; flex: none; }
+  .seg span { padding: 4px 10px; border-radius: 999px; font-size: 13px; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; gap: 4px; }
+  .seg span.on { background: var(--surface); color: var(--text); }
+  .seg svg { width: 14px; height: 14px; }
+</style>
+</head>
+<body>
+<div class="viewer">
+  <div class="switcher">
+    <button data-v="A" class="on">A · Menu with icons</button>
+    <button data-v="B">B · Sheet with tiles</button>
+    <button data-v="C">C · Sheet about this mandala</button>
+    <span class="gap"></span>
+    <button data-t="dark" class="on">Dark</button>
+    <button data-t="light">Light</button>
+  </div>
+  <p class="note" id="note"></p>
+  <div class="phone" id="phone"></div>
+  <p class="caption">Tap the three dots to open and close the menu; the switches react too.</p>
+</div>
+
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <symbol id="i-variation" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/><circle cx="12" cy="12" r="2.5"/></symbol>
+    <symbol id="i-layers" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m12 4 8 4-8 4-8-4 8-4z"/><path d="m4 12 8 4 8-4"/><path d="m4 16 8 4 8-4"/></symbol>
+    <symbol id="i-share" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5.5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="18.5" r="2.5"/><path d="m8.2 10.8 7.6-4.1M8.2 13.2l7.6 4.1"/></symbol>
+    <symbol id="i-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 7.5V18a1.5 1.5 0 0 0 1.5 1.5h14a1.5 1.5 0 0 0 1.5-1.5V9.5A1.5 1.5 0 0 0 19 8h-7l-2-2.5H5A1.5 1.5 0 0 0 3.5 7z"/></symbol>
+    <symbol id="i-save" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3.5H7A1.5 1.5 0 0 0 5.5 5v14A1.5 1.5 0 0 0 7 20.5h10a1.5 1.5 0 0 0 1.5-1.5V8z"/><path d="M14 3.5V8h4.5"/><path d="M12 11v6m-2.5-2.5L12 17l2.5-2.5"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19.5 14.5A8 8 0 0 1 9.5 4.5a8 8 0 1 0 10 10z"/></symbol>
+    <symbol id="i-fast" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 3 5 13.5h6L10 21l8-10.5h-6z"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 11v5.5"/><circle cx="12" cy="7.8" r=".6" fill="currentColor"/></symbol>
+    <symbol id="i-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></symbol>
+    <symbol id="i-star" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="m12 3.5 2.6 5.3 5.8.8-4.2 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8-4.2-4.1 5.8-.8z"/></symbol>
+  </defs>
+</svg>
+
+<template id="base">
+  <div class="topbar">
+    <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 14 4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg></div>
+    <div class="icon" style="opacity:.4"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 14 5-5-5-5"/><path d="M20 9H10a6 6 0 0 0 0 12h3"/></svg></div>
+    <div class="spacer"></div>
+    <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="9" cy="9" r="1" fill="currentColor"/><circle cx="15" cy="15" r="1" fill="currentColor"/></svg></div>
+    <div class="icon accent"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 4v11m-5-5 5 5 5-5M5 20h14"/></svg></div>
+    <div class="icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/></svg></div>
+    <div class="icon more" id="more" role="button" aria-label="More"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg></div>
+  </div>
+  <div class="canvas"><img src="dm-4-mandala.png" alt="Mandala preview"></div>
+  <div class="tabs"><div class="on">Layers</div><div>Scene</div><div>Emblem</div><div>Text</div><div>Draw</div></div>
+  <div class="controls">
+    <div class="layer"><div class="swatch"></div><div><div>1 · Floral</div><div>Screen · 100 %</div></div></div>
+    <div class="group">Style</div>
+    <div class="group">Palette</div>
+  </div>
+  <div class="scrim" id="scrim"></div>
+</template>
+
+<template id="menu-A">
+  <div class="dropdown">
+    <div class="item"><svg class="ico"><use href="#i-variation"/></svg><span>New variation</span></div>
+    <div class="item"><svg class="ico"><use href="#i-layers"/></svg><span>New layers</span></div>
+    <div class="sep"></div>
+    <div class="item"><svg class="ico"><use href="#i-share"/></svg><span>Share image</span></div>
+    <div class="item"><svg class="ico"><use href="#i-open"/></svg><span>Open file…</span></div>
+    <div class="item"><svg class="ico"><use href="#i-save"/></svg><span>Save settings…</span></div>
+    <div class="sep"></div>
+    <div class="item" data-toggle="light"><svg class="ico"><use href="#i-sun"/></svg><span>Light theme</span><i class="switch"></i></div>
+    <div class="item" data-toggle="fast"><svg class="ico"><use href="#i-fast"/></svg><span>Fast preview</span><i class="switch on"></i></div>
+    <div class="sep"></div>
+    <div class="item"><svg class="ico"><use href="#i-info"/></svg><span>About</span></div>
+  </div>
+</template>
+
+<template id="menu-B">
+  <div class="sheet">
+    <div class="grip"></div>
+    <div class="tiles">
+      <div class="tile"><svg class="ico"><use href="#i-variation"/></svg>New variation</div>
+      <div class="tile"><svg class="ico"><use href="#i-layers"/></svg>New layers</div>
+      <div class="tile"><svg class="ico"><use href="#i-share"/></svg>Share image</div>
+      <div class="tile"><svg class="ico"><use href="#i-open"/></svg>Open file</div>
+      <div class="tile"><svg class="ico"><use href="#i-save"/></svg>Save settings</div>
+      <div class="tile"><svg class="ico"><use href="#i-info"/></svg>About</div>
+    </div>
+    <div class="rows">
+      <div class="row" data-toggle="light"><svg class="ico"><use href="#i-sun"/></svg><div class="txt">Light theme</div><i class="switch"></i></div>
+      <div class="row" data-toggle="fast"><svg class="ico"><use href="#i-fast"/></svg><div class="txt">Fast preview<small>Saved images always get the full glow</small></div><i class="switch on"></i></div>
+    </div>
+  </div>
+</template>
+
+<template id="menu-C">
+  <div class="sheet">
+    <div class="grip"></div>
+    <div class="current">
+      <img src="dm-4-mandala.png" alt="">
+      <div style="flex:1"><div class="name">Floral, Wave, Moiré</div><div class="meta">4 layers · emblem off</div></div>
+    </div>
+    <div class="actions">
+      <div class="pill main"><svg class="ico"><use href="#i-variation"/></svg>Variation</div>
+      <div class="pill"><svg class="ico"><use href="#i-layers"/></svg>New layers</div>
+      <div class="pill"><svg class="ico"><use href="#i-share"/></svg>Share</div>
+      <div class="pill"><svg class="ico"><use href="#i-star"/></svg>Favourite</div>
+    </div>
+    <div class="rows">
+      <div class="row"><svg class="ico"><use href="#i-open"/></svg><div class="txt">Open file</div><svg class="chev"><use href="#i-chev"/></svg></div>
+      <div class="row"><svg class="ico"><use href="#i-save"/></svg><div class="txt">Save settings</div><svg class="chev"><use href="#i-chev"/></svg></div>
+      <div class="row" data-toggle="fast"><svg class="ico"><use href="#i-fast"/></svg><div class="txt">Fast preview<small>Saved images always get the full glow</small></div><i class="switch on"></i></div>
+      <div class="row"><svg class="ico"><use href="#i-moon"/></svg><div class="txt">Theme</div>
+        <div class="seg" id="seg"><span data-seg="dark" class="on"><svg><use href="#i-moon"/></svg>Dark</span><span data-seg="light"><svg><use href="#i-sun"/></svg>Light</span></div></div>
+      <div class="row"><svg class="ico"><use href="#i-info"/></svg><div class="txt">About</div><svg class="chev"><use href="#i-chev"/></svg></div>
+    </div>
+  </div>
+</template>
+
+<script>
+  const notes = {
+    A: "A keeps today's menu at the top right and adds a line icon to every entry. Light theme and Fast preview become switches instead of checkboxes. Separators group creating, files, settings and About.",
+    B: "B opens a sheet from the bottom, where the thumb is. The six actions are large tiles in two rows, and the two settings sit below as switch rows with a short explanation.",
+    C: "C is a sheet about the mandala on screen: its thumbnail and layers at the top, four quick actions (with Favourite added), then files and settings as a list. The theme becomes a Dark and Light choice.",
+  };
+  const phone = document.getElementById('phone');
+  let variant = 'A';
+  let state = { light: false, fast: true };
+
+  function render() {
+    phone.innerHTML = document.getElementById('base').innerHTML + document.getElementById('menu-' + variant).innerHTML;
+    document.getElementById('note').textContent = notes[variant];
+    const more = document.getElementById('more');
+    const toggle = open => { phone.classList.toggle('open-menu', open); more.classList.toggle('open', open); };
+    more.onclick = () => toggle(!phone.classList.contains('open-menu'));
+    document.getElementById('scrim').onclick = () => toggle(false);
+    phone.querySelectorAll('[data-toggle]').forEach(el => {
+      const key = el.dataset.toggle;
+      const sw = el.querySelector('.switch');
+      sw.classList.toggle('on', state[key]);
+      el.onclick = () => { state[key] = !state[key]; sw.classList.toggle('on', state[key]); if (key === 'light') setTheme(state.light ? 'light' : 'dark'); };
+    });
+    phone.querySelectorAll('[data-seg]').forEach(el => {
+      el.classList.toggle('on', (el.dataset.seg === 'light') === state.light);
+      el.onclick = () => { state.light = el.dataset.seg === 'light'; setTheme(el.dataset.seg); render(); toggle(true); };
+    });
+  }
+
+  function setTheme(t) {
+    state.light = t === 'light';
+    document.documentElement.dataset.theme = t;
+    document.querySelectorAll('[data-t]').forEach(b => b.classList.toggle('on', b.dataset.t === t));
+  }
+
+  document.querySelectorAll('[data-v]').forEach(b => b.onclick = () => {
+    variant = b.dataset.v;
+    document.querySelectorAll('[data-v]').forEach(x => x.classList.toggle('on', x === b));
+    render();
+    phone.classList.add('open-menu');
+    document.getElementById('more').classList.add('open');
+  });
+  document.querySelectorAll('[data-t]').forEach(b => b.onclick = () => { setTheme(b.dataset.t); render(); });
+
+  render();
+  phone.classList.add('open-menu');
+  document.getElementById('more').classList.add('open');
+</script>
+</body>
+</html>
