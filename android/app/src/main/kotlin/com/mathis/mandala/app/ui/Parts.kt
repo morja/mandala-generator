@@ -25,6 +25,7 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
@@ -75,10 +76,12 @@ internal fun Group(
     initiallyOpen: Boolean = false,
     nested: Boolean = false,
     trailing: (@Composable () -> Unit)? = null,
+    /** Whether the group is open; passed in when the caller lays out other parts by it. */
+    openState: MutableState<Boolean> = rememberSaveable { mutableStateOf(initiallyOpen) },
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val t = LocalTokens.current
-    var open by rememberSaveable { mutableStateOf(initiallyOpen) }
+    var open by openState
     Column(Modifier.fillMaxWidth()) {
         Row(
             Modifier
