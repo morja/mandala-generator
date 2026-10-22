@@ -411,6 +411,25 @@ enum EmblemFrame: String, CaseIterable, Identifiable, Codable {
     }
 }
 
+/// How the emblem's glow looks: the original soft coloured shadow (dark with Normal) or light
+/// screened around the shape (TUNE-1). Saved settings without the field keep the shadow.
+enum EmblemGlowMode: String, Codable, CaseIterable, Identifiable {
+    case light, shadow
+    var id: String { rawValue }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        let raw = (try? container.decode(String.self)) ?? ""
+        self = EmblemGlowMode(rawValue: raw) ?? .shadow
+    }
+    var displayName: String {
+        switch self {
+        case .light:  return "Light"
+        case .shadow: return "Shadow"
+        }
+    }
+}
+
 struct EmblemLayerSettings: Equatable, Codable {
     var isEnabled: Bool             = false
     var motif: EmblemMotif          = .om
@@ -422,6 +441,7 @@ struct EmblemLayerSettings: Equatable, Codable {
     var colorPosition: Double       = 0.2    // where on the palette the centre colour sits (0–1)
     var colorSpread: Double         = 0.3    // how far the colour moves along the palette towards the edge (0–1)
     var glow: Double                = 0.5
+    var glowMode: EmblemGlowMode    = .shadow   // missing in saved settings = the original look; new emblems start with .light
     var opacity: Double             = 1.0
     var blendMode: LayerBlendMode   = .normal   // stays visible on bright mandalas, where Screen cannot brighten white
     // Tree of Life
@@ -440,7 +460,7 @@ struct EmblemLayerSettings: Equatable, Codable {
     enum CodingKeys: String, CodingKey {
         case isEnabled, motif, rendering, frame, size, weight, paletteIndex, colorPosition, colorSpread
         case glow, opacity, blendMode, seed, branching, roots, organic, flowerVariant, petals, rotation
-        case offsetX, offsetY
+        case offsetX, offsetY, glowMode
     }
 
     init() {}
@@ -457,6 +477,7 @@ struct EmblemLayerSettings: Equatable, Codable {
         colorPosition = c.decodeSafe(Double.self,          forKey: .colorPosition, default: 0.2)
         colorSpread   = c.decodeSafe(Double.self,          forKey: .colorSpread,   default: 0.3)
         glow          = c.decodeSafe(Double.self,          forKey: .glow,          default: 0.5)
+        glowMode      = c.decodeSafe(EmblemGlowMode.self,  forKey: .glowMode,      default: .shadow)
         opacity       = c.decodeSafe(Double.self,          forKey: .opacity,       default: 1.0)
         blendMode     = c.decodeSafe(LayerBlendMode.self,  forKey: .blendMode,     default: .normal)
         seed          = c.decodeSafe(UInt64.self,          forKey: .seed,          default: 1)

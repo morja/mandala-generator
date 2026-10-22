@@ -79,6 +79,8 @@ internal class EffectsLayer(private val par: Parallel, private val fx: LayerEffe
         val reliefReach = if (s.relief > 0) 1 else 0
         val core = max(PixelBuffer.STRIP_ROWS, 2 * contrastReach)
         val adjust = s.brightness != 0.5 || s.contrast != 0.5
+        // Grain cells grow with the image above 1024 px, so large exports keep the preview's grain.
+        val grainSize = max(1.0, min(width, height) / 1024.0)
         val bright = ((s.brightness - 0.5) * 0.6).toFloat()
         val contrast = (0.5 + s.contrast * 1.5).toFloat()
 
@@ -112,7 +114,7 @@ internal class EffectsLayer(private val par: Parallel, private val fx: LayerEffe
             w = if (contrastReach > 0) localContrast(w, top - lo, bottom - lo, s.localContrast.toFloat()) else w.rows(top - lo, bottom - lo)
             par.forRange(bottom - top) { from, until ->
                 for (r in from until until) {
-                    if (s.grain > 0.001) grainRow(w, r, top + r, s.grain)
+                    if (s.grain > 0.001) grainRow(w, r, top + r, s.grain, grainSize)
                     if (adjust) for (i in r * n until (r + 1) * n) w.data[i] = (w.data[i] - 0.5f) * contrast + 0.5f + bright
                 }
             }
@@ -154,7 +156,8 @@ internal class EffectsLayer(private val par: Parallel, private val fx: LayerEffe
         private val channels = ThreadLocal.withInitial { Array(2) { FloatArray(width) } }
 
         fun apply(row: FloatArray, y: Int) {
-            if (s.vignette > 0) vignette(row, y, s.vignette * 2.5, 0.4 + s.vignette * 0.6)
+            // Above 1 (slider up to 2) the radius stays at 1 and only the intensity keeps growing.
+            if (s.vignette > 0) vignette(row, y, s.vignette * 2.5, min(1.0, 0.4 + s.vignette * 0.6))
             for (spot in spots) radial(row, y, spot)
             if (s.chromatic > 0) chromatic(row)
             if (s.wash > 0.001 || s.sepia > 0.001 || s.fade > 0.001) colourSteps(row)
@@ -233,7 +236,7 @@ internal class EffectsLayer(private val par: Parallel, private val fx: LayerEffe
             }
         }
 
-        /** Red moves left, blue right by `shift` pixels (bilinear, zero outside). */
+        /** Red moves left, blue right by `shift` pixels (bilinear, edge pixels repeated outside). */
         private fun chromatic(row: FloatArray) {
             val (r, b) = channels.get()
             for (x in 0 until width) { r[x] = row[x * 3]; b[x] = row[x * 3 + 2] }
@@ -273,8 +276,8 @@ internal class EffectsLayer(private val par: Parallel, private val fx: LayerEffe
     private fun sample(line: FloatArray, pos: Double): Float {
         val i = floor(pos).toInt()
         val f = (pos - i).toFloat()
-        val a = if (i in line.indices) line[i] else 0f
-        val b = if (i + 1 in line.indices) line[i + 1] else 0f
+        val a = line[i.coerceIn(0, line.size - 1)]
+        val b = line[(i + 1).coerceIn(0, line.size - 1)]
         return a + (b - a) * f
     }
 
@@ -308,21 +311,43 @@ internal class EffectsLayer(private val par: Parallel, private val fx: LayerEffe
         return a + (2f * b - 1f) * (dA - a)
     }
 
-    /** Film grain on row `r` of `w`, which is canvas row `y`. Core Image's random pattern is Apple's own; amount and offset match. */
-    private fun grainRow(w: FloatImage, r: Int, y: Int, grain: Double) {
+    /**
+     * Film grain on row `r` of `w`, which is canvas row `y`, in cells of `size` pixels (bilinear between
+     * cells above 1). Core Image's random pattern is Apple's own; amount, offset and cell size match.
+     */
+    private fun grainRow(w: FloatImage, r: Int, y: Int, grain: Double, size: Double) {
         val amount = (grain * 0.28).toFloat()
         val bias = (-grain * 0.14).toFloat()
+        if (size <= 1.0) {
+            for (x in 0 until w.width) {
+                val o = (r * w.width + x) * 3
+                w.data[o] += Filters.hash01(x, y, 101).toFloat() * amount + bias
+                w.data[o + 1] += Filters.hash01(x, y, 102).toFloat() * amount + bias
+                w.data[o + 2] += Filters.hash01(x, y, 103).toFloat() * amount + bias
+            }
+            return
+        }
+        val v = (y + 0.5) / size - 0.5
+        val j = floor(v).toInt()
+        val fy = (v - j).toFloat()
         for (x in 0 until w.width) {
+            val u = (x + 0.5) / size - 0.5
+            val i = floor(u).toInt()
+            val fx = (u - i).toFloat()
             val o = (r * w.width + x) * 3
-            w.data[o] += Filters.hash01(x, y, 101).toFloat() * amount + bias
-            w.data[o + 1] += Filters.hash01(x, y, 102).toFloat() * amount + bias
-            w.data[o + 2] += Filters.hash01(x, y, 103).toFloat() * amount + bias
+            for (c in 0..2) {
+                val salt = 101 + c
+                val top = Filters.hash01(i, j, salt).toFloat() * (1 - fx) + Filters.hash01(i + 1, j, salt).toFloat() * fx
+                val bottom = Filters.hash01(i, j + 1, salt).toFloat() * (1 - fx) + Filters.hash01(i + 1, j + 1, salt).toFloat() * fx
+                w.data[o + c] += (top + (bottom - top) * fy) * amount + bias
+            }
         }
     }
 
     /**
-     * Directional emboss (3 x 3 convolution plus 0.5, zero outside the canvas) applied with hard light,
-     * for row `r` of `w` (canvas row `top + r` of a canvas `height` rows tall) into `out`.
+     * Directional emboss (3 x 3 convolution of the colour plus 0.5, edge pixels repeated outside the
+     * canvas, alpha 1) applied with hard light, for row `r` of `w` (canvas row `top + r` of a canvas
+     * `height` rows tall) into `out`. Flat areas give 0.5, which hard light leaves unchanged.
      */
     private fun reliefRow(w: FloatImage, r: Int, top: Int, height: Int, angleFraction: Double, relief: Double, out: FloatArray) {
         val angle = angleFraction * PI * 2
@@ -338,31 +363,21 @@ internal class EffectsLayer(private val par: Parallel, private val fx: LayerEffe
         val width = w.width
         val y = top + r
         for (x in 0 until width) {
-            // Core Image convolves premultiplied RGBA and adds the bias to alpha as well, so the
-            // emboss has alpha 0.5 inside and other values (even above 1 or below 0) at the
-            // border. Measured: alpha is used unclamped, the unpremultiplied colour is clamped
-            // to [0, 1] and taken as 0 where alpha is not positive.
-            var a = 0.5f
-            var ki = 0
-            for (ky in -1..1) for (kx in -1..1) {
-                if (y + ky in 0 until height && x + kx in 0 until width) a += k[ki]
-                ki++
-            }
             for (c in 0..2) {
                 var sum = 0.5f
-                ki = 0
+                var ki = 0
                 for (ky in -1..1) {
-                    val yy = y + ky
+                    val yy = (y + ky).coerceIn(0, height - 1)
                     for (kx in -1..1) {
-                        val xx = x + kx
-                        if (yy in 0 until height && xx in 0 until width) sum += k[ki] * w.data[((yy - top) * width + xx) * 3 + c]
+                        val xx = (x + kx).coerceIn(0, width - 1)
+                        sum += k[ki] * w.data[((yy - top) * width + xx) * 3 + c]
                         ki++
                     }
                 }
                 val base = w.data[(r * width + x) * 3 + c]
-                val tp = if (a > 0f) (sum / a).coerceIn(0f, 1f) else 0f
-                val hard = if (tp <= 0.5f) 2f * base * tp else 1f - 2f * (1f - base) * (1f - tp)
-                out[x * 3 + c] = (1f - a) * base + a * hard
+                // Core Image's hard light clamps the emboss to [0, 1] (measured).
+                val tp = sum.coerceIn(0f, 1f)
+                out[x * 3 + c] = if (tp <= 0.5f) 2f * base * tp else 1f - 2f * (1f - base) * (1f - tp)
             }
         }
     }

@@ -6,6 +6,7 @@ import com.mathis.mandala.core.BuiltInPalettes
 import com.mathis.mandala.core.DrawStroke
 import com.mathis.mandala.core.DrawingLayerSettings
 import com.mathis.mandala.core.EffectsLayerSettings
+import com.mathis.mandala.core.EmblemGlowMode
 import com.mathis.mandala.core.EmblemLayerSettings
 import com.mathis.mandala.core.GraffitiLayerSettings
 import com.mathis.mandala.core.Framing
@@ -53,6 +54,88 @@ object Editing {
         BaseLayerType.AUTO, BaseLayerType.COLOR, BaseLayerType.GRADIENT, BaseLayerType.SUNBURST, BaseLayerType.GRAIN, BaseLayerType.IMAGE,
     )
 
+    // ── Choices offered in the pickers (TUNE-1) ──
+
+    /**
+     * Built-in palettes offered in the pickers, the dice and "add layer", by index into
+     * [BuiltInPalettes.all]: colourful first, then once round the colour wheel. The others (Prism,
+     * Candy, Nebula, Ocean, Synthwave, Dragon, Cosmic) look too much like one of these; they keep
+     * rendering in saved settings and are shown in the picker only while a layer uses them.
+     */
+    val offeredPalettes: List<Int> = listOf(0, 3, 13, 4, 16, 17, 7, 9, 14, 1, 11)
+
+    /** The palettes a picker shows: the offered ones, plus `current` at the end if it is a hidden built-in one. */
+    fun paletteChoices(current: Int): List<Int> =
+        if (current in BuiltInPalettes.all.indices && current !in offeredPalettes) offeredPalettes + current else offeredPalettes
+
+    /** Palette of a new layer above one with palette `last`: three steps on in the offered order, like the Mac's `+ 3`. */
+    fun nextPalette(last: Int?): Int {
+        if (last == null) return offeredPalettes.first()
+        val at = offeredPalettes.indexOf(last).coerceAtLeast(0)
+        return offeredPalettes[(at + 3) % offeredPalettes.size]
+    }
+
+    /** Background types offered: Grain only while it is the current type (it vanishes in large exports, TUNE-1). */
+    fun backgroundChoices(current: BaseLayerSettings): List<BaseLayerType> =
+        if (current.type == BaseLayerType.GRAIN) backgrounds else backgrounds - BaseLayerType.GRAIN
+
+    /**
+     * Styles whose drawing reads the density setting. Found in the renderer code (`StyleContext.density`)
+     * and checked by `StyleControlsTest`, which renders every style with low and high density.
+     */
+    val densityStyles: Set<MandalaStyle> = MandalaStyle.entries.toSet() - setOf(
+        MandalaStyle.SPIROGRAPH, MandalaStyle.ROSE_CURVES, MandalaStyle.BUTTERFLY, MandalaStyle.EPITROCHOID,
+        MandalaStyle.LISSAJOUS, MandalaStyle.HYPOCYCLOID, MandalaStyle.GEOMETRIC, MandalaStyle.SUNBURST, MandalaStyle.STRING_ART,
+    )
+
+    /** Styles whose curves the ripple setting bends; the line and point styles drawn directly ignore it. */
+    val rippleStyles: Set<MandalaStyle> = MandalaStyle.entries.toSet() - setOf(
+        MandalaStyle.SACRED_GEOMETRY, MandalaStyle.SUNBURST, MandalaStyle.STAR_BURST, MandalaStyle.STRING_ART,
+        MandalaStyle.STRANGE_ATTRACTOR, MandalaStyle.CONSTELLATION_WEB, MandalaStyle.DEEP_NEBULA, MandalaStyle.INTERFERENCE_BLOOM,
+        MandalaStyle.HYPERBOLOID, MandalaStyle.TORUS, MandalaStyle.NAUTILUS, MandalaStyle.UNIVERSE, MandalaStyle.SYMBOLS,
+    )
+
+    /**
+     * Slider ranges where the setting gives usable results (TUNE-1). The settings JSON keeps any value:
+     * a saved value outside a range stays as it is until that slider is moved.
+     */
+    object Ranges {
+        val layerScale = 0.2..1.2
+        val layerComplexity = 0.15..1.0
+        val layerPainted = 0.25..0.85
+        val layerBrightness = 0.15..0.85
+        val emblemSize = 0.2..0.9
+        val emblemWeight = 0.1..1.0
+        val textSize = 0.03..0.12
+        val textWidth = 0.4..1.0
+        val textBrightness = 0.0..2.0
+        val textCloudSize = 0.0..0.7
+        /** Beyond the former maximum of 1: values up to 1 look as they always did (TUNE-1). */
+        val effectsVignette = 0.0..2.0
+        val effectsBloom = 0.0..2.0
+        val effectsGrain = 0.0..2.0
+        /** Glitter above about 0.6 is garish confetti. */
+        val effectsGlitter = 0.0..0.6
+        val textGlow = 0.0..3.0
+        /** Brighter colour backgrounds drown the mandala, whose lines are added with Screen. */
+        val backgroundBrightness = 0.0..0.6
+    }
+
+    /** Colours a background starts with when it is switched on, brighter than the decoder defaults (0.18 and 0.04). */
+    const val BACKGROUND_START_BRIGHTNESS = 0.35
+    const val BACKGROUND_START_BRIGHTNESS2 = 0.08
+
+    /**
+     * The background switched on with `type`. While its colours are still the decoder defaults, which
+     * are so dark that Colour, Gradient and Sunburst look alike, they start brighter.
+     */
+    fun BaseLayerSettings.switchedTo(type: BaseLayerType): BaseLayerSettings {
+        val next = copy(isEnabled = true, type = type)
+        val defaults = BaseLayerSettings()
+        val untouched = brightness == defaults.brightness && brightness2 == defaults.brightness2
+        return if (untouched) next.copy(brightness = BACKGROUND_START_BRIGHTNESS, brightness2 = BACKGROUND_START_BRIGHTNESS2) else next
+    }
+
     const val PREVIEW_SIZE = 512
 
     /**
@@ -97,11 +180,10 @@ object Editing {
     /** Adds a layer on top, set up like a new layer in the macOS app. Returns the settings and its index. */
     fun MandalaParameters.addLayer(seed: ULong): Pair<MandalaParameters, Int> {
         if (layers.size >= MAX_LAYERS) return this to layers.lastIndex
-        val palettes = BuiltInPalettes.all.size
         val layer = StyleLayer(
             style = styles[layers.size % styles.size],
             scale = 0.65,
-            paletteIndex = layers.lastOrNull()?.let { (it.paletteIndex + 3) % palettes } ?: 0,
+            paletteIndex = nextPalette(layers.lastOrNull()?.paletteIndex),
             colorOffset = layers.size * 0.25,
             glowIntensity = 0.5,
             seed = seed,
@@ -158,8 +240,15 @@ object Editing {
     /** Petal counts the macOS Lotus picker offers. */
     val lotusPetals = listOf(6, 8, 12, 16)
 
-    /** The macOS reset button of the emblem card: all defaults, but it stays on or off. */
-    fun EmblemLayerSettings.reset(): EmblemLayerSettings = EmblemLayerSettings(isEnabled = isEnabled)
+    /** The macOS reset button of the emblem card: all defaults of a new emblem, but it stays on or off. */
+    fun EmblemLayerSettings.reset(): EmblemLayerSettings = EmblemLayerSettings(isEnabled = isEnabled, glowMode = EmblemGlowMode.LIGHT)
+
+    /**
+     * The emblem switched on or off. Switching it on starts it with a light glow; saved emblems keep
+     * their glow mode (missing in the file = the original shadow) as long as they are not switched.
+     */
+    fun EmblemLayerSettings.switched(on: Boolean): EmblemLayerSettings =
+        if (on && !isEnabled) copy(isEnabled = true, glowMode = EmblemGlowMode.LIGHT) else copy(isEnabled = on)
 
     /** A new tree shape, in the range the macOS dice use. */
     fun EmblemLayerSettings.newShape(random: kotlin.random.Random): EmblemLayerSettings =
@@ -231,7 +320,7 @@ object Editing {
     fun StyleLayer.movedBy(dx: Double, dy: Double, zoom: Double = 1.0, turnDegrees: Double = 0.0): StyleLayer = copy(
         offsetX = (offsetX + dx).coerceIn(-MAX_OFFSET, MAX_OFFSET),
         offsetY = (offsetY + dy).coerceIn(-MAX_OFFSET, MAX_OFFSET),
-        scale = (scale * zoom).coerceIn(0.1, 1.2),
+        scale = zoomedWithin(scale, zoom, Ranges.layerScale),
         // A layer's rotation turns counter-clockwise on screen, the fingers' turn is clockwise.
         rotation = ((rotation - turnDegrees / 360.0) % 1.0).let { if (it < 0) it + 1.0 else it },
     )
@@ -240,9 +329,16 @@ object Editing {
     fun EmblemLayerSettings.movedBy(dx: Double, dy: Double, zoom: Double = 1.0, turnDegrees: Double = 0.0): EmblemLayerSettings = copy(
         offsetX = (offsetX + dx).coerceIn(-MAX_OFFSET, MAX_OFFSET),
         offsetY = (offsetY + dy).coerceIn(-MAX_OFFSET, MAX_OFFSET),
-        size = (size * zoom).coerceIn(0.1, 1.0),
+        size = zoomedWithin(size, zoom, Ranges.emblemSize),
         rotation = ((rotation + turnDegrees + 180.0) % 360.0).let { if (it < 0) it + 360.0 else it } - 180.0,
     )
+
+    /**
+     * `value` times `zoom`, kept within `range` like its slider; a saved value already outside the
+     * range is never pushed further out nor snapped in by a move without zoom.
+     */
+    private fun zoomedWithin(value: Double, zoom: Double, range: ClosedFloatingPointRange<Double>): Double =
+        if (zoom == 1.0) value else (value * zoom).coerceIn(minOf(range.start, value), maxOf(range.endInclusive, value))
 
     // ── Saving in a format (ADR-0010) ──
 

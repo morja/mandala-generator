@@ -35,7 +35,11 @@ struct EmblemLayerCard: View {
                     .font(.system(size: 12))
                     .foregroundColor(settings.isEnabled ? .accentColor : .secondary)
                     .frame(width: 16)
-                Toggle("", isOn: $settings.isEnabled)
+                // Switching the emblem on starts it with a light glow; saved emblems keep their mode.
+                Toggle("", isOn: Binding(get: { settings.isEnabled }, set: { on in
+                    if on && !settings.isEnabled { settings.glowMode = .light }
+                    settings.isEnabled = on
+                }))
                     .toggleStyle(.switch).scaleEffect(0.7).labelsHidden()
                 Text("Emblem")
                     .font(.caption.weight(.medium))
@@ -46,7 +50,10 @@ struct EmblemLayerCard: View {
                         .font(.system(size: 10)).foregroundColor(.purple)
                 }
                 .buttonStyle(.plain).help("Random emblem")
-                Button(action: { settings = EmblemLayerSettings(isEnabled: settings.isEnabled) }) {
+                Button(action: {
+                    settings = EmblemLayerSettings(isEnabled: settings.isEnabled)
+                    settings.glowMode = .light   // like a new emblem
+                }) {
                     Image(systemName: "arrow.counterclockwise")
                         .font(.system(size: 10)).foregroundColor(.secondary)
                 }
@@ -131,8 +138,9 @@ struct EmblemLayerCard: View {
 
                     // ── Shape ─────────────────────────────────────────────
                     sectionLabel("SHAPE")
-                    SceneSlider(label: "Size",   value: $settings.size,   range: 0.1...1.0, color: .cyan, reset: defaults.size)
-                    SceneSlider(label: "Weight", value: $settings.weight, color: .cyan, reset: defaults.weight)
+                    // Ranges from TUNE-1: at 1.0 the ring is clipped, at 0 the Line weight is invisible.
+                    SceneSlider(label: "Size",   value: $settings.size,   range: 0.2...0.9, color: .cyan, reset: defaults.size)
+                    SceneSlider(label: "Weight", value: $settings.weight, range: 0.1...1.0, color: .cyan, reset: defaults.weight)
                     SceneSlider(label: "Rotate", value: $settings.rotation, range: -180...180, color: .cyan, reset: defaults.rotation)
                     SceneSlider(label: "Position X", value: $settings.offsetX, range: -1...1, color: .cyan, reset: defaults.offsetX)
                     SceneSlider(label: "Position Y", value: $settings.offsetY, range: -1...1, color: .cyan, reset: defaults.offsetY)
@@ -140,14 +148,20 @@ struct EmblemLayerCard: View {
                     // ── Color ─────────────────────────────────────────────
                     sectionLabel("COLOR")
                     LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 3), spacing: 4) {
-                        ForEach(Array(appState.allPalettes.enumerated()), id: \.offset) { idx, pal in
-                            PaletteSwatch(palette: pal, isSelected: settings.paletteIndex == idx)
+                        ForEach(appState.paletteChoices(including: settings.paletteIndex), id: \.self) { idx in
+                            PaletteSwatch(palette: appState.allPalettes[idx], isSelected: settings.paletteIndex == idx)
                                 .onTapGesture { settings.paletteIndex = idx }
                         }
                     }
                     SceneSlider(label: "Position", value: $settings.colorPosition, color: .orange, reset: defaults.colorPosition)
                     SceneSlider(label: "Spread",   value: $settings.colorSpread,   color: .orange, reset: defaults.colorSpread)
                     SceneSlider(label: "Glow",     value: $settings.glow,          color: .purple, reset: defaults.glow)
+                    row("Glow") {
+                        Picker("", selection: $settings.glowMode) {
+                            ForEach(EmblemGlowMode.allCases) { Text($0.displayName).tag($0) }
+                        }
+                        .pickerStyle(.segmented).labelsHidden()
+                    }
 
                     // ── Layer ─────────────────────────────────────────────
                     sectionLabel("LAYER")
@@ -177,10 +191,11 @@ struct EmblemLayerCard: View {
         settings.seed = UInt64.random(in: 1...999_999)
         settings.branching = Double.random(in: 0.2...0.9)
         settings.weight = Double.random(in: 0.3...0.8)
-        settings.paletteIndex = Int.random(in: 0..<max(1, appState.allPalettes.count))
+        settings.paletteIndex = appState.offeredPaletteIndices.randomElement() ?? 0
         settings.colorPosition = Double.random(in: 0...1)
         settings.colorSpread = Double.random(in: 0...0.6)
         settings.glow = Double.random(in: 0.2...0.8)
+        settings.glowMode = .light
         settings.organic = Double.random(in: 0.2...1.0)
         settings.flowerVariant = EmblemFlowerVariant.allCases.randomElement() ?? .flower
         settings.petals = [6, 8, 12, 16].randomElement() ?? 8

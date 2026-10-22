@@ -294,6 +294,16 @@ enum class EmblemFrame(val displayName: String) {
     @SerialName("enso") ENSO("Ensō"),
 }
 
+/**
+ * How the emblem's glow looks: the original soft coloured shadow (dark with Normal) or light screened
+ * around the shape (TUNE-1). Saved settings without the field, and unknown values, keep the shadow.
+ */
+@Serializable
+enum class EmblemGlowMode(val displayName: String) {
+    @SerialName("light") LIGHT("Light"),
+    @SerialName("shadow") SHADOW("Shadow"),
+}
+
 /** One motif large in the centre, as in the macOS EmblemLayerSettings. Defaults match its decoder. */
 @Serializable
 data class EmblemLayerSettings(
@@ -311,6 +321,8 @@ data class EmblemLayerSettings(
     /** How far the colour moves along the palette towards the edge (0–1). */
     val colorSpread: Double = 0.3,
     val glow: Double = 0.5,
+    /** Missing in saved settings = the original shadow; new emblems start with LIGHT. */
+    val glowMode: EmblemGlowMode = EmblemGlowMode.SHADOW,
     val opacity: Double = 1.0,
     /** Normal by default: stays visible on bright mandalas, where Screen cannot brighten white. */
     val blendMode: LayerBlendMode = LayerBlendMode.NORMAL,

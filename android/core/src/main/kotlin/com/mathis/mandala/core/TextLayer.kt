@@ -97,7 +97,10 @@ internal class TextLayer(private val par: Parallel, private val renderer: TextRe
             // Glow radii are given at a 1600 px reference width.
             val g = FloatArray(w * h)
             val k = size / 1600.0
-            for ((radius, strength) in listOf(30.0 * s.glow to 0.9 * s.glow, 105.0 * s.glow to 0.5 * s.glow, 210.0 * s.glow to 0.2 * s.glow)) {
+            // Up to 1 as always; above 1 (slider up to 3) this part stays at its value for 1 (except with
+            // Multiply) and the wide passes add light on top at the end, as on macOS.
+            val gl = if (s.blendMode == LayerBlendMode.MULTIPLY) s.glow else min(1.0, s.glow)
+            for ((radius, strength) in listOf(30.0 * gl to 0.9 * gl, 105.0 * gl to 0.5 * gl, 210.0 * gl to 0.2 * gl)) {
                 val pass = text.copyOf()
                 MaskBlur.blur(pass, w, h, radius * k, par)
                 val st = strength.toFloat()
@@ -108,7 +111,28 @@ internal class TextLayer(private val par: Parallel, private val renderer: TextRe
         val colour = hsbColour(s.hue, s.saturation, min(1.0, s.brightness))
         val boost = if (s.brightness > 1.005) s.brightness.toFloat() else 1f
         val opacity = if (s.opacity < 0.999) s.opacity.toFloat() else 1f
-        return blendText(out, text, glow, colour, boost * opacity, s.blendMode)
+        val blended = blendText(out, text, glow, colour, boost * opacity, s.blendMode)
+        if (s.glow <= 1.0 || s.blendMode == LayerBlendMode.MULTIPLY) return blended
+        // Glow above 1: the two wide passes of the glow at 1 as light, growing from nothing at 1
+        // (macOS textGlowLightPasses). The macOS light source is the boosted text with its glow at 1
+        // as an 8-bit image, so the boost saturates at white.
+        val source = FloatArray(w * h) { val ta = text[it].coerceIn(0f, 1f); val ga = glow?.get(it) ?: 0f; (ta + ga - ta * ga).coerceIn(0f, 1f) }
+        val light = FloatArray(w * h)
+        val k = size / 1600.0
+        val gain = (s.glow - 1) * opacity
+        for ((radius, strength) in listOf(105.0 to 0.75 * gain, 210.0 to 0.3 * gain)) {
+            val pass = source.copyOf()
+            MaskBlur.blur(pass, w, h, radius * k, par)
+            val st = strength.toFloat()
+            for (i in light.indices) light[i] += pass[i] * st
+        }
+        val lightColour = FloatArray(3) { min(1f, colour[it] * boost) }
+        return mapPixels(blended) { p, c ->
+            for (ch in 0..2) {
+                val g = lightColour[ch] * light[p]
+                c[ch] = c[ch] + g - c[ch] * g
+            }
+        }
     }
 
     /** Lays out quote and author like renderTextToCGImage (block centred at offsetY of the frame, y up). */

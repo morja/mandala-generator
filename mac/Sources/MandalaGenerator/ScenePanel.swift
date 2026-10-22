@@ -98,7 +98,7 @@ struct BaseLayerCard: View {
                 VStack(spacing: 8) {
                     // Type picker
                     Picker("", selection: $settings.type) {
-                        ForEach(BaseLayerType.allCases) { t in
+                        ForEach(ControlChoices.backgroundTypes(current: settings.type)) { t in
                             Label(t.displayName, systemImage: t.sfSymbol).tag(t)
                         }
                     }
@@ -117,7 +117,7 @@ struct BaseLayerCard: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                     HueSlider(value: $settings.hue, reset: defaults.hue)
                     SceneSlider(label: "Sat",   value: $settings.saturation, color: .pink, reset: defaults.saturation)
-                    SceneSlider(label: "Bri",   value: $settings.brightness, color: .yellow, reset: defaults.brightness)
+                    SceneSlider(label: "Bri",   value: $settings.brightness, range: ControlChoices.backgroundBrightness, color: .yellow, reset: defaults.brightness)
                     }
 
                     // Secondary color
@@ -128,7 +128,7 @@ struct BaseLayerCard: View {
                             .frame(maxWidth: .infinity, alignment: .leading)
                         HueSlider(value: $settings.hue2, reset: defaults.hue2)
                         SceneSlider(label: "Sat", value: $settings.saturation2, color: .pink, reset: defaults.saturation2)
-                        SceneSlider(label: "Bri", value: $settings.brightness2, color: .yellow, reset: defaults.brightness2)
+                        SceneSlider(label: "Bri", value: $settings.brightness2, range: ControlChoices.backgroundBrightness, color: .yellow, reset: defaults.brightness2)
                     }
 
                     // Gradient controls
@@ -206,6 +206,9 @@ struct BaseLayerCard: View {
         .clipShape(RoundedRectangle(cornerRadius: 8))
         .overlay(RoundedRectangle(cornerRadius: 8)
             .stroke(Color.accentColor.opacity(settings.isEnabled ? 0.35 : 0.08), lineWidth: 1))
+        // Switched on, or set to another type, it starts brighter than the dark decoder defaults (TUNE-1).
+        .onChange(of: settings.isEnabled) { _, on in if on { settings.brightenIfUntouched() } }
+        .onChange(of: settings.type) { _, _ in if settings.isEnabled { settings.brightenIfUntouched() } }
     }
 
     private func pickImage() {
@@ -224,6 +227,18 @@ struct EffectsLayerCard: View {
     @Binding var settings: EffectsLayerSettings
     let defaults = EffectsLayerSettings()   // reset values for double-click
     @State private var isExpanded = true
+    @State private var moreExpanded = false
+    /// Once shown, the old fade slider stays, so it does not vanish at 0 mid-drag.
+    @State private var showOldFade = false
+
+    @ViewBuilder
+    private func sectionLabel(_ title: String) -> some View {
+        Text(title)
+            .font(.system(size: 9, weight: .semibold))
+            .foregroundColor(.secondary).kerning(1.1)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.top, 4)
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -265,31 +280,57 @@ struct EffectsLayerCard: View {
             .cornerRadius(8, corners: [.topLeft, .topRight])
 
             if isExpanded {
+                // Order from TUNE-1: Light, Tone, Texture, Sparkle, and the rarer effects under More.
+                // "Fade" sets the wash field; the old fade field does almost the same and only shows
+                // (under More) in settings that use it.
                 VStack(spacing: 8) {
+                    sectionLabel("LIGHT")
                     SceneSlider(label: "Brightness", value: $settings.brightness, color: .white, reset: defaults.brightness)
                     SceneSlider(label: "Contrast",  value: $settings.contrast,   color: .orange, reset: defaults.contrast)
-                    Divider()
-                    SceneSlider(label: "Vignette",  value: $settings.vignette,   color: .gray, reset: defaults.vignette)
-                    SceneSlider(label: "Chromatic", value: $settings.chromatic,  color: .cyan, reset: defaults.chromatic)
-                    SceneSlider(label: "Relief",    value: $settings.relief,     color: .mint, reset: defaults.relief)
-                    if settings.relief > 0 {
-                        SceneSlider(label: "Light", value: $settings.reliefAngle, color: .yellow, reset: defaults.reliefAngle)
-                    }
-                    Divider()
-                    SceneSlider(label: "Wash",          value: $settings.wash,         color: .white, reset: defaults.wash)
-                    SceneSlider(label: "Sepia",         value: $settings.sepia,        color: Color(red: 0.8, green: 0.6, blue: 0.3), reset: defaults.sepia)
-                    SceneSlider(label: "Fade",          value: $settings.fade,         color: .secondary, reset: defaults.fade)
-                    SceneSlider(label: "Bloom",         value: $settings.bloom,        color: .purple, reset: defaults.bloom)
-                    SceneSlider(label: "Local Contrast",value: $settings.localContrast,color: .teal, reset: defaults.localContrast)
-                    SceneSlider(label: "Grain",         value: $settings.grain,        color: Color(red: 0.6, green: 0.55, blue: 0.5), reset: defaults.grain)
-                    Divider()
-                    EffectRow(label: "Dimming",    value: $settings.dimming,    seed: $settings.dimmingSeed,    color: .indigo, reset: defaults.dimming)
-                    EffectRow(label: "Erasure",    value: $settings.erasure,    seed: $settings.erasureSeed,    color: .red, reset: defaults.erasure)
-                    Divider()
-                    EffectRow(label: "Highlights", value: $settings.highlights, seed: $settings.highlightsSeed, color: .orange, reset: defaults.highlights)
+                    // Vignette, bloom and grain go beyond the former maximum of 1; up to 1 they look as always (TUNE-1).
+                    SceneSlider(label: "Vignette",  value: $settings.vignette,   range: 0...2, color: .gray, reset: defaults.vignette)
+                    SceneSlider(label: "Bloom",     value: $settings.bloom,      range: 0...2, color: .purple, reset: defaults.bloom)
+                    sectionLabel("TONE")
+                    SceneSlider(label: "Sepia",     value: $settings.sepia,      color: Color(red: 0.8, green: 0.6, blue: 0.3), reset: defaults.sepia)
+                    SceneSlider(label: "Fade",      value: $settings.wash,       color: .white, reset: defaults.wash)
+                    sectionLabel("TEXTURE")
+                    SceneSlider(label: "Clarity",   value: $settings.localContrast, color: .teal, reset: defaults.localContrast)
+                    SceneSlider(label: "Grain",     value: $settings.grain,      range: 0...2, color: Color(red: 0.6, green: 0.55, blue: 0.5), reset: defaults.grain)
+                    sectionLabel("SPARKLE")
                     EffectRow(label: "Stars",      value: $settings.stars,      seed: $settings.starsSeed,      color: .yellow, reset: defaults.stars)
-                    EffectRow(label: "Glitter",    value: $settings.glitter,    seed: $settings.glitterSeed,    color: .pink, reset: defaults.glitter)
+                    // Glitter above about 0.6 is garish confetti.
+                    EffectRow(label: "Glitter",    value: $settings.glitter,    seed: $settings.glitterSeed,    range: 0...0.6, color: .pink, reset: defaults.glitter)
+
+                    Button(action: { withAnimation(.easeInOut(duration: 0.18)) { moreExpanded.toggle() } }) {
+                        HStack(spacing: 4) {
+                            Text("MORE")
+                                .font(.system(size: 9, weight: .semibold))
+                                .foregroundColor(.secondary).kerning(1.1)
+                            Spacer()
+                            Image(systemName: moreExpanded ? "chevron.up" : "chevron.down")
+                                .font(.system(size: 8)).foregroundColor(.secondary)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.top, 4)
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    if moreExpanded {
+                        EffectRow(label: "Highlights", value: $settings.highlights, seed: $settings.highlightsSeed, color: .orange, reset: defaults.highlights)
+                        EffectRow(label: "Dimming",    value: $settings.dimming,    seed: $settings.dimmingSeed,    color: .indigo, reset: defaults.dimming)
+                        EffectRow(label: "Erasure",    value: $settings.erasure,    seed: $settings.erasureSeed,    color: .red, reset: defaults.erasure)
+                        SceneSlider(label: "Relief",    value: $settings.relief,     color: .mint, reset: defaults.relief)
+                        if settings.relief > 0 {
+                            SceneSlider(label: "Light", value: $settings.reliefAngle, color: .yellow, reset: defaults.reliefAngle)
+                        }
+                        SceneSlider(label: "Chromatic", value: $settings.chromatic,  color: .cyan, reset: defaults.chromatic)
+                        if showOldFade {
+                            SceneSlider(label: "Old fade", value: $settings.fade,  color: .secondary, reset: defaults.fade)
+                        }
+                    }
                 }
+                .onAppear { if settings.fade > 0 { showOldFade = true } }
+                .onChange(of: settings.fade) { _, fade in if fade > 0 { showOldFade = true } }
                 .padding(10)
                 .background(Color(NSColor.controlBackgroundColor).opacity(0.7))
                 .cornerRadius(8, corners: [.bottomLeft, .bottomRight])
@@ -307,6 +348,7 @@ private struct EffectRow: View {
     let label: String
     @Binding var value: Double
     @Binding var seed: UInt64
+    var range: ClosedRange<Double> = 0...1
     var color: Color = .blue
     var reset: Double? = nil
 
@@ -315,7 +357,7 @@ private struct EffectRow: View {
             Text(label)
                 .font(.system(size: 10)).foregroundColor(.secondary)
                 .frame(width: 52, alignment: .leading)
-            ResettableSlider(value: $value, range: 0...1, tint: color, reset: reset)
+            ResettableSlider(value: $value, range: range, tint: color, reset: reset)
             Text(String(format: "%.2f", value))
                 .font(.system(size: 9)).foregroundColor(.secondary).monospacedDigit()
                 .frame(width: 28, alignment: .trailing)
@@ -659,8 +701,9 @@ struct TextLayerCard: View {
 
                     // ── Typography ────────────────────────────────────────
                     sectionLabel("TYPOGRAPHY")
-                    SceneSlider(label: "Size",    value: $settings.fontSize,  range: 0.02...0.105, color: .cyan, reset: defaults.fontSize)
-                    SceneSlider(label: "Width",   value: $settings.fontWidth, range: 0.1...1.0,    color: .cyan, reset: defaults.fontWidth)
+                    // Ranges from TUNE-1: above 0.12 a quote runs off the canvas, below 0.4 width one word per line.
+                    SceneSlider(label: "Size",    value: $settings.fontSize,  range: 0.03...0.12, color: .cyan, reset: defaults.fontSize)
+                    SceneSlider(label: "Width",   value: $settings.fontWidth, range: 0.4...1.0,   color: .cyan, reset: defaults.fontWidth)
                     SceneSlider(label: "Tracking",value: $settings.tracking,  range: -0.5...1.0,   color: .mint, reset: defaults.tracking)
 
                     // ── Position ──────────────────────────────────────────
@@ -673,7 +716,8 @@ struct TextLayerCard: View {
                     HueSlider(value: $settings.hue, reset: defaults.hue)
                     SceneSlider(label: "Sat",  value: $settings.saturation, color: .pink, reset: defaults.saturation)
                     SceneSlider(label: "Bri",  value: $settings.brightness, range: 0...2, color: .yellow, reset: defaults.brightness)
-                    SceneSlider(label: "Glow",   value: $settings.glow,    color: .purple, reset: defaults.glow)
+                    // Above 1 the wide glow passes add light (TUNE-1); up to 1 it looks as always.
+                    SceneSlider(label: "Glow",   value: $settings.glow,    range: 0...3, color: .purple, reset: defaults.glow)
 
                     // ── Shadow ────────────────────────────────────────────
                     Button(action: { withAnimation(.easeInOut(duration: 0.18)) { shadowExpanded.toggle() } }) {
@@ -715,7 +759,7 @@ struct TextLayerCard: View {
                     .buttonStyle(.plain)
                     if cloudExpanded {
                         SceneSlider(label: "Opacity", value: $settings.cloudOpacity, color: .teal, reset: defaults.cloudOpacity)
-                        SceneSlider(label: "Size",    value: $settings.cloudScale,       color: .teal, reset: defaults.cloudScale)
+                        SceneSlider(label: "Size",    value: $settings.cloudScale, range: 0...0.7, color: .teal, reset: defaults.cloudScale)
                         SceneSlider(label: "Blur",    value: $settings.cloudRadius,      color: .cyan, reset: defaults.cloudRadius)
                         HueSlider(value: $settings.cloudHue, reset: defaults.cloudHue)
                         SceneSlider(label: "Sat",     value: $settings.cloudSaturation,  color: .pink, reset: defaults.cloudSaturation)
@@ -802,7 +846,7 @@ struct TextLayerCard: View {
     private func randomizeAll() {
         let fonts = QuoteDatabase.availableFonts.map(\.name)
         settings.fontName      = fonts.randomElement() ?? "Georgia"
-        settings.fontSize      = Double.random(in: 0.04...0.15)
+        settings.fontSize      = Double.random(in: 0.04...0.12)   // within the Size slider (TUNE-1)
         settings.tracking      = Double.random(in: -0.1...0.4)
         settings.hue           = Double.random(in: 0...1)
         settings.saturation    = Double.random(in: 0...0.5)

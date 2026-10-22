@@ -877,8 +877,9 @@ struct MandalaRenderer {
         case .sunburst:
             let cx = Float(w) / 2
             let cy = Float(h) / 2
-            // 3–17 alternating ray-pairs controlled by patternScale
-            let numRays = Float(settings.patternScale * 14.0 + 3.0)
+            // 3–17 alternating ray-pairs controlled by patternScale; a whole number, or the rays
+            // would not meet where the angle wraps round (a seam on the left horizontal axis)
+            let numRays = Float((settings.patternScale * 14.0 + 3.0).rounded())
             // Edge transition width: wide (soft) when sharpness=0, narrow (hard) when sharpness=1
             let edgeWidth = max(0.015, 0.48 * (1.0 - Float(settings.patternSharpness) * 0.93))
             let invHalfW = 1.0 / (Float(w) * 0.5)
@@ -970,11 +971,12 @@ struct MandalaRenderer {
         var ci  = CIImage(cgImage: image)
 
         // ── Vignette ──
+        // Above 1 (slider up to 2, TUNE-1) the radius stays at 1 and only the intensity keeps growing.
         if settings.vignette > 0,
            let vig = CIFilter(name: "CIVignette") {
             vig.setValue(ci, forKey: kCIInputImageKey)
             vig.setValue(settings.vignette * 2.5, forKey: kCIInputIntensityKey)
-            vig.setValue(0.4 + settings.vignette * 0.6, forKey: kCIInputRadiusKey)
+            vig.setValue(min(1.0, 0.4 + settings.vignette * 0.6), forKey: kCIInputRadiusKey)
             if let out = vig.outputImage?.cropped(to: ext) { ci = out }
         }
 
@@ -1054,13 +1056,16 @@ struct MandalaRenderer {
         }
 
         // ── Chromatic aberration — shift R left, B right ──
+        // Red and blue repeat the edge pixels where they are shifted in from outside the image,
+        // instead of leaving a green or coloured stripe at the left and right edges.
         if settings.chromatic > 0 {
             let shift = CGFloat(bufferSize) * CGFloat(settings.chromatic) * 0.012
+            let edged = ci.clampedToExtent()
             if let rMask = CIFilter(name: "CIColorMatrix"),
                let gMask = CIFilter(name: "CIColorMatrix"),
                let bMask = CIFilter(name: "CIColorMatrix") {
                 let zero = CIVector(x: 0, y: 0, z: 0, w: 0)
-                rMask.setValue(ci, forKey: kCIInputImageKey)
+                rMask.setValue(edged, forKey: kCIInputImageKey)
                 rMask.setValue(CIVector(x: 1, y: 0, z: 0, w: 0), forKey: "inputRVector")
                 rMask.setValue(zero, forKey: "inputGVector"); rMask.setValue(zero, forKey: "inputBVector")
                 rMask.setValue(CIVector(x: 0, y: 0, z: 0, w: 1), forKey: "inputAVector")
@@ -1069,7 +1074,7 @@ struct MandalaRenderer {
                 gMask.setValue(CIVector(x: 0, y: 1, z: 0, w: 0), forKey: "inputGVector")
                 gMask.setValue(zero, forKey: "inputBVector")
                 gMask.setValue(CIVector(x: 0, y: 0, z: 0, w: 1), forKey: "inputAVector")
-                bMask.setValue(ci, forKey: kCIInputImageKey)
+                bMask.setValue(edged, forKey: kCIInputImageKey)
                 bMask.setValue(zero, forKey: "inputRVector"); bMask.setValue(zero, forKey: "inputGVector")
                 bMask.setValue(CIVector(x: 0, y: 0, z: 1, w: 0), forKey: "inputBVector")
                 bMask.setValue(CIVector(x: 0, y: 0, z: 0, w: 1), forKey: "inputAVector")
@@ -1205,22 +1210,32 @@ struct MandalaRenderer {
         }
 
         // ── Grain — film grain / analogue noise ──
+        // The noise gets alpha 1 before and after the addition: with alpha 0 (as before October 2026)
+        // the premultiplied noise was zero and grain did nothing on the Mac. Grain cells grow with
+        // the image above 1024 px (smoothly interpolated), so a large export shows the same grain as
+        // the preview instead of per-pixel noise that averages away.
         if settings.grain > 0.001,
            let random = CIFilter(name: "CIRandomGenerator"),
-           let noiseCtrl = CIFilter(name: "CIColorMatrix") {
+           let noiseCtrl = CIFilter(name: "CIColorMatrix"),
+           var noise = random.outputImage?.settingAlphaOne(in: .infinite) {
             let amount = CGFloat(settings.grain * 0.28)
             let bias   = CGFloat(-settings.grain * 0.14)
-            noiseCtrl.setValue(random.outputImage?.cropped(to: ext), forKey: kCIInputImageKey)
+            let grainSize = max(1.0, CGFloat(bufferSize) / 1024.0)
+            if grainSize > 1.0 {
+                noise = noise.transformed(by: CGAffineTransform(scaleX: grainSize, y: grainSize))
+            }
+            noiseCtrl.setValue(noise.cropped(to: ext), forKey: kCIInputImageKey)
             noiseCtrl.setValue(CIVector(x: amount, y: 0, z: 0, w: 0), forKey: "inputRVector")
             noiseCtrl.setValue(CIVector(x: 0, y: amount, z: 0, w: 0), forKey: "inputGVector")
             noiseCtrl.setValue(CIVector(x: 0, y: 0, z: amount, w: 0), forKey: "inputBVector")
             noiseCtrl.setValue(CIVector(x: 0, y: 0, z: 0, w: 0), forKey: "inputAVector")
-            noiseCtrl.setValue(CIVector(x: bias, y: bias, z: bias, w: 0), forKey: "inputBiasVector")
+            noiseCtrl.setValue(CIVector(x: bias, y: bias, z: bias, w: 1), forKey: "inputBiasVector")
             if let grainImg = noiseCtrl.outputImage?.cropped(to: ext),
                let add = CIFilter(name: "CIAdditionCompositing") {
                 add.setValue(ci, forKey: kCIInputBackgroundImageKey)
                 add.setValue(grainImg, forKey: kCIInputImageKey)
-                if let out = add.outputImage?.cropped(to: ext) { ci = out }
+                // The addition sums alpha to 2; the colour sum is what grain means, with alpha 1.
+                if let out = add.outputImage?.cropped(to: ext) { ci = out.settingAlphaOne(in: ext) }
             }
         }
 
@@ -1239,6 +1254,9 @@ struct MandalaRenderer {
         // ── 3D Relief — directional emboss via Hard Light blend ──
         // Hard Light: emboss < 0.5 → multiply (shadow/darken), emboss > 0.5 → screen (highlight/brighten)
         // Neutral gray (0.5) = identity → no global brightness shift
+        // The emboss convolves colour only (CIConvolutionRGB3X3 keeps alpha at 1; CIConvolution3X3
+        // added the bias to alpha too, which made the overlay half transparent and turned the whole
+        // image grey) and repeats the edge pixels, so flat areas and the border stay neutral.
         if settings.relief > 0 {
             let angle = CGFloat(settings.reliefAngle * .pi * 2)
             let ca = cos(angle), sa = sin(angle)
@@ -1248,7 +1266,7 @@ struct MandalaRenderer {
                 -ca * r,         0,       ca * r,
                 (-ca + sa) * r,  sa * r, (ca + sa) * r
             ]
-            let emboss = ci.applyingFilter("CIConvolution3X3", parameters: [
+            let emboss = ci.clampedToExtent().applyingFilter("CIConvolutionRGB3X3", parameters: [
                 "inputWeights": CIVector(values: w, count: 9),
                 "inputBias":    CGFloat(0.5)
             ]).cropped(to: ext)
@@ -4160,7 +4178,9 @@ struct MandalaRenderer {
         if settings.glow > 0.005 {
             let ciImage = CIImage(cgImage: overlayImage)
             let ctx = CIContext(options: [.workingColorSpace: CGColorSpace(name: CGColorSpace.displayP3) as Any])
-            let iF = CGFloat(settings.glow)
+            // Up to 1 as always; above 1 (slider up to 3, TUNE-1) this part stays at its value for 1
+            // (except with Multiply) and the wide passes add light on top at the end (textGlowLightPasses).
+            let iF = CGFloat(settings.blendMode == .multiply ? settings.glow : min(1, settings.glow))
             let passes: [(radius: CGFloat, strength: CGFloat)] = [
                 (10.0 * iF * 3.0, 0.9 * iF),
                 (35.0 * iF * 3.0, 0.5 * iF),
@@ -4198,6 +4218,9 @@ struct MandalaRenderer {
             }
         }
 
+        // The light source of the glow above 1: the text with blur and brightness boost, before opacity.
+        let glowSource = overlayImage
+
         // Opacity
         if settings.opacity < 0.999 {
             overlayImage = applyLayerOpacity(image: overlayImage, opacity: settings.opacity)
@@ -4232,7 +4255,32 @@ struct MandalaRenderer {
             }
         }
 
-        return blendComposite(base: result, overlay: overlayImage, mode: blendFilter)
+        let blended = blendComposite(base: result, overlay: overlayImage, mode: blendFilter)
+        guard settings.blendMode != .multiply,
+              let passes = textGlowLightPasses(settings.glow, opacity: settings.opacity) else { return blended }
+        return screenGlowLight(base: blended, source: glowSource, passes: passes)
+    }
+
+    /// Glow above 1 (slider up to 3): the two wide passes of the glow at 1, as light screened on top,
+    /// growing from nothing at 1, faded with the text. Nil up to 1, so saved settings look as before.
+    static func textGlowLightPasses(_ glow: Double, opacity: Double) -> [(radius: CGFloat, strength: CGFloat)]? {
+        guard glow > 1 else { return nil }
+        let k = CGFloat((glow - 1) * max(0, min(1, opacity)))
+        return [(35.0 * 3.0, 0.75 * k), (70.0 * 3.0, 0.3 * k)]
+    }
+
+    /// Screens the light of `source`, blurred with `passes` (radii in reference-1600px pixels), onto
+    /// the opaque `base`: light added around a shape with transparent surroundings (text, emblem).
+    static func screenGlowLight(base: CGImage, source: CGImage,
+                                passes: [(radius: CGFloat, strength: CGFloat)]) -> CGImage {
+        guard let light = referenceBlurOverlay(source: CIImage(cgImage: source), passes: passes),
+              let screen = CIFilter(name: "CIScreenBlendMode") else { return base }
+        let ciBase = CIImage(cgImage: base)
+        screen.setValue(ciBase, forKey: kCIInputBackgroundImageKey)
+        screen.setValue(light,  forKey: kCIInputImageKey)
+        let context = CIContext(options: [.workingColorSpace: CGColorSpace(name: CGColorSpace.displayP3) as Any])
+        guard let out = screen.outputImage?.cropped(to: ciBase.extent) else { return base }
+        return context.createCGImage(out, from: ciBase.extent) ?? base
     }
 
     private static func renderTextToCGImage(settings: TextLayerSettings, size: Int) -> CGImage? {

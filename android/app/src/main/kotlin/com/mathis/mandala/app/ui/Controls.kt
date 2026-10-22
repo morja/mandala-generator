@@ -55,6 +55,8 @@ import com.mathis.mandala.app.DrawTool
 import com.mathis.mandala.app.MoveTarget
 import com.mathis.mandala.app.Editing
 import com.mathis.mandala.app.Editing.strokeCount
+import com.mathis.mandala.app.Editing.switched
+import com.mathis.mandala.app.Editing.switchedTo
 import com.mathis.mandala.app.EditorViewModel
 import com.mathis.mandala.app.ui.theme.LocalTokens
 import com.mathis.mandala.app.ui.theme.Radius
@@ -67,6 +69,7 @@ import com.mathis.mandala.core.DrawingLayerSettings
 import com.mathis.mandala.core.EffectsLayerSettings
 import com.mathis.mandala.core.EmblemFlowerVariant
 import com.mathis.mandala.core.EmblemFrame
+import com.mathis.mandala.core.EmblemGlowMode
 import com.mathis.mandala.core.EmblemLayerSettings
 import com.mathis.mandala.core.EmblemMotif
 import com.mathis.mandala.core.EmblemRendering
@@ -277,11 +280,7 @@ private fun LayerControls(layer: StyleLayer, update: ((StyleLayer) -> StyleLayer
     }
     val palette = BuiltInPalettes.all[layer.paletteIndex.coerceIn(0, BuiltInPalettes.all.lastIndex)]
     Group("Palette", summary = palette.name) {
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.sm), verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
-            BuiltInPalettes.all.forEachIndexed { index, p ->
-                Swatch(p, selected = layer.paletteIndex == index) { update { it.copy(paletteIndex = index) } }
-            }
-        }
+        PaletteSwatches(layer.paletteIndex) { index -> update { it.copy(paletteIndex = index) } }
     }
     Group("Blending", summary = "${layer.blendMode.displayName} · ${(layer.opacity * 100).roundToInt()} %") {
         BlendChips(layer.blendMode) { m -> update { it.copy(blendMode = m) } }
@@ -289,18 +288,23 @@ private fun LayerControls(layer: StyleLayer, update: ((StyleLayer) -> StyleLayer
     }
     Group("Shape", initiallyOpen = true) {
         SteppedSlider("Symmetry", layer.symmetry, 1..8, default = StyleLayer().symmetry) { v -> update { it.copy(symmetry = v) } }
-        ValueSlider("Scale", layer.scale, 0.1f..1.2f, default = StyleLayer().scale) { v -> update { it.copy(scale = v) } }
-        ValueSlider("Complexity", layer.complexity, default = StyleLayer().complexity) { v -> update { it.copy(complexity = v) } }
-        ValueSlider("Density", layer.density, default = StyleLayer().density) { v -> update { it.copy(density = v) } }
-        ValueSlider("Ripple", layer.ripple, default = StyleLayer().ripple) { v -> update { it.copy(ripple = v) } }
+        ValueSlider("Scale", layer.scale, Editing.Ranges.layerScale.floats(), default = StyleLayer().scale) { v -> update { it.copy(scale = v) } }
+        ValueSlider("Complexity", layer.complexity, Editing.Ranges.layerComplexity.floats(), default = StyleLayer().complexity) { v -> update { it.copy(complexity = v) } }
+        // Only where the style uses them; hidden values stay as they are.
+        if (layer.style in Editing.densityStyles) {
+            ValueSlider("Density", layer.density, default = StyleLayer().density) { v -> update { it.copy(density = v) } }
+        }
+        if (layer.style in Editing.rippleStyles) {
+            ValueSlider("Ripple", layer.ripple, default = StyleLayer().ripple) { v -> update { it.copy(ripple = v) } }
+        }
     }
     PositionGroup(layer.offsetX, layer.offsetY, MoveTarget.LAYER, position, hidden = !layer.isEnabled) { x, y -> update { it.copy(offsetX = x, offsetY = y) } }
     Group("Light and colour") {
         ValueSlider("Glow", layer.glowIntensity, default = StyleLayer().glowIntensity) { v -> update { it.copy(glowIntensity = v) } }
         ValueSlider("Colour drift", layer.colorDrift, default = StyleLayer().colorDrift) { v -> update { it.copy(colorDrift = v) } }
-        ValueSlider("Painted", layer.abstractLevel, default = StyleLayer().abstractLevel) { v -> update { it.copy(abstractLevel = v) } }
+        ValueSlider("Painted", layer.abstractLevel, Editing.Ranges.layerPainted.floats(), default = StyleLayer().abstractLevel) { v -> update { it.copy(abstractLevel = v) } }
         ValueSlider("Saturation", layer.saturation, default = StyleLayer().saturation) { v -> update { it.copy(saturation = v) } }
-        ValueSlider("Brightness", layer.brightness, default = StyleLayer().brightness) { v -> update { it.copy(brightness = v) } }
+        ValueSlider("Brightness", layer.brightness, Editing.Ranges.layerBrightness.floats(), default = StyleLayer().brightness) { v -> update { it.copy(brightness = v) } }
     }
 }
 
@@ -327,12 +331,12 @@ private fun BackgroundControls(
     fun choose() = pickImage.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
     FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
         FilterChip(selected = !base.isEnabled, onClick = { update { it.copy(isEnabled = false) } }, label = { Text("Off") })
-        for (type in Editing.backgrounds) {
+        for (type in Editing.backgroundChoices(base)) {
             FilterChip(
                 selected = base.isEnabled && base.type == type,
                 onClick = {
                     if (type == BaseLayerType.IMAGE && base.imageURL == null) choose()
-                    else update { it.copy(isEnabled = true, type = type) }
+                    else update { it.switchedTo(type) }
                 },
                 label = { Text(backgroundName(type)) },
             )
@@ -354,13 +358,14 @@ private fun BackgroundControls(
         else -> Unit
     }
     val twoColours = base.type != BaseLayerType.COLOR && base.type != BaseLayerType.GRAIN
+    val brightnessRange = Editing.Ranges.backgroundBrightness.floats()
     ColourGroup(if (twoColours) "Colour 1" else "Colour", base.hue, base.saturation, base.brightness,
-        BaseLayerSettings().let { Triple(it.hue, it.saturation, it.brightness) }) { h, s, b ->
+        BaseLayerSettings().let { Triple(it.hue, it.saturation, it.brightness) }, brightnessRange = brightnessRange) { h, s, b ->
         update { it.copy(hue = h, saturation = s, brightness = b) }
     }
     if (twoColours) {
         ColourGroup("Colour 2", base.hue2, base.saturation2, base.brightness2,
-            BaseLayerSettings().let { Triple(it.hue2, it.saturation2, it.brightness2) }) { h, s, b ->
+            BaseLayerSettings().let { Triple(it.hue2, it.saturation2, it.brightness2) }, brightnessRange = brightnessRange) { h, s, b ->
             update { it.copy(hue2 = h, saturation2 = s, brightness2 = b) }
         }
     }
@@ -391,13 +396,20 @@ private fun backgroundName(type: BaseLayerType) = when (type) {
     BaseLayerType.GRAIN -> "Grain"
 }
 
-/** The effects layer over the whole image, switched on in its heading; its sliders in four groups. */
+/**
+ * The effects layer over the whole image, switched on in its heading; the quick, reliable sliders in
+ * four groups and the rarer ones under "More" (TUNE-1). "Fade" sets the `wash` field; the old `fade`
+ * field does almost the same and gets its own slider ("Old fade") only in settings that use it.
+ */
 @Composable
 private fun EffectsGroup(
     fx: EffectsLayerSettings,
     update: ((EffectsLayerSettings) -> EffectsLayerSettings) -> Unit,
     newPattern: () -> Unit,
 ) {
+    // Once shown, the old fade slider stays while this screen is open, so it does not vanish at 0 mid-drag.
+    var showOldFade by rememberSaveable { mutableStateOf(false) }
+    LaunchedEffect(fx.fade > 0) { if (fx.fade > 0) showOldFade = true }
     Group(
         "Effects",
         summary = if (fx.isEnabled) "On" else "Off",
@@ -411,28 +423,30 @@ private fun EffectsGroup(
         Group("Light", nested = true, initiallyOpen = true) {
             ValueSlider("Brightness", fx.brightness, default = EffectsLayerSettings().brightness) { v -> update { it.copy(brightness = v) } }
             ValueSlider("Contrast", fx.contrast, default = EffectsLayerSettings().contrast) { v -> update { it.copy(contrast = v) } }
-            ValueSlider("Vignette", fx.vignette, default = EffectsLayerSettings().vignette) { v -> update { it.copy(vignette = v) } }
-            ValueSlider("Bloom", fx.bloom, default = EffectsLayerSettings().bloom) { v -> update { it.copy(bloom = v) } }
-            ValueSlider("Highlights", fx.highlights, default = EffectsLayerSettings().highlights) { v -> update { it.copy(highlights = v) } }
+            ValueSlider("Vignette", fx.vignette, Editing.Ranges.effectsVignette.floats(), default = EffectsLayerSettings().vignette) { v -> update { it.copy(vignette = v) } }
+            ValueSlider("Bloom", fx.bloom, Editing.Ranges.effectsBloom.floats(), default = EffectsLayerSettings().bloom) { v -> update { it.copy(bloom = v) } }
         }
         Group("Tone", nested = true) {
-            ValueSlider("Wash", fx.wash, default = EffectsLayerSettings().wash) { v -> update { it.copy(wash = v) } }
             ValueSlider("Sepia", fx.sepia, default = EffectsLayerSettings().sepia) { v -> update { it.copy(sepia = v) } }
-            ValueSlider("Fade", fx.fade, default = EffectsLayerSettings().fade) { v -> update { it.copy(fade = v) } }
+            ValueSlider("Fade", fx.wash, default = EffectsLayerSettings().wash) { v -> update { it.copy(wash = v) } }
         }
         Group("Texture", nested = true) {
-            ValueSlider("Grain", fx.grain, default = EffectsLayerSettings().grain) { v -> update { it.copy(grain = v) } }
             ValueSlider("Clarity", fx.localContrast, default = EffectsLayerSettings().localContrast) { v -> update { it.copy(localContrast = v) } }
+            ValueSlider("Grain", fx.grain, Editing.Ranges.effectsGrain.floats(), default = EffectsLayerSettings().grain) { v -> update { it.copy(grain = v) } }
+        }
+        Group("Sparkle", nested = true) {
+            ValueSlider("Stars", fx.stars, default = EffectsLayerSettings().stars) { v -> update { it.copy(stars = v) } }
+            ValueSlider("Glitter", fx.glitter, Editing.Ranges.effectsGlitter.floats(), default = EffectsLayerSettings().glitter) { v -> update { it.copy(glitter = v) } }
+            TextButton(onClick = newPattern) { Text("New pattern") }
+        }
+        Group("More", nested = true) {
+            ValueSlider("Highlights", fx.highlights, default = EffectsLayerSettings().highlights) { v -> update { it.copy(highlights = v) } }
+            ValueSlider("Dimming", fx.dimming, default = EffectsLayerSettings().dimming) { v -> update { it.copy(dimming = v) } }
+            ValueSlider("Erasure", fx.erasure, default = EffectsLayerSettings().erasure) { v -> update { it.copy(erasure = v) } }
             ValueSlider("Relief", fx.relief, default = EffectsLayerSettings().relief) { v -> update { it.copy(relief = v) } }
             if (fx.relief > 0) ValueSlider("Relief angle", fx.reliefAngle, default = EffectsLayerSettings().reliefAngle) { v -> update { it.copy(reliefAngle = v) } }
             ValueSlider("Chromatic", fx.chromatic, default = EffectsLayerSettings().chromatic) { v -> update { it.copy(chromatic = v) } }
-        }
-        Group("Spots and sparkle", nested = true) {
-            ValueSlider("Dimming", fx.dimming, default = EffectsLayerSettings().dimming) { v -> update { it.copy(dimming = v) } }
-            ValueSlider("Erasure", fx.erasure, default = EffectsLayerSettings().erasure) { v -> update { it.copy(erasure = v) } }
-            ValueSlider("Stars", fx.stars, default = EffectsLayerSettings().stars) { v -> update { it.copy(stars = v) } }
-            ValueSlider("Glitter", fx.glitter, default = EffectsLayerSettings().glitter) { v -> update { it.copy(glitter = v) } }
-            TextButton(onClick = newPattern) { Text("New pattern") }
+            if (showOldFade) ValueSlider("Old fade", fx.fade, default = EffectsLayerSettings().fade) { v -> update { it.copy(fade = v) } }
         }
     }
 }
@@ -450,13 +464,13 @@ private fun EmblemTab(em: EmblemLayerSettings, vm: EditorViewModel, position: Po
         // The label switches too; the dice and reset buttons beside it keep their own taps.
         Text(
             "Show emblem", style = MaterialTheme.typography.bodyMedium,
-            modifier = Modifier.weight(1f).toggleable(value = em.isEnabled, role = Role.Switch) { on -> update { it.copy(isEnabled = on) } },
+            modifier = Modifier.weight(1f).toggleable(value = em.isEnabled, role = Role.Switch) { on -> update { it.switched(on) } },
         )
         if (em.isEnabled) {
             IconButton(onClick = vm::randomizeEmblem) { Icon(EditorIcons.DieOne, contentDescription = "Random emblem") }
             TextButton(onClick = vm::resetEmblem) { Text("Reset") }
         }
-        Switch(checked = em.isEnabled, onCheckedChange = { on -> update { it.copy(isEnabled = on) } })
+        Switch(checked = em.isEnabled, onCheckedChange = { on -> update { it.switched(on) } })
     }
     if (!em.isEnabled) {
         Text("One motif drawn large in the centre: Om, Tree of Life, Flower of Life, Lotus and more.",
@@ -505,8 +519,8 @@ private fun EmblemTab(em: EmblemLayerSettings, vm: EditorViewModel, position: Po
         }
     }
     Group("Shape") {
-        ValueSlider("Size", em.size, 0.1f..1f, default = defaults.size) { v -> update { it.copy(size = v) } }
-        ValueSlider("Weight", em.weight, default = defaults.weight) { v -> update { it.copy(weight = v) } }
+        ValueSlider("Size", em.size, Editing.Ranges.emblemSize.floats(), default = defaults.size) { v -> update { it.copy(size = v) } }
+        ValueSlider("Weight", em.weight, Editing.Ranges.emblemWeight.floats(), default = defaults.weight) { v -> update { it.copy(weight = v) } }
         ValueSlider("Rotate", em.rotation, -180f..180f, default = defaults.rotation, display = { "${it.roundToInt()}°" }) { v ->
             update { it.copy(rotation = v) }
         }
@@ -514,14 +528,15 @@ private fun EmblemTab(em: EmblemLayerSettings, vm: EditorViewModel, position: Po
     PositionGroup(em.offsetX, em.offsetY, MoveTarget.EMBLEM, position) { x, y -> update { it.copy(offsetX = x, offsetY = y) } }
     val palette = BuiltInPalettes.all[em.paletteIndex.coerceIn(0, BuiltInPalettes.all.lastIndex)]
     Group("Colour", summary = palette.name) {
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.sm), verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
-            BuiltInPalettes.all.forEachIndexed { index, p ->
-                Swatch(p, selected = em.paletteIndex == index) { update { it.copy(paletteIndex = index) } }
-            }
-        }
+        PaletteSwatches(em.paletteIndex) { index -> update { it.copy(paletteIndex = index) } }
         ValueSlider("Position", em.colorPosition, default = defaults.colorPosition) { v -> update { it.copy(colorPosition = v) } }
         ValueSlider("Spread", em.colorSpread, default = defaults.colorSpread) { v -> update { it.copy(colorSpread = v) } }
         ValueSlider("Glow", em.glow, default = defaults.glow) { v -> update { it.copy(glow = v) } }
+        ChipLine("Glow") {
+            for (m in EmblemGlowMode.entries) {
+                FilterChip(selected = em.glowMode == m, onClick = { update { it.copy(glowMode = m) } }, label = { Text(m.displayName) })
+            }
+        }
     }
     Group("Blending", summary = "${em.blendMode.displayName} · ${(em.opacity * 100).roundToInt()} %") {
         BlendChips(em.blendMode) { m -> update { it.copy(blendMode = m) } }
@@ -587,20 +602,20 @@ private fun TextTab(text: TextLayerSettings, vm: EditorViewModel) {
         }
     }
     Group("Size and place") {
-        ValueSlider("Size", text.fontSize, 0.02f..0.2f, default = TextLayerSettings().fontSize) { v -> update { it.copy(fontSize = v) } }
-        ValueSlider("Width", text.fontWidth, 0.1f..1f, default = TextLayerSettings().fontWidth) { v -> update { it.copy(fontWidth = v) } }
+        ValueSlider("Size", text.fontSize, Editing.Ranges.textSize.floats(), default = TextLayerSettings().fontSize) { v -> update { it.copy(fontSize = v) } }
+        ValueSlider("Width", text.fontWidth, Editing.Ranges.textWidth.floats(), default = TextLayerSettings().fontWidth) { v -> update { it.copy(fontWidth = v) } }
         ValueSlider("Height", text.offsetY, default = TextLayerSettings().offsetY) { v -> update { it.copy(offsetY = v) } }
     }
     Group("Light") {
-        ValueSlider("Glow", text.glow, default = TextLayerSettings().glow) { v -> update { it.copy(glow = v) } }
+        ValueSlider("Glow", text.glow, Editing.Ranges.textGlow.floats(), default = TextLayerSettings().glow) { v -> update { it.copy(glow = v) } }
         ValueSlider("Cloud", text.cloudOpacity, default = TextLayerSettings().cloudOpacity) { v -> update { it.copy(cloudOpacity = v) } }
-        ValueSlider("Cloud size", text.cloudScale, default = TextLayerSettings().cloudScale) { v -> update { it.copy(cloudScale = v) } }
+        ValueSlider("Cloud size", text.cloudScale, Editing.Ranges.textCloudSize.floats(), default = TextLayerSettings().cloudScale) { v -> update { it.copy(cloudScale = v) } }
         ValueSlider("Shadow", text.shadowOpacity, default = TextLayerSettings().shadowOpacity) { v -> update { it.copy(shadowOpacity = v) } }
     }
     Group("Colour", trailing = { ColourDot(hsbColour(text.hue, text.saturation, text.brightness.coerceAtMost(1.0))) }) {
         ValueSlider("Hue", text.hue, default = TextLayerSettings().hue) { v -> update { it.copy(hue = v) } }
         ValueSlider("Saturation", text.saturation, default = TextLayerSettings().saturation) { v -> update { it.copy(saturation = v) } }
-        ValueSlider("Brightness", text.brightness, 0f..1.5f, default = TextLayerSettings().brightness) { v -> update { it.copy(brightness = v) } }
+        ValueSlider("Brightness", text.brightness, Editing.Ranges.textBrightness.floats(), default = TextLayerSettings().brightness) { v -> update { it.copy(brightness = v) } }
     }
 }
 

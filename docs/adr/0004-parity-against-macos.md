@@ -14,9 +14,8 @@ Status: proposed, 19 October 2026
 | Overexposed dense areas | Same over-range handling as above, where many lines pile up (Hyperboloid centre). | `hyperboloid-tilted`: about 42 dB, slightly brighter in the white centre. Geometry identical. |
 | Painted effect (`abstractLevel`) | The macOS code asks for a CITurbulence displacement first, but Core Image has no filter of that name, so that step never runs there; the port skips it too (found 19 October 2026, before that the port displaced with its own noise and reached 21–27 dB). Above 0.3 the grain uses CIRandomGenerator, whose pattern is not reproduced (see APPROVALS.md). | `painted-default`: about 46 dB. `painted-heavy`: about 28 dB, from the grain pattern only. Mac favourites without grain effects: 43–55 dB. |
 | Layer buffer size | macOS always enlarges each layer buffer to the full radius. Kotlin does so only for rotated layers and otherwise adds a margin as wide as the effects reach (ADR-0002). | Light from lines far outside the frame (beyond three sigma of the stronger glow passes) is missing at the outermost pixels. Not measurable in the fixtures. |
-| Effects: grain | CIRandomGenerator is Apple's own; amount and offset match. | `fx-grain`: about 36 dB, same look. |
+| Effects: grain | CIRandomGenerator is Apple's own; amount, offset and grain size match. | `fx-grain`: about 33.5 dB, two different noise patterns of the same strength. Until TUNE-1 the Mac added transparent noise, i.e. nothing, and the fixture measured Kotlin's grain against none (36 dB). |
 | Effects: chromatic | Core Image's two additions leave alpha 3, which its final colour conversion takes into account. Not reproduced (no favourite uses chromatic). | `fx-chromatic`: about 43 dB, slightly darker. |
-| Effects: relief border | The emboss alpha at the outermost pixel row. | `fx-relief`: 38 dB overall, 54 dB inside. |
 | Strange Attractor | Chaotic iteration amplifies the last-bit differences between Apple's and Java's sin/cos. | `style-strange-attractor`: about 19 dB per pixel, same shape and density. |
 | Constellation Web | A few random keep-or-skip decisions sit on a rounding edge. | `style-constellation-web`: about 37 dB, a handful of lines differ. |
 | Deep Nebula | Very large thin ellipses (three times the layer radius) magnify last-bit differences. | `style-deep-nebula`: about 35 dB, same look. |
@@ -31,11 +30,21 @@ Status: proposed, 19 October 2026
 
 These look like accidents in the macOS app but define how its images look, so the port keeps them (measured with Core Image, see `EffectsLayer.kt` and `MeasuredCurves.kt`):
 
-- **Relief turns the image light grey.** CIConvolution3X3 adds its bias of 0.5 to alpha too, so the emboss layer is half transparent and lifts everything towards white. No Mac favourite uses relief.
 - **Clarity darkens.** Its high pass is the sum of two opaque images (alpha 2); the colour matrix then scales half the value and soft light blends with alpha 2.
 - **Effects brightness is added after contrast** (CIColorControls order), not before.
 - **CIVignette and CISepiaTone** have no documented formula; both are tabulated from measurements.
 - **Symbols** picks its type with `% 20`, so the last three symbols of the macOS library (Eye of Horus, Star of Ishtar, Caduceus) never appear; they are not ported.
+
+## Changed in both renderers (TUNE-1, 22 October 2026)
+
+Changed in the macOS renderer first and ported; details in `docs/TUNE-1-palettes-and-sliders.md`, section 11. Saved settings render as before except where an accident is fixed (relief, chromatic, sunburst).
+
+- **Relief** no longer turns the image grey: the emboss convolves colour only (CIConvolutionRGB3X3, alpha stays 1) and repeats the edge pixels. `fx-relief`: about 53 dB, default threshold (was 37).
+- **Chromatic** repeats the edge pixels where red and blue are shifted in from outside, so no stripe remains at the edges. `fx-chromatic`: about 43 dB as before.
+- **Sunburst background** rounds its number of rays (`patternScale × 14 + 3`) to a whole number, which removes the seam on the left horizontal axis. New fixture `background-sunburst-default-scale` (scale 0.3, 7 rays): about 59 dB.
+- **Grain works on the Mac**: the noise had alpha 0, so Core Image added nothing there. It now has alpha 1 and the addition's alpha is reset to 1; amount and offset are the former ones. Above 1024 px the noise cells grow with the image (bilinear) in both renderers. `fx-grain`: about 33.5 dB, threshold 32 (see the table).
+- **Values above 1** (sliders beyond the former maximum): vignette keeps radius 1 and grows in intensity, bloom and grain scale linearly, text glow adds its two wide passes as screened light. Up to 1 nothing changes. New fixture `fx-above-one` (vignette 1.7, bloom 1.6): about 47 dB.
+- **Emblem glow mode** (`glowMode`, default and fallback `shadow`): `shadow` is the original glow, `light` is blurred light of the coloured emblem screened on top after the blend (radii 2, 8, 20 × (1 + 2 × glow), strengths 1, 0.4, 0.15 × √glow × opacity); Multiply always uses `shadow`. New fixtures `emblem-glow-light` and `emblem-glow-shadow`: about 59 dB. The other emblem references are unchanged.
 
 ## Consequences
 

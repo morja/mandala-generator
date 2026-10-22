@@ -17,14 +17,17 @@ import com.mathis.mandala.app.Editing.removeLayer
 import com.mathis.mandala.app.Editing.updateLayer
 import com.mathis.mandala.app.Editing.newShape
 import com.mathis.mandala.app.Editing.reset
+import com.mathis.mandala.app.Editing.switched
 import com.mathis.mandala.app.Editing.updateEmblem
 import com.mathis.mandala.app.Randomize.randomized
+import com.mathis.mandala.core.EmblemGlowMode
 import com.mathis.mandala.core.EmblemLayerSettings
 import com.mathis.mandala.core.EmblemMotif
 import com.mathis.mandala.core.LayerBlendMode
 import com.mathis.mandala.core.MandalaParameters
 import com.mathis.mandala.core.MandalaRenderer
 import com.mathis.mandala.core.MandalaStyle
+import com.mathis.mandala.core.SettingsJson
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertTrue
@@ -63,7 +66,7 @@ class EditingTest {
         assertEquals(1, index)
         val added = p.layers[1]
         assertEquals(Editing.styles[1], added.style)
-        assertEquals(3, added.paletteIndex)
+        assertEquals(4, added.paletteIndex) // three steps on from Psychedelic in the offered order
         assertEquals(0.65, added.scale, 0.0)
         assertEquals(7uL, added.seed)
     }
@@ -169,11 +172,24 @@ class EditingTest {
     }
 
     @Test
+    fun savedEmblemsKeepTheShadowGlowAndNewOnesStartWithLight() {
+        // Missing or unknown glow mode: the original shadow, so saved settings look as before.
+        assertEquals(EmblemGlowMode.SHADOW, SettingsJson.decode("""{"emblemLayer":{"isEnabled":true}}""").emblemLayer.glowMode)
+        assertEquals(EmblemGlowMode.SHADOW, SettingsJson.decode("""{"emblemLayer":{"glowMode":"sparkle"}}""").emblemLayer.glowMode)
+        assertEquals(EmblemGlowMode.LIGHT, SettingsJson.decode("""{"emblemLayer":{"glowMode":"light"}}""").emblemLayer.glowMode)
+        assertEquals(EmblemGlowMode.LIGHT, EmblemLayerSettings().switched(true).glowMode)
+        val saved = EmblemLayerSettings(isEnabled = true)
+        assertEquals(EmblemGlowMode.SHADOW, saved.switched(true).glowMode)
+        assertEquals(EmblemGlowMode.SHADOW, saved.switched(false).glowMode)
+        assertEquals(EmblemGlowMode.LIGHT, saved.randomized(kotlin.random.Random(1)).glowMode)
+    }
+
+    @Test
     fun emblemResetKeepsItOnAndTheDiceKeepSizeAndBlending() {
         val custom = start.updateEmblem {
             it.copy(isEnabled = true, motif = EmblemMotif.LOTUS, size = 0.9, rotation = 45.0, blendMode = LayerBlendMode.ADD, opacity = 0.5)
         }.emblemLayer
-        assertEquals(EmblemLayerSettings(isEnabled = true), custom.reset())
+        assertEquals(EmblemLayerSettings(isEnabled = true, glowMode = EmblemGlowMode.LIGHT), custom.reset())
         repeat(50) { i ->
             val r = custom.randomized(kotlin.random.Random(i))
             assertEquals(0.9, r.size, 0.0)
@@ -224,7 +240,7 @@ class EditingTest {
         assertEquals(1.0, layer.movedBy(5.0, 0.0).offsetX, 1e-9)
         val emblem = EmblemLayerSettings(size = 0.5, rotation = 170.0).movedBy(-0.1, 0.1, zoom = 0.1, turnDegrees = 20.0)
         assertEquals(-0.1, emblem.offsetX, 1e-9)
-        assertEquals(0.1, emblem.size, 1e-9)
+        assertEquals(0.2, emblem.size, 1e-9) // the Size slider's lower end
         assertEquals(-170.0, emblem.rotation, 1e-9)
     }
 
