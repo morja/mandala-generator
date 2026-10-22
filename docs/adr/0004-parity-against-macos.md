@@ -14,9 +14,9 @@ Status: proposed, 19 October 2026
 | Overexposed dense areas | Same over-range handling as above, where many lines pile up (Hyperboloid centre). | `hyperboloid-tilted`: about 42 dB, slightly brighter in the white centre. Geometry identical. |
 | Painted effect (`abstractLevel`) | The macOS code asks for a CITurbulence displacement first, but Core Image has no filter of that name, so that step never runs there; the port skips it too (found 19 October 2026, before that the port displaced with its own noise and reached 21–27 dB). Above 0.3 the grain uses CIRandomGenerator, whose pattern is not reproduced (see APPROVALS.md). | `painted-default`: about 46 dB. `painted-heavy`: about 28 dB, from the grain pattern only. Mac favourites without grain effects: 43–55 dB. |
 | Layer buffer size | macOS always enlarges each layer buffer to the full radius. Kotlin does so only for rotated layers and otherwise adds a margin as wide as the effects reach (ADR-0002). | Light from lines far outside the frame (beyond three sigma of the stronger glow passes) is missing at the outermost pixels. Not measurable in the fixtures. |
-| Effects: grain | CIRandomGenerator is Apple's own; amount and offset match. | `fx-grain`: about 36 dB, same look. |
+| Effects: grain | CIRandomGenerator is Apple's own; amount, offset and grain size match (measured: mean change 5.97/255 on the Mac, 5.96/255 in Kotlin for `fx-grain`). | `fx-grain`: about 28 dB, two different noise patterns of the same strength. Until TUNE-1 the Mac added transparent noise, i.e. nothing, and the fixture measured Kotlin's grain against none (36 dB). |
+| Effects: bloom near the border | Core Image's resampling and blur see transparent pixels outside the canvas, so its bloom fades a little more towards the outermost rows and columns. | `fx-bloom`: 48 dB before, about 43 dB since the bloom gain was doubled (TUNE-1); differences only within a few pixels of the border. |
 | Effects: chromatic | Core Image's two additions leave alpha 3, which its final colour conversion takes into account. Not reproduced (no favourite uses chromatic). | `fx-chromatic`: about 43 dB, slightly darker. |
-| Effects: relief border | The emboss alpha at the outermost pixel row. | `fx-relief`: 38 dB overall, 54 dB inside. |
 | Strange Attractor | Chaotic iteration amplifies the last-bit differences between Apple's and Java's sin/cos. | `style-strange-attractor`: about 19 dB per pixel, same shape and density. |
 | Constellation Web | A few random keep-or-skip decisions sit on a rounding edge. | `style-constellation-web`: about 37 dB, a handful of lines differ. |
 | Deep Nebula | Very large thin ellipses (three times the layer radius) magnify last-bit differences. | `style-deep-nebula`: about 35 dB, same look. |
@@ -31,11 +31,24 @@ Status: proposed, 19 October 2026
 
 These look like accidents in the macOS app but define how its images look, so the port keeps them (measured with Core Image, see `EffectsLayer.kt` and `MeasuredCurves.kt`):
 
-- **Relief turns the image light grey.** CIConvolution3X3 adds its bias of 0.5 to alpha too, so the emboss layer is half transparent and lifts everything towards white. No Mac favourite uses relief.
 - **Clarity darkens.** Its high pass is the sum of two opaque images (alpha 2); the colour matrix then scales half the value and soft light blends with alpha 2.
 - **Effects brightness is added after contrast** (CIColorControls order), not before.
 - **CIVignette and CISepiaTone** have no documented formula; both are tabulated from measurements.
 - **Symbols** picks its type with `% 20`, so the last three symbols of the macOS library (Eye of Horus, Star of Ishtar, Caduceus) never appear; they are not ported.
+
+## Fixed and retuned in both renderers (TUNE-1, 22 October 2026)
+
+Accidents that made a slider useless, and effects that were too weak to see, were changed in the macOS renderer first and ported; the references were re-rendered (details in `docs/TUNE-1-palettes-and-sliders.md`, section 10).
+
+- **Relief** no longer turns the image grey: the emboss convolves colour only (CIConvolutionRGB3X3, alpha stays 1) and repeats the edge pixels. `fx-relief`: about 53 dB, default threshold.
+- **Chromatic** repeats the edge pixels where red and blue are shifted in from outside, so no stripe remains at the left and right edges. `fx-chromatic`: about 43 dB as before.
+- **Vignette** uses a fixed CIVignette radius of 1 (the measured table's strongest column) and intensity 3.75 × the value instead of 2.5 ×. `fx-vignette` 58 dB, `fx-brightness-contrast` 56 dB.
+- **Grain** works on the Mac: the noise had alpha 0, so Core Image added nothing there (only Kotlin showed grain). It now has alpha 1, the addition's alpha is reset to 1, the amplitude is twice the former (0.56 × the value, offset −0.28 ×), and above 1024 px the noise cells grow with the image (bilinear), so large exports keep the preview's grain. `fx-grain`: about 28 dB, threshold 26 (see the table).
+- **Glitter** maps the stored value 0–1 to 0.2–0.6 of the former amount (count and brightness), 0 stays off: visible from the first step, calmer at the top, about 0.33 unchanged. `fx-glitter`: about 57 dB.
+- **Bloom** has twice the former gain (passes 1.1 and 0.6 × the value instead of 0.55 and 0.3), so it shows on dark images. `fx-bloom`: about 43 dB, threshold 42 (see the table).
+- **Emblem glow** is light: blurred light of the coloured emblem, faded with its opacity, screened on top after the emblem is blended (Normal, Screen, Add). Before, the glow was part of the overlay, and with Normal its blurred alpha (summed unscaled over three passes) covered the image with a dark halo. Strength rises with the square root of the glow and the reach starts at a third (radii 2, 8, 20 × (1 + 2 × glow), strengths 1, 0.4, 0.15 × √glow), so low values show a soft halo and the slider changes it evenly. With Multiply the glow stays as before, a soft coloured shadow inside the overlay. `emblem-*`: 45–63 dB as before.
+- **Text glow** is light as well: the blurred light of the text (with blur and brightness boost, the boost saturating at white as in the macOS 8-bit intermediate), faded with the text, screened on top after the text is blended; the two wide passes have three times their former strength, the narrow one keeps it so the letters stay readable. Before it was invisible even at 1.0 (its blurred alpha outweighed its colour). Multiply keeps the former glow. Text stays outside the parity fixtures; Mac and Kotlin differ by 17–23 dB as before (glyphs).
+- **Sunburst background** rounds its number of rays (`patternScale × 14 + 3`) to a whole number, so the rays meet where the angle wraps round instead of leaving a seam on the left horizontal axis. New fixture `background-sunburst-default-scale` (scale 0.3, 7 rays): about 59 dB.
 
 ## Consequences
 
