@@ -241,4 +241,13 @@ class EditingTest {
         assertEquals(null, recent[b])
         assertEquals(2, recent.size)
     }
+
+    @Test
+    fun landscapeRatiosKeepTheShorterSide() {
+        assertEquals(1820 to 1024, Editing.exportSize(SaveFormat.SIXTEEN_NINE, 2.0, large = false))
+        assertEquals(3072 to 2048, Editing.exportSize(SaveFormat.THREE_TWO, 2.0, large = true))
+        assertEquals(1024 to 1365, Editing.exportSize(SaveFormat.THREE_FOUR, 2.0, large = false))
+        assertTrue(SaveFormat.SIXTEEN_NINE.isLandscape && SaveFormat.SIXTEEN_NINE.isRatio)
+        assertTrue(!SaveFormat.SQUARE.isRatio && !SaveFormat.SCREEN.isRatio)
+    }
 }
