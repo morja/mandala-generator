@@ -2,7 +2,7 @@
 
 Prepared 20 October 2026 for the first Android release; entered in the Play Console the same day. Updated 22 October 2026 for version 1.1 and later (save formats, wallpaper, what Pro adds, starter favourites) and entered in the Play Console the same day; the screenshots there are still the 20 October ones. Graphics in this folder: `play-icon-512.png` (512×512, 32-bit PNG), `play-feature-graphic.png` (1024×500), and seven phone screenshots in `screenshots/` (1080×2160, the longest side Google allows, cropped from Mathis' Galaxy S23 without the status bar and the gesture bar; taken 22 October 2026): layers, Om emblem, a mandala as lock screen wallpaper, quote, favourites, save formats, new mandala with preview. AI asset declaration: "Don't label assets" (icon and feature graphic are rendered by the app, screenshots are real).
 
-Renamed on 22 October 2026 from "Mandala Generator" to "Dahlia – Mandala Maker" (ADR-0012): app name, both full descriptions and the Pro product name. The title (English and German) was set in the Play Console through the API the same day; the full descriptions and the Pro product name there still say "Mandala Generator". The website pages and their URLs still use "mandala-generator".
+Renamed on 22 October 2026 from "Mandala Generator" to "Dahlia – Mandala Maker" (ADR-0012): app name, both full descriptions and the Pro product name. The title (English and German) was set in the Play Console through the API the same day; the Pro product name (English and German) as well, with descriptions, prices and state unchanged. The full descriptions there still say "Mandala Generator". The website pages and their URLs still use "mandala-generator".
 
 ## App details
 
