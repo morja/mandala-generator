@@ -53,6 +53,7 @@ import com.mathis.mandala.core.SettingsJson
 import com.mathis.mandala.core.StyleLayer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -89,6 +90,12 @@ data class FramePreviewState(
     val width: Int = 0,
     val height: Int = 0,
 )
+
+/** How much a new mandala from the menu changes (DM-7): more dots on its die, more change. */
+enum class NewKind(val label: String) { VARIATION("Variation"), LAYERS("New layers"), EVERYTHING("Everything") }
+
+/** A new mandala shown next to the current one in the menu; nothing is replaced until it is used. */
+data class Candidate(val kind: NewKind, val params: MandalaParameters, val image: ImageBitmap? = null, val rendering: Boolean = true)
 
 /** One-off things for the screen to do. */
 data class HistoryState(val canGoBack: Boolean, val canGoForward: Boolean)
@@ -376,6 +383,61 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
     fun surprise() {
         _params.update { it.randomAll(Random) }
         _selected.value = 0
+    }
+
+    private val _candidate = MutableStateFlow<Candidate?>(null)
+
+    /** The new mandala the menu shows next to the current one, if any. */
+    val candidate: StateFlow<Candidate?> = _candidate.asStateFlow()
+    private var candidateJob: Job? = null
+
+    /** Makes a new mandala of this kind from the current one and draws it small; the current one stays. */
+    fun tryNew(kind: NewKind) {
+        val current = _params.value
+        val next = when (kind) {
+            NewKind.VARIATION -> current.newVariation(::randomSeed)
+            NewKind.LAYERS -> current.randomLayers(Random)
+            NewKind.EVERYTHING -> current.randomAll(Random)
+        }
+        // The last picture stays while the next one is drawn.
+        _candidate.value = Candidate(kind, next, image = _candidate.value?.image)
+        candidateJob?.cancel()
+        val fast = _fastPreview.value
+        candidateJob = viewModelScope.launch {
+            try {
+                val result = withContext(Dispatchers.Default) {
+                    val job = coroutineContext.job
+                    MandalaRenderer.render(
+                        next,
+                        RenderOptions(
+                            outputSize = Editing.CANDIDATE_SIZE, threads = threads, textRenderer = textRenderer, imageLoader = imageLoader,
+                            isCancelled = { !job.isActive },
+                            glowReferenceWidth = if (fast) Editing.CANDIDATE_SIZE * 2 else RenderOptions().glowReferenceWidth,
+                        ),
+                    )
+                }
+                val image = result.image.toBitmap().asImageBitmap()
+                _candidate.update { if (it?.params == next) it.copy(image = image, rendering = false) else it }
+            } catch (e: RenderCancelledException) {
+                // A newer one is already being drawn.
+            } catch (e: OutOfMemoryError) {
+                _candidate.update { it?.copy(rendering = false) }
+            }
+        }
+    }
+
+    /** Replaces the mandala with the new one; its small picture stands in until the preview is drawn. */
+    fun useCandidate() {
+        val c = _candidate.value ?: return
+        closeCandidate()
+        c.image?.let { image -> if (recentPreviews[c.params] == null) _preview.update { it.copy(image = image, rendering = true) } }
+        _params.value = c.params
+        _selected.value = 0
+    }
+
+    fun closeCandidate() {
+        candidateJob?.cancel()
+        _candidate.value = null
     }
 
     /** New layers, like "Randomize Layers" on the Mac. */

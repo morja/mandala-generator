@@ -61,6 +61,9 @@ object Editing {
      */
     const val FAST_GLOW_REFERENCE = 800
 
+    /** Size of a new mandala shown next to the current one in the menu (DM-7). */
+    const val CANDIDATE_SIZE = 320
+
     /**
      * A rough image first, when a change redraws at least this many layers and is expected to take
      * longer than [QUICK_AFTER_MS]: small and with a coarse glow, replaced by the full one when ready.

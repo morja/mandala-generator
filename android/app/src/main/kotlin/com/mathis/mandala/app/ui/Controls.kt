@@ -168,7 +168,7 @@ private fun LayersTab(params: MandalaParameters, selected: Int, vm: EditorViewMo
         TextButton(onClick = vm::duplicateSelected, enabled = layers.size < Editing.MAX_LAYERS) { Text("Duplicate") }
         TextButton(onClick = vm::removeSelected, enabled = layers.size > 1) { Text("Delete") }
         Box(Modifier.weight(1f))
-        IconButton(onClick = vm::randomizeSelected) { Icon(EditorIcons.Dice, contentDescription = "Randomize layer ${selected + 1}") }
+        IconButton(onClick = vm::randomizeSelected) { Icon(EditorIcons.DieOne, contentDescription = "Randomize layer ${selected + 1}") }
     }
     LayerControls(layers[selected], vm::updateSelected, position)
 }
@@ -453,7 +453,7 @@ private fun EmblemTab(em: EmblemLayerSettings, vm: EditorViewModel, position: Po
             modifier = Modifier.weight(1f).toggleable(value = em.isEnabled, role = Role.Switch) { on -> update { it.copy(isEnabled = on) } },
         )
         if (em.isEnabled) {
-            IconButton(onClick = vm::randomizeEmblem) { Icon(EditorIcons.Dice, contentDescription = "Random emblem") }
+            IconButton(onClick = vm::randomizeEmblem) { Icon(EditorIcons.DieOne, contentDescription = "Random emblem") }
             TextButton(onClick = vm::resetEmblem) { Text("Reset") }
         }
         Switch(checked = em.isEnabled, onCheckedChange = { on -> update { it.copy(isEnabled = on) } })
