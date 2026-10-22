@@ -598,7 +598,8 @@ private fun ProSheet(pro: ProState, onBuy: () -> Unit, onDismiss: () -> Unit) {
             Text("Mandala Generator Pro", style = MaterialTheme.typography.titleLarge)
             Text(
                 "Save your mandalas at 2048 pixels wide in every format, sharp enough for prints and wallpapers, " +
-                    "and move and zoom the mandala in the frame. One purchase, no subscription. Everything else stays free.",
+                    "move and zoom the mandala in the frame, and move layers and the emblem. One purchase, no subscription. " +
+                    "Everything else stays free.",
                 style = MaterialTheme.typography.bodyMedium,
             )
             Button(onClick = onBuy, enabled = pro.available, modifier = Modifier.fillMaxWidth()) {
