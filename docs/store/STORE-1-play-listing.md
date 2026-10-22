@@ -83,6 +83,18 @@ In the Play Console since 22 October 2026: active, with these descriptions in En
 
 Google Play lets you create in-app products only after a build that contains the billing permission has been uploaded (any testing track).
 
+## Release notes for 1.3.1 (code 7)
+
+The first production release (1.3.0 never left the draft). The 1.3.0 notes plus the calmer save sheet (DM-11 A).
+
+English (296 characters, max. 500):
+
+> Version 1.3: Pro now dims or brightens your wallpaper, sets home and lock screen as a pair, changes the wallpaper every morning and adds a live wallpaper that turns slowly. Saved portraits now fill the screen or show the whole mandala, without hard edges. Saving is calmer and fits on one screen.
+
+German (360 characters):
+
+> Version 1.3: Pro dunkelt dein Hintergrundbild ab oder hellt es auf, setzt Start- und Sperrbildschirm als Paar, wechselt das Hintergrundbild jeden Morgen und bringt einen Live-Hintergrund, der sich langsam dreht. Hochformate füllen jetzt den Bildschirm oder zeigen das ganze Mandala, ohne harte Kanten. Speichern ist aufgeräumter und passt auf einen Bildschirm.
+
 ## Release notes for 1.3.0 (code 6)
 
 English (255 characters, max. 500):
