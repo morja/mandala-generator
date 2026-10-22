@@ -74,6 +74,14 @@ class MemoryBudgetTest {
         assertEquals(4779, MandalaRenderer.render(params, options).image.height)
     }
 
+    /** The widest Pro landscape (16:9, 3641 x 2048) zoomed in as far as the app allows. */
+    @Test
+    fun exportsTheProLandscapeZoomedInWithin256MbHeap() {
+        val params = SettingsJson.decode(fiveHeavyLayers)
+        val options = RenderOptions(width = 3641, height = 2048, supersample = false, framing = Framing(zoom = Framing.MAX_ZOOM), threads = 4)
+        assertEquals(3641, MandalaRenderer.render(params, options).image.width)
+    }
+
     /** The free portrait: 1024 wide, drawn at twice the size like the free square. */
     @Test
     fun exportsTheFreePortraitWithin256MbHeap() {

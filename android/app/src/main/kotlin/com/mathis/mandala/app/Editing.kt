@@ -244,26 +244,43 @@ object Editing {
     // ── Saving in a format (ADR-0010) ──
 
     /** Formats offered when saving. The phone screen follows the device's aspect ratio. */
-    enum class SaveFormat(val label: String) { SQUARE("Square"), SCREEN("This screen"), FOUR_FIVE("4:5") }
+    enum class SaveFormat(val label: String, val across: Int = 0, val down: Int = 0) {
+        SQUARE("Square", 1, 1),
+        SCREEN("This screen"),
+        FOUR_FIVE("4:5", 4, 5),
+        THREE_FOUR("3:4", 3, 4),
+        TWO_THREE("2:3", 2, 3),
+        NINE_SIXTEEN("9:16", 9, 16),
+        FIVE_FOUR("5:4", 5, 4),
+        FOUR_THREE("4:3", 4, 3),
+        THREE_TWO("3:2", 3, 2),
+        SIXTEEN_NINE("16:9", 16, 9),
+        ;
+
+        /** The fixed ratios offered in the list next to Square and This screen. */
+        val isRatio: Boolean get() = across > 0 && this != SQUARE
+        val isLandscape: Boolean get() = across > down
+    }
 
     /** Tallest screen the phone screen format follows (21:9); `MemoryBudgetTest` checks this height at 2048 px. */
     const val MAX_SCREEN_ASPECT = 21.0 / 9.0
 
-    /** Width of the preview in the save sheet. */
+    /** Shorter side of the preview in the save sheet. */
     const val FRAME_PREVIEW_WIDTH = 360
 
     /** Height over width of `format`; `screenAspect` is the device's (taller side over shorter side). */
     fun aspect(format: SaveFormat, screenAspect: Double): Double = when (format) {
-        SaveFormat.SQUARE -> 1.0
-        SaveFormat.FOUR_FIVE -> 1.25
         SaveFormat.SCREEN -> screenAspect.coerceIn(1.0, MAX_SCREEN_ASPECT)
+        else -> format.down.toDouble() / format.across
     }
 
-    /** Width and height of an image of `format` that is `width` pixels wide. */
-    fun size(format: SaveFormat, screenAspect: Double, width: Int): Pair<Int, Int> =
-        width to Math.round(width * aspect(format, screenAspect)).toInt()
+    /** Width and height of an image of `format` whose shorter side is `side` pixels. */
+    fun size(format: SaveFormat, screenAspect: Double, side: Int): Pair<Int, Int> {
+        val aspect = aspect(format, screenAspect)
+        return if (aspect >= 1.0) side to Math.round(side * aspect).toInt() else Math.round(side / aspect).toInt() to side
+    }
 
-    /** Output size when saving: 1024 px wide, or 2048 px with Pro. */
+    /** Output size when saving: the shorter side 1024 px, or 2048 px with Pro. */
     fun exportSize(format: SaveFormat, screenAspect: Double, large: Boolean): Pair<Int, Int> =
         size(format, screenAspect, if (large) LARGE_EXPORT_SIZE else EXPORT_SIZE)
 

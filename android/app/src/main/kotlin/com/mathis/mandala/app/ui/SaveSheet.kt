@@ -1,5 +1,7 @@
 package com.mathis.mandala.app.ui
 
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.Icon
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -100,9 +102,10 @@ internal fun SaveSheet(
         ) {
             Text("Save image", style = MaterialTheme.typography.titleMedium)
             FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
-                for (f in SaveFormat.entries) {
+                for (f in listOf(SaveFormat.SQUARE, SaveFormat.SCREEN)) {
                     FilterChip(selected = choice.format == f, onClick = { onFormat(f) }, label = { Text(f.label) })
                 }
+                RatioChip(choice.format, onFormat)
             }
             // The frame takes the width, but leaves room for the buttons below on a phone.
             val maxFrameHeight = LocalConfiguration.current.screenHeightDp.dp * 0.5f
@@ -199,6 +202,28 @@ private fun Frame(
                 LinearProgressIndicator(Modifier.fillMaxWidth().height(Sizes.progress).align(Alignment.BottomCenter))
             } else if (preview.rendering) {
                 LinearProgressIndicator(Modifier.fillMaxWidth().height(Sizes.progress).align(Alignment.BottomCenter))
+            }
+        }
+    }
+}
+
+/** A chip for the fixed ratios: shows the chosen one and opens the list of portrait and landscape ratios. */
+@Composable
+private fun RatioChip(format: SaveFormat, onFormat: (SaveFormat) -> Unit) {
+    var open by remember { mutableStateOf(false) }
+    Box {
+        FilterChip(
+            selected = format.isRatio,
+            onClick = { open = true },
+            label = { Text(if (format.isRatio) format.label else "Other ratio") },
+            trailingIcon = { Icon(EditorIcons.Expand, contentDescription = null, modifier = Modifier.size(Sizes.icon)) },
+        )
+        DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
+            for (f in SaveFormat.entries.filter { it.isRatio }) {
+                DropdownMenuItem(
+                    text = { Text("${f.label} · ${if (f.isLandscape) "landscape" else "portrait"}") },
+                    onClick = { open = false; onFormat(f) },
+                )
             }
         }
     }
