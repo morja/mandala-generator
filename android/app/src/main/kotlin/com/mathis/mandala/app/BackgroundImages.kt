@@ -42,7 +42,13 @@ class AndroidImageLoader : ImageLoader {
     override fun load(url: String, size: Int): Image8? {
         cached?.let { (u, s, img) -> if (u == url && s == size) return img }
         val path = runCatching { File(java.net.URI(url)).path }.getOrNull() ?: return null
-        val decoded = BitmapFactory.decodeFile(path) ?: return null
+        // Decode at the smallest power-of-two reduction that still covers the requested size.
+        val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+        BitmapFactory.decodeFile(path, bounds)
+        if (bounds.outWidth <= 0 || bounds.outHeight <= 0) return null
+        var sample = 1
+        while (bounds.outWidth / (sample * 2) >= size && bounds.outHeight / (sample * 2) >= size) sample *= 2
+        val decoded = BitmapFactory.decodeFile(path, BitmapFactory.Options().apply { inSampleSize = sample }) ?: return null
         val scaled = Bitmap.createScaledBitmap(decoded, size, size, true)
         val pixels = IntArray(size * size)
         scaled.getPixels(pixels, 0, size, 0, 0, size, size)
