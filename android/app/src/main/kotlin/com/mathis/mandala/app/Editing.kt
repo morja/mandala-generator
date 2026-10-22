@@ -102,6 +102,11 @@ object Editing {
     object Ranges {
         val layerScale = 0.2..1.2
         val layerComplexity = 0.15..1.0
+        /** Strange Attractor adds a run of points per complexity step; above about 0.5 it burns to a white disc. */
+        val attractorComplexity = 0.15..0.5
+
+        fun layerComplexity(style: MandalaStyle): ClosedFloatingPointRange<Double> =
+            if (style == MandalaStyle.STRANGE_ATTRACTOR) attractorComplexity else layerComplexity
         val layerPainted = 0.25..0.85
         val layerBrightness = 0.15..0.85
         val emblemSize = 0.2..0.9

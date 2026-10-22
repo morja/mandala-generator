@@ -289,7 +289,7 @@ private fun LayerControls(layer: StyleLayer, update: ((StyleLayer) -> StyleLayer
     Group("Shape", initiallyOpen = true) {
         SteppedSlider("Symmetry", layer.symmetry, 1..8, default = StyleLayer().symmetry) { v -> update { it.copy(symmetry = v) } }
         ValueSlider("Scale", layer.scale, Editing.Ranges.layerScale.floats(), default = StyleLayer().scale) { v -> update { it.copy(scale = v) } }
-        ValueSlider("Complexity", layer.complexity, Editing.Ranges.layerComplexity.floats(), default = StyleLayer().complexity) { v -> update { it.copy(complexity = v) } }
+        ValueSlider("Complexity", layer.complexity, Editing.Ranges.layerComplexity(layer.style).floats(), default = StyleLayer().complexity) { v -> update { it.copy(complexity = v) } }
         // Only where the style uses them; hidden values stay as they are.
         if (layer.style in Editing.densityStyles) {
             ValueSlider("Density", layer.density, default = StyleLayer().density) { v -> update { it.copy(density = v) } }

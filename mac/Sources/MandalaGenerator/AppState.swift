@@ -314,20 +314,21 @@ class AppState: ObservableObject {
             }
             usedPalettes.insert(palIdx)
             let calm = li == 0 ? 1.0 : ControlChoices.upperLayerCalm
+            let look = ControlChoices.diceLook(s, calm: calm)
             newLayers.append(StyleLayer(
                 style: s,
                 scale: li == 0 ? Double.random(in: 0.75...1.0) : Double.random(in: 0.3...0.75),
                 paletteIndex: palIdx,
                 colorOffset: Double.random(in: 0...1),
-                complexity: Double.random(in: 0.2...1.0) * calm,
-                density: Double.random(in: 0.2...1.0) * calm,
-                glowIntensity: Double.random(in: 0.2...0.9),
+                complexity: look.complexity,
+                density: look.density,
+                glowIntensity: look.glow,
                 colorDrift: Double.random(in: 0.1...0.9),
-                ripple: Double.random(in: 0.0...0.6),
+                ripple: look.ripple,
                 wash: 0.0,   // works like a switch (all of it between 0 and 0.05) and whitens the layer
-                abstractLevel: Double.random(in: 0.1...0.5),
+                abstractLevel: look.painted,
                 saturation: Double.random(in: 0.3...1.0),
-                brightness: Double.random(in: 0.3...0.6),
+                brightness: look.brightness,
                 symmetry: sharedSymmetry,
                 seed: UInt64.random(in: 1...UInt64.max)
             ))
@@ -537,15 +538,16 @@ class AppState: ObservableObject {
         let calm = index == 0 ? 1.0 : ControlChoices.upperLayerCalm
         parameters.layers[index].paletteIndex   = ControlChoices.offeredPalettes.randomElement() ?? 0
         parameters.layers[index].scale          = index == 0 ? Double.random(in: 0.75...1.0) : Double.random(in: 0.3...0.75)
-        parameters.layers[index].complexity     = Double.random(in: 0.2...1.0) * calm
-        parameters.layers[index].density        = Double.random(in: 0.2...1.0) * calm
-        parameters.layers[index].glowIntensity  = Double.random(in: 0.2...0.9)
+        let look = ControlChoices.diceLook(parameters.layers[index].style, calm: calm)
+        parameters.layers[index].complexity     = look.complexity
+        parameters.layers[index].density        = look.density
+        parameters.layers[index].glowIntensity  = look.glow
         parameters.layers[index].colorDrift     = Double.random(in: 0.1...0.9)
-        parameters.layers[index].ripple         = Double.random(in: 0.0...0.6)
+        parameters.layers[index].ripple         = look.ripple
         parameters.layers[index].wash           = 0.0
-        parameters.layers[index].abstractLevel  = Double.random(in: 0.1...0.5)
+        parameters.layers[index].abstractLevel  = look.painted
         parameters.layers[index].saturation     = Double.random(in: 0.3...1.0)
-        parameters.layers[index].brightness     = Double.random(in: 0.3...0.6)
+        parameters.layers[index].brightness     = look.brightness
     }
 
     func randomizeSeed() {

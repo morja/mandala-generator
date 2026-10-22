@@ -406,7 +406,7 @@ private struct LayerCard: View {
                     // Sliders
                     // Ranges from TUNE-1; a saved value outside one stays until its slider is moved.
                     CardSlider(label: "Scale",       value: $layer.scale,        range: 0.2...1.2, color: .blue, reset: defaults.scale)
-                    CardSlider(label: "Complexity",  value: $layer.complexity,   range: 0.15...1,  color: .indigo, reset: defaults.complexity)
+                    CardSlider(label: "Complexity",  value: $layer.complexity,   range: ControlChoices.layerComplexity(layer.style), color: .indigo, reset: defaults.complexity)
                     if layer.style.usesDensity {
                         CardSlider(label: "Density", value: $layer.density,      range: 0...1,     color: .blue, reset: defaults.density)
                     }
