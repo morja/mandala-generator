@@ -61,6 +61,11 @@
   .frame .fit { position: absolute; left: 50%; bottom: var(--sm); transform: translateX(-50%); background: rgba(18,17,16,.82); border-color: rgba(255,255,255,.14); }
   .frame .fit button { color: #E6E1DB; }
   .frame .fit button.on { background: #E6E1DB; color: #221F1C; }
+  /* Variant A: Whole/Fill beside a portrait frame, below a landscape one. */
+  .framewrap .fitside { position: absolute; top: 50%; transform: translateY(-50%); flex-direction: column; border-radius: 22px; }
+  .framewrap .fitside button { padding: 8px 12px; }
+  .framewrap.below { flex-direction: column; align-items: center; gap: var(--sm); }
+  .framewrap.below .fitside { position: static; transform: none; flex-direction: row; border-radius: 999px; }
   .hint { color: var(--text-muted); font-size: 12px; text-align: center; margin: 0 0 var(--md); }
 
   /* Rows. */
@@ -135,13 +140,13 @@
     <div class="seg" data-format>
       <button data-f="1">Square</button>
       <button data-f="screen" class="on">Screen</button>
-      <button data-f="0.8">4:5 <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg></button>
+      <button data-f="0.8" data-cycle>4:5 <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg></button>
     </div>
     <div class="framewrap">
       <div class="frame" data-frame>
         <img src="dm-4-mandala.png" alt="">
-        <div class="seg small fit" data-fit><button class="on" data-fill="0">Whole</button><button data-fill="1">Fill</button></div>
       </div>
+      <div class="seg small fitside" data-fit><button class="on" data-fill="0">Whole</button><button data-fill="1">Fill</button></div>
     </div>
     <p class="hint">Drag to move, pinch to zoom, double tap to centre.</p>
 
@@ -237,7 +242,7 @@
     B: `<p><b>B.</b> Three tabs for three different results. Each tab has only its own options and one button at the bottom. Wallpaper shows its choices (home, lock, pair, moving) right away instead of in a menu, and the line drawing gets its own square preview, so it is clear that the format and adjustments do not apply to it.</p>`,
   };
   const captions = {
-    A: 'Tap “Adjust” to open the sliders; the format and Whole/Fill change the frame.',
+    A: 'Tap “Adjust” to open the sliders. Tap 4:5 again for 16:9: Whole/Fill moves below a landscape frame.',
     B: 'Tap the tabs. The bottom button changes with the tab.',
   };
   let v = 'A';
@@ -255,6 +260,12 @@
     frame.style.width = w + 'px'; frame.style.height = h + 'px';
     frame.dataset.f = f;
     frame.querySelector('img').style.width = (fill ? Math.max(w, h) * 1.05 : Math.min(w, h) * 1.15) + 'px';
+    const wrap = frame.parentElement, fit = wrap.querySelector('.fitside');
+    if (fit) {
+      fit.hidden = f === '1';
+      wrap.classList.toggle('below', h < w);
+      fit.style.left = h < w ? '' : `calc(50% + ${w / 2}px + 16px)`;
+    }
   }
 
   function render() {
@@ -265,16 +276,23 @@
 
     sheet.querySelectorAll('[data-format]').forEach(seg => seg.addEventListener('click', e => {
       const b = e.target.closest('button'); if (!b) return;
+      // In the mock the ratio button switches between a portrait and a landscape ratio on each tap.
+      if (b.dataset.cycle !== undefined && b.classList.contains('on')) {
+        const land = b.dataset.f === '0.8';
+        b.dataset.f = land ? '1.7778' : '0.8';
+        b.firstChild.textContent = land ? '16:9 ' : '4:5 ';
+      }
       seg.querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b));
       const fr = seg.parentElement.querySelector('[data-frame]');
-      const fill = fr.querySelector('[data-fill="1"]').classList.contains('on');
+      const fitSeg = fr.parentElement.querySelector('[data-fit]');
+      const fill = fitSeg.querySelector('[data-fill="1"]').classList.contains('on');
       setFrame(fr, b.dataset.f, fill);
-      fr.querySelector('[data-fit]').hidden = b.dataset.f === '1';
+      fitSeg.hidden = b.dataset.f === '1';
     }));
     sheet.querySelectorAll('[data-fit]').forEach(seg => seg.addEventListener('click', e => {
       const b = e.target.closest('button'); if (!b) return;
       seg.querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b));
-      const fr = seg.closest('[data-frame]');
+      const fr = seg.closest('.framewrap').querySelector('[data-frame]');
       setFrame(fr, fr.dataset.f, b.dataset.fill === '1');
     }));
     sheet.querySelectorAll('[data-size]').forEach(seg => seg.addEventListener('click', e => {
