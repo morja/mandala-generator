@@ -76,18 +76,18 @@ class FramingTest {
     }
 
     @Test
-    fun fillZoomCoversTheCornersWithTheLargeLayers() {
+    fun fillZoomBringsTheFilledPartOfTheMandalaToTheCorners() {
         val phone = 2340.0 / 1080
-        fun zoom(json: String) = MandalaRenderer.fillZoom(SettingsJson.decode(json), phone)
-        // Star Burst and Hyperboloid at full size: Star Burst reaches less far, so it sets the zoom (about 1.6).
-        val starAndHyper = zoom("""{"layers":[{"style":"starBurst"},{"style":"hyperboloid"}]}""")
-        assertTrue(starAndHyper in 1.55..1.65, "zoom $starAndHyper")
-        // A small accent in the middle does not drive the zoom.
-        assertEquals(starAndHyper, zoom("""{"layers":[{"style":"starBurst"},{"style":"hyperboloid"},{"style":"roseCurves","scale":0.3}]}"""))
+        fun zoom(json: String) = MandalaRenderer.fillZoom(SettingsJson.decode(json), phone, threads = 2)
+        // A Star Burst fills to about three quarters of the mandala's size: zoom about 1.6 (Mathis' choice).
+        val star = zoom("""{"layers":[{"style":"starBurst"}]}""")
+        assertTrue(star in 1.5..1.7, "Star Burst $star")
+        // A small accent in the middle does not change how far the mandala is filled.
+        assertEquals(star, zoom("""{"layers":[{"style":"starBurst"},{"style":"roseCurves","scale":0.3}]}"""), 0.05)
         // Deep Nebula fills any canvas already; a small mandala zooms at most to the longer side.
-        assertEquals(1.0, zoom("""{"layers":[{"style":"deepNebula"}]}"""))
+        assertTrue(zoom("""{"layers":[{"style":"deepNebula"}]}""") < 1.1)
         assertEquals(phone, zoom("""{"layers":[{"style":"spirograph","scale":0.2}]}"""), 1e-9)
-        assertEquals(1.0, MandalaRenderer.fillZoom(SettingsJson.decode("""{"layers":[{"style":"starBurst"}]}"""), 1.0))
+        assertEquals(1.0, MandalaRenderer.fillZoom(SettingsJson.decode("""{"layers":[{"style":"starBurst"}]}"""), 1.0, threads = 2))
     }
 
     @Test

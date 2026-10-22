@@ -232,17 +232,14 @@ class EditingTest {
 
     @Test
     fun framingFollowsTheFitAndPlacingByHandNeedsPro() {
-        val phone = 2340.0 / 1080
-        val mandala = SettingsJson.decode("""{"layers":[{"style":"starBurst"},{"style":"hyperboloid"}]}""")
         val byHand = Framing(0.4, 0.6, 2.0)
-        assertEquals(Framing(), Editing.framingFor(SaveChoice(fit = Fit.WHOLE, framing = byHand), mandala, phone, pro = true))
-        val fill = Editing.framingFor(SaveChoice(fit = Fit.FILL), mandala, phone, pro = false)
-        assertEquals(MandalaRenderer.fillZoom(mandala, phone), fill.zoom, 1e-9)
-        assertEquals(0.5, fill.centreX, 1e-9)
+        assertEquals(Framing(), Editing.framingFor(SaveChoice(fit = Fit.WHOLE, framing = byHand), fillZoom = 1.6, pro = true))
+        assertEquals(Framing(zoom = 1.6), Editing.framingFor(SaveChoice(fit = Fit.FILL), fillZoom = 1.6, pro = false))
         // Placed by hand: kept with Pro, "Show whole" without.
-        assertEquals(byHand, Editing.framingFor(SaveChoice(fit = Fit.HAND, framing = byHand), mandala, phone, pro = true))
-        assertEquals(Framing(), Editing.framingFor(SaveChoice(fit = Fit.HAND, framing = byHand), mandala, phone, pro = false))
+        assertEquals(byHand, Editing.framingFor(SaveChoice(fit = Fit.HAND, framing = byHand), fillZoom = 1.6, pro = true))
+        assertEquals(Framing(), Editing.framingFor(SaveChoice(fit = Fit.HAND, framing = byHand), fillZoom = 1.6, pro = false))
     }
+
 
     @Test
     fun layersAndTheEmblemMoveSizeAndTurnWithinTheirRanges() {

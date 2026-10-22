@@ -455,26 +455,53 @@ object MandalaRenderer {
 
     /**
      * The zoom (ADR-0010) at which the mandala fills a canvas of `aspect` (height over width) with its
-     * own lines: each of its large layers (at least 80 % of the largest scale; small accents do not
-     * count) covers the corners. Thin ray ends do not count as cover, so a style is taken to fill
-     * 90 % of its reach. Between 1 (the mandala already fills the canvas, as Deep Nebula does) and
-     * fitting the longer side.
+     * own lines, between 1 (it fills the canvas already, as Deep Nebula does) and fitting the longer side.
+     * Measured, since how full a style looks differs from how far it reaches: the mandala's layers alone
+     * are drawn small on black, and the radius up to which at least 60 % of every circle is lit sets
+     * the zoom that brings that radius to the canvas corners. Takes about a tenth of a second.
      */
-    fun fillZoom(params: MandalaParameters, aspect: Double): Double {
+    fun fillZoom(params: MandalaParameters, aspect: Double, threads: Int = Runtime.getRuntime().availableProcessors()): Double {
         val longer = max(aspect, 1 / aspect)
         val corner = 0.5 * sqrt(1 + longer * longer)
-        val layers = params.layers.filter { it.isEnabled && it.style in supportedStyles }
-        val largest = layers.maxOfOrNull { it.scale.coerceIn(0.1, 1.2) } ?: return longer
-        val cover = layers.filter { it.scale.coerceIn(0.1, 1.2) >= 0.8 * largest }
-            .minOf { BASE_RADIUS * it.scale.coerceIn(0.1, 1.2) * styleReach(it.style) * FILL_SHARE }
-        return (corner / cover).coerceIn(1.0, longer)
+        val layersOnly = params.copy(
+            baseLayer = params.baseLayer.copy(isEnabled = false),
+            effectsLayer = params.effectsLayer.copy(isEnabled = false),
+            emblemLayer = params.emblemLayer.copy(isEnabled = false),
+            textLayer = params.textLayer.copy(isEnabled = false),
+        )
+        val side = FILL_PROBE_SIZE
+        val img = render(
+            layersOnly,
+            RenderOptions(outputSize = side, supersample = false, framing = Framing(zoom = FILL_PROBE_ZOOM), threads = threads, glowReferenceWidth = FILL_PROBE_GLOW),
+        ).image
+        var filled = 0
+        for (r in 1 until side / 2) {
+            var lit = 0
+            for (a in 0 until FILL_ANGLES) {
+                val angle = a * 2 * Math.PI / FILL_ANGLES
+                val x = (side / 2 + r * kotlin.math.cos(angle)).toInt()
+                val y = (side / 2 + r * kotlin.math.sin(angle)).toInt()
+                val o = (y * side + x) * 3
+                if (0.3 * img.get(o) + 0.59 * img.get(o + 1) + 0.11 * img.get(o + 2) > FILL_LIT) lit++
+            }
+            if (lit >= FILL_ANGLES * FILL_SHARE) filled = r
+        }
+        if (filled == 0) return longer
+        return (corner / (filled / (side * FILL_PROBE_ZOOM))).coerceIn(1.0, longer)
     }
+
+    // The fill probe: 256 px with the mandala at 0.35 of it, so a reach of 1.4 mandala sizes still
+    // shows; glow blurred at a small reference width, as the fast preview does.
+    private const val FILL_PROBE_SIZE = 256
+    private const val FILL_PROBE_ZOOM = 0.35
+    private const val FILL_PROBE_GLOW = 400
+    private const val FILL_ANGLES = 360
+    /** Brightness (0 to 255) from which a pixel counts as lit, and the share of a circle that must be. */
+    private const val FILL_LIT = 20.0
+    private const val FILL_SHARE = 0.6
 
     /** Radius of a layer at scale 1, in mandala sizes (as on the Mac). */
     private const val BASE_RADIUS = 0.72
-
-    /** Share of a style's reach that still looks filled: the outermost tenth is mostly ray ends. */
-    private const val FILL_SHARE = 0.9
 
     /** Buffer size up to which lines are hairlines: the preview's (512 px drawn at twice the size), as on the Mac. */
     private const val LINE_REFERENCE_SIZE = 1024
