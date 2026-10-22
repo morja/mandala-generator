@@ -19,3 +19,4 @@ ADR-0001 to ADR-0008 were written for the Android repository before both apps mo
 | [0011](0011-layer-positions.md) | Layer positions: each layer and the emblem placed on their own | accepted |
 | [0012](0012-app-name-dahlia.md) | App name: Dahlia – Mandala Maker | accepted |
 | [0013](0013-svg-line-drawing.md) | SVG line drawing as a Pro export | accepted |
+| [0014](0014-pro-wallpapers-and-finish.md) | Pro wallpapers and a finishing step | accepted |
