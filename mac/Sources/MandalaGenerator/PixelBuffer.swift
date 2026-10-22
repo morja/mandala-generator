@@ -8,6 +8,10 @@ class PixelBuffer {
     let width: Int
     let height: Int
     var data: [Float]
+    /// Width of lines and points in pixels. 1 is a hairline; a layer drawn larger than the
+    /// reference size gets proportionally wider lines, so a large export looks like the preview
+    /// enlarged instead of thinner and darker (see `lineWidth(forSize:)` in the renderer).
+    var lineWidth: Float = 1
 
     init(width: Int, height: Int) {
         self.width  = width
@@ -54,10 +58,41 @@ class PixelBuffer {
         data[base + 2] += color.b * weight
     }
 
-    /// Wu anti-aliased line drawing with additive blending.
-    /// Guards against NaN, infinity, and Int-overflow from extreme curve values.
+    /// A point `lineWidth` pixels wide: one pixel, or a small square of them sharing the weight.
+    @inline(__always)
+    func addPoint(x: Int, y: Int, color: (r: Float, g: Float, b: Float), weight: Float) {
+        guard lineWidth > 1 else { return addPixel(x: x, y: y, color: color, weight: weight) }
+        let k = Int(lineWidth.rounded(.up))
+        let share = lineWidth / Float(k)
+        let w = weight * share * share
+        let start = -(k - 1) / 2
+        for dy in start..<(start + k) {
+            for dx in start..<(start + k) { addPixel(x: x + dx, y: y + dy, color: color, weight: w) }
+        }
+    }
+
+    /// A line `lineWidth` pixels wide: one hairline, or ceil(lineWidth) parallel ones spread over
+    /// that width, sharing the weight so the line carries `lineWidth` times a hairline's light.
     func addLine(x0: Float, y0: Float, x1: Float, y1: Float,
                  color: (r: Float, g: Float, b: Float), weight: Float) {
+        guard lineWidth > 1 else { return addHairline(x0: x0, y0: y0, x1: x1, y1: y1, color: color, weight: weight) }
+        let dx = x1 - x0, dy = y1 - y0
+        let len = (dx * dx + dy * dy).squareRoot()
+        guard len > 0 else { return addHairline(x0: x0, y0: y0, x1: x1, y1: y1, color: color, weight: weight) }
+        let nx = -dy / len, ny = dx / len
+        let k = Int(lineWidth.rounded(.up))
+        let step = lineWidth / Float(k)
+        for i in 0..<k {
+            let off = (Float(i) - Float(k - 1) * 0.5) * step
+            addHairline(x0: x0 + nx * off, y0: y0 + ny * off, x1: x1 + nx * off, y1: y1 + ny * off,
+                        color: color, weight: weight * step)
+        }
+    }
+
+    /// Wu anti-aliased line drawing with additive blending.
+    /// Guards against NaN, infinity, and Int-overflow from extreme curve values.
+    private func addHairline(x0: Float, y0: Float, x1: Float, y1: Float,
+                             color: (r: Float, g: Float, b: Float), weight: Float) {
         // Reject degenerate inputs — prevents Int() overflow trap
         guard x0.isFinite, y0.isFinite, x1.isFinite, y1.isFinite else { return }
         let limit = Float(max(width, height) * 4)
@@ -139,7 +174,7 @@ class PixelBuffer {
         let ny   =  dx / len
         let half = Float(thickness) * 0.5
         for t in 1..<thickness {
-            let off = (Float(t) - half) * 0.6
+            let off = (Float(t) - half) * 0.6 * lineWidth
             let w   = weight * (1.0 - Float(t) / Float(thickness) * 0.5)
             addLine(x0: x0 + nx * off, y0: y0 + ny * off,
                     x1: x1 + nx * off, y1: y1 + ny * off,

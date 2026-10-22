@@ -143,6 +143,8 @@ struct MandalaRenderer {
             let lcy = Float(lBufSize) * 0.5 + Float(shiftY - Double(shiftYi))
 
             let buffer = PixelBuffer(width: lBufSize, height: lBufSize)
+            let lineWidth = Self.lineWidth(forSize: bufferSize, style: layer.style)
+            buffer.lineWidth = lineWidth
 
             drawStructuralLayers(buffer: buffer, cx: lcx, cy: lcy, baseRadius: layerRadius,
                                  params: lp, style: layer.style, colorOffset: layer.colorOffset,
@@ -150,7 +152,8 @@ struct MandalaRenderer {
                                  layerCount: layerCount, symmetry: layerSymmetry,
                                  rippleAmount: Float(layer.ripple), weightMul: 1.0)
 
-            buffer.scale(brightnessScale)
+            // Wider lines already carry more light, so above the reference the scale stays at its value.
+            buffer.scale(lineWidth > 1 ? Float(lineReferenceSize) / 1600.0 : brightnessScale)
             guard var layerImage = buffer.toCGImage() else { continue }
             layerImage = applyGlow(image: layerImage, intensity: layer.glowIntensity)
             if layer.wash > 0 {
@@ -731,8 +734,10 @@ struct MandalaRenderer {
         guard !tasks.isEmpty else { return }
         let nThreads = max(1, min(tasks.count, ProcessInfo.processInfo.activeProcessorCount))
         let chunk = max(1, tasks.count / nThreads)
-        let subBuffers = (0..<nThreads).map { _ in
-            PixelBuffer(width: buffer.width, height: buffer.height)
+        let subBuffers = (0..<nThreads).map { _ -> PixelBuffer in
+            let sub = PixelBuffer(width: buffer.width, height: buffer.height)
+            sub.lineWidth = buffer.lineWidth
+            return sub
         }
         DispatchQueue.concurrentPerform(iterations: nThreads) { tid in
             let start = tid * chunk
@@ -3973,6 +3978,17 @@ struct MandalaRenderer {
     // MARK: - Layer rotation
 
     /// Crop the centre `size × size` square from `image` (which may be larger).
+    /// Buffer size up to which lines are hairlines: the Android preview's (512 px drawn at twice the
+    /// size). Shared by both apps so a mandala looks the same on both at every size.
+    static let lineReferenceSize = 1024
+
+    /// Line width for a layer drawn into a buffer of `size` pixels: proportionally wider above the
+    /// reference size. Universe and Symbols already grow their elements with the size and keep hairlines.
+    static func lineWidth(forSize size: Int, style: MandalaStyle) -> Float {
+        if style == .universe || style == .symbols { return 1 }
+        return max(1, Float(size) / Float(lineReferenceSize))
+    }
+
     private static func cropCenter(_ image: CGImage, to size: Int) -> CGImage {
         let ci  = CIImage(cgImage: image)
         let src = ci.extent
@@ -5632,7 +5648,7 @@ struct MandalaRenderer {
                 for s in 0..<symmetry {
                     let ang  = Float(s) * .pi * 2.0 / Float(symmetry)
                     let cosA = cos(ang), sinA = sin(ang)
-                    buffer.addPixel(x: Int(cx + px * cosA - py * sinA),
+                    buffer.addPoint(x: Int(cx + px * cosA - py * sinA),
                                     y: Int(cy + px * sinA + py * cosA),
                                     color: col, weight: weight)
                 }

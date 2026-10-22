@@ -1,6 +1,7 @@
 package com.mathis.mandala.core
 
 import kotlin.math.abs
+import kotlin.math.ceil
 import kotlin.math.floor
 import kotlin.math.max
 import kotlin.math.min
@@ -61,15 +62,20 @@ class PixelBuffer private constructor(
         data[base + 2] += b * weight
     }
 
-    /** A point of `lineWidth` pixels: one pixel, or a small square of them for wider lines. */
+    /** A point `lineWidth` pixels wide: one pixel, or a small square of them sharing the weight (as on the Mac). */
     fun addPoint(x: Int, y: Int, r: Float, g: Float, b: Float, weight: Float) {
         if (lineWidth <= 1f) return addPixel(x, y, r, g, b, weight)
-        val k = max(1, Math.round(lineWidth))
+        val k = ceil(lineWidth).toInt()
+        val share = lineWidth / k
+        val w = weight * share * share
         val start = -(k - 1) / 2
-        for (dy in start until start + k) for (dx in start until start + k) addPixel(x + dx, y + dy, r, g, b, weight)
+        for (dy in start until start + k) for (dx in start until start + k) addPixel(x + dx, y + dy, r, g, b, w)
     }
 
-    /** A line of `lineWidth` pixels: one hairline, or that many parallel ones about a pixel apart. */
+    /**
+     * A line `lineWidth` pixels wide: one hairline, or ceil(lineWidth) parallel ones spread over that
+     * width, sharing the weight so the line carries `lineWidth` times a hairline's light (as on the Mac).
+     */
     fun addLine(x0: Float, y0: Float, x1: Float, y1: Float, r: Float, g: Float, b: Float, weight: Float) {
         if (lineWidth <= 1f) return addHairline(x0, y0, x1, y1, r, g, b, weight)
         val dx = x1 - x0
@@ -78,11 +84,11 @@ class PixelBuffer private constructor(
         if (!(len > 0f)) return addHairline(x0, y0, x1, y1, r, g, b, weight)
         val nx = -dy / len
         val ny = dx / len
-        val k = max(1, Math.round(lineWidth))
+        val k = ceil(lineWidth).toInt()
         val step = lineWidth / k
         for (i in 0 until k) {
             val off = (i - (k - 1) * 0.5f) * step
-            addHairline(x0 + nx * off, y0 + ny * off, x1 + nx * off, y1 + ny * off, r, g, b, weight)
+            addHairline(x0 + nx * off, y0 + ny * off, x1 + nx * off, y1 + ny * off, r, g, b, weight * step)
         }
     }
 
