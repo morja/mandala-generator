@@ -1,6 +1,6 @@
 # STORE-1 · Google Play listing and Play Console answers
 
-Prepared 20 October 2026 for the first Android release; entered in the Play Console the same day. Updated 22 October 2026 for version 1.1 and later (save formats, wallpaper, what Pro adds, starter favourites); the Play Console still has the 20 October texts. Graphics in this folder: `play-icon-512.png` (512×512, 32-bit PNG), `play-feature-graphic.png` (1024×500), and six phone screenshots in `screenshots/` (1080×1920, cropped from Mathis' Galaxy S23 without the status bar): Flower of Life, Flow Field, Lotus emblem, quote, favourites, drawing. AI asset declaration: "Don't label assets" (icon and feature graphic are rendered by the app, screenshots are real).
+Prepared 20 October 2026 for the first Android release; entered in the Play Console the same day. Updated 22 October 2026 for version 1.1 and later (save formats, wallpaper, what Pro adds, starter favourites) and entered in the Play Console the same day; the screenshots there are still the 20 October ones. Graphics in this folder: `play-icon-512.png` (512×512, 32-bit PNG), `play-feature-graphic.png` (1024×500), and six phone screenshots in `screenshots/` (1080×1920, cropped from Mathis' Galaxy S23 without the status bar): Flower of Life, Flow Field, Lotus emblem, quote, favourites, drawing. AI asset declaration: "Don't label assets" (icon and feature graphic are rendered by the app, screenshots are real).
 
 ## App details
 
@@ -77,7 +77,7 @@ The two tearoom.one pages exist in the website repository (commit "Add Mandala G
 | Beschreibung (DE) | Speichere mit 2048 px für Drucke und Hintergrundbilder, richte das Mandala im Bild aus und verschiebe Ebenen und Emblem. Einmaliger Kauf, kein Abo. |
 | Price | 1.99 € in Germany (US 1.89 $), set in the Play Console |
 
-In the Play Console on 22 October 2026: the product exists and is active, with the 20 October English description only; the German listing and the new description are still to be entered.
+In the Play Console since 22 October 2026: active, with these descriptions in English and German.
 
 Google Play lets you create in-app products only after a build that contains the billing permission has been uploaded (any testing track).
 
@@ -139,14 +139,15 @@ Google Play takes up to eight phone screenshots. All quotes shown are public dom
 
 ## What Mathis does himself
 
-State on 22 October 2026, read from the Play Console through the API: production, beta and alpha are empty; the internal track has 1.1.0 (code 3); the English listing has the icon, the feature graphic and six phone screenshots (the German listing uses them too); the product `pro` is active at 1.99 €. The developer account is older than November 2023, so Google's closed test with 12 testers does not apply.
+State on 22 October 2026, read from the Play Console through the API: production, beta and alpha are empty; the internal track has 1.1.0 (code 3); the English listing has the icon, the feature graphic and six phone screenshots (the German listing uses them too); the product `pro` is active at 1.99 €; the listing texts and the product description were updated the same day. The developer account is older than November 2023, so Google's closed test with 12 testers does not apply.
 
 1. Done: upload key and `android/keystore.properties`. To create one again:
    `keytool -genkeypair -v -keystore ~/.keystore/mandalagenerator-upload.jks -alias upload -keyalg RSA -keysize 4096 -validity 10000`
 2. Done: the app in the Play Console, Play App Signing (with the first upload), tearoom.one with the privacy policy, the product `pro` with its price.
 3. Take the new screenshots (list above) and replace the six in the console.
-4. Enter the updated listing texts above (English and German) and the product's new description, also in German.
-5. Fill in Data safety, Content rating and Target audience with the answers above, if not done yet (the API cannot read them).
+4. Done on 22 October 2026 (through the API): the listing texts above in English and German, and the product's new description in English and German.
+5. Done on 20 October 2026 (checked in the console on 22 October): all ten App content declarations. Data safety "doesn't collect or share data" (data that Google Play's billing collects itself need not be declared, Play Console Help); target audience 13 and over; content ratings ESRB Everyone, PEGI 3, USK 0, and ClassInd 14+ in Brazil only because of in-app purchases.
+   Open: Sign in details (app access) says "restricted" with promo codes for Pro, which is right for a paid product, but its instructions still say "Menu > Save large (2048 px)". Saving is now the save button in the top bar, then "Save large". Replace that phrase by hand in the console, keeping the codes.
 6. Build a new bundle from `main` (raise the version, for example 1.2.0, code 4), put it on the internal track and buy Pro once with a licence tester.
 7. Promote that release to production and send it for review.
 
