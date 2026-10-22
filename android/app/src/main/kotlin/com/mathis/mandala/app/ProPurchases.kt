@@ -131,5 +131,9 @@ class ProPurchases(context: Context, private val onEvent: (String) -> Unit) {
         /** The one-time product to create in the Play Console. */
         const val PRODUCT_ID = "pro"
         private const val KEY_OWNED = "owned"
+
+        /** Pro as last known, without asking Google Play; for work in the background (the daily wallpaper). */
+        fun ownedOffline(context: Context): Boolean =
+            context.resources.getBoolean(R.bool.pro_for_testing) || context.getSharedPreferences("pro", Context.MODE_PRIVATE).getBoolean(KEY_OWNED, false)
     }
 }

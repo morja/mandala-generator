@@ -3,6 +3,8 @@
 
     <!-- "Set as wallpaper" in the save sheet (ADR-0010); Android grants it without asking. -->
     <uses-permission android:name="android.permission.SET_WALLPAPER" />
+    <!-- The daily wallpaper's job stays planned when the phone restarts (ADR-0014). -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <application
         android:allowBackup="true"
@@ -19,6 +21,10 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <service
+            android:name=".DailyWallpaperJob"
+            android:exported="false"
+            android:permission="android.permission.BIND_JOB_SERVICE" />
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.files"

@@ -133,6 +133,7 @@ fun EditorScreen(
     var showPro by remember { mutableStateOf(false) }
     var showPair by remember { mutableStateOf(false) }
     val pairPreview by vm.pairPreview.collectAsStateWithLifecycle()
+    val daily by vm.daily.collectAsStateWithLifecycle()
     LaunchedEffect(showPair) { vm.setPairOpen(showPair) }
     // The wallpaper pair is Pro; without it the entry opens the Pro sheet.
     val openPair = { if (pro.owned) showPair = true else showPro = true }
@@ -246,6 +247,13 @@ fun EditorScreen(
                 onWallpaper = { target -> showMenu = false; vm.closeCandidate(); vm.setWallpaper(target, filled = true) },
                 onPair = { showMenu = false; vm.closeCandidate(); openPair() },
                 pairLabel = pairLabel(pro.owned),
+                dailyOn = daily.on,
+                dailySubtitle = when {
+                    !pro.owned -> "Your favourites in turn, every morning · Pro"
+                    daily.on && daily.lastName != null -> "Today: ${daily.lastName}"
+                    else -> "Your favourites in turn, on lock and home screen"
+                },
+                onDaily = { on -> if (pro.owned) vm.setDaily(on) else showPro = true },
                 onTryNew = vm::tryNew,
                 onUseNew = { showMenu = false; vm.useCandidate() },
                 onBackToMenu = vm::closeCandidate,

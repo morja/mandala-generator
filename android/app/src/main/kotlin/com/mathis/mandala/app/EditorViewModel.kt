@@ -103,6 +103,9 @@ data class FramePreviewState(
  */
 data class ExportProgress(val label: String, val share: Float? = null)
 
+/** Whether the daily wallpaper is on, and the favourite it set last. */
+data class DailyState(val on: Boolean, val lastName: String?)
+
 /** The pair sheet's lock and home screen (ADR-0014). */
 data class PairPreview(val lock: ImageBitmap? = null, val home: ImageBitmap? = null, val rendering: Boolean = true)
 
@@ -756,6 +759,45 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
             _export.value = null
             delay(WALLPAPER_MESSAGE_DELAY_MS)
             message("Home and lock screen set")
+        }
+    }
+
+    /** The daily wallpaper (ADR-0014, Pro): on or off, and the favourite it set last. */
+    private val _daily = MutableStateFlow(DailyState(DailyWallpaper.isOn(application), DailyWallpaper.lastName(application)))
+    val daily: StateFlow<DailyState> = _daily.asStateFlow()
+
+    /** Switching it on sets the first one right away, so it shows at once; then every morning. */
+    fun setDaily(on: Boolean) {
+        val app = getApplication<Application>()
+        if (!on) {
+            DailyWallpaper.setOn(app, false)
+            _daily.update { it.copy(on = false) }
+            return
+        }
+        if (!pro.state.value.owned || _busy.value) return
+        if (_favorites.value.isEmpty()) {
+            message("The daily wallpaper takes your favourites in turn; add one first.")
+            return
+        }
+        DailyWallpaper.setOn(app, true)
+        _daily.update { it.copy(on = true) }
+        _busy.value = true
+        _export.value = ExportProgress("Setting today's wallpaper")
+        viewModelScope.launch {
+            try {
+                val name = withContext(Dispatchers.Default) { DailyWallpaper.setNext(app, threads) }
+                _daily.update { it.copy(lastName = DailyWallpaper.lastName(app)) }
+                _export.value = null
+                delay(WALLPAPER_MESSAGE_DELAY_MS)
+                message(if (name.isNullOrEmpty()) "A new wallpaper every morning" else "Today: $name. A new wallpaper every morning")
+            } catch (e: OutOfMemoryError) {
+                message("Not enough memory for this image.")
+            } catch (e: Exception) {
+                message("Could not set the wallpaper: ${e.message ?: e.javaClass.simpleName}")
+            } finally {
+                _export.value = null
+                _busy.value = false
+            }
         }
     }
 

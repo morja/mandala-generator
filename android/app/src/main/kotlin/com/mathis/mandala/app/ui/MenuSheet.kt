@@ -64,6 +64,10 @@ internal class MenuActions(
     /** Opens the pair sheet, or the Pro sheet without Pro; `pairLabel` says which. */
     val onPair: () -> Unit,
     val pairLabel: String,
+    /** The daily wallpaper (ADR-0014, Pro): whether it is on, what the line below says, and the switch. */
+    val dailyOn: Boolean,
+    val dailySubtitle: String,
+    val onDaily: (Boolean) -> Unit,
     val onTryNew: (NewKind) -> Unit,
     val onUseNew: () -> Unit,
     val onBackToMenu: () -> Unit,
@@ -197,6 +201,24 @@ private fun NewMandala(onTryNew: (NewKind) -> Unit) {
     }
 }
 
+/** A menu line with an icon, a title, a line below it and a switch; the whole line switches. */
+@Composable
+private fun SwitchMenuRow(icon: ImageVector, title: String, subtitle: String, checked: Boolean, onChange: (Boolean) -> Unit) {
+    val t = LocalTokens.current
+    Row(
+        Modifier.fillMaxWidth().toggleable(value = checked, role = Role.Switch, onValueChange = onChange).padding(vertical = Spacing.md),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(Spacing.md),
+    ) {
+        Icon(icon, contentDescription = null, tint = t.textMuted)
+        Column(Modifier.weight(1f)) {
+            Text(title, style = MaterialTheme.typography.bodyLarge)
+            Text(subtitle, style = MaterialTheme.typography.bodySmall, color = t.textMuted)
+        }
+        Switch(checked = checked, onCheckedChange = null)
+    }
+}
+
 @Composable
 private fun Settings(fastPreview: Boolean, lightTheme: Boolean, actions: MenuActions) {
     val t = LocalTokens.current
@@ -206,19 +228,9 @@ private fun Settings(fastPreview: Boolean, lightTheme: Boolean, actions: MenuAct
         HorizontalDivider(color = t.outline)
         MenuRow(EditorIcons.FileSave, "Save settings", onClick = actions.onSaveSettings) { Chevron() }
         HorizontalDivider(color = t.outline)
-        Row(
-            Modifier.fillMaxWidth().toggleable(value = fastPreview, role = Role.Switch, onValueChange = actions.onFastPreview)
-                .padding(vertical = Spacing.md),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(Spacing.md),
-        ) {
-            Icon(EditorIcons.Bolt, contentDescription = null, tint = t.textMuted)
-            Column(Modifier.weight(1f)) {
-                Text("Fast preview", style = MaterialTheme.typography.bodyLarge)
-                Text("Saved images always get the full glow", style = MaterialTheme.typography.bodySmall, color = t.textMuted)
-            }
-            Switch(checked = fastPreview, onCheckedChange = null)
-        }
+        SwitchMenuRow(EditorIcons.Bolt, "Fast preview", "Saved images always get the full glow", fastPreview, actions.onFastPreview)
+        HorizontalDivider(color = t.outline)
+        SwitchMenuRow(EditorIcons.Wallpaper, "New wallpaper every day", actions.dailySubtitle, actions.dailyOn, actions.onDaily)
         HorizontalDivider(color = t.outline)
         MenuRow(EditorIcons.Moon, "Theme", onClick = null) {
             ThemeChoice(lightTheme, actions.onLightTheme)
