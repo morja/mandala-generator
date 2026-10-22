@@ -36,9 +36,9 @@ The two tearoom.one pages exist in the website repository (commit "Add Mandala G
 >
 > Choose a gradient, a sunburst, grain or one of your own pictures as background. Add bloom, stars or a vignette, a quote with a soft glow, or draw by hand in rotated symmetry.
 >
-> Save your mandalas to the gallery as a square, in the shape of your screen or in portrait and landscape ratios such as 4:5, 2:3 and 16:9, showing the whole mandala or filling the frame, set one as your wallpaper, or share it. Start with 21 example favourites, keep your own, and move them between your phone and the Mac version.
+> Save your mandalas to the gallery as a square, in the shape of your screen or in portrait and landscape ratios such as 4:5, 2:3 and 16:9, showing the whole mandala or filling the picture, set one as your wallpaper, or share it. Start with 23 example favourites, keep your own, and move them between your phone and the Mac version.
 >
-> The app is free. Pro is an optional one-time purchase, no subscription: it saves your mandalas at 2048 px for prints and wallpapers, lets you move and zoom the mandala in the frame, move layers and the emblem, and save line drawings as SVG for plotters and prints. For your phone it adds a finish for brightness, contrast and saturation, home and lock screen as a pair with the home screen a little darker, a new wallpaper from your favourites every morning, and a live wallpaper that turns slowly, breathes and drifts through its colours.
+> The app is free. Pro is an optional one-time purchase, no subscription: it saves your mandalas at 2048 px for prints and wallpapers, lets you move and zoom the mandala in the frame, move layers and the emblem, and fine-tune brightness, contrast and saturation when saving. Pro also brings wallpapers that change: a live wallpaper that turns slowly, a new wallpaper from your favourites every morning, and home and lock screen as a matching pair. And it exports a mandala as an SVG line drawing.
 >
 > No account, no ads, no tracking. Your mandalas stay on your device.
 >
@@ -60,9 +60,9 @@ The two tearoom.one pages exist in the website repository (commit "Add Mandala G
 >
 > Wähle einen Verlauf, Strahlen, Körnung oder ein eigenes Bild als Hintergrund. Füge Bloom, Sterne oder eine Vignette hinzu, ein Zitat mit weichem Leuchten, oder zeichne von Hand in gedrehter Symmetrie.
 >
-> Speichere deine Mandalas quadratisch, im Format deines Bildschirms oder in Hoch- und Querformaten wie 4:5, 2:3 und 16:9 in der Galerie, ganz sichtbar oder bildfüllend, setze eines als Hintergrundbild oder teile es. Starte mit 21 Beispiel-Favoriten, behalte eigene und tausche sie zwischen Handy und Mac-Version aus.
+> Speichere deine Mandalas quadratisch, im Format deines Bildschirms oder in Hoch- und Querformaten wie 4:5, 2:3 und 16:9 in der Galerie, ganz sichtbar oder bildfüllend, setze eines als Hintergrundbild oder teile es. Starte mit 23 Beispiel-Favoriten, behalte eigene und tausche sie zwischen Handy und Mac-Version aus.
 >
-> Die App ist kostenlos. Pro ist ein optionaler einmaliger Kauf ohne Abo: Damit speicherst du deine Mandalas mit 2048 px für Drucke und Hintergrundbilder, verschiebst und zoomst das Mandala im Bildausschnitt, verschiebst Ebenen und Emblem und speicherst Linienzeichnungen als SVG für Plotter und Drucke. Fürs Handy kommen dazu: ein letzter Schliff für Helligkeit, Kontrast und Sättigung, Start- und Sperrbildschirm als Paar mit etwas dunklerem Startbildschirm, jeden Morgen ein neues Hintergrundbild aus deinen Favoriten und ein Live-Hintergrund, der sich langsam dreht, atmet und seine Farben wandelt.
+> Die App ist kostenlos. Pro ist ein optionaler einmaliger Kauf ohne Abo: Damit speicherst du deine Mandalas mit 2048 px für Drucke und Hintergrundbilder, verschiebst und zoomst das Mandala im Bildausschnitt, verschiebst Ebenen und Emblem und stimmst Helligkeit, Kontrast und Sättigung beim Speichern fein ab. Dazu kommen Hintergründe, die sich verändern: ein Live-Hintergrund, der sich langsam dreht, jeden Morgen ein neues Hintergrundbild aus deinen Favoriten und Start- und Sperrbildschirm als passendes Paar. Außerdem exportiert Pro ein Mandala als SVG-Strichzeichnung.
 >
 > Kein Konto, keine Werbung, kein Tracking. Deine Mandalas bleiben auf deinem Gerät.
 >
