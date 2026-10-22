@@ -102,6 +102,7 @@ import com.mathis.mandala.app.ui.theme.Radius
 import com.mathis.mandala.app.ui.theme.Sizes
 import com.mathis.mandala.app.ui.theme.Spacing
 import com.mathis.mandala.core.MandalaParameters
+import com.mathis.mandala.core.VectorExport
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -144,6 +145,11 @@ fun EditorScreen(
     val openFile = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri -> uri?.let(vm::openFile) }
     val saveSettings = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri ->
         uri?.let(vm::saveSettingsTo)
+    }
+    // The look chosen in the save sheet waits here while Android's file picker is open.
+    var lineDrawingLook by remember { mutableStateOf(VectorExport.Look.COLOUR) }
+    val saveLineDrawing = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("image/svg+xml")) { uri ->
+        uri?.let { vm.saveLineDrawing(lineDrawingLook, it) }
     }
 
     LaunchedEffect(vm) {
@@ -188,6 +194,8 @@ fun EditorScreen(
             onTextFollows = vm::setTextFollowsMandala,
             onSave = vm::saveImage,
             onWallpaper = vm::setWallpaper,
+            hasPointLayers = VectorExport.hasPointLayers(params),
+            onLineDrawing = { look -> lineDrawingLook = look; saveLineDrawing.launch(vm.suggestedLineDrawingName(look)) },
             onShowPro = { showPro = true },
             onDismiss = { showSave = false },
             snackbar = snackbar,
@@ -603,7 +611,8 @@ private fun ProSheet(pro: ProState, onBuy: () -> Unit, onDismiss: () -> Unit) {
             Text("Dahlia Pro", style = MaterialTheme.typography.titleLarge)
             Text(
                 "Save your mandalas at 2048 pixels wide in every format, sharp enough for prints and wallpapers, " +
-                    "move and zoom the mandala in the frame, and move layers and the emblem. One purchase, no subscription. " +
+                    "move and zoom the mandala in the frame, move layers and the emblem, and save line drawings as SVG. " +
+                    "One purchase, no subscription. " +
                     "Everything else stays free.",
                 style = MaterialTheme.typography.bodyMedium,
             )

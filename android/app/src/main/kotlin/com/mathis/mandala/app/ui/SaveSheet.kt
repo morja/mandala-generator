@@ -64,11 +64,12 @@ import com.mathis.mandala.app.ui.theme.Radius
 import com.mathis.mandala.app.ui.theme.Sizes
 import com.mathis.mandala.app.ui.theme.Spacing
 import com.mathis.mandala.core.Framing
+import com.mathis.mandala.core.VectorExport
 import kotlin.math.abs
 
 /**
  * Saving in a format (ADR-0010): format, the mandala placed in the frame (Pro), whether the quote
- * follows it, then save, save large (Pro) or set as wallpaper.
+ * follows it, then save, save large (Pro) or set as wallpaper; or a line drawing as SVG (Pro, ADR-0013).
  */
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
@@ -85,6 +86,8 @@ internal fun SaveSheet(
     onTextFollows: (Boolean) -> Unit,
     onSave: (large: Boolean) -> Unit,
     onWallpaper: (WallpaperTarget) -> Unit,
+    hasPointLayers: Boolean,
+    onLineDrawing: (VectorExport.Look) -> Unit,
     onShowPro: () -> Unit,
     onDismiss: () -> Unit,
     snackbar: SnackbarHostState,
@@ -126,6 +129,13 @@ internal fun SaveSheet(
             }
             // A wallpaper fills the screen, so it is set in the phone screen format; the frame shows it first.
             WallpaperButton(enabled = !busy, onOpen = { if (choice.format != SaveFormat.SCREEN) onFormat(SaveFormat.SCREEN) }, onWallpaper = onWallpaper)
+            LineDrawingButton(proOwned, enabled = !busy, onLineDrawing = onLineDrawing, onShowPro = onShowPro)
+            Text(
+                "A line drawing of the layers and the emblem, square, without glow, effects, background and quote." +
+                    if (hasPointLayers) " Strange Attractor layers are left out." else "",
+                style = MaterialTheme.typography.bodySmall,
+                color = t.textMuted,
+            )
         }
         // Above the frame and buttons, which may be scrolled away; the same place as messages.
         if (export != null) ExportNote(export, Modifier.align(Alignment.TopCenter)) else MessageHost(snackbar, Modifier.align(Alignment.TopCenter))
@@ -218,6 +228,21 @@ private fun RatioChip(format: SaveFormat, onFormat: (SaveFormat) -> Unit) {
                     onClick = { open = false; onFormat(f) },
                 )
             }
+        }
+    }
+}
+
+/** Saves the SVG line drawing in one of its two looks; without Pro it opens the Pro sheet. */
+@Composable
+private fun LineDrawingButton(proOwned: Boolean, enabled: Boolean, onLineDrawing: (VectorExport.Look) -> Unit, onShowPro: () -> Unit) {
+    var open by remember { mutableStateOf(false) }
+    Box {
+        OutlinedButton(onClick = { if (proOwned) open = true else onShowPro() }, enabled = enabled, modifier = Modifier.fillMaxWidth()) {
+            Text(if (proOwned) "Save line drawing · SVG" else "Save line drawing · SVG · Pro")
+        }
+        DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
+            DropdownMenuItem(text = { Text("Colour on black") }, onClick = { open = false; onLineDrawing(VectorExport.Look.COLOUR) })
+            DropdownMenuItem(text = { Text("Dark on white, for plotters and colouring") }, onClick = { open = false; onLineDrawing(VectorExport.Look.LINES) })
         }
     }
 }
