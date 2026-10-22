@@ -79,6 +79,8 @@ internal class EffectsLayer(private val par: Parallel, private val fx: LayerEffe
         val reliefReach = if (s.relief > 0) 1 else 0
         val core = max(PixelBuffer.STRIP_ROWS, 2 * contrastReach)
         val adjust = s.brightness != 0.5 || s.contrast != 0.5
+        // Grain cells grow with the image above 1024 px, so large exports keep the preview's grain.
+        val grainSize = max(1.0, min(width, height) / 1024.0)
         val bright = ((s.brightness - 0.5) * 0.6).toFloat()
         val contrast = (0.5 + s.contrast * 1.5).toFloat()
 
@@ -112,7 +114,7 @@ internal class EffectsLayer(private val par: Parallel, private val fx: LayerEffe
             w = if (contrastReach > 0) localContrast(w, top - lo, bottom - lo, s.localContrast.toFloat()) else w.rows(top - lo, bottom - lo)
             par.forRange(bottom - top) { from, until ->
                 for (r in from until until) {
-                    if (s.grain > 0.001) grainRow(w, r, top + r, s.grain)
+                    if (s.grain > 0.001) grainRow(w, r, top + r, s.grain, grainSize)
                     if (adjust) for (i in r * n until (r + 1) * n) w.data[i] = (w.data[i] - 0.5f) * contrast + 0.5f + bright
                 }
             }
@@ -308,15 +310,36 @@ internal class EffectsLayer(private val par: Parallel, private val fx: LayerEffe
         return a + (2f * b - 1f) * (dA - a)
     }
 
-    /** Film grain on row `r` of `w`, which is canvas row `y`. Core Image's random pattern is Apple's own; amount and offset match. */
-    private fun grainRow(w: FloatImage, r: Int, y: Int, grain: Double) {
-        val amount = (grain * 0.28).toFloat()
-        val bias = (-grain * 0.14).toFloat()
+    /**
+     * Film grain on row `r` of `w`, which is canvas row `y`, in cells of `size` pixels (bilinear between
+     * cells above 1). Core Image's random pattern is Apple's own; amount, offset and cell size match.
+     */
+    private fun grainRow(w: FloatImage, r: Int, y: Int, grain: Double, size: Double) {
+        val amount = (grain * 0.56).toFloat()
+        val bias = (-grain * 0.28).toFloat()
+        if (size <= 1.0) {
+            for (x in 0 until w.width) {
+                val o = (r * w.width + x) * 3
+                w.data[o] += Filters.hash01(x, y, 101).toFloat() * amount + bias
+                w.data[o + 1] += Filters.hash01(x, y, 102).toFloat() * amount + bias
+                w.data[o + 2] += Filters.hash01(x, y, 103).toFloat() * amount + bias
+            }
+            return
+        }
+        val v = (y + 0.5) / size - 0.5
+        val j = floor(v).toInt()
+        val fy = (v - j).toFloat()
         for (x in 0 until w.width) {
+            val u = (x + 0.5) / size - 0.5
+            val i = floor(u).toInt()
+            val fx = (u - i).toFloat()
             val o = (r * w.width + x) * 3
-            w.data[o] += Filters.hash01(x, y, 101).toFloat() * amount + bias
-            w.data[o + 1] += Filters.hash01(x, y, 102).toFloat() * amount + bias
-            w.data[o + 2] += Filters.hash01(x, y, 103).toFloat() * amount + bias
+            for (c in 0..2) {
+                val salt = 101 + c
+                val top = Filters.hash01(i, j, salt).toFloat() * (1 - fx) + Filters.hash01(i + 1, j, salt).toFloat() * fx
+                val bottom = Filters.hash01(i, j + 1, salt).toFloat() * (1 - fx) + Filters.hash01(i + 1, j + 1, salt).toFloat() * fx
+                w.data[o + c] += (top + (bottom - top) * fy) * amount + bias
+            }
         }
     }
 

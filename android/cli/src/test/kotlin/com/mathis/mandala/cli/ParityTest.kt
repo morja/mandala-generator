@@ -27,8 +27,10 @@ class ParityTest {
         "painted-heavy" to 26.0,
         // Very dense, overexposed centre: Core Image's over-range handling again (see wave-two-layers).
         "hyperboloid-tilted" to 40.0,
-        // Core Image's random generator is Apple's own; amount and offset match, the pattern differs.
-        "fx-grain" to 35.0,
+        // Core Image's random generator is Apple's own; amount, offset and grain size match, the pattern
+        // differs. Since TUNE-1 both renderers add grain (the Mac's was transparent before), so two
+        // different noise patterns are compared.
+        "fx-grain" to 26.0,
         // Two additions leave alpha 3, which Core Image's final colour conversion takes into account.
         "fx-chromatic" to 42.0,
         // Near the border Core Image's bloom is a little darker; the doubled bloom gain (TUNE-1) shows it more.

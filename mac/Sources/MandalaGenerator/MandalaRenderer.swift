@@ -1211,22 +1211,32 @@ struct MandalaRenderer {
         }
 
         // ── Grain — film grain / analogue noise ──
+        // The noise gets alpha 1 before and after the addition: with alpha 0 (as before October 2026)
+        // the premultiplied noise was zero and grain did nothing on the Mac. Grain cells grow with
+        // the image above 1024 px (smoothly interpolated), so a large export shows the same grain as
+        // the preview instead of per-pixel noise that averages away.
         if settings.grain > 0.001,
            let random = CIFilter(name: "CIRandomGenerator"),
-           let noiseCtrl = CIFilter(name: "CIColorMatrix") {
-            let amount = CGFloat(settings.grain * 0.28)
-            let bias   = CGFloat(-settings.grain * 0.14)
-            noiseCtrl.setValue(random.outputImage?.cropped(to: ext), forKey: kCIInputImageKey)
+           let noiseCtrl = CIFilter(name: "CIColorMatrix"),
+           var noise = random.outputImage?.settingAlphaOne(in: .infinite) {
+            let amount = CGFloat(settings.grain * 0.56)
+            let bias   = CGFloat(-settings.grain * 0.28)
+            let grainSize = max(1.0, CGFloat(bufferSize) / 1024.0)
+            if grainSize > 1.0 {
+                noise = noise.transformed(by: CGAffineTransform(scaleX: grainSize, y: grainSize))
+            }
+            noiseCtrl.setValue(noise.cropped(to: ext), forKey: kCIInputImageKey)
             noiseCtrl.setValue(CIVector(x: amount, y: 0, z: 0, w: 0), forKey: "inputRVector")
             noiseCtrl.setValue(CIVector(x: 0, y: amount, z: 0, w: 0), forKey: "inputGVector")
             noiseCtrl.setValue(CIVector(x: 0, y: 0, z: amount, w: 0), forKey: "inputBVector")
             noiseCtrl.setValue(CIVector(x: 0, y: 0, z: 0, w: 0), forKey: "inputAVector")
-            noiseCtrl.setValue(CIVector(x: bias, y: bias, z: bias, w: 0), forKey: "inputBiasVector")
+            noiseCtrl.setValue(CIVector(x: bias, y: bias, z: bias, w: 1), forKey: "inputBiasVector")
             if let grainImg = noiseCtrl.outputImage?.cropped(to: ext),
                let add = CIFilter(name: "CIAdditionCompositing") {
                 add.setValue(ci, forKey: kCIInputBackgroundImageKey)
                 add.setValue(grainImg, forKey: kCIInputImageKey)
-                if let out = add.outputImage?.cropped(to: ext) { ci = out }
+                // The addition sums alpha to 2; the colour sum is what grain means, with alpha 1.
+                if let out = add.outputImage?.cropped(to: ext) { ci = out.settingAlphaOne(in: ext) }
             }
         }
 
