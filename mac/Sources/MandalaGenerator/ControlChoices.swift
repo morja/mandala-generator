@@ -10,7 +10,7 @@ enum ControlChoices {
     /// `ColorPalettes.all`: colourful first, then once round the colour wheel. The others (Prism,
     /// Candy, Nebula, Ocean, Synthwave, Dragon, Cosmic) look too much like one of these; they keep
     /// rendering in saved settings and are shown only while a layer uses them.
-    static let offeredPalettes = [0, 3, 13, 4, 16, 17, 7, 9, 14, 1, 11]
+    static let offeredPalettes = [0, 3, 13, 4, 20, 16, 19, 17, 7, 9, 14, 6, 1, 11, 18]
 
     /// Palette of a new layer above one with palette `last`: three steps on in the offered order
     /// (was `(last + 3) % 18`). Above a hidden or custom palette the offered order starts again.

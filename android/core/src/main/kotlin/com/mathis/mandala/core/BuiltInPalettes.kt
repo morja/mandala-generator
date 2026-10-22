@@ -212,6 +212,39 @@ object BuiltInPalettes {
             stop(1.0, 1.0, 1.0, 0.88),
             ),
         ),
+        ColorPalette(
+            id = "silver",
+            name = "Silver",
+            stops = listOf(
+            stop(0.0, 0.06, 0.06, 0.07),
+            stop(0.3, 0.36, 0.37, 0.4),
+            stop(0.55, 0.66, 0.68, 0.72),
+            stop(0.78, 0.86, 0.87, 0.89),
+            stop(1.0, 1.0, 0.98, 0.94),
+            ),
+        ),
+        ColorPalette(
+            id = "earth",
+            name = "Earth",
+            stops = listOf(
+            stop(0.0, 0.14, 0.1, 0.05),
+            stop(0.28, 0.58, 0.36, 0.22),
+            stop(0.52, 0.66, 0.58, 0.3),
+            stop(0.76, 0.44, 0.54, 0.3),
+            stop(1.0, 0.7, 0.8, 0.64),
+            ),
+        ),
+        ColorPalette(
+            id = "roseQuartz",
+            name = "Rose Quartz",
+            stops = listOf(
+            stop(0.0, 0.22, 0.06, 0.16),
+            stop(0.3, 0.8, 0.33, 0.48),
+            stop(0.6, 1.0, 0.66, 0.62),
+            stop(0.82, 0.93, 0.78, 0.92),
+            stop(1.0, 1.0, 0.94, 0.92),
+            ),
+        ),
     )
 
     private fun stop(position: Double, r: Double, g: Double, b: Double) =

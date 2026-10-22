@@ -20,19 +20,19 @@ class PickersAndRangesTest {
     fun elevenPalettesAreOfferedInTheReviewedOrder() {
         val names = Editing.offeredPalettes.map { BuiltInPalettes.all[it].name }
         assertEquals(
-            listOf("Psychedelic", "Neon City", "Tropical", "Sunset", "Lava", "Gold", "Toxic", "Bio Glow", "Ice", "Aurora", "Violet"),
+            listOf("Psychedelic", "Neon City", "Tropical", "Sunset", "Rose Quartz", "Lava", "Earth", "Gold", "Toxic", "Bio Glow", "Ice", "Cosmic", "Aurora", "Violet", "Silver"),
             names,
         )
         // The hidden ones stay where they are, so saved indices keep their look.
-        assertEquals(18, BuiltInPalettes.all.size)
+        assertEquals(21, BuiltInPalettes.all.size)
     }
 
     @Test
     fun aHiddenPaletteInUseIsStillShown() {
         assertEquals(Editing.offeredPalettes, Editing.paletteChoices(0))
         assertEquals(Editing.offeredPalettes + 5, Editing.paletteChoices(5)) // Prism
-        // Mac custom palettes (18, 19) are not built in; the picker cannot show them.
-        assertEquals(Editing.offeredPalettes, Editing.paletteChoices(19))
+        // Mac custom palettes (after the built-ins) are not built in here; the picker cannot show them.
+        assertEquals(Editing.offeredPalettes, Editing.paletteChoices(BuiltInPalettes.all.size))
     }
 
     @Test
@@ -43,7 +43,7 @@ class PickersAndRangesTest {
         assertEquals(p.layers.size, p.layers.map { it.paletteIndex }.distinct().size)
         // Above a layer with a hidden palette the offered order starts again.
         assertEquals(Editing.offeredPalettes[3], Editing.nextPalette(12))
-        assertEquals(Editing.offeredPalettes[1], Editing.nextPalette(Editing.offeredPalettes[9]))
+        assertEquals(Editing.offeredPalettes[0], Editing.nextPalette(Editing.offeredPalettes[Editing.offeredPalettes.size - 3]))
     }
 
     @Test
