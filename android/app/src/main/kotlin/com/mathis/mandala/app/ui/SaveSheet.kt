@@ -142,7 +142,9 @@ internal fun SaveSheet(
                     frame = { Frame(preview, aspect.toFloat(), framing, enabled = proOwned && !busy, saving = busy, onFraming = onFraming, onCentre = { onFill(false) }) },
                     fit = { vertical -> FitToggle(preset, vertical, enabled = !busy, onFill = onFill) },
                 )
-                if (proOwned) {
+                val adjustOpen = rememberSaveable { mutableStateOf(false) }
+                // While the sliders are open the hint gives its line to the frame.
+                if (proOwned && !adjustOpen.value) {
                     Text(
                         "Drag to move, pinch to zoom, double tap to centre.",
                         style = MaterialTheme.typography.bodySmall,
@@ -150,7 +152,7 @@ internal fun SaveSheet(
                         textAlign = TextAlign.Center,
                         modifier = Modifier.fillMaxWidth(),
                     )
-                } else {
+                } else if (!proOwned) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text("Moving and zooming the mandala come with Pro.", style = MaterialTheme.typography.bodySmall, color = t.textMuted, modifier = Modifier.weight(1f))
                         TextButton(onClick = onShowPro) { Text("About Pro") }
@@ -158,7 +160,15 @@ internal fun SaveSheet(
                 }
                 Column {
                     HorizontalDivider(color = t.outline)
-                    Group("Adjust", summary = finishSummary(choice.finish, proOwned)) {
+                    Group(
+                        "Adjust",
+                        summary = finishSummary(choice.finish, proOwned),
+                        // Reset in the heading, only when something is changed; it saves the frame a line.
+                        trailing = if (proOwned && !choice.finish.isIdentity) {
+                            { TextButton(onClick = { onFinish(Finish()) }, enabled = !busy) { Text("Reset") } }
+                        } else null,
+                        openState = adjustOpen,
+                    ) {
                         FinishControls(choice.finish, proOwned, enabled = !busy, onFinish = onFinish, onShowPro = onShowPro)
                     }
                 }
@@ -420,7 +430,6 @@ private fun FinishControls(finish: Finish, proOwned: Boolean, enabled: Boolean, 
         ValueSlider("Saturation", finish.saturation, 0f..Finish.MAX_SATURATION.toFloat(), default = 1.0, display = ::percent) {
             if (enabled) onFinish(finish.copy(saturation = it))
         }
-        TextButton(onClick = { onFinish(Finish()) }, enabled = enabled && !finish.isIdentity, modifier = Modifier.align(Alignment.End)) { Text("Reset") }
     }
 }
 
