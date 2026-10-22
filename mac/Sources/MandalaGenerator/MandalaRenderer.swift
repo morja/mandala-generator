@@ -4267,15 +4267,16 @@ struct MandalaRenderer {
     }
 
     /// The text glow as light (radii in reference-1600px pixels), faded with the text, or nil for none.
-    /// Three times the former pass strengths, so the glow is clearly visible on busy mandalas.
+    /// The two wide passes have three times their former strength, so the glow is clearly visible on
+    /// busy mandalas; the narrow one keeps its strength, so the letters stay readable.
     static func textGlowPasses(_ glow: Double, opacity: Double) -> [(radius: CGFloat, strength: CGFloat)]? {
         guard glow > 0.005 else { return nil }
         let iF = CGFloat(glow)
-        let k = CGFloat(3 * glow * max(0, min(1, opacity)))
+        let k = CGFloat(glow * max(0, min(1, opacity)))
         return [
             (10.0 * iF * 3.0, 0.9 * k),
-            (35.0 * iF * 3.0, 0.5 * k),
-            (70.0 * iF * 3.0, 0.2 * k),
+            (35.0 * iF * 3.0, 1.5 * k),
+            (70.0 * iF * 3.0, 0.6 * k),
         ]
     }
 

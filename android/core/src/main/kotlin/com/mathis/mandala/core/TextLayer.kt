@@ -97,11 +97,11 @@ internal class TextLayer(private val par: Parallel, private val renderer: TextRe
         val multiply = s.blendMode == LayerBlendMode.MULTIPLY
         if (s.glow > 0.005) {
             // Glow radii are given at a 1600 px reference width. As light (every mode but Multiply) the
-            // passes are three times as strong as inside the overlay, as in the macOS textGlowPasses.
+            // two wide passes are three times as strong as inside the overlay (macOS textGlowPasses).
             val g = FloatArray(w * h)
             val k = size / 1600.0
-            val gain = if (multiply) s.glow else 3 * s.glow
-            for ((radius, strength) in listOf(30.0 * s.glow to 0.9 * gain, 105.0 * s.glow to 0.5 * gain, 210.0 * s.glow to 0.2 * gain)) {
+            val wide = if (multiply) 1.0 else 3.0
+            for ((radius, strength) in listOf(30.0 * s.glow to 0.9 * s.glow, 105.0 * s.glow to 0.5 * wide * s.glow, 210.0 * s.glow to 0.2 * wide * s.glow)) {
                 val pass = text.copyOf()
                 MaskBlur.blur(pass, w, h, radius * k, par)
                 val st = strength.toFloat()
