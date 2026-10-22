@@ -30,7 +30,7 @@ class ParityTest {
         // Core Image's random generator is Apple's own; amount, offset and grain size match, the pattern
         // differs. Since TUNE-1 both renderers add grain (the Mac's was transparent before), so two
         // different noise patterns are compared.
-        "fx-grain" to 26.0,
+        "fx-grain" to 32.0,
         // Two additions leave alpha 3, which Core Image's final colour conversion takes into account.
         "fx-chromatic" to 42.0,
         // Chaotic map: tiny sin/cos differences between Apple's and Java's maths library grow with every

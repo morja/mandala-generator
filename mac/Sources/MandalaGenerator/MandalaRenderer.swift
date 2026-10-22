@@ -1217,8 +1217,8 @@ struct MandalaRenderer {
            let random = CIFilter(name: "CIRandomGenerator"),
            let noiseCtrl = CIFilter(name: "CIColorMatrix"),
            var noise = random.outputImage?.settingAlphaOne(in: .infinite) {
-            let amount = CGFloat(settings.grain * 0.56)
-            let bias   = CGFloat(-settings.grain * 0.28)
+            let amount = CGFloat(settings.grain * 0.28)
+            let bias   = CGFloat(-settings.grain * 0.14)
             let grainSize = max(1.0, CGFloat(bufferSize) / 1024.0)
             if grainSize > 1.0 {
                 noise = noise.transformed(by: CGAffineTransform(scaleX: grainSize, y: grainSize))

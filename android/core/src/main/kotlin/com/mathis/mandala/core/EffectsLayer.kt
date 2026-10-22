@@ -315,8 +315,8 @@ internal class EffectsLayer(private val par: Parallel, private val fx: LayerEffe
      * cells above 1). Core Image's random pattern is Apple's own; amount, offset and cell size match.
      */
     private fun grainRow(w: FloatImage, r: Int, y: Int, grain: Double, size: Double) {
-        val amount = (grain * 0.56).toFloat()
-        val bias = (-grain * 0.28).toFloat()
+        val amount = (grain * 0.28).toFloat()
+        val bias = (-grain * 0.14).toFloat()
         if (size <= 1.0) {
             for (x in 0 until w.width) {
                 val o = (r * w.width + x) * 3
