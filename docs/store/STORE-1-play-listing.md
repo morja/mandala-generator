@@ -36,9 +36,9 @@ The two tearoom.one pages exist in the website repository (commit "Add Mandala G
 >
 > Choose a gradient, a sunburst, grain or one of your own pictures as background. Add bloom, stars or a vignette, a quote with a soft glow, or draw by hand in rotated symmetry.
 >
-> Save your mandalas to the gallery as a square, in the shape of your screen or in portrait and landscape ratios such as 4:5, 2:3 and 16:9, set one as your wallpaper, or share it. Start with 21 example favourites, keep your own, and move them between your phone and the Mac version.
+> Save your mandalas to the gallery as a square, in the shape of your screen or in portrait and landscape ratios such as 4:5, 2:3 and 16:9, showing the whole mandala or filling the frame, set one as your wallpaper, or share it. Start with 21 example favourites, keep your own, and move them between your phone and the Mac version.
 >
-> The app is free. Pro is an optional one-time purchase, no subscription: it saves your mandalas at 2048 px for prints and wallpapers, lets you move and zoom the mandala in the frame, move layers and the emblem, and save line drawings as SVG for plotters and prints.
+> The app is free. Pro is an optional one-time purchase, no subscription: it saves your mandalas at 2048 px for prints and wallpapers, lets you move and zoom the mandala in the frame, move layers and the emblem, and save line drawings as SVG for plotters and prints. For your phone it adds a finish for brightness, contrast and saturation, home and lock screen as a pair with the home screen a little darker, a new wallpaper from your favourites every morning, and a live wallpaper that turns slowly, breathes and drifts through its colours.
 >
 > No account, no ads, no tracking. Your mandalas stay on your device.
 >
@@ -60,9 +60,9 @@ The two tearoom.one pages exist in the website repository (commit "Add Mandala G
 >
 > Wähle einen Verlauf, Strahlen, Körnung oder ein eigenes Bild als Hintergrund. Füge Bloom, Sterne oder eine Vignette hinzu, ein Zitat mit weichem Leuchten, oder zeichne von Hand in gedrehter Symmetrie.
 >
-> Speichere deine Mandalas quadratisch, im Format deines Bildschirms oder in Hoch- und Querformaten wie 4:5, 2:3 und 16:9 in der Galerie, setze eines als Hintergrundbild oder teile es. Starte mit 21 Beispiel-Favoriten, behalte eigene und tausche sie zwischen Handy und Mac-Version aus.
+> Speichere deine Mandalas quadratisch, im Format deines Bildschirms oder in Hoch- und Querformaten wie 4:5, 2:3 und 16:9 in der Galerie, ganz sichtbar oder bildfüllend, setze eines als Hintergrundbild oder teile es. Starte mit 21 Beispiel-Favoriten, behalte eigene und tausche sie zwischen Handy und Mac-Version aus.
 >
-> Die App ist kostenlos. Pro ist ein optionaler einmaliger Kauf ohne Abo: Damit speicherst du deine Mandalas mit 2048 px für Drucke und Hintergrundbilder, verschiebst und zoomst das Mandala im Bildausschnitt, verschiebst Ebenen und Emblem und speicherst Linienzeichnungen als SVG für Plotter und Drucke.
+> Die App ist kostenlos. Pro ist ein optionaler einmaliger Kauf ohne Abo: Damit speicherst du deine Mandalas mit 2048 px für Drucke und Hintergrundbilder, verschiebst und zoomst das Mandala im Bildausschnitt, verschiebst Ebenen und Emblem und speicherst Linienzeichnungen als SVG für Plotter und Drucke. Fürs Handy kommen dazu: ein letzter Schliff für Helligkeit, Kontrast und Sättigung, Start- und Sperrbildschirm als Paar mit etwas dunklerem Startbildschirm, jeden Morgen ein neues Hintergrundbild aus deinen Favoriten und ein Live-Hintergrund, der sich langsam dreht, atmet und seine Farben wandelt.
 >
 > Kein Konto, keine Werbung, kein Tracking. Deine Mandalas bleiben auf deinem Gerät.
 >
@@ -75,13 +75,25 @@ The two tearoom.one pages exist in the website repository (commit "Add Mandala G
 | Product ID | `pro` (must match `ProPurchases.kt`) |
 | Type | One-time product, non-consumable |
 | Name (EN / DE) | Dahlia Pro |
-| Description (EN) | Save at 2048 px for prints and wallpapers, frame the mandala by hand, and move layers and the emblem. One-time purchase, no subscription. |
-| Beschreibung (DE) | Speichere mit 2048 px für Drucke und Hintergrundbilder, richte das Mandala im Bild aus und verschiebe Ebenen und Emblem. Einmaliger Kauf, kein Abo. |
-| Price | 1.99 € in Germany (US 1.89 $), set in the Play Console |
+| Description (EN) | 2048 px images, framing by hand, moving layers, SVG line drawings, brightness and contrast, home and lock screen as a pair, a daily and a live wallpaper. One-time purchase. |
+| Beschreibung (DE) | 2048 px, Mandala ausrichten, Ebenen verschieben, SVG-Linien, Helligkeit und Kontrast, Start- und Sperrbildschirm als Paar, tägliches und Live-Hintergrundbild. Einmaliger Kauf. |
+| Price | 2.99 € in Germany from version 1.3 (before 1.99 €), set in the Play Console |
 
 In the Play Console since 22 October 2026: active, with these descriptions in English and German.
 
 Google Play lets you create in-app products only after a build that contains the billing permission has been uploaded (any testing track).
+
+## Release notes for 1.3.0 (code 6)
+
+English (255 characters, max. 500):
+
+> Version 1.3: Pro now dims or brightens your wallpaper, sets home and lock screen as a pair, changes the wallpaper every morning and adds a live wallpaper that turns slowly. Saved portraits now fill the screen or show the whole mandala, without hard edges.
+
+German (301 characters):
+
+> Version 1.3: Pro dunkelt dein Hintergrundbild ab oder hellt es auf, setzt Start- und Sperrbildschirm als Paar, wechselt das Hintergrundbild jeden Morgen und bringt einen Live-Hintergrund, der sich langsam dreht. Hochformate füllen jetzt den Bildschirm oder zeigen das ganze Mandala, ohne harte Kanten.
+
+No new declarations in App content: the daily wallpaper's `RECEIVE_BOOT_COMPLETED` and the live wallpaper service collect no data.
 
 ## App content (Policy → App content)
 
