@@ -1,6 +1,6 @@
 # ADR-0007 · Free app with a one-time Pro unlock; public-domain quotes only
 
-Status: accepted, 20 October 2026 (Mathis' decision)
+Status: accepted, 20 October 2026 (Mathis' decision). The free part is replaced by ADR-0016 (22 October 2026).
 
 ## Decision
 

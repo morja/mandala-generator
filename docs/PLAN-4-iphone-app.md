@@ -18,7 +18,7 @@ Stays as in ADR-0008: GPL-3.0 with the section 7 permission, which already names
 
 Free app with a **one-time Pro purchase** (StoreKit 2, non-consumable, with Family Sharing). No subscription, no ads.
 
-- Price: 3.99 €, the same as on Android (PLAN-5).
+- Price: 2.99 €, the same as on Android (PLAN-5).
 - No watermark, saving is never locked.
 
 ## 4. Free and Pro
@@ -71,7 +71,7 @@ Live photo, iCloud sync, video export, an iPad layout (the iPhone app runs on th
 ## Questions
 
 1. **Path:** shared Kotlin core (B) or Swift renderer from the Mac app (A)? Recommendation: B, after the spike confirms the speed.
-2. ~~**Price.**~~ Replaced by PLAN-5 (3.99 € on both).
+2. ~~**Price.**~~ Replaced by PLAN-5 (2.99 € on both).
 3. ~~**Free sliders.**~~ Replaced by PLAN-5 (the shared line).
 4. **Minimum iOS:** Recommendation: iOS 17 (current App Intents, StoreKit 2, interactive widgets, StandBy); it runs on every iPhone from the XS and XR on.
 5. **Apple Developer account:** does one exist (99 € a year), under which name and with which bundle id? Recommendation: `one.tearoom.dahlia`, like the Android id scheme.

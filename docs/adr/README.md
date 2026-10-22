@@ -12,7 +12,7 @@ ADR-0001 to ADR-0008 were written for the Android repository before both apps mo
 | [0004](0004-parity-against-macos.md) | Parity tests against macOS reference images | proposed |
 | [0005](0005-android-app-shell.md) | Android app shell: one screen, ViewModel, gallery export | proposed |
 | [0006](0006-design-v1.md) | Design v1: warm neutrals around the mandala, one amber accent | proposed |
-| [0007](0007-free-and-pro.md) | Free app with a one-time Pro unlock; public-domain quotes only | accepted |
+| [0007](0007-free-and-pro.md) | Free app with a one-time Pro unlock; public-domain quotes only | accepted, free part replaced by ADR-0016 |
 | [0008](0008-open-source-gpl.md) | Both apps open source under GPL-3.0, sold as store builds | accepted |
 | [0009](0009-one-public-repository.md) | One public repository for both apps | accepted |
 | [0010](0010-export-formats-and-framing.md) | Export formats and framing: portrait images with the mandala placed by hand | accepted |
@@ -21,4 +21,4 @@ ADR-0001 to ADR-0008 were written for the Android repository before both apps mo
 | [0013](0013-svg-line-drawing.md) | SVG line drawing as a Pro export | accepted |
 | [0014](0014-pro-wallpapers-and-finish.md) | Pro wallpapers and a finishing step | accepted |
 | [0015](0015-iphone-app.md) | iPhone app on the shared Kotlin core | proposed |
-| [0016](0016-one-pro-line.md) | One line between free and Pro for Android and iPhone | proposed |
+| [0016](0016-one-pro-line.md) | One line between free and Pro for Android and iPhone | accepted |
