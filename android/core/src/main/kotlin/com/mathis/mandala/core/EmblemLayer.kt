@@ -26,7 +26,11 @@ internal class EmblemLayer(private val par: Parallel, private val fx: LayerEffec
         val geometry = EmblemShapes.geometry(s)
         // Unit space → pixels: the frame ring (radius 0.92) gets a diameter of `size` × canvas.
         val unit = s.size.coerceIn(0.1, 1.0) * size * 0.5 / EmblemShapes.RING_RADIUS
-        val glowReach = if (s.glow > 0) 3 * 60.0 * s.glow * size / 1600 else 0.0
+        // Glow "shadow" (the original, and always with Multiply) is part of the overlay; glow "light" is
+        // screened on top after the blend.
+        val light = s.glowMode == EmblemGlowMode.LIGHT && s.blendMode != LayerBlendMode.MULTIPLY
+        // Three times the widest glow pass.
+        val glowReach = if (s.glow <= 0) 0.0 else 3 * (if (light) 20.0 * (1 + 2 * s.glow) else 60.0 * s.glow) * size / 1600
         // Its own offset from the mandala centre (ADR-0011).
         val centreX = place.centreX + s.offsetX * size
         val centreY = place.centreY + s.offsetY * size
@@ -43,10 +47,10 @@ internal class EmblemLayer(private val par: Parallel, private val fx: LayerEffec
         val op = s.blendMode
         // Alpha only matters where the overlay covers the image: source-over and multiply.
         val needsAlpha = op == LayerBlendMode.NORMAL || op == LayerBlendMode.MULTIPLY
-        val passes = glowPasses(s.glow)
+        val passes = if (light) lightGlowPasses(s.glow, s.opacity) else glowPasses(s.glow)
 
         // Core Image's glow keeps the blurred alpha unscaled and sums it over the passes.
-        val glowAlpha: ByteArray? = if (needsAlpha && passes != null) {
+        val glowAlpha: ByteArray? = if (!light && needsAlpha && passes != null) {
             val alphaPasses = passes.map { LayerEffects.BlurPass(it.radius, 1.0) }
             fx.referenceBlurOverlay(AlphaSource(mask, w, h), size, alphaPasses)?.let { ref ->
                 ByteArray(w * h).also { out ->
@@ -81,16 +85,18 @@ internal class EmblemLayer(private val par: Parallel, private val fx: LayerEffec
                     val j = x * 3 + ch
                     val k = (x + area[0]) * 3 + ch
                     var sc = c[j]
-                    if (over != null) sc = sc + over[j] - sc * over[j]
+                    if (!light && over != null) sc = sc + over[j] - sc * over[j]
                     sc = sc.coerceIn(0f, 1f) * fade
                     val d = row[k]
                     // Blend formulas for a premultiplied overlay on an opaque base.
-                    row[k] = when (op) {
+                    var v = when (op) {
                         LayerBlendMode.NORMAL -> sc + d * (1 - a)
                         LayerBlendMode.SCREEN -> d + sc - d * sc
                         LayerBlendMode.ADD -> d + sc
                         LayerBlendMode.MULTIPLY -> d * (1 - a + sc)
                     }
+                    if (light && over != null) v = v + over[j] - v * over[j]
+                    row[k] = v
                 }
             }
             WorkingSpace.writeRow(row, out, y + area[1])
@@ -112,6 +118,22 @@ internal class EmblemLayer(private val par: Parallel, private val fx: LayerEffec
             }
         }
         return out
+    }
+
+    /**
+     * Glow "light" passes (radii in 1600 px reference pixels), faded with the emblem, or null for none.
+     * Strength rises with the square root of the glow and the reach starts at a third of its full
+     * width, as in the macOS lightGlowPasses.
+     */
+    private fun lightGlowPasses(glow: Double, opacity: Double): List<LayerEffects.BlurPass>? {
+        if (glow <= 0) return null
+        val r = 1 + 2 * glow
+        val k = sqrt(glow) * opacity.coerceIn(0.0, 1.0)
+        return listOf(
+            LayerEffects.BlurPass(2.0 * r, 1.0 * k),
+            LayerEffects.BlurPass(8.0 * r, 0.4 * k),
+            LayerEffects.BlurPass(20.0 * r, 0.15 * k),
+        )
     }
 
     /** The three glow passes of the macOS applyGlow (radii in 1600 px reference pixels), or null for none. */

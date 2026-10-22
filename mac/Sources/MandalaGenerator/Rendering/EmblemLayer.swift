@@ -20,9 +20,12 @@ extension MandalaRenderer {
                                     rotation: s.rotation, size: size, centreX: centreX, centreY: centreY) else { return image }
 
         let palette = palettes[max(0, min(palettes.count - 1, s.paletteIndex))]
-        guard var overlay = colourise(mask: mask, palette: palette, position: s.colorPosition, spread: s.colorSpread,
+        guard let colours = colourise(mask: mask, palette: palette, position: s.colorPosition, spread: s.colorSpread,
                                       unit: unit, size: size, centreX: centreX, centreY: centreY) else { return image }
-        overlay = applyGlow(image: overlay, intensity: s.glow)
+        // Glow "shadow" (the original, and always with Multiply): part of the overlay, whose blurred
+        // alpha makes a soft coloured shadow (dark with Normal). Glow "light": screened on top below.
+        let light = s.glowMode == .light && s.blendMode != .multiply
+        var overlay = light ? colours : applyGlow(image: colours, intensity: s.glow)
         if s.opacity < 0.999 {
             overlay = fadeEmblem(overlay, opacity: s.opacity)
         }
@@ -33,7 +36,19 @@ extension MandalaRenderer {
         case .add:      mode = "CIAdditionCompositing"
         case .multiply: mode = "CIMultiplyBlendMode"
         }
-        return blendComposite(base: image, overlay: overlay, mode: mode)
+        let blended = blendComposite(base: image, overlay: overlay, mode: mode)
+        guard light, let passes = lightGlowPasses(s.glow, opacity: s.opacity) else { return blended }
+        return screenGlowLight(base: blended, source: colours, passes: passes)
+    }
+
+    /// Glow "light": passes in reference-1600px pixels, faded with the emblem, or nil for none. The
+    /// strength rises with the square root of the glow and the reach starts at a third of its full
+    /// width, so low values already show a soft halo and the slider changes it evenly.
+    static func lightGlowPasses(_ glow: Double, opacity: Double) -> [(radius: CGFloat, strength: CGFloat)]? {
+        guard glow > 0 else { return nil }
+        let r = CGFloat(1 + 2 * glow)
+        let k = CGFloat(glow.squareRoot() * max(0, min(1, opacity)))
+        return [(2 * r, 1.0 * k), (8 * r, 0.4 * k), (20 * r, 0.15 * k)]
     }
 
     // MARK: Mask
