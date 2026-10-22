@@ -80,6 +80,10 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.11.0")
     // One-time "Pro" purchase (ADR-0007, approved 20 October 2026).
     implementation("com.android.billingclient:billing:8.3.0")
+    constraints {
+        // Billing's Play Services pull in fragment 1.1.0, which Play Console flags as outdated.
+        implementation("androidx.fragment:fragment:1.9.1")
+    }
 
     testImplementation("junit:junit:4.13.2")
 }
