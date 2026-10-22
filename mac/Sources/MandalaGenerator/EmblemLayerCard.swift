@@ -35,7 +35,11 @@ struct EmblemLayerCard: View {
                     .font(.system(size: 12))
                     .foregroundColor(settings.isEnabled ? .accentColor : .secondary)
                     .frame(width: 16)
-                Toggle("", isOn: $settings.isEnabled)
+                // Switching the emblem on starts it with a light glow; saved emblems keep their mode.
+                Toggle("", isOn: Binding(get: { settings.isEnabled }, set: { on in
+                    if on && !settings.isEnabled { settings.glowMode = .light }
+                    settings.isEnabled = on
+                }))
                     .toggleStyle(.switch).scaleEffect(0.7).labelsHidden()
                 Text("Emblem")
                     .font(.caption.weight(.medium))
@@ -46,7 +50,10 @@ struct EmblemLayerCard: View {
                         .font(.system(size: 10)).foregroundColor(.purple)
                 }
                 .buttonStyle(.plain).help("Random emblem")
-                Button(action: { settings = EmblemLayerSettings(isEnabled: settings.isEnabled) }) {
+                Button(action: {
+                    settings = EmblemLayerSettings(isEnabled: settings.isEnabled)
+                    settings.glowMode = .light   // like a new emblem
+                }) {
                     Image(systemName: "arrow.counterclockwise")
                         .font(.system(size: 10)).foregroundColor(.secondary)
                 }
@@ -149,6 +156,12 @@ struct EmblemLayerCard: View {
                     SceneSlider(label: "Position", value: $settings.colorPosition, color: .orange, reset: defaults.colorPosition)
                     SceneSlider(label: "Spread",   value: $settings.colorSpread,   color: .orange, reset: defaults.colorSpread)
                     SceneSlider(label: "Glow",     value: $settings.glow,          color: .purple, reset: defaults.glow)
+                    row("Glow") {
+                        Picker("", selection: $settings.glowMode) {
+                            ForEach(EmblemGlowMode.allCases) { Text($0.displayName).tag($0) }
+                        }
+                        .pickerStyle(.segmented).labelsHidden()
+                    }
 
                     // ── Layer ─────────────────────────────────────────────
                     sectionLabel("LAYER")
@@ -182,6 +195,7 @@ struct EmblemLayerCard: View {
         settings.colorPosition = Double.random(in: 0...1)
         settings.colorSpread = Double.random(in: 0...0.6)
         settings.glow = Double.random(in: 0.2...0.8)
+        settings.glowMode = .light
         settings.organic = Double.random(in: 0.2...1.0)
         settings.flowerVariant = EmblemFlowerVariant.allCases.randomElement() ?? .flower
         settings.petals = [6, 8, 12, 16].randomElement() ?? 8

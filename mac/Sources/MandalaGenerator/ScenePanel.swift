@@ -287,17 +287,19 @@ struct EffectsLayerCard: View {
                     sectionLabel("LIGHT")
                     SceneSlider(label: "Brightness", value: $settings.brightness, color: .white, reset: defaults.brightness)
                     SceneSlider(label: "Contrast",  value: $settings.contrast,   color: .orange, reset: defaults.contrast)
-                    SceneSlider(label: "Vignette",  value: $settings.vignette,   color: .gray, reset: defaults.vignette)
-                    SceneSlider(label: "Bloom",     value: $settings.bloom,      color: .purple, reset: defaults.bloom)
+                    // Vignette, bloom and grain go beyond the former maximum of 1; up to 1 they look as always (TUNE-1).
+                    SceneSlider(label: "Vignette",  value: $settings.vignette,   range: 0...2, color: .gray, reset: defaults.vignette)
+                    SceneSlider(label: "Bloom",     value: $settings.bloom,      range: 0...2, color: .purple, reset: defaults.bloom)
                     sectionLabel("TONE")
                     SceneSlider(label: "Sepia",     value: $settings.sepia,      color: Color(red: 0.8, green: 0.6, blue: 0.3), reset: defaults.sepia)
                     SceneSlider(label: "Fade",      value: $settings.wash,       color: .white, reset: defaults.wash)
                     sectionLabel("TEXTURE")
                     SceneSlider(label: "Clarity",   value: $settings.localContrast, color: .teal, reset: defaults.localContrast)
-                    SceneSlider(label: "Grain",     value: $settings.grain,      color: Color(red: 0.6, green: 0.55, blue: 0.5), reset: defaults.grain)
+                    SceneSlider(label: "Grain",     value: $settings.grain,      range: 0...2, color: Color(red: 0.6, green: 0.55, blue: 0.5), reset: defaults.grain)
                     sectionLabel("SPARKLE")
                     EffectRow(label: "Stars",      value: $settings.stars,      seed: $settings.starsSeed,      color: .yellow, reset: defaults.stars)
-                    EffectRow(label: "Glitter",    value: $settings.glitter,    seed: $settings.glitterSeed,    color: .pink, reset: defaults.glitter)
+                    // Glitter above about 0.6 is garish confetti.
+                    EffectRow(label: "Glitter",    value: $settings.glitter,    seed: $settings.glitterSeed,    range: 0...0.6, color: .pink, reset: defaults.glitter)
 
                     Button(action: { withAnimation(.easeInOut(duration: 0.18)) { moreExpanded.toggle() } }) {
                         HStack(spacing: 4) {
@@ -346,6 +348,7 @@ private struct EffectRow: View {
     let label: String
     @Binding var value: Double
     @Binding var seed: UInt64
+    var range: ClosedRange<Double> = 0...1
     var color: Color = .blue
     var reset: Double? = nil
 
@@ -354,7 +357,7 @@ private struct EffectRow: View {
             Text(label)
                 .font(.system(size: 10)).foregroundColor(.secondary)
                 .frame(width: 52, alignment: .leading)
-            ResettableSlider(value: $value, range: 0...1, tint: color, reset: reset)
+            ResettableSlider(value: $value, range: range, tint: color, reset: reset)
             Text(String(format: "%.2f", value))
                 .font(.system(size: 9)).foregroundColor(.secondary).monospacedDigit()
                 .frame(width: 28, alignment: .trailing)
@@ -713,7 +716,8 @@ struct TextLayerCard: View {
                     HueSlider(value: $settings.hue, reset: defaults.hue)
                     SceneSlider(label: "Sat",  value: $settings.saturation, color: .pink, reset: defaults.saturation)
                     SceneSlider(label: "Bri",  value: $settings.brightness, range: 0...2, color: .yellow, reset: defaults.brightness)
-                    SceneSlider(label: "Glow",   value: $settings.glow,    color: .purple, reset: defaults.glow)
+                    // Above 1 the wide glow passes add light (TUNE-1); up to 1 it looks as always.
+                    SceneSlider(label: "Glow",   value: $settings.glow,    range: 0...3, color: .purple, reset: defaults.glow)
 
                     // ── Shadow ────────────────────────────────────────────
                     Button(action: { withAnimation(.easeInOut(duration: 0.18)) { shadowExpanded.toggle() } }) {

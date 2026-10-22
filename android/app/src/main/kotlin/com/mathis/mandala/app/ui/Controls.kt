@@ -55,6 +55,7 @@ import com.mathis.mandala.app.DrawTool
 import com.mathis.mandala.app.MoveTarget
 import com.mathis.mandala.app.Editing
 import com.mathis.mandala.app.Editing.strokeCount
+import com.mathis.mandala.app.Editing.switched
 import com.mathis.mandala.app.Editing.switchedTo
 import com.mathis.mandala.app.EditorViewModel
 import com.mathis.mandala.app.ui.theme.LocalTokens
@@ -68,6 +69,7 @@ import com.mathis.mandala.core.DrawingLayerSettings
 import com.mathis.mandala.core.EffectsLayerSettings
 import com.mathis.mandala.core.EmblemFlowerVariant
 import com.mathis.mandala.core.EmblemFrame
+import com.mathis.mandala.core.EmblemGlowMode
 import com.mathis.mandala.core.EmblemLayerSettings
 import com.mathis.mandala.core.EmblemMotif
 import com.mathis.mandala.core.EmblemRendering
@@ -421,8 +423,8 @@ private fun EffectsGroup(
         Group("Light", nested = true, initiallyOpen = true) {
             ValueSlider("Brightness", fx.brightness, default = EffectsLayerSettings().brightness) { v -> update { it.copy(brightness = v) } }
             ValueSlider("Contrast", fx.contrast, default = EffectsLayerSettings().contrast) { v -> update { it.copy(contrast = v) } }
-            ValueSlider("Vignette", fx.vignette, default = EffectsLayerSettings().vignette) { v -> update { it.copy(vignette = v) } }
-            ValueSlider("Bloom", fx.bloom, default = EffectsLayerSettings().bloom) { v -> update { it.copy(bloom = v) } }
+            ValueSlider("Vignette", fx.vignette, Editing.Ranges.effectsVignette.floats(), default = EffectsLayerSettings().vignette) { v -> update { it.copy(vignette = v) } }
+            ValueSlider("Bloom", fx.bloom, Editing.Ranges.effectsBloom.floats(), default = EffectsLayerSettings().bloom) { v -> update { it.copy(bloom = v) } }
         }
         Group("Tone", nested = true) {
             ValueSlider("Sepia", fx.sepia, default = EffectsLayerSettings().sepia) { v -> update { it.copy(sepia = v) } }
@@ -430,11 +432,11 @@ private fun EffectsGroup(
         }
         Group("Texture", nested = true) {
             ValueSlider("Clarity", fx.localContrast, default = EffectsLayerSettings().localContrast) { v -> update { it.copy(localContrast = v) } }
-            ValueSlider("Grain", fx.grain, default = EffectsLayerSettings().grain) { v -> update { it.copy(grain = v) } }
+            ValueSlider("Grain", fx.grain, Editing.Ranges.effectsGrain.floats(), default = EffectsLayerSettings().grain) { v -> update { it.copy(grain = v) } }
         }
         Group("Sparkle", nested = true) {
             ValueSlider("Stars", fx.stars, default = EffectsLayerSettings().stars) { v -> update { it.copy(stars = v) } }
-            ValueSlider("Glitter", fx.glitter, default = EffectsLayerSettings().glitter) { v -> update { it.copy(glitter = v) } }
+            ValueSlider("Glitter", fx.glitter, Editing.Ranges.effectsGlitter.floats(), default = EffectsLayerSettings().glitter) { v -> update { it.copy(glitter = v) } }
             TextButton(onClick = newPattern) { Text("New pattern") }
         }
         Group("More", nested = true) {
@@ -462,13 +464,13 @@ private fun EmblemTab(em: EmblemLayerSettings, vm: EditorViewModel, position: Po
         // The label switches too; the dice and reset buttons beside it keep their own taps.
         Text(
             "Show emblem", style = MaterialTheme.typography.bodyMedium,
-            modifier = Modifier.weight(1f).toggleable(value = em.isEnabled, role = Role.Switch) { on -> update { it.copy(isEnabled = on) } },
+            modifier = Modifier.weight(1f).toggleable(value = em.isEnabled, role = Role.Switch) { on -> update { it.switched(on) } },
         )
         if (em.isEnabled) {
             IconButton(onClick = vm::randomizeEmblem) { Icon(EditorIcons.DieOne, contentDescription = "Random emblem") }
             TextButton(onClick = vm::resetEmblem) { Text("Reset") }
         }
-        Switch(checked = em.isEnabled, onCheckedChange = { on -> update { it.copy(isEnabled = on) } })
+        Switch(checked = em.isEnabled, onCheckedChange = { on -> update { it.switched(on) } })
     }
     if (!em.isEnabled) {
         Text("One motif drawn large in the centre: Om, Tree of Life, Flower of Life, Lotus and more.",
@@ -530,6 +532,11 @@ private fun EmblemTab(em: EmblemLayerSettings, vm: EditorViewModel, position: Po
         ValueSlider("Position", em.colorPosition, default = defaults.colorPosition) { v -> update { it.copy(colorPosition = v) } }
         ValueSlider("Spread", em.colorSpread, default = defaults.colorSpread) { v -> update { it.copy(colorSpread = v) } }
         ValueSlider("Glow", em.glow, default = defaults.glow) { v -> update { it.copy(glow = v) } }
+        ChipLine("Glow") {
+            for (m in EmblemGlowMode.entries) {
+                FilterChip(selected = em.glowMode == m, onClick = { update { it.copy(glowMode = m) } }, label = { Text(m.displayName) })
+            }
+        }
     }
     Group("Blending", summary = "${em.blendMode.displayName} · ${(em.opacity * 100).roundToInt()} %") {
         BlendChips(em.blendMode) { m -> update { it.copy(blendMode = m) } }
@@ -600,7 +607,7 @@ private fun TextTab(text: TextLayerSettings, vm: EditorViewModel) {
         ValueSlider("Height", text.offsetY, default = TextLayerSettings().offsetY) { v -> update { it.copy(offsetY = v) } }
     }
     Group("Light") {
-        ValueSlider("Glow", text.glow, default = TextLayerSettings().glow) { v -> update { it.copy(glow = v) } }
+        ValueSlider("Glow", text.glow, Editing.Ranges.textGlow.floats(), default = TextLayerSettings().glow) { v -> update { it.copy(glow = v) } }
         ValueSlider("Cloud", text.cloudOpacity, default = TextLayerSettings().cloudOpacity) { v -> update { it.copy(cloudOpacity = v) } }
         ValueSlider("Cloud size", text.cloudScale, Editing.Ranges.textCloudSize.floats(), default = TextLayerSettings().cloudScale) { v -> update { it.copy(cloudScale = v) } }
         ValueSlider("Shadow", text.shadowOpacity, default = TextLayerSettings().shadowOpacity) { v -> update { it.copy(shadowOpacity = v) } }

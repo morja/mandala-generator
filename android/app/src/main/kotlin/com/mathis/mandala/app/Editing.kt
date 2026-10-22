@@ -6,6 +6,7 @@ import com.mathis.mandala.core.BuiltInPalettes
 import com.mathis.mandala.core.DrawStroke
 import com.mathis.mandala.core.DrawingLayerSettings
 import com.mathis.mandala.core.EffectsLayerSettings
+import com.mathis.mandala.core.EmblemGlowMode
 import com.mathis.mandala.core.EmblemLayerSettings
 import com.mathis.mandala.core.GraffitiLayerSettings
 import com.mathis.mandala.core.Framing
@@ -109,6 +110,13 @@ object Editing {
         val textWidth = 0.4..1.0
         val textBrightness = 0.0..2.0
         val textCloudSize = 0.0..0.7
+        /** Beyond the former maximum of 1: values up to 1 look as they always did (TUNE-1). */
+        val effectsVignette = 0.0..2.0
+        val effectsBloom = 0.0..2.0
+        val effectsGrain = 0.0..2.0
+        /** Glitter above about 0.6 is garish confetti. */
+        val effectsGlitter = 0.0..0.6
+        val textGlow = 0.0..3.0
         /** Brighter colour backgrounds drown the mandala, whose lines are added with Screen. */
         val backgroundBrightness = 0.0..0.6
     }
@@ -232,8 +240,15 @@ object Editing {
     /** Petal counts the macOS Lotus picker offers. */
     val lotusPetals = listOf(6, 8, 12, 16)
 
-    /** The macOS reset button of the emblem card: all defaults, but it stays on or off. */
-    fun EmblemLayerSettings.reset(): EmblemLayerSettings = EmblemLayerSettings(isEnabled = isEnabled)
+    /** The macOS reset button of the emblem card: all defaults of a new emblem, but it stays on or off. */
+    fun EmblemLayerSettings.reset(): EmblemLayerSettings = EmblemLayerSettings(isEnabled = isEnabled, glowMode = EmblemGlowMode.LIGHT)
+
+    /**
+     * The emblem switched on or off. Switching it on starts it with a light glow; saved emblems keep
+     * their glow mode (missing in the file = the original shadow) as long as they are not switched.
+     */
+    fun EmblemLayerSettings.switched(on: Boolean): EmblemLayerSettings =
+        if (on && !isEnabled) copy(isEnabled = true, glowMode = EmblemGlowMode.LIGHT) else copy(isEnabled = on)
 
     /** A new tree shape, in the range the macOS dice use. */
     fun EmblemLayerSettings.newShape(random: kotlin.random.Random): EmblemLayerSettings =

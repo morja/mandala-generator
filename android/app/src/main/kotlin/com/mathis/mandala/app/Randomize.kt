@@ -3,6 +3,7 @@ package com.mathis.mandala.app
 import com.mathis.mandala.core.BaseLayerType
 import com.mathis.mandala.core.EmblemFlowerVariant
 import com.mathis.mandala.core.EmblemFrame
+import com.mathis.mandala.core.EmblemGlowMode
 import com.mathis.mandala.core.EmblemLayerSettings
 import com.mathis.mandala.core.EmblemMotif
 import com.mathis.mandala.core.EmblemRendering
@@ -98,6 +99,7 @@ object Randomize {
         colorPosition = random.nextDouble(),
         colorSpread = random.nextDouble(0.0, 0.6),
         glow = random.nextDouble(0.2, 0.8),
+        glowMode = EmblemGlowMode.LIGHT,
         organic = random.nextDouble(0.2, 1.0),
         flowerVariant = EmblemFlowerVariant.entries.random(random),
         petals = Editing.lotusPetals.random(random),
