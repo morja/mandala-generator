@@ -877,8 +877,9 @@ struct MandalaRenderer {
         case .sunburst:
             let cx = Float(w) / 2
             let cy = Float(h) / 2
-            // 3–17 alternating ray-pairs controlled by patternScale
-            let numRays = Float(settings.patternScale * 14.0 + 3.0)
+            // 3–17 alternating ray-pairs controlled by patternScale; a whole number, or the rays
+            // would not meet where the angle wraps round (a seam on the left horizontal axis)
+            let numRays = Float((settings.patternScale * 14.0 + 3.0).rounded())
             // Edge transition width: wide (soft) when sharpness=0, narrow (hard) when sharpness=1
             let edgeWidth = max(0.015, 0.48 * (1.0 - Float(settings.patternSharpness) * 0.93))
             let invHalfW = 1.0 / (Float(w) * 0.5)

@@ -1,0 +1,44 @@
+{
+  "layers": [
+    {
+      "isEnabled": true,
+      "style": "hypocycloid",
+      "scale": 0.7,
+      "paletteIndex": 10,
+      "colorOffset": 0.0,
+      "complexity": 0.6,
+      "density": 0.5,
+      "glowIntensity": 0.6,
+      "colorDrift": 0.4,
+      "ripple": 0.0,
+      "wash": 0.0,
+      "abstractLevel": 0.0,
+      "saturation": 0.7,
+      "brightness": 0.5,
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "blendMode": "screen",
+      "symmetry": 6,
+      "seed": 2468
+    }
+  ],
+  "baseLayer": {
+    "isEnabled": true,
+    "type": "sunburst",
+    "hue": 0.75,
+    "saturation": 0.8,
+    "brightness": 0.35,
+    "hue2": 0.55,
+    "saturation2": 0.9,
+    "brightness2": 0.1,
+    "isRadial": true,
+    "opacity": 1.0,
+    "patternScale": 0.3,
+    "patternSharpness": 0.6
+  },
+  "effectsLayer": {
+    "isEnabled": false
+  },
+  "seed": 13730275572896771193,
+  "outputSize": 512
+}

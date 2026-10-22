@@ -225,7 +225,8 @@ internal object Background {
         val cx = centreX.toFloat()
         val cy = centreY.toFloat()
         val size = min(width, height)
-        val numRays = (settings.patternScale * 14.0 + 3.0).toFloat()
+        // A whole number of rays (rounded half away from zero, like Swift), so they meet where the angle wraps round.
+        val numRays = (settings.patternScale * 14.0 + 3.0).let { kotlin.math.sign(it) * kotlin.math.floor(abs(it) + 0.5) }.toFloat()
         val edgeWidth = max(0.015f, 0.48f * (1.0f - settings.patternSharpness.toFloat() * 0.93f))
         val invHalfW = 1.0f / (size * 0.5f)
         val a1 = floatArrayOf(c1.r.toFloat(), c1.g.toFloat(), c1.b.toFloat())
