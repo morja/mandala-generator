@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DM-9 App names</title>
+<style>
+:root {
+  --bg: #ffffff;
+  --surface: #f3f4f1;
+  --text: #1f1f1f;
+  --muted: #5f6368;
+  --line: #e2e3df;
+  --accent: #01875f;
+  --accent-text: #ffffff;
+  --chip: #eef0ec;
+  --selected: #e3efe9;
+  --home-bg: #20232a;
+  --home-text: #f1f1f1;
+  --app-1: #d9e4f5;
+  --app-2: #f5e2d4;
+  --app-3: #dcefe0;
+  --app-4: #ecdff3;
+  --radius-lg: 20px;
+  --radius-md: 12px;
+  --radius-sm: 8px;
+  --gap: 16px;
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #131314; --surface: #1e1f20; --text: #e3e3e3; --muted: #a8abb0;
+    --line: #2e3033; --accent: #5ec29a; --accent-text: #0b2a1e; --chip: #26282a; --selected: #1f3229;
+    --home-bg: #0e0f12; --app-1: #3a4658; --app-2: #57473b; --app-3: #3b5141; --app-4: #4c3f55;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #131314; --surface: #1e1f20; --text: #e3e3e3; --muted: #a8abb0;
+  --line: #2e3033; --accent: #5ec29a; --accent-text: #0b2a1e; --chip: #26282a; --selected: #1f3229;
+  --home-bg: #0e0f12; --app-1: #3a4658; --app-2: #57473b; --app-3: #3b5141; --app-4: #4c3f55;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.5 var(--font); }
+.bar { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; padding: 10px 16px;
+  border-bottom: 1px solid var(--line); background: var(--surface); font-size: 14px; }
+.bar p { margin: 0; color: var(--muted); flex: 1 1 260px; }
+.seg { display: inline-flex; flex-wrap: wrap; border: 1px solid var(--line); border-radius: var(--radius-md); overflow: hidden; }
+.seg button { border: 0; background: transparent; color: var(--text); font: inherit; padding: 4px 12px; cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--chip); font-weight: 600; }
+main { max-width: 1040px; margin: 0 auto; padding: 24px 16px 64px; }
+h2 { font-size: 20px; font-weight: 600; margin: 40px 0 4px; }
+h2:first-child { margin-top: 0; }
+.note { color: var(--muted); font-size: 14px; margin: 0 0 16px; }
+.names { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 32px; }
+.names button { border: 1px solid var(--line); background: var(--bg); color: var(--text); border-radius: var(--radius-md);
+  padding: 8px 14px; font: inherit; cursor: pointer; }
+.names button[aria-pressed="true"] { background: var(--selected); border-color: var(--accent); font-weight: 600; }
+.places { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; }
+.place h3 { font-size: 15px; font-weight: 600; margin: 0 0 8px; }
+.phone { width: 100%; max-width: 360px; border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 16px; background: var(--bg); }
+
+/* Store header */
+.head { display: flex; gap: var(--gap); align-items: center; }
+.head img { width: 72px; height: 72px; border-radius: var(--radius-lg); flex: none; }
+.head h1 { font-size: 22px; line-height: 1.25; margin: 0; font-weight: 600; }
+.dev { color: var(--accent); font-weight: 600; margin: 4px 0 0; font-size: 14px; }
+.sub { color: var(--muted); font-size: 12px; margin: 2px 0 0; }
+.install { display: block; text-align: center; margin-top: 16px; background: var(--accent); color: var(--accent-text);
+  border-radius: var(--radius-sm); padding: 8px; font-weight: 600; font-size: 14px; }
+
+/* Search result rows */
+.row { display: flex; gap: 12px; align-items: center; padding: 8px 0; }
+.row + .row { border-top: 1px solid var(--line); }
+.row img, .row .other { width: 52px; height: 52px; border-radius: var(--radius-md); flex: none; }
+.row .other { background: var(--app-2); }
+.row .t { font-size: 15px; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.row .m { color: var(--muted); font-size: 13px; }
+.row.mine { background: var(--selected); border-radius: var(--radius-md); padding: 8px; margin: 0 -8px; }
+
+/* Home screen */
+.home { background: var(--home-bg); color: var(--home-text); border-color: var(--home-bg); padding: 24px 12px; }
+.grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px 4px; }
+.app { text-align: center; min-width: 0; }
+.app img, .app .ico { width: 56px; height: 56px; border-radius: 50%; display: block; margin: 0 auto 6px; object-fit: cover; }
+.app span { display: block; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 2px; }
+.i1 { background: var(--app-1); } .i2 { background: var(--app-2); } .i3 { background: var(--app-3); } .i4 { background: var(--app-4); }
+
+/* Pro purchase */
+.sheet h4 { margin: 0 0 4px; font-size: 17px; font-weight: 600; }
+.sheet p { margin: 0 0 4px; color: var(--muted); font-size: 14px; }
+.sheet .install { margin-top: 12px; }
+
+/* Side by side */
+.compare { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px; }
+.compare .phone { max-width: none; cursor: pointer; }
+.compare .phone[aria-pressed="true"] { border-color: var(--accent); }
+.compare .label { display: block; font-size: 12px; color: var(--muted); margin-top: 8px; }
+</style>
+</head>
+<body>
+<div class="bar">
+  <p>DM-9 · App name candidates in the Play Store and on the home screen. Same icon everywhere; only the name changes.</p>
+  <div class="seg" role="group" aria-label="Separator">
+    <button data-sep=" – " aria-pressed="true">Dahlia – …</button><button data-sep=": " aria-pressed="false">Dahlia: …</button>
+  </div>
+  <div class="seg" role="group" aria-label="Theme">
+    <button data-theme-set="light" aria-pressed="false">Light</button><button data-theme-set="dark" aria-pressed="false">Dark</button>
+  </div>
+</div>
+<main>
+  <h2>Name</h2>
+  <p class="note">The store title has at most 30 characters. The home screen shows the shorter launcher label.</p>
+  <div class="names" id="names"></div>
+
+  <div class="places">
+    <section class="place">
+      <h3>Store listing</h3>
+      <div class="phone">
+        <div class="head">
+          <img src="../store/play-icon-512.png" alt="">
+          <div>
+            <h1 data-name="title"></h1>
+            <p class="dev">tearoom.one</p>
+            <p class="sub">Contains in-app purchases</p>
+          </div>
+        </div>
+        <span class="install">Install</span>
+      </div>
+    </section>
+
+    <section class="place">
+      <h3>Search for “mandala”</h3>
+      <div class="phone">
+        <div class="row"><div class="other"></div><div><div class="t">Mandala Coloring Book for Adults</div><div class="m">Puzzle · 4.5</div></div></div>
+        <div class="row mine"><img src="../store/play-icon-512.png" alt=""><div><div class="t" data-name="title"></div><div class="m">tearoom.one · Art &amp; Design</div></div></div>
+        <div class="row"><div class="other"></div><div><div class="t">Mandala Studio: Draw &amp; Color</div><div class="m">eleutheromania · Art &amp; Design</div></div></div>
+      </div>
+    </section>
+
+    <section class="place">
+      <h3>Home screen</h3>
+      <div class="phone home">
+        <div class="grid">
+          <div class="app"><div class="ico i1"></div><span>Camera</span></div>
+          <div class="app"><div class="ico i2"></div><span>Photos</span></div>
+          <div class="app"><img src="../store/play-icon-512.png" alt=""><span data-name="label"></span></div>
+          <div class="app"><div class="ico i3"></div><span>Calendar</span></div>
+          <div class="app"><div class="ico i4"></div><span>Clock</span></div>
+          <div class="app"><div class="ico i1"></div><span>Files</span></div>
+          <div class="app"><div class="ico i3"></div><span>Gazania</span></div>
+          <div class="app"><div class="ico i2"></div><span>Settings</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="place">
+      <h3>Pro purchase</h3>
+      <div class="phone sheet">
+        <h4 data-name="pro"></h4>
+        <p>Save at 2048 px, frame the mandala by hand, move layers and the emblem.</p>
+        <p>1,99 € · one-time purchase</p>
+        <span class="install">Buy</span>
+      </div>
+    </section>
+  </div>
+
+  <h2>All names side by side</h2>
+  <p class="note">Search result rows at phone width. Tap one to select it above.</p>
+  <div class="compare" id="compare"></div>
+</main>
+<script>
+const NAMES = [
+  { brand: "", desc: "Mandala Generator", current: true },
+  { brand: "", desc: "Mandala Maker" },
+  { brand: "", desc: "Mandala Designer" },
+  { brand: "Dahlia", desc: "Mandala Maker" },
+  { brand: "Dahlia", desc: "Mandala Designer" },
+  { brand: "Dahlia", desc: "Mandala Art" },
+];
+let selected = 3, sep = " – ";
+const $ = id => document.getElementById(id);
+const title = n => n.brand ? n.brand + sep + n.desc : n.desc;
+const label = n => n.brand || n.desc;
+const pro = n => (n.brand || n.desc) + " Pro";
+
+function render() {
+  const n = NAMES[selected];
+  document.querySelectorAll('[data-name="title"]').forEach(el => el.textContent = title(n));
+  document.querySelectorAll('[data-name="label"]').forEach(el => el.textContent = label(n));
+  document.querySelectorAll('[data-name="pro"]').forEach(el => el.textContent = pro(n));
+  $("names").replaceChildren(...NAMES.map((x, i) => {
+    const b = document.createElement("button");
+    b.textContent = title(x) + (x.current ? " (current)" : "");
+    b.setAttribute("aria-pressed", i === selected);
+    b.onclick = () => { selected = i; render(); };
+    return b;
+  }));
+  $("compare").replaceChildren(...NAMES.map((x, i) => {
+    const d = document.createElement("div");
+    d.className = "phone";
+    d.setAttribute("aria-pressed", i === selected);
+    d.innerHTML = '<div class="row"><img src="../store/play-icon-512.png" alt=""><div><div class="t"></div><div class="m">tearoom.one · Art &amp; Design</div></div></div><span class="label"></span>';
+    d.querySelector(".t").textContent = title(x);
+    d.querySelector(".label").textContent = title(x).length + " characters · launcher label “" + label(x) + "”";
+    d.onclick = () => { selected = i; render(); window.scrollTo({ top: 0 }); };
+    return d;
+  }));
+  document.querySelectorAll("[data-sep]").forEach(b => b.setAttribute("aria-pressed", b.dataset.sep === sep));
+}
+document.querySelectorAll("[data-sep]").forEach(b => b.onclick = () => { sep = b.dataset.sep; render(); });
+document.querySelectorAll("[data-theme-set]").forEach(b => b.onclick = () => {
+  document.documentElement.dataset.theme = b.dataset.themeSet;
+  document.querySelectorAll("[data-theme-set]").forEach(x => x.setAttribute("aria-pressed", x === b));
+});
+render();
+</script>
+</body>
+</html>

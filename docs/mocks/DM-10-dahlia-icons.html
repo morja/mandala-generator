@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DM-10 Dahlia icons</title>
+<style>
+:root {
+  --bg: #ffffff;
+  --surface: #f3f4f1;
+  --text: #1f1f1f;
+  --muted: #5f6368;
+  --line: #e2e3df;
+  --accent: #01875f;
+  --accent-text: #ffffff;
+  --chip: #eef0ec;
+  --selected: #e3efe9;
+  --home-bg: #20232a;
+  --home-light: #e9e4dc;
+  --home-light-text: #1f1f1f;
+  --home-text: #f1f1f1;
+  --app-1: #d9e4f5;
+  --app-2: #f5e2d4;
+  --app-3: #dcefe0;
+  --app-4: #ecdff3;
+  --radius-lg: 20px;
+  --radius-md: 12px;
+  --radius-sm: 8px;
+  --gap: 16px;
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #131314; --surface: #1e1f20; --text: #e3e3e3; --muted: #a8abb0;
+    --line: #2e3033; --accent: #5ec29a; --accent-text: #0b2a1e; --chip: #26282a; --selected: #1f3229;
+    --home-bg: #0e0f12; --app-1: #3a4658; --app-2: #57473b; --app-3: #3b5141; --app-4: #4c3f55;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #131314; --surface: #1e1f20; --text: #e3e3e3; --muted: #a8abb0;
+  --line: #2e3033; --accent: #5ec29a; --accent-text: #0b2a1e; --chip: #26282a; --selected: #1f3229;
+  --home-bg: #0e0f12; --app-1: #3a4658; --app-2: #57473b; --app-3: #3b5141; --app-4: #4c3f55;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.5 var(--font); }
+.bar { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; padding: 10px 16px;
+  border-bottom: 1px solid var(--line); background: var(--surface); font-size: 14px; }
+.bar p { margin: 0; color: var(--muted); flex: 1 1 260px; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: var(--radius-md); overflow: hidden; }
+.seg button { border: 0; background: transparent; color: var(--text); font: inherit; padding: 4px 12px; cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--chip); font-weight: 600; }
+main { max-width: 1040px; margin: 0 auto; padding: 24px 16px 64px; }
+h2 { font-size: 20px; font-weight: 600; margin: 40px 0 4px; }
+h2:first-child { margin-top: 0; }
+.note { color: var(--muted); font-size: 14px; margin: 0 0 16px; }
+
+/* Icon shapes: the store shows the whole image, the launcher mask shows its centre (72 of 108 dp). */
+.play { display: block; border-radius: 22%; overflow: hidden; }
+.play img { width: 100%; height: 100%; display: block; }
+.launcher { display: block; border-radius: 50%; overflow: hidden; position: relative; }
+.launcher img { position: absolute; width: 150%; height: 150%; left: -25%; top: -25%; }
+
+/* Candidate cards */
+.cands { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+.cand { border: 1px solid var(--line); border-radius: var(--radius-md); padding: 12px; background: var(--bg); color: var(--text);
+  font: inherit; text-align: left; cursor: pointer; }
+.cand[aria-pressed="true"] { border-color: var(--accent); background: var(--selected); }
+.cand .play { width: 100%; aspect-ratio: 1; }
+.cand .small { display: flex; gap: 10px; align-items: center; margin-top: 10px; }
+.cand .small .launcher:nth-child(1) { width: 48px; height: 48px; }
+.cand .small .launcher:nth-child(2) { width: 32px; height: 32px; }
+.cand .small .launcher:nth-child(3) { width: 20px; height: 20px; }
+.cand strong { display: block; font-size: 14px; margin-top: 8px; font-weight: 600; }
+.cand span.d { display: block; font-size: 12px; color: var(--muted); }
+
+/* Context */
+.places { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr)); gap: 24px; }
+.place h3 { font-size: 15px; font-weight: 600; margin: 0 0 8px; }
+.phone { width: 100%; max-width: 360px; border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 16px; background: var(--bg); }
+.head { display: flex; gap: var(--gap); align-items: center; }
+.head .play { width: 72px; height: 72px; flex: none; }
+.head h1 { font-size: 22px; line-height: 1.25; margin: 0; font-weight: 600; }
+.dev { color: var(--accent); font-weight: 600; margin: 4px 0 0; font-size: 14px; }
+.sub { color: var(--muted); font-size: 12px; margin: 2px 0 0; }
+.install { display: block; text-align: center; margin-top: 16px; background: var(--accent); color: var(--accent-text);
+  border-radius: var(--radius-sm); padding: 8px; font-weight: 600; font-size: 14px; }
+.row { display: flex; gap: 12px; align-items: center; padding: 8px 0; }
+.row + .row { border-top: 1px solid var(--line); }
+.row .play, .row .other { width: 52px; height: 52px; flex: none; }
+.row .other { border-radius: 22%; background: var(--app-2); }
+.row .t { font-size: 15px; line-height: 1.3; }
+.row .m { color: var(--muted); font-size: 13px; }
+.home { background: var(--home-bg); color: var(--home-text); border-color: var(--home-bg); padding: 24px 12px; }
+.home.light { background: var(--home-light); color: var(--home-light-text); border-color: var(--home-light); }
+.grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px 4px; }
+.app { text-align: center; min-width: 0; }
+.app .launcher, .app .ico { width: 56px; height: 56px; margin: 0 auto 6px; border-radius: 50%; }
+.app span { display: block; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 2px; }
+.i1 { background: var(--app-1); } .i2 { background: var(--app-2); } .i3 { background: var(--app-3); } .i4 { background: var(--app-4); }
+
+/* All side by side on a home screen */
+.lineup { display: grid; grid-template-columns: repeat(auto-fill, minmax(76px, 1fr)); gap: 16px 4px; }
+.lineup .app { cursor: pointer; }
+</style>
+</head>
+<body>
+<div class="bar">
+  <p>DM-10 · Icon candidates for Dahlia, each rendered by the app's own renderer. Settings files are next to the images in dm-10-icons/.</p>
+  <div class="seg" role="group" aria-label="Theme">
+    <button data-theme-set="light" aria-pressed="false">Light</button><button data-theme-set="dark" aria-pressed="false">Dark</button>
+  </div>
+</div>
+<main>
+  <h2>Candidates</h2>
+  <p class="note">Large: the store icon (whole image). Small: the launcher icon at three sizes; the launcher's mask shows only the centre two thirds.</p>
+  <div class="cands" id="cands"></div>
+
+  <h2>Selected icon in context</h2>
+  <p class="note" id="selnote"></p>
+  <div class="places">
+    <section class="place">
+      <h3>Store listing</h3>
+      <div class="phone">
+        <div class="head">
+          <span class="play"><img data-icon alt=""></span>
+          <div>
+            <h1>Dahlia – Mandala Maker</h1>
+            <p class="dev">tearoom.one</p>
+            <p class="sub">Contains in-app purchases</p>
+          </div>
+        </div>
+        <span class="install">Install</span>
+      </div>
+    </section>
+    <section class="place">
+      <h3>Search for “mandala”</h3>
+      <div class="phone">
+        <div class="row"><div class="other"></div><div><div class="t">Mandala Coloring Book for Adults</div><div class="m">Puzzle · 4.5</div></div></div>
+        <div class="row"><span class="play"><img data-icon alt=""></span><div><div class="t">Dahlia – Mandala Maker</div><div class="m">tearoom.one · Art &amp; Design</div></div></div>
+        <div class="row"><div class="other"></div><div><div class="t">Mandala Studio: Draw &amp; Color</div><div class="m">eleutheromania · Art &amp; Design</div></div></div>
+      </div>
+    </section>
+    <section class="place">
+      <h3>Home screen, dark wallpaper</h3>
+      <div class="phone home">
+        <div class="grid">
+          <div class="app"><div class="ico i1"></div><span>Camera</span></div>
+          <div class="app"><div class="ico i2"></div><span>Photos</span></div>
+          <div class="app"><span class="launcher"><img data-icon alt=""></span><span>Dahlia</span></div>
+          <div class="app"><div class="ico i3"></div><span>Calendar</span></div>
+        </div>
+      </div>
+    </section>
+    <section class="place">
+      <h3>Home screen, light wallpaper</h3>
+      <div class="phone home light">
+        <div class="grid">
+          <div class="app"><div class="ico i4"></div><span>Clock</span></div>
+          <div class="app"><span class="launcher"><img data-icon alt=""></span><span>Dahlia</span></div>
+          <div class="app"><div class="ico i3"></div><span>Gazania</span></div>
+          <div class="app"><div class="ico i1"></div><span>Files</span></div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <h2>All on one home screen</h2>
+  <p class="note">Launcher size, as you would see them between other apps. Tap one to select it above.</p>
+  <div class="phone home" style="max-width:none">
+    <div class="lineup" id="lineup"></div>
+  </div>
+</main>
+<script>
+const ICONS = [
+  { file: "current-play.png", name: "Current", desc: "Spirograph mesh, today's icon" },
+  { file: "1-rings-sunset.png", name: "1 Rings", desc: "Floral rings, sunset and gold" },
+  { file: "2-pink-rose.png", name: "2 Pink rose", desc: "Rose curves, candy, bright centre" },
+  { file: "3-violet-gold.png", name: "3 Violet and gold", desc: "Floral, phyllotaxis centre" },
+  { file: "4-red-dahlia.png", name: "4 Red", desc: "Floral in lava, gold rose centre" },
+  { file: "5-pompon.png", name: "5 Pompon", desc: "Three floral rings, 24-fold" },
+  { file: "6-orange-rose.png", name: "6 Pink and orange", desc: "Rose curves, sunset" },
+];
+const DIR = "dm-10-icons/";
+let selected = 6;
+const $ = id => document.getElementById(id);
+const span = (cls, file) => {
+  const s = document.createElement("span"); s.className = cls;
+  const i = document.createElement("img"); i.src = DIR + file; i.alt = ""; s.append(i); return s;
+};
+function render() {
+  const ic = ICONS[selected];
+  document.querySelectorAll("[data-icon]").forEach(img => img.src = DIR + ic.file);
+  $("selnote").textContent = ic.name + " · " + ic.desc;
+  $("cands").replaceChildren(...ICONS.map((x, i) => {
+    const b = document.createElement("button");
+    b.className = "cand"; b.setAttribute("aria-pressed", i === selected);
+    const small = document.createElement("div"); small.className = "small";
+    small.append(span("launcher", x.file), span("launcher", x.file), span("launcher", x.file));
+    const n = document.createElement("strong"); n.textContent = x.name;
+    const d = document.createElement("span"); d.className = "d"; d.textContent = x.desc;
+    b.append(span("play", x.file), small, n, d);
+    b.onclick = () => { selected = i; render(); };
+    return b;
+  }));
+  $("lineup").replaceChildren(...ICONS.map((x, i) => {
+    const a = document.createElement("div"); a.className = "app";
+    const l = document.createElement("span"); l.textContent = x.name;
+    a.append(span("launcher", x.file), l);
+    a.onclick = () => { selected = i; render(); };
+    return a;
+  }));
+}
+document.querySelectorAll("[data-theme-set]").forEach(b => b.onclick = () => {
+  document.documentElement.dataset.theme = b.dataset.themeSet;
+  document.querySelectorAll("[data-theme-set]").forEach(x => x.setAttribute("aria-pressed", x === b));
+});
+render();
+</script>
+</body>
+</html>
