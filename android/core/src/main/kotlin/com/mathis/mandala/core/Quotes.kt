@@ -39,6 +39,11 @@ object Quotes {
         Quote("The highest excellence is like water.", "Lao Tzu"),
         Quote("The journey of a thousand li commenced with a single step.", "Lao Tzu"),
         Quote("The softest thing in the world dashes against and overcomes the hardest.", "Lao Tzu"),
+        // Divani Shamsi Tabriz, translated by R. A. Nicholson, 1898, as quoted in The Persian Mystics: Jal\u00e1lu'd-d\u00edn R\u00fam\u00ed, 1907
+        Quote("Every moment the voice of Love is coming from left and right.", "Rumi"),
+        Quote("This is the House of Love, which has no bound or end.", "Rumi"),
+        Quote("Embrace the Soul which is embraced by nothing.", "Rumi"),
+        Quote("Do not think of the Water failing, for this Water is without end.", "Rumi"),
         // Dhammapada, translated by F. Max M\u00fcller, 1881
         Quote("All that we are is the result of what we have thought.", "Dhammapada"),
         Quote("Hatred does not cease by hatred at any time: hatred ceases by love, this is an old rule.", "Dhammapada"),
