@@ -4668,21 +4668,6 @@ struct MandalaRenderer {
         return overlay
     }
 
-    /// Screens the light of `source`, blurred with `passes` (radii in reference-1600px pixels), onto
-    /// the opaque `base`. Used for glows around shapes with transparent surroundings (emblem, text):
-    /// the light is added around the shape instead of covering the image with the blurred alpha.
-    static func screenGlowLight(base: CGImage, source: CGImage,
-                                passes: [(radius: CGFloat, strength: CGFloat)]) -> CGImage {
-        guard let light = referenceBlurOverlay(source: CIImage(cgImage: source), passes: passes),
-              let screen = CIFilter(name: "CIScreenBlendMode") else { return base }
-        let ciBase = CIImage(cgImage: base)
-        screen.setValue(ciBase, forKey: kCIInputBackgroundImageKey)
-        screen.setValue(light,  forKey: kCIInputImageKey)
-        let context = CIContext(options: [.workingColorSpace: CGColorSpace(name: CGColorSpace.displayP3) as Any])
-        guard let out = screen.outputImage?.cropped(to: ciBase.extent) else { return base }
-        return context.createCGImage(out, from: ciBase.extent) ?? base
-    }
-
     static func applyGlow(image: CGImage, intensity: Double) -> CGImage {
         guard intensity > 0 else { return image }
         let ciImage = CIImage(cgImage: image)
