@@ -11,17 +11,16 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -56,12 +55,10 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.SubcomposeLayout
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Constraints
-import androidx.compose.ui.unit.Dp
 import com.mathis.mandala.app.Editing
 import com.mathis.mandala.app.Editing.SaveFormat
 import com.mathis.mandala.app.Editing.moved
@@ -84,7 +81,7 @@ import kotlin.math.abs
 import kotlin.math.roundToInt
 
 /**
- * Saving in a format (ADR-0010, laid out as DM-11 A): format, the mandala placed in the frame (Pro)
+ * Saving in a format (ADR-0010, laid out as DM-11 A, without scrolling): format, the mandala placed in the frame (Pro)
  * with Whole or Fill beside it, the finish folded into "Adjust", whether the quote follows, and the
  * line drawing as SVG (Pro, ADR-0013). Size, Save and Wallpaper stay at the bottom while the rest scrolls.
  */
@@ -125,18 +122,21 @@ internal fun SaveSheet(
     ModalBottomSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
       // Messages ("Saved …") show inside the sheet while it is open; behind it they would be hidden.
       Box {
-        Column {
+        // Nothing scrolls inside the sheet (a drag at the top of a scrolled list closed it too easily):
+        // the frame takes the height the other parts leave, and shrinks while "Adjust" is open.
+        Column(Modifier.fillMaxHeight()) {
             Column(
-                Modifier.weight(1f, fill = false).verticalScroll(rememberScrollState()).padding(horizontal = Spacing.lg).padding(bottom = Spacing.md),
+                Modifier.weight(1f).padding(horizontal = Spacing.lg).padding(bottom = Spacing.md),
                 verticalArrangement = Arrangement.spacedBy(Spacing.md),
             ) {
-                Text("Save image", style = MaterialTheme.typography.titleMedium)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text("Save image", style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
+                    LineDrawingButton(proOwned, hasPointLayers, enabled = !busy, onLineDrawing = onLineDrawing, onShowPro = onShowPro)
+                }
                 FormatRow(choice.format, onFormat)
-                // The frame leaves room for the size and buttons below on a phone.
-                val maxFrameHeight = LocalConfiguration.current.screenHeightDp.toFloat() * 0.42f
                 FrameWithFit(
                     aspect = aspect.toFloat(),
-                    maxHeight = Dp(maxFrameHeight),
+                    modifier = Modifier.weight(1f),
                     // A square frame looks the same either way.
                     showFit = aspect != 1.0,
                     frame = { Frame(preview, aspect.toFloat(), framing, enabled = proOwned && !busy, saving = busy, onFraming = onFraming, onCentre = { onFill(false) }) },
@@ -163,7 +163,6 @@ internal fun SaveSheet(
                     }
                 }
                 if (hasQuote) SwitchRow("Quote moves with the mandala", choice.textFollowsMandala, onTextFollows)
-                LineDrawingRow(proOwned, hasPointLayers, enabled = !busy, onLineDrawing = onLineDrawing, onShowPro = onShowPro)
             }
             HorizontalDivider(color = t.outline)
             Column(
@@ -239,42 +238,56 @@ private fun FormatRow(format: SaveFormat, onFormat: (SaveFormat) -> Unit) {
 }
 
 /**
- * The frame, centred, with Whole or Fill at its bottom right when a portrait frame leaves room
- * beside it; otherwise (a landscape frame, a narrow window) the switch sits centred below.
+ * The frame, as large as the given room allows and centred in it, with Whole or Fill at its bottom
+ * right when it is tall; otherwise (4:5, 3:4, landscape)
+ * the switch sits centred below.
  */
 @Composable
 private fun FrameWithFit(
     aspect: Float,
-    maxHeight: Dp,
+    modifier: Modifier,
     showFit: Boolean,
     frame: @Composable () -> Unit,
     fit: @Composable (vertical: Boolean) -> Unit,
 ) {
-    SubcomposeLayout(Modifier.fillMaxWidth()) { constraints ->
+    SubcomposeLayout(modifier.fillMaxWidth()) { constraints ->
         val maxW = constraints.maxWidth
-        val frameW = minOf(maxW.toFloat(), maxHeight.toPx() / aspect).roundToInt()
-        val frameH = (frameW * aspect).roundToInt()
-        val x = (maxW - frameW) / 2
+        val maxH = constraints.maxHeight
         val gap = Spacing.lg.roundToPx()
-        val shown = subcompose("frame", frame).map { it.measure(Constraints.fixed(frameW, frameH)) }
-        if (!showFit) return@SubcomposeLayout layout(maxW, frameH) { shown.forEach { it.place(x, 0) } }
-        val side = if (aspect > 1f) subcompose("side") { fit(true) }.map { it.measure(Constraints()) } else emptyList()
-        if (side.isNotEmpty() && x >= side.maxOf { it.width } + gap) {
-            layout(maxW, frameH) {
-                shown.forEach { it.place(x, 0) }
-                side.forEach { it.place(x + frameW + gap, frameH - it.height) }
+        fun frameSize(height: Int, width: Int = maxW): Pair<Int, Int> {
+            val w = minOf(width.toFloat(), height / aspect).roundToInt().coerceAtLeast(0)
+            return w to (w * aspect).roundToInt()
+        }
+        // Tall frames (This screen, 9:16, 2:3) always keep the switch beside them, so it does not jump
+        // while "Adjust" opens; the frame gives up the room on both sides to stay centred.
+        val side = if (showFit && aspect >= SIDE_FIT_ASPECT) subcompose("side") { fit(true) }.map { it.measure(Constraints()) } else emptyList()
+        val besides = side.isNotEmpty()
+        val (sideW, sideH) = frameSize(maxH, if (besides) maxW - 2 * (side.maxOf { it.width } + gap) else maxW)
+        if (!showFit || besides) {
+            val shown = subcompose("frame", frame).map { it.measure(Constraints.fixed(sideW, sideH)) }
+            val x = (maxW - sideW) / 2
+            val y = (maxH - sideH) / 2
+            layout(maxW, maxH) {
+                shown.forEach { it.place(x, y) }
+                side.takeIf { besides }?.forEach { it.place(x + sideW + gap, y + sideH - it.height) }
             }
         } else {
             val below = subcompose("below") { fit(false) }.map { it.measure(Constraints(maxWidth = maxW)) }
             val belowH = below.maxOf { it.height }
             val space = Spacing.md.roundToPx()
-            layout(maxW, frameH + space + belowH) {
-                shown.forEach { it.place(x, 0) }
-                below.forEach { it.place((maxW - it.width) / 2, frameH + space) }
+            val (w, h) = frameSize(maxH - space - belowH)
+            val shown = subcompose("frame", frame).map { it.measure(Constraints.fixed(w, h)) }
+            val y = (maxH - h - space - belowH) / 2
+            layout(maxW, maxH) {
+                shown.forEach { it.place((maxW - w) / 2, y) }
+                below.forEach { it.place((maxW - it.width) / 2, y + h + space) }
             }
         }
     }
 }
+
+/** From this height over width on, Whole and Fill sit beside the frame instead of below it. */
+private const val SIDE_FIT_ASPECT = 1.5f
 
 /** Whole or Fill as a small two-part switch, stacked beside a portrait frame or in a row below. */
 @Composable
@@ -411,29 +424,28 @@ private fun FinishControls(finish: Finish, proOwned: Boolean, enabled: Boolean, 
     }
 }
 
-/** The line drawing as SVG in one of its two looks, as a quiet row; without Pro it opens the Pro sheet. */
+/**
+ * The line drawing as SVG, a quiet button beside the title: a list explains it and offers its two
+ * looks. Without Pro it opens the Pro sheet.
+ */
 @Composable
-private fun LineDrawingRow(proOwned: Boolean, hasPointLayers: Boolean, enabled: Boolean, onLineDrawing: (VectorExport.Look) -> Unit, onShowPro: () -> Unit) {
+private fun LineDrawingButton(proOwned: Boolean, hasPointLayers: Boolean, enabled: Boolean, onLineDrawing: (VectorExport.Look) -> Unit, onShowPro: () -> Unit) {
     val t = LocalTokens.current
     var open by remember { mutableStateOf(false) }
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        Column(Modifier.weight(1f)) {
-            Text("Line drawing as SVG", style = MaterialTheme.typography.bodyMedium)
+    Box {
+        TextButton(onClick = { if (proOwned) open = true else onShowPro() }, enabled = enabled) {
+            Text(if (proOwned) "Line drawing" else "Line drawing · Pro")
+        }
+        DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
             Text(
-                "Square, the layers and the emblem as lines, without glow, effects, background and quote." +
+                "An SVG, square: the layers and the emblem as lines, without glow, effects, background and quote." +
                     if (hasPointLayers) " Strange Attractor layers are left out." else "",
                 style = MaterialTheme.typography.bodySmall,
                 color = t.textMuted,
+                modifier = Modifier.padding(horizontal = Spacing.lg, vertical = Spacing.sm),
             )
-        }
-        Box {
-            TextButton(onClick = { if (proOwned) open = true else onShowPro() }, enabled = enabled) {
-                Text(if (proOwned) "Save" else "Pro")
-            }
-            DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
-                DropdownMenuItem(text = { Text("Colour on black") }, onClick = { open = false; onLineDrawing(VectorExport.Look.COLOUR) })
-                DropdownMenuItem(text = { Text("Dark on white, for plotters and colouring") }, onClick = { open = false; onLineDrawing(VectorExport.Look.LINES) })
-            }
+            DropdownMenuItem(text = { Text("Colour on black") }, onClick = { open = false; onLineDrawing(VectorExport.Look.COLOUR) })
+            DropdownMenuItem(text = { Text("Dark on white, for plotters and colouring") }, onClick = { open = false; onLineDrawing(VectorExport.Look.LINES) })
         }
     }
 }
