@@ -56,6 +56,7 @@ import com.mathis.mandala.app.Editing.SaveFormat
 import com.mathis.mandala.app.Editing.moved
 import com.mathis.mandala.app.Editing.zoomedAround
 import com.mathis.mandala.app.ExportProgress
+import com.mathis.mandala.app.Fit
 import com.mathis.mandala.app.FramePreviewState
 import com.mathis.mandala.app.SaveChoice
 import com.mathis.mandala.app.WallpaperTarget
@@ -75,6 +76,8 @@ import kotlin.math.abs
 @Composable
 internal fun SaveSheet(
     choice: SaveChoice,
+    /** The framing in the frame: the preset for this mandala, or the one placed by hand with Pro. */
+    framing: Framing,
     preview: FramePreviewState,
     screenAspect: Double,
     proOwned: Boolean,
@@ -86,6 +89,7 @@ internal fun SaveSheet(
     onTextFollows: (Boolean) -> Unit,
     onSave: (large: Boolean) -> Unit,
     onWallpaper: (WallpaperTarget) -> Unit,
+    onFill: (Boolean) -> Unit,
     hasPointLayers: Boolean,
     onLineDrawing: (VectorExport.Look) -> Unit,
     onShowPro: () -> Unit,
@@ -94,7 +98,8 @@ internal fun SaveSheet(
 ) {
     val t = LocalTokens.current
     val aspect = Editing.aspect(choice.format, screenAspect)
-    val framing = if (proOwned) choice.framing else Framing()
+    // The preset the frame is on; none once a Pro user has moved or zoomed by hand.
+    val preset = when (choice.fit) { Fit.WHOLE -> false; Fit.FILL -> true; Fit.HAND -> if (proOwned) null else false }
     val (w, h) = Editing.exportSize(choice.format, screenAspect, large = false)
     val (lw, lh) = Editing.exportSize(choice.format, screenAspect, large = true)
     ModalBottomSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
@@ -111,9 +116,16 @@ internal fun SaveSheet(
                 }
                 RatioChip(choice.format, onFormat)
             }
+            // A square frame looks the same either way.
+            if (aspect != 1.0) {
+                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+                    FilterChip(selected = preset == false, onClick = { onFill(false) }, enabled = !busy, label = { Text("Show whole") })
+                    FilterChip(selected = preset == true, onClick = { onFill(true) }, enabled = !busy, label = { Text("Fill") })
+                }
+            }
             // The frame takes the width, but leaves room for the buttons below on a phone.
             val maxFrameHeight = LocalConfiguration.current.screenHeightDp.dp * 0.5f
-            Frame(preview, aspect.toFloat(), framing, enabled = proOwned && !busy, saving = busy, maxHeight = maxFrameHeight, onFraming = onFraming)
+            Frame(preview, aspect.toFloat(), framing, enabled = proOwned && !busy, saving = busy, maxHeight = maxFrameHeight, onFraming = onFraming, onCentre = { onFill(false) })
             if (proOwned) {
                 Text("Drag to move the mandala, pinch to zoom, double tap to centre it.", style = MaterialTheme.typography.bodySmall, color = t.textMuted)
             } else {
@@ -156,10 +168,12 @@ private fun Frame(
     saving: Boolean,
     maxHeight: Dp,
     onFraming: (Framing) -> Unit,
+    onCentre: () -> Unit,
 ) {
     val t = LocalTokens.current
     val current by rememberUpdatedState(framing)
     val change by rememberUpdatedState(onFraming)
+    val centre by rememberUpdatedState(onCentre)
     BoxWithConstraints(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
         val width = minOf(maxWidth, maxHeight / aspect)
         var gestures: Modifier = Modifier
@@ -172,7 +186,7 @@ private fun Frame(
                         change(next)
                     }
                 }
-                .pointerInput(Unit) { detectTapGestures(onDoubleTap = { change(Framing()) }) }
+                .pointerInput(Unit) { detectTapGestures(onDoubleTap = { centre() }) }
         }
         Box(
             Modifier

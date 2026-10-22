@@ -16,7 +16,19 @@ data class SaveChoice(
     val format: SaveFormat = SaveFormat.SCREEN,
     val framing: Framing = Framing(),
     val textFollowsMandala: Boolean = false,
+    /** How the mandala sits in the frame; [Fit.HAND] (placed by hand, `framing`) needs Pro. */
+    val fit: Fit = Fit.WHOLE,
 )
+
+/** How the mandala sits in the frame (ADR-0010): free presets, or placed by hand with Pro. */
+enum class Fit {
+    /** Centred, fitting the shorter side: the whole mandala shows. */
+    WHOLE,
+    /** Centred and zoomed until its large layers cover the corners ([com.mathis.mandala.core.MandalaRenderer.fillZoom]). */
+    FILL,
+    /** Moved and zoomed by hand (Pro): [SaveChoice.framing]. */
+    HAND,
+}
 
 /** The last save choice, in shared preferences. */
 class SaveChoiceStore(context: Context) {
@@ -29,7 +41,10 @@ class SaveChoiceStore(context: Context) {
             prefs.getFloat(KEY_CENTRE_Y, 0.5f).toDouble(),
             prefs.getFloat(KEY_ZOOM, 1f).toDouble(),
         ).clamped()
-        return SaveChoice(format, framing, prefs.getBoolean(KEY_TEXT_FOLLOWS, false))
+        // Before the presets a framing was always by hand; a centred one at zoom 1 is "Show whole".
+        val fit = prefs.getString(KEY_FIT, null)?.let { name -> Fit.entries.firstOrNull { it.name == name } }
+            ?: if (framing == Framing()) Fit.WHOLE else Fit.HAND
+        return SaveChoice(format, framing, prefs.getBoolean(KEY_TEXT_FOLLOWS, false), fit)
     }
 
     fun save(choice: SaveChoice) = prefs.edit()
@@ -38,6 +53,7 @@ class SaveChoiceStore(context: Context) {
         .putFloat(KEY_CENTRE_Y, choice.framing.centreY.toFloat())
         .putFloat(KEY_ZOOM, choice.framing.zoom.toFloat())
         .putBoolean(KEY_TEXT_FOLLOWS, choice.textFollowsMandala)
+        .putString(KEY_FIT, choice.fit.name)
         .apply()
 
     private companion object {
@@ -46,6 +62,7 @@ class SaveChoiceStore(context: Context) {
         const val KEY_CENTRE_Y = "centre_y"
         const val KEY_ZOOM = "zoom"
         const val KEY_TEXT_FOLLOWS = "text_follows"
+        const val KEY_FIT = "fit"
     }
 }
 

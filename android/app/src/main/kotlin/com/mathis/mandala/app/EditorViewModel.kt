@@ -53,19 +53,23 @@ import com.mathis.mandala.core.SettingsJson
 import com.mathis.mandala.core.StyleLayer
 import com.mathis.mandala.core.VectorExport
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
@@ -202,15 +206,44 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
 
     fun setSaveFormat(format: Editing.SaveFormat) = _saveChoice.update { it.copy(format = format) }
 
-    /** Moving and zooming the mandala is part of Pro; without it the mandala stays centred. */
+    /** "Fill" or "Show whole", free in every format; with Pro it ends placing by hand. */
+    fun setFill(fill: Boolean) = _saveChoice.update { it.copy(fit = if (fill) Fit.FILL else Fit.WHOLE) }
+
+    private fun aspectOf(format: Editing.SaveFormat) = Editing.aspect(format, _screenAspect.value)
+
+    /** Moving and zooming the mandala is part of Pro; without it the mandala stays on its preset. */
     fun setFraming(framing: Framing) {
-        if (pro.state.value.owned) _saveChoice.update { it.copy(framing = framing.clamped()) }
+        if (pro.state.value.owned) _saveChoice.update { it.copy(framing = framing.clamped(), fit = Fit.HAND) }
     }
 
     fun setTextFollowsMandala(follows: Boolean) = _saveChoice.update { it.copy(textFollowsMandala = follows) }
 
-    /** The framing the images are drawn with: the chosen one with Pro, centred without. */
-    private fun effectiveFraming(choice: SaveChoice): Framing = if (pro.state.value.owned) choice.framing else Framing()
+    /** Fill zooms measured recently, by mandala and shape; touched only on the main thread. */
+    private val fillZooms = LinkedHashMap<Pair<MandalaParameters, Double>, Double>()
+
+    /** The framing the save sheet shows and images are drawn with, for the current mandala. */
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val shownFraming: StateFlow<Framing> = combine(_saveChoice, _params, _screenAspect, pro.state) { c, p, a, pr -> FramingInput(c, p, Editing.aspect(c.format, a), pr.owned) }
+        .mapLatest { framingFor(it.choice, it.params, it.aspect, it.pro) }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, Framing())
+
+    private data class FramingInput(val choice: SaveChoice, val params: MandalaParameters, val aspect: Double, val pro: Boolean)
+
+    /** The framing for `choice`; "Fill" measures the mandala once (about a tenth of a second) and keeps the zoom. */
+    private suspend fun framingFor(choice: SaveChoice, params: MandalaParameters, aspect: Double, pro: Boolean): Framing {
+        val zoom = if (choice.fit == Fit.FILL) fillZoom(params, aspect) else 1.0
+        return Editing.framingFor(choice, zoom, pro)
+    }
+
+    private suspend fun fillZoom(params: MandalaParameters, aspect: Double): Double {
+        val key = params to aspect
+        fillZooms[key]?.let { return it }
+        val zoom = withContext(Dispatchers.Default) { MandalaRenderer.fillZoom(params, aspect, threads) }
+        fillZooms[key] = zoom
+        if (fillZooms.size > FILL_ZOOMS_KEPT) fillZooms.remove(fillZooms.keys.first())
+        return zoom
+    }
+
 
     override fun onCleared() {
         pro.close()
@@ -610,7 +643,9 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         if (large && !pro.state.value.owned) return
         val choice = _saveChoice.value
         val (w, h) = Editing.exportSize(choice.format, _screenAspect.value, large)
-        renderFullSize("Creating the image", w, h, large, effectiveFraming(choice), choice.textFollowsMandala) { image, fileName ->
+        val params = _params.value
+        val framing: suspend () -> Framing = { framingFor(choice, params, aspectOf(choice.format), pro.state.value.owned) }
+        renderFullSize("Creating the image", w, h, large, framing, choice.textFollowsMandala) { image, fileName ->
             exportStep("Saving to Pictures")
             withContext(Dispatchers.IO) { GalleryExport.savePng(getApplication(), image, fileName) }
             message("Saved $w × $h to Pictures/${GalleryExport.FOLDER}")
@@ -620,14 +655,18 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
     /**
      * Sets the image as wallpaper in the phone screen format, at the largest size the user may save;
      * an image of this screen format just saved is reused when it is at least as wide as the screen.
+     * From the save sheet it takes the framing in the frame; from the menu (`filled`) the mandala
+     * fills the screen, which suits a wallpaper best.
      */
-    fun setWallpaper(target: WallpaperTarget) {
+    fun setWallpaper(target: WallpaperTarget, filled: Boolean = false) {
         val choice = _saveChoice.value
         val large = pro.state.value.owned
         val (w, h) = Editing.exportSize(Editing.SaveFormat.SCREEN, _screenAspect.value, large)
-        val framing = effectiveFraming(choice)
-        val reuse = { k: ExportKey ->
-            k.params == _params.value && k.framing == framing && k.textFollows == choice.textFollowsMandala &&
+        val screen = aspectOf(Editing.SaveFormat.SCREEN)
+        val params = _params.value
+        val framing: suspend () -> Framing = { framingFor(if (filled) choice.copy(fit = Fit.FILL) else choice, params, screen, large) }
+        val reuse = { k: ExportKey, f: Framing ->
+            k.params == params && k.framing == f && k.textFollows == choice.textFollowsMandala &&
                 k.width >= screenShortSide && kotlin.math.abs(k.height.toDouble() / k.width - h.toDouble() / w) < 0.002
         }
         renderFullSize("Creating the wallpaper", w, h, large, framing, choice.textFollowsMandala, reuse) { image, _ ->
@@ -640,7 +679,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
-    fun shareImage() = renderFullSize("Creating the image", Editing.EXPORT_SIZE, Editing.EXPORT_SIZE, large = false, Framing(), textFollows = false) { image, fileName ->
+    fun shareImage() = renderFullSize("Creating the image", Editing.EXPORT_SIZE, Editing.EXPORT_SIZE, large = false, { Framing() }, textFollows = false) { image, fileName ->
         exportStep("Preparing to share")
         val uri = withContext(Dispatchers.IO) { ImageShare.prepare(getApplication(), image, fileName) }
         _events.send(EditorEvent.ShareImage(uri))
@@ -683,18 +722,19 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
 
     /** Renders the image at full size and hands it to `then`; `label` says what for while it is drawn. */
     private fun renderFullSize(
-        label: String, width: Int, height: Int, large: Boolean, framing: Framing, textFollows: Boolean,
-        reuse: ((ExportKey) -> Boolean)? = null,
+        label: String, width: Int, height: Int, large: Boolean, framingOf: suspend () -> Framing, textFollows: Boolean,
+        reuse: ((ExportKey, Framing) -> Boolean)? = null,
         then: suspend (Image8, String) -> Unit,
     ) {
         if (_busy.value) return
         val snapshot = _params.value
-        val key = ExportKey(snapshot, framing, textFollows, width, height, !large)
-        val cached = lastExport?.takeIf { (k, _) -> k == key || reuse?.invoke(k) == true }?.second
         _busy.value = true
         _export.value = ExportProgress(label)
         viewModelScope.launch {
             try {
+                val framing = framingOf()
+                val key = ExportKey(snapshot, framing, textFollows, width, height, !large)
+                val cached = lastExport?.takeIf { (k, _) -> k == key || reuse?.invoke(k, framing) == true }?.second
                 if (cached != null) {
                     then(cached, Editing.fileName(snapshot, cached.width, cached.height))
                     return@launch
@@ -746,7 +786,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
             return
         }
         val (w, h) = Editing.size(request.choice.format, request.aspect, Editing.FRAME_PREVIEW_WIDTH)
-        val framing = if (request.pro) request.choice.framing else Framing()
+        val framing = framingFor(request.choice, request.params, Editing.aspect(request.choice.format, request.aspect), request.pro)
         _framePreview.update { it.copy(rendering = true) }
         try {
             val result = withContext(Dispatchers.Default) {
@@ -831,6 +871,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         const val RECENT_PREVIEWS = 30
         const val RECENT_FRAMES = 6
         const val WALLPAPER_MESSAGE_DELAY_MS = 1500L
+        const val FILL_ZOOMS_KEPT = 8
 
         /** Until the screen reports its own: a common 20:9 phone. */
         const val DEFAULT_SCREEN_ASPECT = 20.0 / 9.0

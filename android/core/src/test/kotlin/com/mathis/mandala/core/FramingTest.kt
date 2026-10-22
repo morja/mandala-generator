@@ -76,6 +76,21 @@ class FramingTest {
     }
 
     @Test
+    fun fillZoomBringsTheFilledPartOfTheMandalaToTheCorners() {
+        val phone = 2340.0 / 1080
+        fun zoom(json: String) = MandalaRenderer.fillZoom(SettingsJson.decode(json), phone, threads = 2)
+        // A Star Burst fills to about three quarters of the mandala's size: zoom about 1.6 (Mathis' choice).
+        val star = zoom("""{"layers":[{"style":"starBurst"}]}""")
+        assertTrue(star in 1.5..1.7, "Star Burst $star")
+        // A small accent in the middle does not change how far the mandala is filled.
+        assertEquals(star, zoom("""{"layers":[{"style":"starBurst"},{"style":"roseCurves","scale":0.3}]}"""), 0.05)
+        // Deep Nebula fills any canvas already; a small mandala zooms at most to the longer side.
+        assertTrue(zoom("""{"layers":[{"style":"deepNebula"}]}""") < 1.1)
+        assertEquals(phone, zoom("""{"layers":[{"style":"spirograph","scale":0.2}]}"""), 1e-9)
+        assertEquals(1.0, MandalaRenderer.fillZoom(SettingsJson.decode("""{"layers":[{"style":"starBurst"}]}"""), 1.0, threads = 2))
+    }
+
+    @Test
     fun aMandalaMostlyOffTheCanvasStillRenders() {
         val img = render(oneLayer, RenderOptions(width = 120, height = 200, framing = Framing(centreX = 1.0, centreY = 0.0, zoom = 0.25)))
         assertEquals(120, img.width)

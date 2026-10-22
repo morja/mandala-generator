@@ -393,6 +393,17 @@ object Editing {
         }
     }
 
+    /**
+     * The framing an image is drawn with: the one placed by hand only
+     * with Pro; otherwise "Show whole" (centred, fitting the shorter side) or "Fill" (zoomed to `fillZoom`,
+     * [MandalaRenderer.fillZoom]; the default for a wallpaper).
+     */
+    fun framingFor(choice: SaveChoice, fillZoom: Double, pro: Boolean): Framing = when {
+        choice.fit == Fit.HAND && pro -> choice.framing
+        choice.fit == Fit.FILL -> Framing(zoom = fillZoom)
+        else -> Framing()
+    }
+
     /** The framing moved by (dx, dy), given as fractions of the frame's width and height. */
     fun Framing.moved(dx: Double, dy: Double): Framing = copy(centreX = centreX + dx, centreY = centreY + dy).clamped()
 
