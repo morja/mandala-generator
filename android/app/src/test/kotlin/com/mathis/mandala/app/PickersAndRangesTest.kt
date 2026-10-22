@@ -20,7 +20,7 @@ class PickersAndRangesTest {
     fun elevenPalettesAreOfferedInTheReviewedOrder() {
         val names = Editing.offeredPalettes.map { BuiltInPalettes.all[it].name }
         assertEquals(
-            listOf("Psychedelic", "Neon City", "Tropical", "Sunset", "Rose Quartz", "Lava", "Earth", "Gold", "Toxic", "Bio Glow", "Ice", "Cosmic", "Aurora", "Violet", "Silver"),
+            listOf("Psychedelic", "Neon City", "Tropical", "Sunset", "Lava", "Gold", "Earth", "Toxic", "Bio Glow", "Ice", "Cosmic", "Aurora", "Violet", "Rose Quartz", "Silver"),
             names,
         )
         // The hidden ones stay where they are, so saved indices keep their look.
