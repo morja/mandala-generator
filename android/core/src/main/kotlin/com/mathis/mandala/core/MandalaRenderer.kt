@@ -52,6 +52,8 @@ data class RenderOptions(
      * renderer's; a smaller one is faster and softens the light slightly (the app's fast preview).
      */
     val glowReferenceWidth: Int = 1600,
+    /** A last adjustment of the finished image (ADR-0014); the default leaves it untouched. */
+    val finish: Finish = Finish(),
 )
 
 fun interface ImageLoader {
@@ -351,7 +353,7 @@ object MandalaRenderer {
                 else -> WorkingSpace.convertToSrgb(composite)
             }
             progress.done()
-            return RenderResult(result, warnings, (System.nanoTime() - start) / 1_000_000)
+            return RenderResult(options.finish.apply(result, options.threads), warnings, (System.nanoTime() - start) / 1_000_000)
         }
     }
 

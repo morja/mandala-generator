@@ -60,13 +60,17 @@ import com.mathis.mandala.app.Fit
 import com.mathis.mandala.app.FramePreviewState
 import com.mathis.mandala.app.SaveChoice
 import com.mathis.mandala.app.WallpaperTarget
+import com.mathis.mandala.app.liveLabel
+import com.mathis.mandala.app.pairLabel
 import com.mathis.mandala.app.ui.theme.LocalTokens
 import com.mathis.mandala.app.ui.theme.Radius
 import com.mathis.mandala.app.ui.theme.Sizes
 import com.mathis.mandala.app.ui.theme.Spacing
+import com.mathis.mandala.core.Finish
 import com.mathis.mandala.core.Framing
 import com.mathis.mandala.core.VectorExport
 import kotlin.math.abs
+import kotlin.math.roundToInt
 
 /**
  * Saving in a format (ADR-0010): format, the mandala placed in the frame (Pro), whether the quote
@@ -90,6 +94,9 @@ internal fun SaveSheet(
     onSave: (large: Boolean) -> Unit,
     onWallpaper: (WallpaperTarget) -> Unit,
     onFill: (Boolean) -> Unit,
+    onFinish: (Finish) -> Unit,
+    onPair: () -> Unit,
+    onLive: () -> Unit,
     hasPointLayers: Boolean,
     onLineDrawing: (VectorExport.Look) -> Unit,
     onShowPro: () -> Unit,
@@ -135,12 +142,21 @@ internal fun SaveSheet(
                 }
             }
             if (hasQuote) SwitchRow("Quote moves with the mandala", choice.textFollowsMandala, onTextFollows)
+            FinishControls(choice.finish, proOwned, enabled = !busy, onFinish = onFinish, onShowPro = onShowPro)
             Button(onClick = { onSave(false) }, enabled = !busy, modifier = Modifier.fillMaxWidth()) { Text("Save · $w × $h") }
             OutlinedButton(onClick = { if (proOwned) onSave(true) else onShowPro() }, enabled = !busy, modifier = Modifier.fillMaxWidth()) {
                 Text(if (proOwned) "Save large · $lw × $lh" else "Save large · $lw × $lh · Pro")
             }
             // A wallpaper fills the screen, so it is set in the phone screen format; the frame shows it first.
-            WallpaperButton(enabled = !busy, onOpen = { if (choice.format != SaveFormat.SCREEN) onFormat(SaveFormat.SCREEN) }, onWallpaper = onWallpaper)
+            WallpaperButton(
+                enabled = !busy,
+                pairLabel = pairLabel(proOwned),
+                liveLabel = liveLabel(proOwned),
+                onOpen = { if (choice.format != SaveFormat.SCREEN) onFormat(SaveFormat.SCREEN) },
+                onWallpaper = onWallpaper,
+                onPair = onPair,
+                onLive = onLive,
+            )
             LineDrawingButton(proOwned, enabled = !busy, onLineDrawing = onLineDrawing, onShowPro = onShowPro)
             Text(
                 "A line drawing of the layers and the emblem, square, without glow, effects, background and quote." +
@@ -224,6 +240,34 @@ private fun Frame(
     }
 }
 
+/**
+ * The last adjustment of the saved image or wallpaper (ADR-0014): brightness, contrast and
+ * saturation, applied to the frame at once. Without Pro a line says so and opens the Pro sheet.
+ */
+@Composable
+private fun FinishControls(finish: Finish, proOwned: Boolean, enabled: Boolean, onFinish: (Finish) -> Unit, onShowPro: () -> Unit) {
+    val t = LocalTokens.current
+    if (!proOwned) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text("Brightness, contrast and saturation of the image come with Pro.", style = MaterialTheme.typography.bodySmall, color = t.textMuted, modifier = Modifier.weight(1f))
+            TextButton(onClick = onShowPro) { Text("About Pro") }
+        }
+        return
+    }
+    val percent = { v: Double -> "${(v * 100).roundToInt()} %" }
+    Column {
+        ValueSlider("Brightness", finish.brightness, Finish.MIN_BRIGHTNESS.toFloat()..Finish.MAX_BRIGHTNESS.toFloat(), default = 1.0, display = percent) {
+            if (enabled) onFinish(finish.copy(brightness = it))
+        }
+        ValueSlider("Contrast", finish.contrast, Finish.MIN_CONTRAST.toFloat()..Finish.MAX_CONTRAST.toFloat(), default = 1.0, display = percent) {
+            if (enabled) onFinish(finish.copy(contrast = it))
+        }
+        ValueSlider("Saturation", finish.saturation, 0f..Finish.MAX_SATURATION.toFloat(), default = 1.0, display = percent) {
+            if (enabled) onFinish(finish.copy(saturation = it))
+        }
+    }
+}
+
 /** A chip for the fixed ratios: shows the chosen one and opens the list of portrait and landscape ratios. */
 @Composable
 private fun RatioChip(format: SaveFormat, onFormat: (SaveFormat) -> Unit) {
@@ -262,7 +306,15 @@ private fun LineDrawingButton(proOwned: Boolean, enabled: Boolean, onLineDrawing
 }
 
 @Composable
-private fun WallpaperButton(enabled: Boolean, onOpen: () -> Unit, onWallpaper: (WallpaperTarget) -> Unit) {
+private fun WallpaperButton(
+    enabled: Boolean,
+    pairLabel: String,
+    liveLabel: String,
+    onOpen: () -> Unit,
+    onWallpaper: (WallpaperTarget) -> Unit,
+    onPair: () -> Unit,
+    onLive: () -> Unit,
+) {
     var open by remember { mutableStateOf(false) }
     Box {
         OutlinedButton(onClick = { onOpen(); open = true }, enabled = enabled, modifier = Modifier.fillMaxWidth()) { Text("Set as wallpaper") }
@@ -270,6 +322,8 @@ private fun WallpaperButton(enabled: Boolean, onOpen: () -> Unit, onWallpaper: (
             for (target in WallpaperTarget.entries) {
                 DropdownMenuItem(text = { Text(target.label) }, onClick = { open = false; onWallpaper(target) })
             }
+            DropdownMenuItem(text = { Text(pairLabel) }, onClick = { open = false; onPair() })
+            DropdownMenuItem(text = { Text(liveLabel) }, onClick = { open = false; onLive() })
         }
     }
 }

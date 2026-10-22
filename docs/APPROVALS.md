@@ -14,6 +14,8 @@ Format: `- **What** · What for and why · Alternative without approval · Recom
 
 ## Approved
 
+22 October 2026 (Mathis, PLAN-3): ADR-0014, more for Pro (finish, wallpaper pair, daily and live wallpaper); the permission `RECEIVE_BOOT_COMPLETED` and a `WallpaperService` with `BIND_WALLPAPER` in the manifest.
+
 22 October 2026 (Mathis, after seeing a hard edge on his lock screen): "Show whole" and "Fill" free in every format, wallpapers from the menu filled, Fill zoom measured per mandala (ADR-0010, points 4 and 10); layer buffers as large as each style reaches (ADR-0010).
 
 22 October 2026 (Mathis, after trying them on the Mac): palettes Silver, Earth and Rose Quartz appended to the built-in palettes in both apps (indices 18–20) and Cosmic offered again, 15 in all, in rows of three by family (TUNE-1). Custom Mac palettes move three places on; accepted, since the Mac app has had three release downloads.

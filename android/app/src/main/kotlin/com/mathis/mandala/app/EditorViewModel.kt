@@ -39,6 +39,7 @@ import com.mathis.mandala.core.EffectsLayerSettings
 import com.mathis.mandala.core.EmblemLayerSettings
 import com.mathis.mandala.core.GraffitiLayerSettings
 import com.mathis.mandala.core.Favorite
+import com.mathis.mandala.core.Finish
 import com.mathis.mandala.core.Framing
 import com.mathis.mandala.core.Image8
 import com.mathis.mandala.core.LayerCache
@@ -102,6 +103,12 @@ data class FramePreviewState(
  * 0 to 1; null while the share is not known yet or Android is at work (saving, setting the wallpaper).
  */
 data class ExportProgress(val label: String, val share: Float? = null)
+
+/** Whether the daily wallpaper is on, and the favourite it set last. */
+data class DailyState(val on: Boolean, val lastName: String?)
+
+/** The pair sheet's lock and home screen (ADR-0014). */
+data class PairPreview(val lock: ImageBitmap? = null, val home: ImageBitmap? = null, val rendering: Boolean = true)
 
 /** How much a new mandala from the menu changes (DM-7): more dots on its die, more change. */
 enum class NewKind(val label: String) { VARIATION("Variation"), LAYERS("New layers"), EVERYTHING("Everything") }
@@ -201,7 +208,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
      */
     private data class ExportKey(
         val params: MandalaParameters, val framing: Framing, val textFollows: Boolean,
-        val width: Int, val height: Int, val supersample: Boolean,
+        val width: Int, val height: Int, val supersample: Boolean, val finish: Finish,
     )
     private var lastExport: Pair<ExportKey, Image8>? = null
 
@@ -218,6 +225,18 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
     }
 
     fun setTextFollowsMandala(follows: Boolean) = _saveChoice.update { it.copy(textFollowsMandala = follows) }
+
+    /** The last adjustment of saved images and wallpapers (ADR-0014), part of Pro. */
+    fun setFinish(finish: Finish) {
+        if (pro.state.value.owned) _saveChoice.update { it.copy(finish = finish.clamped()) }
+    }
+
+    fun setHomeBrightness(brightness: Double) {
+        if (pro.state.value.owned) _saveChoice.update { it.copy(homeBrightness = brightness.coerceIn(SaveChoice.MIN_HOME_BRIGHTNESS, 1.0)) }
+    }
+
+    /** The finish exports get: the chosen one with Pro, none without. */
+    private fun effectiveFinish(): Finish = if (pro.state.value.owned) _saveChoice.value.finish else Finish()
 
     /** Fill zooms measured recently, by mandala and shape; touched only on the main thread. */
     private val fillZooms = LinkedHashMap<Pair<MandalaParameters, Double>, Double>()
@@ -279,8 +298,16 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
     /** Save sheet previews rendered recently, by everything they were rendered from. */
     private val recentFrames = RecentImages<FrameRequest, FramePreviewState>(RECENT_FRAMES)
 
+    /** The last frame preview as drawn, before its finish (about 0.4 MB). */
+    private var lastFrame: Pair<FrameRequest, Image8>? = null
+
     private val textRenderer = AndroidTextRenderer()
     private val imageLoader = AndroidImageLoader()
+
+    /** The pair sheet's two small screens, only while it is open. */
+    private val _pairOpen = MutableStateFlow(false)
+    private val _pairPreview = MutableStateFlow(PairPreview())
+    val pairPreview: StateFlow<PairPreview> = _pairPreview.asStateFlow()
 
     init {
         viewModelScope.launch {
@@ -317,6 +344,11 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         viewModelScope.launch {
             @OptIn(FlowPreview::class)
             _saveChoice.drop(1).debounce(SAVE_DELAY_MS).collectLatest { c -> withContext(Dispatchers.IO) { runCatching { saveStore.save(c) } } }
+        }
+        viewModelScope.launch {
+            // The pair sheet's preview, only while it is open; the finishes follow the sliders at once.
+            combine(_params, _saveChoice, _screenAspect, _pairOpen) { p, c, a, open -> if (open) Triple(p, c, a) else null }
+                .collectLatest { r -> if (r != null) renderPairPreview(r.first, r.second, r.third) }
         }
         viewModelScope.launch {
             // The save sheet's preview, only while the sheet is open.
@@ -649,7 +681,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         val (w, h) = Editing.exportSize(choice.format, _screenAspect.value, large)
         val params = _params.value
         val framing: suspend () -> Framing = { framingFor(choice, params, aspectOf(choice.format), pro.state.value.owned) }
-        renderFullSize("Creating the image", w, h, large, framing, choice.textFollowsMandala) { image, fileName ->
+        renderFullSize("Creating the image", w, h, large, framing, choice.textFollowsMandala, finish = effectiveFinish()) { image, fileName ->
             exportStep("Saving to Pictures")
             withContext(Dispatchers.IO) { GalleryExport.savePng(getApplication(), image, fileName) }
             message("Saved $w × $h to Pictures/${GalleryExport.FOLDER}")
@@ -670,10 +702,10 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         val params = _params.value
         val framing: suspend () -> Framing = { framingFor(if (filled) choice.copy(fit = Fit.FILL) else choice, params, screen, large) }
         val reuse = { k: ExportKey, f: Framing ->
-            k.params == params && k.framing == f && k.textFollows == choice.textFollowsMandala &&
+            k.params == params && k.framing == f && k.textFollows == choice.textFollowsMandala && k.finish == effectiveFinish() &&
                 k.width >= screenShortSide && kotlin.math.abs(k.height.toDouble() / k.width - h.toDouble() / w) < 0.002
         }
-        renderFullSize("Creating the wallpaper", w, h, large, framing, choice.textFollowsMandala, reuse) { image, _ ->
+        renderFullSize("Creating the wallpaper", w, h, large, framing, choice.textFollowsMandala, reuse, effectiveFinish()) { image, _ ->
             exportStep("Setting the wallpaper")
             withContext(Dispatchers.IO) { Wallpapers.set(getApplication(), image, target) }
             _export.value = null
@@ -719,6 +751,122 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
     fun suggestedLineDrawingName(look: VectorExport.Look): String =
         Editing.fileName(_params.value).removeSuffix(".png") + (if (look == VectorExport.Look.LINES) "-lines" else "") + ".svg"
 
+    /**
+     * The wallpaper pair (ADR-0014, Pro): the mandala filling the screen, as it is on the lock screen
+     * and darker by `homeBrightness` on the home screen; drawn once, finished twice.
+     */
+    fun setWallpaperPair() {
+        if (!pro.state.value.owned) return
+        val choice = _saveChoice.value
+        val (w, h) = Editing.exportSize(Editing.SaveFormat.SCREEN, _screenAspect.value, large = true)
+        val params = _params.value
+        val framing: suspend () -> Framing = { framingFor(choice.copy(fit = Fit.FILL), params, aspectOf(Editing.SaveFormat.SCREEN), pro = true) }
+        renderFullSize("Creating the wallpapers", w, h, large = true, framing, choice.textFollowsMandala, finish = effectiveFinish()) { image, _ ->
+            exportStep("Setting both wallpapers")
+            val home = withContext(Dispatchers.Default) { Finish(brightness = choice.homeBrightness).apply(image, threads) }
+            withContext(Dispatchers.IO) { Wallpapers.setPair(getApplication(), image, home) }
+            _export.value = null
+            delay(WALLPAPER_MESSAGE_DELAY_MS)
+            message("Home and lock screen set")
+        }
+    }
+
+    /** The daily wallpaper (ADR-0014, Pro): on or off, and the favourite it set last. */
+    private val _daily = MutableStateFlow(DailyState(DailyWallpaper.isOn(application), DailyWallpaper.lastName(application)))
+    val daily: StateFlow<DailyState> = _daily.asStateFlow()
+
+    /** Switching it on sets the first one right away, so it shows at once; then every morning. */
+    fun setDaily(on: Boolean) {
+        val app = getApplication<Application>()
+        if (!on) {
+            DailyWallpaper.setOn(app, false)
+            _daily.update { it.copy(on = false) }
+            return
+        }
+        if (!pro.state.value.owned || _busy.value) return
+        if (_favorites.value.isEmpty()) {
+            message("The daily wallpaper takes your favourites in turn; add one first.")
+            return
+        }
+        DailyWallpaper.setOn(app, true)
+        _daily.update { it.copy(on = true) }
+        _busy.value = true
+        _export.value = ExportProgress("Setting today's wallpaper")
+        viewModelScope.launch {
+            try {
+                val name = withContext(Dispatchers.Default) { DailyWallpaper.setNext(app, threads) }
+                _daily.update { it.copy(lastName = DailyWallpaper.lastName(app)) }
+                _export.value = null
+                delay(WALLPAPER_MESSAGE_DELAY_MS)
+                message(if (name.isNullOrEmpty()) "A new wallpaper every morning" else "Today: $name. A new wallpaper every morning")
+            } catch (e: OutOfMemoryError) {
+                message("Not enough memory for this image.")
+            } catch (e: Exception) {
+                message("Could not set the wallpaper: ${e.message ?: e.javaClass.simpleName}")
+            } finally {
+                _export.value = null
+                _busy.value = false
+            }
+        }
+    }
+
+    /** How the live wallpaper moves (ADR-0014, Pro). */
+    private val _live = MutableStateFlow(LiveWallpaper.settings(application))
+    val live: StateFlow<LiveSettings> = _live.asStateFlow()
+
+    fun setLiveSettings(settings: LiveSettings) {
+        if (!pro.state.value.owned) return
+        _live.value = settings
+        LiveWallpaper.setSettings(getApplication(), settings)
+    }
+
+    /**
+     * Gives the live wallpaper the current mandala. Returns true when it is already on the phone (it
+     * then fades over by itself); otherwise the screen opens Android's preview, where it is set.
+     */
+    fun useForLiveWallpaper(): Boolean {
+        if (!pro.state.value.owned) return false
+        val app = getApplication<Application>()
+        LiveWallpaper.setMandala(app, _params.value)
+        val active = LiveWallpaper.isActive(app)
+        if (active) message("The live wallpaper shows this mandala in a moment")
+        return active
+    }
+
+
+    fun setPairOpen(open: Boolean) {
+        _pairOpen.value = open
+    }
+
+    private suspend fun renderPairPreview(params: MandalaParameters, choice: SaveChoice, screenAspect: Double) {
+        val aspect = Editing.aspect(Editing.SaveFormat.SCREEN, screenAspect)
+        val (w, h) = Editing.size(Editing.SaveFormat.SCREEN, screenAspect, PAIR_PREVIEW_WIDTH)
+        val key = params to w * 10_000 + h
+        _pairPreview.update { it.copy(rendering = true) }
+        try {
+            val drawn = lastPair?.takeIf { it.first == key }?.second ?: withContext(Dispatchers.Default) {
+                val zoom = MandalaRenderer.fillZoom(params, aspect, threads)
+                val job = coroutineContext.job
+                MandalaRenderer.render(
+                    params,
+                    RenderOptions(width = w, height = h, framing = Framing(zoom = zoom), threads = threads, textRenderer = textRenderer, imageLoader = imageLoader, isCancelled = { !job.isActive }),
+                ).image
+            }.also { lastPair = key to it }
+            val (lock, home) = withContext(Dispatchers.Default) {
+                val lock = choice.finish.apply(drawn, threads)
+                lock to Finish(brightness = choice.homeBrightness).apply(lock, threads)
+            }
+            _pairPreview.value = PairPreview(lock.toBitmap().asImageBitmap(), home.toBitmap().asImageBitmap(), rendering = false)
+        } catch (e: RenderCancelledException) {
+            // A newer mandala is already being drawn.
+        } catch (e: OutOfMemoryError) {
+            _pairPreview.update { it.copy(rendering = false) }
+        }
+    }
+
+    /** The last pair preview as drawn, before its finishes. */
+    private var lastPair: Pair<Pair<MandalaParameters, Int>, Image8>? = null
+
     /** Shows `label` while Android works on the drawn image, for which there is no share to show. */
     private fun exportStep(label: String) {
         _export.value = ExportProgress(label)
@@ -728,6 +876,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
     private fun renderFullSize(
         label: String, width: Int, height: Int, large: Boolean, framingOf: suspend () -> Framing, textFollows: Boolean,
         reuse: ((ExportKey, Framing) -> Boolean)? = null,
+        finish: Finish = Finish(),
         then: suspend (Image8, String) -> Unit,
     ) {
         if (_busy.value) return
@@ -737,7 +886,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         viewModelScope.launch {
             try {
                 val framing = framingOf()
-                val key = ExportKey(snapshot, framing, textFollows, width, height, !large)
+                val key = ExportKey(snapshot, framing, textFollows, width, height, !large, finish)
                 val cached = lastExport?.takeIf { (k, _) -> k == key || reuse?.invoke(k, framing) == true }?.second
                 if (cached != null) {
                     then(cached, Editing.fileName(snapshot, cached.width, cached.height))
@@ -761,6 +910,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
                         framing = framing,
                         textFollowsMandala = textFollows,
                         supersample = !large,
+                        finish = finish,
                         threads = threads,
                         textRenderer = textRenderer,
                         imageLoader = imageLoader,
@@ -791,9 +941,12 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         }
         val (w, h) = Editing.size(request.choice.format, request.aspect, Editing.FRAME_PREVIEW_WIDTH)
         val framing = framingFor(request.choice, request.params, Editing.aspect(request.choice.format, request.aspect), request.pro)
+        // The finish is applied to the drawn preview, so its sliders follow the finger without a new render.
+        val finish = if (request.pro) request.choice.finish else Finish()
+        val unfinished = request.copy(choice = request.choice.copy(finish = Finish()))
         _framePreview.update { it.copy(rendering = true) }
         try {
-            val result = withContext(Dispatchers.Default) {
+            val drawn = lastFrame?.takeIf { it.first == unfinished }?.second ?: withContext(Dispatchers.Default) {
                 val job = coroutineContext.job
                 MandalaRenderer.render(
                     request.params,
@@ -801,9 +954,10 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
                         width = w, height = h, framing = framing, textFollowsMandala = request.choice.textFollowsMandala,
                         threads = threads, textRenderer = textRenderer, imageLoader = imageLoader, isCancelled = { !job.isActive },
                     ),
-                )
-            }
-            _framePreview.value = FramePreviewState(result.image.toBitmap().asImageBitmap(), rendering = false, framing = framing, width = w, height = h)
+                ).image
+            }.also { lastFrame = unfinished to it }
+            val image = withContext(Dispatchers.Default) { finish.apply(drawn, threads) }
+            _framePreview.value = FramePreviewState(image.toBitmap().asImageBitmap(), rendering = false, framing = framing, width = w, height = h)
             recentFrames[request] = _framePreview.value
         } catch (e: RenderCancelledException) {
             // A newer framing is already being rendered.
@@ -876,6 +1030,8 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         const val RECENT_FRAMES = 6
         const val WALLPAPER_MESSAGE_DELAY_MS = 1500L
         const val FILL_ZOOMS_KEPT = 8
+        /** Shorter side of each screen in the pair sheet. */
+        const val PAIR_PREVIEW_WIDTH = 240
 
         /** Until the screen reports its own: a common 20:9 phone. */
         const val DEFAULT_SCREEN_ASPECT = 20.0 / 9.0
