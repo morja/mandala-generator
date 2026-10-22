@@ -54,6 +54,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import com.mathis.mandala.app.ui.theme.LocalTokens
 import com.mathis.mandala.app.ui.theme.Sizes
 import com.mathis.mandala.app.ui.theme.Spacing
+import com.mathis.mandala.app.Editing
+import com.mathis.mandala.core.BuiltInPalettes
 import com.mathis.mandala.core.ColorPalette
 import com.mathis.mandala.core.LayerBlendMode
 import java.util.Locale
@@ -126,9 +128,14 @@ internal fun ValueSlider(
     onChange: (Double) -> Unit,
 ) {
     SliderRow(label, display(value), onReset = { onChange(default) }) {
-        Slider(value = value.toFloat(), onValueChange = { onChange(it.toDouble()) }, valueRange = range)
+        // A saved value outside the range only puts the knob at the end; the value (shown on the right)
+        // stays as it is until the slider is moved.
+        Slider(value = value.toFloat().coerceIn(range.start, range.endInclusive), onValueChange = { onChange(it.toDouble()) }, valueRange = range)
     }
 }
+
+/** A range of settings values as the slider's float range. */
+internal fun ClosedFloatingPointRange<Double>.floats(): ClosedFloatingPointRange<Float> = start.toFloat()..endInclusive.toFloat()
 
 @Composable
 internal fun SteppedSlider(label: String, value: Int, range: IntRange, default: Int, onChange: (Int) -> Unit) {
@@ -223,12 +230,13 @@ internal fun ColourGroup(
     /** Defaults of hue, saturation and brightness, for the double-tap reset. */
     defaults: Triple<Double, Double, Double>,
     initiallyOpen: Boolean = false,
+    brightnessRange: ClosedFloatingPointRange<Float> = 0f..1f,
     onChange: (Double, Double, Double) -> Unit,
 ) {
     Group(title, nested = true, initiallyOpen = initiallyOpen, trailing = { ColourDot(hsbColour(hue, saturation, brightness)) }) {
         ValueSlider("Hue", hue, default = defaults.first) { v -> onChange(v, saturation, brightness) }
         ValueSlider("Saturation", saturation, default = defaults.second) { v -> onChange(hue, v, brightness) }
-        ValueSlider("Brightness", brightness, default = defaults.third) { v -> onChange(hue, saturation, v) }
+        ValueSlider("Brightness", brightness, brightnessRange, default = defaults.third) { v -> onChange(hue, saturation, v) }
     }
 }
 
@@ -266,6 +274,17 @@ internal fun Swatch(palette: ColorPalette, selected: Boolean, onClick: () -> Uni
                 this.selected = selected
             },
     )
+}
+
+/** The palettes a picker offers (TUNE-1), with a hidden one the setting uses still shown as selected. */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+internal fun PaletteSwatches(current: Int, onPick: (Int) -> Unit) {
+    FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.sm), verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+        for (index in Editing.paletteChoices(current)) {
+            Swatch(BuiltInPalettes.all[index], selected = current == index) { onPick(index) }
+        }
+    }
 }
 
 internal fun paletteBrush(palette: ColorPalette): Brush =

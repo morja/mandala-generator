@@ -4,6 +4,9 @@ import com.mathis.mandala.app.Editing.addStroke
 import com.mathis.mandala.app.Randomize.randomAll
 import com.mathis.mandala.app.Randomize.randomLayer
 import com.mathis.mandala.app.Randomize.randomLayers
+import com.mathis.mandala.app.Randomize.randomized
+import com.mathis.mandala.core.BaseLayerSettings
+import com.mathis.mandala.core.EmblemLayerSettings
 import com.mathis.mandala.core.MandalaParameters
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -57,6 +60,26 @@ class HistoryAndRandomizeTest {
             assertTrue(p.layers.first().scale >= 0.75)
             assertTrue(p.layers.drop(1).all { it.scale < 0.75 })
             assertTrue(p.layers.all { it.style in Editing.styles })
+        }
+    }
+
+    @Test
+    fun diceStayInTheTunedRanges() {
+        repeat(200) { n ->
+            val p = MandalaParameters().randomAll(Random(n))
+            assertTrue(p.layers.first().symmetry in Randomize.SYMMETRY)
+            for ((i, l) in p.layers.withIndex()) {
+                assertEquals(0.0, l.wash, 0.0)
+                assertTrue(l.abstractLevel in 0.1..0.5)
+                assertTrue(l.brightness in 0.3..0.6)
+                assertTrue(l.paletteIndex in Editing.offeredPalettes)
+                val top = if (i == 0) 1.0 else Randomize.UPPER_LAYER_CALM
+                assertTrue(l.complexity in 0.2 * top..top)
+                assertTrue(l.density in 0.2 * top..top)
+            }
+            assertTrue(p.baseLayer.type in Editing.backgroundChoices(BaseLayerSettings()))
+            assertTrue(p.randomLayer(0, Random(n)).layers[0].paletteIndex in Editing.offeredPalettes)
+            assertTrue(EmblemLayerSettings().randomized(Random(n)).paletteIndex in Editing.offeredPalettes)
         }
     }
 
