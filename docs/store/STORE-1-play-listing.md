@@ -85,7 +85,7 @@ Google Play lets you create in-app products only after a build that contains the
 
 ## Release notes for 1.4.0 (code 8)
 
-The first public release (ADR-0016); 1.3.1 was never sent for review. Not in the Play Console yet.
+The first public release (ADR-0016); 1.3.1 was never sent for review. On the internal track since 22 October 2026 (uploaded through the API with these notes); git tag `android-v1.4.0`. Production still has the unsent 1.3.1 draft.
 
 English:
 
