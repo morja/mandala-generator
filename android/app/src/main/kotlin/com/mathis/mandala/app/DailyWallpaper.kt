@@ -87,12 +87,13 @@ object DailyWallpaper {
         val index = prefs.getInt(KEY_NEXT, 0).mod(favorites.size)
         val favourite = favorites[index]
         val params: MandalaParameters = favourite.parameters
-        val name = favourite.name.ifEmpty { Editing.fileName(params).removeSuffix(".png") }
+        // Unnamed favourites are called by their styles, as the menu calls the mandala.
+        val name = favourite.name.ifEmpty { params.layers.filter { it.isEnabled }.joinToString(", ") { it.style.displayName } }
         if (LiveWallpaper.isActive(context)) {
             // The live wallpaper fades over to the next favourite itself; a still image would replace it.
             LiveWallpaper.setMandala(context, params)
             prefs.edit().putInt(KEY_NEXT, index + 1).putString(KEY_LAST_NAME, name).apply()
-            return favourite.name
+            return name
         }
         val choice = SaveChoiceStore(context).load()
         val (short, long) = screenSize(context)
@@ -109,7 +110,7 @@ object DailyWallpaper {
         val home = Finish(brightness = choice.homeBrightness).apply(lock, threads)
         Wallpapers.setPair(context, lock, home)
         prefs.edit().putInt(KEY_NEXT, index + 1).putString(KEY_LAST_NAME, name).apply()
-        return favourite.name
+        return name
     }
 
     private fun screenSize(context: Context): Pair<Int, Int> {

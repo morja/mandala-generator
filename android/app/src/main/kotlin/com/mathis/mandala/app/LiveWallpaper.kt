@@ -4,7 +4,6 @@ import android.app.WallpaperManager
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
-import android.content.SharedPreferences
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
@@ -12,6 +11,7 @@ import android.graphics.Color
 import android.graphics.ColorMatrix
 import android.graphics.ColorMatrixColorFilter
 import android.graphics.Paint
+import android.graphics.RectF
 import android.os.Handler
 import android.os.Looper
 import android.os.SystemClock
@@ -21,6 +21,7 @@ import com.mathis.mandala.core.BuiltInPalettes
 import com.mathis.mandala.core.Framing
 import com.mathis.mandala.core.MandalaParameters
 import com.mathis.mandala.core.MandalaRenderer
+import com.mathis.mandala.core.RenderCancelledException
 import com.mathis.mandala.core.RenderOptions
 import com.mathis.mandala.core.SettingsJson
 import kotlinx.coroutines.CoroutineScope
@@ -28,7 +29,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import kotlin.coroutines.coroutineContext
 import java.io.File
 import kotlin.math.PI
 import kotlin.math.ceil
@@ -44,24 +49,28 @@ data class LiveSettings(val breathing: Boolean = false, val colourDrift: Boolean
 /**
  * The live wallpaper (ADR-0014, Pro): the mandala is rendered once, as a square as large as the
  * screen's diagonal so no corner shows while it turns, and then only moved on the graphics chip.
- * Its mandala and settings live in the app's files and preferences; the service follows them.
+ * The service runs in its own process (`:live`), so the editor's images do not take its memory; it
+ * reads its mandala and settings from two files, which it checks while it is visible.
  */
 object LiveWallpaper {
-    fun settings(context: Context): LiveSettings = prefs(context).let {
-        LiveSettings(it.getBoolean(KEY_BREATHING, false), it.getBoolean(KEY_DRIFT, false), it.getBoolean(KEY_PALETTES, false))
+    fun settings(context: Context): LiveSettings {
+        val words = runCatching { settingsFile(context).readText().split(',').toSet() }.getOrDefault(emptySet())
+        return LiveSettings(BREATHING in words, DRIFT in words, PALETTES in words)
     }
 
-    fun setSettings(context: Context, s: LiveSettings) = prefs(context).edit()
-        .putBoolean(KEY_BREATHING, s.breathing).putBoolean(KEY_DRIFT, s.colourDrift).putBoolean(KEY_PALETTES, s.palettesInTurn).apply()
+    fun setSettings(context: Context, s: LiveSettings) {
+        val words = listOfNotNull(BREATHING.takeIf { s.breathing }, DRIFT.takeIf { s.colourDrift }, PALETTES.takeIf { s.palettesInTurn })
+        settingsFile(context).writeText(words.joinToString(","))
+    }
 
     /** The mandala the live wallpaper shows; a change fades over to the new one. */
-    fun setMandala(context: Context, params: MandalaParameters) {
-        sourceFile(context).writeText(SettingsJson.encode(params))
-        prefs(context).edit().putLong(KEY_VERSION, System.currentTimeMillis()).apply()
-    }
+    fun setMandala(context: Context, params: MandalaParameters) = mandalaFile(context).writeText(SettingsJson.encode(params))
 
     fun mandala(context: Context): MandalaParameters? =
-        runCatching { SettingsJson.decode(sourceFile(context).readText()) }.getOrNull()
+        runCatching { SettingsJson.decode(mandalaFile(context).readText()) }.getOrNull()
+
+    /** Changes whenever the mandala does. */
+    fun version(context: Context): Long = mandalaFile(context).lastModified()
 
     /** Whether the live wallpaper is the one on the phone now. */
     fun isActive(context: Context): Boolean =
@@ -71,19 +80,18 @@ object LiveWallpaper {
     fun pickIntent(context: Context): Intent = Intent(WallpaperManager.ACTION_CHANGE_LIVE_WALLPAPER)
         .putExtra(WallpaperManager.EXTRA_LIVE_WALLPAPER_COMPONENT, ComponentName(context, LiveWallpaperService::class.java))
 
-    internal fun prefs(context: Context): SharedPreferences = context.getSharedPreferences("live", Context.MODE_PRIVATE)
-    private fun sourceFile(context: Context) = File(context.filesDir, "live-mandala.json")
+    private fun mandalaFile(context: Context) = File(context.filesDir, "live-mandala.json")
+    private fun settingsFile(context: Context) = File(context.filesDir, "live-settings.txt")
 
-    internal const val KEY_VERSION = "version"
-    private const val KEY_BREATHING = "breathing"
-    private const val KEY_DRIFT = "drift"
-    private const val KEY_PALETTES = "palettes"
+    private const val BREATHING = "breathing"
+    private const val DRIFT = "drift"
+    private const val PALETTES = "palettes"
 }
 
 class LiveWallpaperService : WallpaperService() {
     override fun onCreateEngine(): Engine = MandalaEngine()
 
-    private inner class MandalaEngine : Engine(), SharedPreferences.OnSharedPreferenceChangeListener {
+    private inner class MandalaEngine : Engine() {
         private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
         private val handler = Handler(Looper.getMainLooper())
         private val paint = Paint(Paint.FILTER_BITMAP_FLAG)
@@ -99,6 +107,7 @@ class LiveWallpaperService : WallpaperService() {
         private var lastCycle = 0L
         private var drawnVersion = -1L
         private var loading: Job? = null
+        private var lastCheck = 0L
 
         private val frame = object : Runnable {
             override fun run() {
@@ -110,7 +119,16 @@ class LiveWallpaperService : WallpaperService() {
         override fun onCreate(surfaceHolder: SurfaceHolder) {
             super.onCreate(surfaceHolder)
             settings = LiveWallpaper.settings(this@LiveWallpaperService)
-            LiveWallpaper.prefs(this@LiveWallpaperService).registerOnSharedPreferenceChangeListener(this)
+        }
+
+        /** The app writes the files from its own process; a new mandala starts over with its own palette. */
+        private fun checkFiles() {
+            val context = this@LiveWallpaperService
+            settings = LiveWallpaper.settings(context)
+            if (LiveWallpaper.version(context) != drawnVersion) {
+                paletteShift = 0
+                load()
+            }
         }
 
         override fun onSurfaceChanged(holder: SurfaceHolder, format: Int, w: Int, h: Int) {
@@ -125,21 +143,11 @@ class LiveWallpaperService : WallpaperService() {
             visible = isVisible
             handler.removeCallbacks(frame)
             if (!isVisible) return
-            val version = LiveWallpaper.prefs(this@LiveWallpaperService).getLong(LiveWallpaper.KEY_VERSION, 0)
-            if (version != drawnVersion) load()
+            checkFiles()
             handler.post(frame)
         }
 
-        override fun onSharedPreferenceChanged(prefs: SharedPreferences, key: String?) {
-            settings = LiveWallpaper.settings(this@LiveWallpaperService)
-            if (key == LiveWallpaper.KEY_VERSION) {
-                paletteShift = 0
-                load()
-            }
-        }
-
         override fun onDestroy() {
-            LiveWallpaper.prefs(this@LiveWallpaperService).unregisterOnSharedPreferenceChangeListener(this)
             handler.removeCallbacks(frame)
             scope.cancel()
             super.onDestroy()
@@ -150,13 +158,19 @@ class LiveWallpaperService : WallpaperService() {
             if (width <= 0 || height <= 0) return
             val context = this@LiveWallpaperService
             val base = LiveWallpaper.mandala(context) ?: return
-            val version = LiveWallpaper.prefs(context).getLong(LiveWallpaper.KEY_VERSION, 0)
+            val version = LiveWallpaper.version(context)
             val params = shifted(base, paletteShift)
             val w = width
             val h = height
             loading?.cancel()
             loading = scope.launch {
-                val bitmap = runCatching { rendered(context, params, w, h) }.getOrNull() ?: return@launch
+                val bitmap = try {
+                    rendered(context, params, w, h)
+                } catch (e: RenderCancelledException) {
+                    null
+                } catch (e: OutOfMemoryError) {
+                    null
+                } ?: return@launch
                 handler.post {
                     drawnVersion = version
                     if (shown == null) shown = bitmap else {
@@ -171,6 +185,10 @@ class LiveWallpaperService : WallpaperService() {
         private fun draw() {
             val holder = surfaceHolder
             val now = SystemClock.elapsedRealtime()
+            if (now - lastCheck > CHECK_MS) {
+                lastCheck = now
+                checkFiles()
+            }
             if (settings.palettesInTurn && shown != null && incoming == null && now - lastCycle > CYCLE_MS) {
                 if (lastCycle != 0L) {
                     paletteShift++
@@ -205,8 +223,16 @@ class LiveWallpaperService : WallpaperService() {
             }
         }
 
-        private fun drawCentred(canvas: Canvas, bitmap: Bitmap, p: Paint) =
-            canvas.drawBitmap(bitmap, (width - bitmap.width) / 2f, (height - bitmap.height) / 2f, p)
+        /** The bitmap, drawn smaller than the screen's diagonal, is scaled up to it on the graphics chip. */
+        private fun drawCentred(canvas: Canvas, bitmap: Bitmap, p: Paint) {
+            val side = hypot(width.toDouble(), height.toDouble()).toFloat()
+            val left = (width - side) / 2f
+            val top = (height - side) / 2f
+            dest.set(left, top, left + side, top + side)
+            canvas.drawBitmap(bitmap, null, dest, p)
+        }
+
+        private val dest = RectF()
 
         /** Breathing: brightness up and down by about a tenth; colour drift: the hue turning slowly. */
         private fun filter(seconds: Double): ColorMatrixColorFilter? {
@@ -232,6 +258,12 @@ class LiveWallpaperService : WallpaperService() {
         const val FADE_MS = 3000L
         /** The next palette every ten minutes on screen. */
         const val CYCLE_MS = 10 * 60 * 1000L
+        /** How often a visible wallpaper looks for a new mandala or settings from the app. */
+        const val CHECK_MS = 3000L
+        /** Drawn at this share of the diagonal and scaled up: about half the memory, and it is moving. */
+        const val RENDER_SCALE = 0.75
+        /** Fewer threads, less memory at once; the wallpaper is not in a hurry. */
+        const val MAX_THREADS = 4
 
         /** All layers `steps` palettes on; the mandala's colours change, its lines stay. */
         fun shifted(params: MandalaParameters, steps: Int): MandalaParameters {
@@ -244,20 +276,28 @@ class LiveWallpaperService : WallpaperService() {
          * The mandala as large as in a filled wallpaper, on a square as large as the screen's diagonal;
          * kept in the cache, so turning the screen on again or a restart does not render it again.
          */
-        fun rendered(context: Context, params: MandalaParameters, w: Int, h: Int): Bitmap? {
-            val side = ceil(hypot(w.toDouble(), h.toDouble())).toInt().let { it + (it and 1) }
+        suspend fun rendered(context: Context, params: MandalaParameters, w: Int, h: Int): Bitmap? = renderLock.withLock { renderNow(context, params, w, h) }
+
+        /** One render at a time in this process, whichever engine asks (Android's preview makes several). */
+        private val renderLock = Mutex()
+
+        private suspend fun renderNow(context: Context, params: MandalaParameters, w: Int, h: Int): Bitmap? {
+            val side = ceil(hypot(w.toDouble(), h.toDouble()) * RENDER_SCALE).toInt().let { it + (it and 1) }
             // The JSON's hash is the same in every process (enum hash codes are not).
             val file = File(context.cacheDir, "live-${(SettingsJson.encode(params).hashCode().toLong() * 31 + side).toString(16)}.png")
             if (file.exists()) BitmapFactory.decodeFile(file.path)?.let { return it }
             val short = min(w, h)
             val aspect = max(w, h).toDouble() / short
-            val threads = Runtime.getRuntime().availableProcessors()
-            val zoom = MandalaRenderer.fillZoom(params, aspect, threads) * short / side
+            val threads = min(MAX_THREADS, Runtime.getRuntime().availableProcessors())
+            val job = coroutineContext.job
+            if (!job.isActive) return null
+            val zoom = MandalaRenderer.fillZoom(params, aspect, threads) * short * RENDER_SCALE / side
             val image = MandalaRenderer.render(
                 params,
                 RenderOptions(
                     outputSize = side, supersample = false, framing = Framing(zoom = zoom.coerceIn(Framing.MIN_ZOOM, Framing.MAX_ZOOM)),
                     threads = threads, textRenderer = AndroidTextRenderer(), imageLoader = AndroidImageLoader(),
+                    isCancelled = { !job.isActive },
                 ),
             ).image
             val bitmap = image.toBitmap()

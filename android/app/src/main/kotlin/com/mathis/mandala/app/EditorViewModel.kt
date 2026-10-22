@@ -303,6 +303,11 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
     private val textRenderer = AndroidTextRenderer()
     private val imageLoader = AndroidImageLoader()
 
+    /** The pair sheet's two small screens, only while it is open. */
+    private val _pairOpen = MutableStateFlow(false)
+    private val _pairPreview = MutableStateFlow(PairPreview())
+    val pairPreview: StateFlow<PairPreview> = _pairPreview.asStateFlow()
+
     init {
         viewModelScope.launch {
             // A state shown recently (history, undo, a switch flipped back) comes back at once;
@@ -824,10 +829,6 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         return active
     }
 
-    /** The pair sheet's two small screens, only while it is open. */
-    private val _pairOpen = MutableStateFlow(false)
-    private val _pairPreview = MutableStateFlow(PairPreview())
-    val pairPreview: StateFlow<PairPreview> = _pairPreview.asStateFlow()
 
     fun setPairOpen(open: Boolean) {
         _pairOpen.value = open
