@@ -242,14 +242,14 @@ private struct LayerCard: View {
                     .opacity(layer.isEnabled ? 0.9 : 0.3)
                 }
 
-                Spacer()
+                CardHeaderFoldArea(action: toggleExpanded)
 
                 Button(action: onRandomize) {
                     Image(systemName: "dice")
                         .font(.system(size: 10))
                         .foregroundColor(.blue)
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.cardIcon)
                 .help("Randomize this layer")
 
                 if canDuplicate {
@@ -258,7 +258,7 @@ private struct LayerCard: View {
                             .font(.system(size: 10))
                             .foregroundColor(.secondary)
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(.cardIcon)
                     .help("Duplicate layer")
                 }
 
@@ -267,7 +267,7 @@ private struct LayerCard: View {
                         .font(.system(size: 10))
                         .foregroundColor(.secondary)
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.cardIcon)
 
                 if canDelete {
                     Button(action: onDelete) {
@@ -275,7 +275,7 @@ private struct LayerCard: View {
                             .font(.system(size: 10))
                             .foregroundColor(.secondary.opacity(0.6))
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(.cardIcon)
                 }
             }
             .contextMenu {
@@ -522,24 +522,24 @@ private struct DrawingCard: View {
                 Text("Drawing")
                     .font(.caption.weight(.medium))
                     .foregroundColor(settings.isEnabled ? .primary : .secondary)
-                Spacer()
+                CardHeaderFoldArea(action: toggleExpanded)
                 if !settings.strokes.isEmpty {
                     Button(action: { settings.strokes.removeLast() }) {
                         Image(systemName: "arrow.uturn.backward")
                             .font(.system(size: 9)).foregroundColor(.orange)
                     }
-                    .buttonStyle(.plain).help("Undo last stroke")
+                    .buttonStyle(.cardIcon).help("Undo last stroke")
                     Button(action: { settings.strokes.removeAll() }) {
                         Image(systemName: "trash")
                             .font(.system(size: 9)).foregroundColor(.red.opacity(0.7))
                     }
-                    .buttonStyle(.plain).help("Clear all strokes")
+                    .buttonStyle(.cardIcon).help("Clear all strokes")
                 }
                 Button(action: toggleExpanded) {
                     Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
                         .font(.system(size: 9)).foregroundColor(.secondary)
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.cardIcon)
             }
             .padding(.horizontal, 10).padding(.vertical, 8)
             .background(Color(NSColor.windowBackgroundColor))
@@ -667,24 +667,24 @@ private struct GraffitiCard: View {
                 Text("Spray")
                     .font(.caption.weight(.medium))
                     .foregroundColor(settings.isEnabled ? .primary : .secondary)
-                Spacer()
+                CardHeaderFoldArea(action: toggleExpanded)
                 if !settings.strokes.isEmpty {
                     Button(action: { settings.strokes.removeLast() }) {
                         Image(systemName: "arrow.uturn.backward")
                             .font(.system(size: 9)).foregroundColor(.orange)
                     }
-                    .buttonStyle(.plain).help("Undo last stroke")
+                    .buttonStyle(.cardIcon).help("Undo last stroke")
                     Button(action: { settings.strokes.removeAll() }) {
                         Image(systemName: "trash")
                             .font(.system(size: 9)).foregroundColor(.red.opacity(0.7))
                     }
-                    .buttonStyle(.plain).help("Clear all strokes")
+                    .buttonStyle(.cardIcon).help("Clear all strokes")
                 }
                 Button(action: toggleExpanded) {
                     Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
                         .font(.system(size: 9)).foregroundColor(.secondary)
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.cardIcon)
             }
             .padding(.horizontal, 10).padding(.vertical, 8)
             .background(Color(NSColor.windowBackgroundColor))

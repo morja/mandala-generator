@@ -44,12 +44,12 @@ struct EmblemLayerCard: View {
                 Text("Emblem")
                     .font(.caption.weight(.medium))
                     .foregroundColor(settings.isEnabled ? .primary : .secondary)
-                Spacer()
+                CardHeaderFoldArea { withAnimation(.easeInOut(duration: 0.18)) { isExpanded.toggle() } }
                 Button(action: randomize) {
                     Image(systemName: "dice")
                         .font(.system(size: 10)).foregroundColor(.purple)
                 }
-                .buttonStyle(.plain).help("Random emblem")
+                .buttonStyle(.cardIcon).help("Random emblem")
                 Button(action: {
                     settings = EmblemLayerSettings(isEnabled: settings.isEnabled)
                     settings.glowMode = .light   // like a new emblem
@@ -57,12 +57,12 @@ struct EmblemLayerCard: View {
                     Image(systemName: "arrow.counterclockwise")
                         .font(.system(size: 10)).foregroundColor(.secondary)
                 }
-                .buttonStyle(.plain).help("Reset emblem layer")
+                .buttonStyle(.cardIcon).help("Reset emblem layer")
                 Button(action: { withAnimation(.easeInOut(duration: 0.18)) { isExpanded.toggle() } }) {
                     Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
                         .font(.system(size: 9)).foregroundColor(.secondary)
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.cardIcon)
             }
             .padding(.horizontal, 10).padding(.vertical, 8)
             .background(Color(NSColor.windowBackgroundColor))
