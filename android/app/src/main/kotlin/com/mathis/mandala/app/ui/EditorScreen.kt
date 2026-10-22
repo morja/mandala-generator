@@ -76,7 +76,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -150,16 +149,15 @@ fun EditorScreen(
         vm.events.collect { event ->
             when (event) {
                 is EditorEvent.Message -> {
-                    // With an action Compose would keep the message until it is tapped; let it go on its own.
-                    val undoable = event.canUndo || event.undo != null
+                    // Short, also with Undo: with an action Compose would keep the message until it is tapped.
                     messageFor = vm.params.value
                     val result = snackbar.showSnackbar(
                         event.text,
-                        actionLabel = if (undoable) "Undo" else null,
-                        duration = if (undoable) SnackbarDuration.Long else SnackbarDuration.Short,
+                        actionLabel = if (event.undo != null) "Undo" else null,
+                        duration = SnackbarDuration.Short,
                     )
                     messageFor = null
-                    if (result == SnackbarResult.ActionPerformed) event.undo?.invoke() ?: vm.undo()
+                    if (result == SnackbarResult.ActionPerformed) event.undo?.invoke()
                 }
                 is EditorEvent.ShareImage -> {
                     val send = Intent(Intent.ACTION_SEND)
@@ -266,7 +264,7 @@ fun EditorScreen(
                 },
             )
         },
-        snackbarHost = { if (!showFavorites && !showSave) SnackbarHost(snackbar) },
+        snackbarHost = { if (!showFavorites && !showSave) MessageHost(snackbar) },
     ) { padding ->
         BoxWithConstraints(Modifier.padding(padding).fillMaxSize()) {
             if (maxWidth >= Spacing.twoPaneMinWidth) {
@@ -636,7 +634,7 @@ private fun FavoritesSheet(
                 Button(onClick = onAdd, enabled = canAdd) { Text("Add current") }
             }
             // Below the title, so a message does not cover "Add current"; it takes no room while empty.
-            SnackbarHost(snackbar)
+            MessageHost(snackbar)
             if (favorites.isEmpty()) {
                 Text(
                     "No favourites yet. Add the current mandala, or open the favourites file of the Mac app " +

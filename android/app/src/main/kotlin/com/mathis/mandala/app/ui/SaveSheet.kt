@@ -30,7 +30,6 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
@@ -126,7 +125,7 @@ internal fun SaveSheet(
             // A wallpaper fills the screen, so it is set in the phone screen format; the frame shows it first.
             WallpaperButton(enabled = !busy, onOpen = { if (choice.format != SaveFormat.SCREEN) onFormat(SaveFormat.SCREEN) }, onWallpaper = onWallpaper)
         }
-        SnackbarHost(snackbar, Modifier.align(Alignment.TopCenter))
+        MessageHost(snackbar, Modifier.align(Alignment.TopCenter))
       }
     }
 }
