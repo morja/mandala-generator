@@ -114,6 +114,7 @@ fun EditorScreen(
     val params by vm.params.collectAsStateWithLifecycle()
     val preview by vm.preview.collectAsStateWithLifecycle()
     val busy by vm.busy.collectAsStateWithLifecycle()
+    val export by vm.export.collectAsStateWithLifecycle()
     val selected by vm.selected.collectAsStateWithLifecycle()
     val favorites by vm.favorites.collectAsStateWithLifecycle()
     val drawTool by vm.drawTool.collectAsStateWithLifecycle()
@@ -181,6 +182,7 @@ fun EditorScreen(
             proOwned = pro.owned,
             hasQuote = params.textLayer.isEnabled && params.textLayer.text.isNotEmpty(),
             busy = busy,
+            export = export,
             onFormat = vm::setSaveFormat,
             onFraming = vm::setFraming,
             onTextFollows = vm::setTextFollowsMandala,
@@ -264,7 +266,12 @@ fun EditorScreen(
                 },
             )
         },
-        snackbarHost = { if (!showFavorites && !showSave) MessageHost(snackbar) },
+        snackbarHost = {
+            if (!showFavorites && !showSave) {
+                // A running export (from the menu) shows where its message will follow.
+                export?.let { ExportNote(it) } ?: MessageHost(snackbar)
+            }
+        },
     ) { padding ->
         BoxWithConstraints(Modifier.padding(padding).fillMaxSize()) {
             if (maxWidth >= Spacing.twoPaneMinWidth) {

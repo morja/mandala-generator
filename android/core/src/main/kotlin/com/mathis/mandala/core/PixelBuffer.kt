@@ -222,13 +222,18 @@ class PixelBuffer private constructor(
          * clipped to the strip's rows gives every pixel the same sums as one full buffer.
          */
         fun drawInStrips(
-            width: Int, height: Int, reject: Reject = Reject.of(width, height), lineWidth: Float = 1f, draw: (PixelBuffer) -> Unit,
+            width: Int, height: Int, reject: Reject = Reject.of(width, height), lineWidth: Float = 1f,
+            /** Called after each strip with the share of the rows drawn. */
+            onStrip: (Double) -> Unit = {},
+            draw: (PixelBuffer) -> Unit,
         ): Image8 {
             val out = Image8(width, height, Encoding.DISPLAY_P3)
             for (y0 in 0 until height step STRIP_ROWS) {
-                val strip = strip(width, height, y0, min(height, y0 + STRIP_ROWS), reject, lineWidth)
+                val y1 = min(height, y0 + STRIP_ROWS)
+                val strip = strip(width, height, y0, y1, reject, lineWidth)
                 draw(strip)
                 strip.writeRows(out)
+                onStrip(y1.toDouble() / height)
             }
             return out
         }

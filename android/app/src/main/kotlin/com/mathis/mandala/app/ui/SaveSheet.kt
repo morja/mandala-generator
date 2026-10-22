@@ -55,6 +55,7 @@ import com.mathis.mandala.app.Editing
 import com.mathis.mandala.app.Editing.SaveFormat
 import com.mathis.mandala.app.Editing.moved
 import com.mathis.mandala.app.Editing.zoomedAround
+import com.mathis.mandala.app.ExportProgress
 import com.mathis.mandala.app.FramePreviewState
 import com.mathis.mandala.app.SaveChoice
 import com.mathis.mandala.app.WallpaperTarget
@@ -78,6 +79,7 @@ internal fun SaveSheet(
     proOwned: Boolean,
     hasQuote: Boolean,
     busy: Boolean,
+    export: ExportProgress?,
     onFormat: (SaveFormat) -> Unit,
     onFraming: (Framing) -> Unit,
     onTextFollows: (Boolean) -> Unit,
@@ -125,7 +127,8 @@ internal fun SaveSheet(
             // A wallpaper fills the screen, so it is set in the phone screen format; the frame shows it first.
             WallpaperButton(enabled = !busy, onOpen = { if (choice.format != SaveFormat.SCREEN) onFormat(SaveFormat.SCREEN) }, onWallpaper = onWallpaper)
         }
-        MessageHost(snackbar, Modifier.align(Alignment.TopCenter))
+        // Above the frame and buttons, which may be scrolled away; the same place as messages.
+        if (export != null) ExportNote(export, Modifier.align(Alignment.TopCenter)) else MessageHost(snackbar, Modifier.align(Alignment.TopCenter))
       }
     }
 }
@@ -188,17 +191,8 @@ private fun Frame(
                 )
             }
             if (saving) {
-                // Over the frame, which is always in view; the buttons below may be scrolled away.
-                Box(Modifier.fillMaxSize().background(t.canvas.copy(alpha = 0.6f)), contentAlignment = Alignment.Center) {
-                    Text(
-                        "Saving…",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = t.text,
-                        modifier = Modifier.clip(RoundedCornerShape(Radius.sm)).background(t.surface)
-                            .padding(horizontal = Spacing.lg, vertical = Spacing.sm),
-                    )
-                }
-                LinearProgressIndicator(Modifier.fillMaxWidth().height(Sizes.progress).align(Alignment.BottomCenter))
+                // What the export does shows at the top of the sheet; the frame only dims.
+                Box(Modifier.fillMaxSize().background(t.canvas.copy(alpha = 0.6f)))
             } else if (preview.rendering) {
                 LinearProgressIndicator(Modifier.fillMaxWidth().height(Sizes.progress).align(Alignment.BottomCenter))
             }
