@@ -1,6 +1,6 @@
 # QA-3 · The Pro line of ADR-0016 on the emulator
 
-22 October 2026, Android 1.4.0 (code 8), branch `feature/pro-line`. Release build (R8, signed with the debug key, so `pro_for_testing` is off and the app runs without Pro) on the Android emulator (Pixel-sized, 1080 × 2340, dark theme), with fresh app data. Google Play is not reachable there, so "Buy Pro" is disabled; the purchase itself was not tested. Not yet checked on Mathis' phone.
+22 October 2026, Android 1.4.0 (code 8), branch `feature/pro-line`. Checked with the first line (two free layers, five favourites); 1.4.1 moved it to three free layers and no favourites limit (ADR-0016), rows 1 to 4 then apply to the fourth layer, and the favourites note is gone. Release build (R8, signed with the debug key, so `pro_for_testing` is off and the app runs without Pro) on the Android emulator (Pixel-sized, 1080 × 2340, dark theme), with fresh app data. Google Play is not reachable there, so "Buy Pro" is disabled; the purchase itself was not tested. Not yet checked on Mathis' phone.
 
 ## Checks
 

@@ -1,6 +1,6 @@
 # PLAN-5 · One line between free and Pro for Android and iPhone
 
-22 October 2026. Status: approved by Mathis the same day, question by question (see the end); the effects layer free and the price 2.99 € differ from the first draft. Built for Android in 1.4.0 ([QA-3](QA-3-pro-line.md)). Decision: [ADR-0016](adr/0016-one-pro-line.md), which replaces the free part of ADR-0007 and point 1 of ADR-0014.
+22 October 2026. Status: approved by Mathis the same day, question by question (see the end); the effects layer free and the price 2.99 € differ from the first draft. Built for Android in 1.4.0 ([QA-3](QA-3-pro-line.md)). Amended the same day for 1.4.1 (Mathis): three free layers instead of two, no limit on favourites; ADR-0016 has the current line, the tables below are the first draft. Decision: [ADR-0016](adr/0016-one-pro-line.md), which replaces the free part of ADR-0007 and point 1 of ADR-0014.
 
 Thought through as if both apps were started today (Mathis, 22 October 2026): one product "Dahlia" on two platforms. The free app keeps the full fun of making mandalas, and both apps give a real reason to buy Pro. No one has bought Pro yet, so the line can still move.
 
@@ -27,7 +27,7 @@ On Android today almost only the result is Pro: saving large, framing by hand, t
 | f) Moving layers and the emblem (ADR-0011) | – | yes |
 | g) Favourites | 5 | unlimited |
 | h) Saving | screen size, every format, "Show whole" and "Fill" | 2048 px, framing by hand, finish, SVG line drawing |
-| i) Wallpaper | set once (Android), save for it (iPhone) | pair, daily; live (Android); widgets and Shortcuts action (iPhone) |
+| i) Wallpaper | set by hand (Android), save for it (iPhone) | pair, daily; live (Android); widgets and Shortcuts action (iPhone) |
 | j) Surprise and starters | all; starters with Pro features can be tried | – |
 
 - **All styles and the whole effects layer free:** variety and the finished look are the fun, and the images people share are the app's best advertising. Three or more layers, emblems, text and positions are fine work, which is what people pay for.

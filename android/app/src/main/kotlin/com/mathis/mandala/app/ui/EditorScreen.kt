@@ -136,7 +136,6 @@ fun EditorScreen(
     var showMenu by remember { mutableStateOf(false) }
     val proRequest by vm.proRequest.collectAsStateWithLifecycle()
     val missingPro by vm.missingPro.collectAsStateWithLifecycle()
-    val favouriteCount by vm.favouriteCount.collectAsStateWithLifecycle()
     var showPair by remember { mutableStateOf(false) }
     var showLive by remember { mutableStateOf(false) }
     val live by vm.live.collectAsStateWithLifecycle()
@@ -295,7 +294,6 @@ fun EditorScreen(
         FavoritesSheet(
             favorites = favorites,
             canAdd = preview.image != null,
-            count = favouriteCount,
             onAdd = vm::addFavorite,
             onApply = { vm.applyFavorite(it); showFavorites = false },
             onDelete = { vm.removeFavorite(it.id) },
@@ -705,7 +703,7 @@ private fun ProSheet(pro: ProState, request: ProRequest, onBuy: () -> Unit, onWi
             }
             request.note?.let { Text(it, style = MaterialTheme.typography.bodyMedium) }
             Text(
-                "Pro adds up to five layers, emblems, text and quotes, moving layers and the emblem, and as many favourites as you like. " +
+                "Pro adds up to five layers, emblems, text and quotes, and moving layers and the emblem. " +
                     "Save at 2048 pixels wide with the mandala placed by hand and adjusted, and as a line drawing. " +
                     "Wallpapers: home and lock as a pair, a new one every day, and a live wallpaper. " +
                     "Try everything before you buy. One purchase, no subscription.",
@@ -734,8 +732,6 @@ private fun ProSheet(pro: ProState, request: ProRequest, onBuy: () -> Unit, onWi
 private fun FavoritesSheet(
     favorites: List<Favorite>,
     canAdd: Boolean,
-    /** Own favourites and how many are free, without Pro; null with it. */
-    count: Pair<Int, Int>?,
     onAdd: () -> Unit,
     onApply: (Favorite) -> Unit,
     onDelete: (Favorite) -> Unit,
@@ -750,11 +746,7 @@ private fun FavoritesSheet(
         Column(Modifier.padding(horizontal = Spacing.lg).padding(bottom = Spacing.xl)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text("Favourites", style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
-                Button(onClick = onAdd, enabled = canAdd) { Text(if (count != null && count.first >= count.second) "Add current · Pro" else "Add current") }
-            }
-            if (count != null) {
-                Text("${count.first} of ${count.second} of your own without Pro; the examples do not count.",
-                    style = MaterialTheme.typography.bodySmall, color = t.textMuted)
+                Button(onClick = onAdd, enabled = canAdd) { Text("Add current") }
             }
             // Below the title, so a message does not cover "Add current"; it takes no room while empty.
             MessageHost(snackbar)

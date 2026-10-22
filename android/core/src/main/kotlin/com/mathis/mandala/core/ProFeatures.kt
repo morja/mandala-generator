@@ -2,7 +2,7 @@ package com.mathis.mandala.core
 
 /** What a mandala may use without Pro, and what it uses that needs Pro (ADR-0016). Shared by the phone apps. */
 enum class ProFeature(val label: String) {
-    MORE_LAYERS("More than two layers"),
+    MORE_LAYERS("More than three layers"),
     EMBLEM("Emblem"),
     TEXT("Text"),
     MOVED_LAYERS("Moved layers"),
@@ -10,10 +10,7 @@ enum class ProFeature(val label: String) {
 
 object ProFeatures {
     /** Visible style layers a mandala may have without Pro. */
-    const val FREE_LAYERS = 2
-
-    /** Favourites a user may keep without Pro; the built-in starters do not count. */
-    const val FREE_FAVOURITES = 5
+    const val FREE_LAYERS = 3
 
     /**
      * The Pro features `params` uses, in the order of [ProFeature]. Only what shows in the image counts:
@@ -30,7 +27,7 @@ object ProFeatures {
     }
 
     /**
-     * `params` without its Pro features: layers above the second visible one hidden (not deleted, so
+     * `params` without its Pro features: layers above the third visible one hidden (not deleted, so
      * they come back with Pro), the emblem and text hidden, moved layers centred.
      */
     fun removed(params: MandalaParameters): MandalaParameters {
