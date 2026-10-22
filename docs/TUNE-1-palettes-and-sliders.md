@@ -165,3 +165,9 @@ Layer Wash is unchanged.
 22 October 2026, after Mathis tried them on the Mac: Cosmic is offered again, and three new palettes are appended in both apps: **Silver** (charcoal to warm white), **Earth** (umber, clay, ochre, olive, sage) and **Rose Quartz** (plum, rose, peach, lilac, cream). 15 are offered, in rows of three by family: Psychedelic, Neon City, Tropical · Sunset, Lava, Gold · Earth, Toxic, Bio Glow · Ice, Cosmic, Aurora · Violet, Rose Quartz, Silver. Hidden: Prism, Candy, Nebula, Ocean, Synthwave, Dragon. Custom Mac palettes now start at index 21.
 
 The Mac card headers got easier to hit: icon buttons take a 24 pt square with a hover background, and a click in the empty part of a header folds the card.
+
+## 13. Strange Attractor
+
+22 October 2026. Strange Attractor draws 200,000 to 800,000 points per run (Density) and up to nine runs (Complexity); above Complexity 0.5 they add up to a white disc, and with the general dice ranges about one throw in four burned out. Both apps now give it calmer dice of its own (Complexity 0.15–0.45, Density 0.1–0.45, Brightness 0.35–0.5, Painted 0.1–0.3, Glow 0.2–0.6, no Ripple) and its Complexity slider stops at 0.5. The renderer is unchanged, so saved settings look as before.
+
+![16 throws with the new ranges](images/tune-1/strange-attractor-dice.jpg)

@@ -4,10 +4,12 @@ import com.mathis.mandala.app.Editing.addStroke
 import com.mathis.mandala.app.Randomize.randomAll
 import com.mathis.mandala.app.Randomize.randomLayer
 import com.mathis.mandala.app.Randomize.randomLayers
+import com.mathis.mandala.app.Randomize.randomVariant
 import com.mathis.mandala.app.Randomize.randomized
 import com.mathis.mandala.core.BaseLayerSettings
 import com.mathis.mandala.core.EmblemLayerSettings
 import com.mathis.mandala.core.MandalaParameters
+import com.mathis.mandala.core.MandalaStyle
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
@@ -68,7 +70,8 @@ class HistoryAndRandomizeTest {
         repeat(200) { n ->
             val p = MandalaParameters().randomAll(Random(n))
             assertTrue(p.layers.first().symmetry in Randomize.SYMMETRY)
-            for ((i, l) in p.layers.withIndex()) {
+            // Strange Attractor has calmer ranges of its own (strangeAttractorGetsCalmerDice…).
+            for ((i, l) in p.layers.withIndex().filter { it.value.style != MandalaStyle.STRANGE_ATTRACTOR }) {
                 assertEquals(0.0, l.wash, 0.0)
                 assertTrue(l.abstractLevel in 0.1..0.5)
                 assertTrue(l.brightness in 0.3..0.6)
@@ -94,5 +97,32 @@ class HistoryAndRandomizeTest {
         val one = two.randomLayer(1, Random(3))
         assertEquals(two.layers[0], one.layers[0])
         assertEquals(two.layers[1].symmetry, one.layers[1].symmetry)
+    }
+
+    @Test
+    fun strangeAttractorGetsCalmerDiceAndAShorterComplexitySlider() {
+        val p = MandalaParameters()
+        val throws = (0 until 2000).map { p.randomLayer(0, Random(it)).layers[0] }.filter { it.style == MandalaStyle.STRANGE_ATTRACTOR }
+        assertTrue(throws.isNotEmpty())
+        for (l in throws) {
+            assertTrue(l.complexity in 0.15..0.45)
+            assertTrue(l.density in 0.1..0.45)
+            assertTrue(l.brightness in 0.35..0.5)
+            assertTrue(l.abstractLevel in 0.1..0.3)
+            assertTrue(l.glowIntensity in 0.2..0.6)
+        }
+        assertEquals(0.15..0.5, Editing.Ranges.layerComplexity(MandalaStyle.STRANGE_ATTRACTOR))
+        assertEquals(Editing.Ranges.layerComplexity, Editing.Ranges.layerComplexity(MandalaStyle.FLORAL))
+    }
+
+    @Test
+    fun aVariantKeepsTheStyle() {
+        val p = MandalaParameters().randomLayers(Random(3))
+        repeat(50) { n ->
+            val v = p.randomVariant(0, Random(n))
+            assertEquals(p.layers[0].style, v.layers[0].style)
+            assertEquals(p.layers[0].symmetry, v.layers[0].symmetry)
+        }
+        assertTrue((0 until 50).any { p.randomVariant(0, Random(it)).layers[0].seed != p.layers[0].seed })
     }
 }

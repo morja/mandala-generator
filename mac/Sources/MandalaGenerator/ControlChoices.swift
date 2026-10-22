@@ -37,6 +37,25 @@ enum ControlChoices {
     /// Complexity and density of the second layer and above, relative to the first.
     static let upperLayerCalm = 0.8
 
+    /// Strange Attractor adds a run of points per complexity step; above about 0.5 it burns to a white
+    /// disc, so its slider stops there and the dice use calmer ranges of their own.
+    static let layerComplexity: ClosedRange<Double> = 0.15...1
+    static let attractorComplexity: ClosedRange<Double> = 0.15...0.5
+    static func layerComplexity(_ style: MandalaStyle) -> ClosedRange<Double> {
+        style == .strangeAttractor ? attractorComplexity : layerComplexity
+    }
+
+    /// Dice values for one layer of the given style; `calm` lowers complexity and density of upper layers.
+    static func diceLook(_ style: MandalaStyle, calm: Double) -> (complexity: Double, density: Double, glow: Double,
+                                                                   ripple: Double, painted: Double, brightness: Double) {
+        if style == .strangeAttractor {
+            return (Double.random(in: 0.15...0.45) * calm, Double.random(in: 0.1...0.45) * calm, Double.random(in: 0.2...0.6),
+                    0, Double.random(in: 0.1...0.3), Double.random(in: 0.35...0.5))
+        }
+        return (Double.random(in: 0.2...1.0) * calm, Double.random(in: 0.2...1.0) * calm, Double.random(in: 0.2...0.9),
+                Double.random(in: 0.0...0.6), Double.random(in: 0.1...0.5), Double.random(in: 0.3...0.6))
+    }
+
     /// Colours a background starts with when it is switched on, brighter than the decoder defaults
     /// (0.18 and 0.04), which are so dark that Color, Gradient and Sunburst look alike.
     static let backgroundStartBrightness = 0.35

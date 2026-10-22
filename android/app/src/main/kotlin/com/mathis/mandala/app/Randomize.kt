@@ -61,6 +61,14 @@ object Randomize {
         return copy(layers = list)
     }
 
+    /** A new variant of one layer in its own style: seed, palette and look; symmetry, blend mode and opacity stay. */
+    fun MandalaParameters.randomVariant(index: Int, random: Random): MandalaParameters {
+        if (index !in layers.indices) return this
+        val list = layers.toMutableList()
+        list[index] = randomLayer(list[index], index, list[index].style, Editing.offeredPalettes.random(random), random)
+        return copy(layers = list)
+    }
+
     /** Shared symmetry of new layers; 1 and 2 look lopsided for most styles. */
     val SYMMETRY = 3..8
 
@@ -69,6 +77,23 @@ object Randomize {
 
     private fun randomLayer(base: StyleLayer, index: Int, style: MandalaStyle, palette: Int, random: Random): StyleLayer {
         val calm = if (index == 0) 1.0 else UPPER_LAYER_CALM
+        // Strange Attractor piles up hundreds of thousands of points per run; with the general ranges
+        // about one throw in four burns to a white disc, so it gets calmer ones of its own.
+        if (style == MandalaStyle.STRANGE_ATTRACTOR) return base.copy(
+            style = style,
+            seed = random.nextLong().toULong().coerceAtLeast(1uL),
+            paletteIndex = palette,
+            scale = if (index == 0) random.nextDouble(0.75, 1.0) else random.nextDouble(0.3, 0.75),
+            complexity = random.nextDouble(0.15, 0.45) * calm,
+            density = random.nextDouble(0.1, 0.45) * calm,
+            glowIntensity = random.nextDouble(0.2, 0.6),
+            colorDrift = random.nextDouble(0.1, 0.9),
+            ripple = 0.0,
+            wash = 0.0,
+            abstractLevel = random.nextDouble(0.1, 0.3),
+            saturation = random.nextDouble(0.3, 1.0),
+            brightness = random.nextDouble(0.35, 0.5),
+        )
         return base.copy(
             style = style,
             seed = random.nextLong().toULong().coerceAtLeast(1uL),
