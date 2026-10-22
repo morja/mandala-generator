@@ -118,3 +118,19 @@ Proposed order: *Light* Brightness, Contrast, Vignette, Bloom · *Tone* Sepia, F
 3. **Slider ranges** (UI only, values in the JSON unchanged): Brightness, Painted, Complexity, Scale, emblem Size and Weight, text Size, Width, Brightness and Cloud size, Glitter.
 4. **Tidier panels:** effects order with "More", Fade and Wash merged, Density and Ripple hidden per style, brighter background defaults, Grain type hidden.
 5. **New palettes** Silver and Earth, Mac first.
+
+## 10. What was changed: renderer
+
+22 October 2026, branch `tune/renderer`. Fixed in the macOS renderer first, then ported to the Kotlin core; parity references re-rendered, details and thresholds in ADR-0004. No JSON field, default or range changed: saved settings load as before, but those that use one of these effects now look different, on both apps.
+
+1. **Relief:** the emboss now convolves colour only and repeats the edge pixels, so flat areas stay neutral; 0.01 looks like the original and the slider adds ridges evenly. *Saved settings with relief* lose the grey veil: darker, more contrast, ridges as before. No starter favourite uses relief.
+2. **Chromatic:** red and blue repeat the edge pixels instead of black. *Saved settings* lose the coloured stripe at the left and right edges; the rest is unchanged.
+3. **Vignette:** fixed radius (the strongest CIVignette setting) and 1.5 × the intensity. *Saved settings* get darker corners: the default 0.3 is now visible, 0.6 clearly dark, 1.0 strong but not black. Starter favourites with vignette: 1, 5, 7, 17, 18, 19 (numbered from 1).
+4. **Bloom:** twice the gain. *Saved settings* glow more and lift dark backgrounds visibly; at 1.0 bright images turn hazy. Ten starter favourites use bloom 0.13–0.52.
+5. **Grain:** on the Mac grain did nothing at all (the noise was transparent); it now works there. Twice the amplitude on both apps, and above 1024 px the grain cells grow with the image, so a 4096 px export shows the same grain as the preview. *Saved settings with grain* show it for the first time on the Mac and twice as strong on Android. The same ten starter favourites use grain 0.09–0.49; at 0.5 the grain is now clearly visible.
+6. **Glitter:** the stored value is mapped to 0.2–0.6 of the former amount inside the renderer (count and brightness), 0 stays off. *Saved settings* below about 0.33 get more glitter (0.11 now looks like 0.24 did), above it less (1.0 looks like 0.6 did); around 0.33 nothing changes. Starter favourites 18 and 19 (0.11) get more, 15 (0.31) stays.
+7. **Sunburst background:** the number of rays is rounded to a whole number, which removes the seam on the left horizontal axis. *Saved settings* get at most half a ray more or fewer; the starter favourites with a sunburst (16.04 rays) look the same.
+8. **Emblem glow:** the glow is now light around the shape, screened on top after the emblem is blended, instead of part of the overlay, whose blurred alpha made a dark halo with Normal. Strength follows the square root of the glow and the reach starts at a third, so 0.1 already shows a soft halo and the slider changes it evenly; the maximum reach is unchanged. With Multiply the glow stays as before. *Saved emblems with Normal* lose the dark halo, the mandala stays visible behind the glow, and the gaps inside line emblems no longer fill with colour; with Screen and Add the change is small. Starter favourites 2, 6 and 10 (emblem glow 0.6, Normal).
+9. **Text glow:** the glow is light screened on top as well, with the two wide passes three times as strong (the narrow one unchanged, so the letters stay readable). Before it was invisible even at 1.0. With Multiply it stays as before. *Saved texts with glow* now get a clear halo in the text colour; starter favourite 15 (glow 0.66).
+
+Wash (layer) is unchanged. Text and the emblem with Multiply keep their former glow on purpose.
