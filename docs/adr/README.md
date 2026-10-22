@@ -21,3 +21,4 @@ ADR-0001 to ADR-0008 were written for the Android repository before both apps mo
 | [0013](0013-svg-line-drawing.md) | SVG line drawing as a Pro export | accepted |
 | [0014](0014-pro-wallpapers-and-finish.md) | Pro wallpapers and a finishing step | accepted |
 | [0015](0015-iphone-app.md) | iPhone app on the shared Kotlin core | proposed |
+| [0016](0016-one-pro-line.md) | One line between free and Pro for Android and iPhone | proposed |

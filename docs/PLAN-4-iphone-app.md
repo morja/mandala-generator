@@ -2,6 +2,8 @@
 
 22 October 2026. Status: draft, for Mathis to decide on the questions at the end. Decision draft: [ADR-0015](adr/0015-iphone-app.md). Nothing is built yet.
 
+**Updated the same day by [PLAN-5](PLAN-5-one-pro-line.md):** the line between free and Pro and the price are shared with Android (ADR-0016). Section 4, the price in section 3 and questions 2 and 3 below follow it; the rest stands.
+
 Thought through as a new app, not as a copy of the Android app (Mathis, 22 October 2026). Decided in the conversation the same day: free with a one-time Pro purchase, up to five favourites for free, Pro may differ from Android, no live photo, no iCloud sync, no video export, no iPad layout. The macOS app in the App Store (with one purchase for Mac and iPhone) is left for later.
 
 ## 1. What the app is
@@ -16,23 +18,12 @@ Stays as in ADR-0008: GPL-3.0 with the section 7 permission, which already names
 
 Free app with a **one-time Pro purchase** (StoreKit 2, non-consumable, with Family Sharing). No subscription, no ads.
 
-- Price: about **4.99 €** (App Store prices tend to be higher than Google Play; one purchase for both platforms does not exist anyway). See question 2.
+- Price: 3.99 €, the same as on Android (PLAN-5).
 - No watermark, saving is never locked.
 
 ## 4. Free and Pro
 
-The line runs **through the editor**, not through saving: people who only want a nice wallpaper get one for free and pass the app on; people who design pay.
-
-| Free | Pro |
-|---|---|
-| Surprise mandalas and all built-in starters | Full editor: adding and removing layers, every style, emblems, effects layer, text layer, layer positions |
-| Palettes, background, the main sliders of each existing layer, new variation | Save large (2048 px wide) |
-| Save and share at screen size, every format, "Show whole" and "Fill" | Finish (brightness, contrast, saturation) for a dark home screen |
-| Up to **5 favourites** | Unlimited favourites |
-| Opening and saving Mac and Android files (ADR-0003) | "Mandala of the day" as a Shortcuts action |
-| | Widgets: home screen, lock screen, StandBy |
-
-A Mac file with five layers opens and renders in the free app; its layers can be changed with the free sliders. Only adding, removing or restyling layers is Pro, so no file is ever locked. See question 3 for the exact free sliders.
+As in [PLAN-5](PLAN-5-one-pro-line.md), section 3: the same line as on Android. On the iPhone, Pro's wallpaper part is the Shortcuts action "Mandala of the day" and the widgets (section 5).
 
 ## 5. Daily wallpaper without a wallpaper API
 
@@ -80,8 +71,8 @@ Live photo, iCloud sync, video export, an iPad layout (the iPhone app runs on th
 ## Questions
 
 1. **Path:** shared Kotlin core (B) or Swift renderer from the Mac app (A)? Recommendation: B, after the spike confirms the speed.
-2. **Price:** 4.99 € or the same 2.99 € as on Android? Recommendation: 4.99 €; iPhone users are used to it, and the free part is generous.
-3. **Free sliders:** which controls stay free? Recommendation: palette, background, and per layer symmetry, size, rotation and the style's first two parameters; everything else in the editor is Pro.
+2. ~~**Price.**~~ Replaced by PLAN-5 (3.99 € on both).
+3. ~~**Free sliders.**~~ Replaced by PLAN-5 (the shared line).
 4. **Minimum iOS:** Recommendation: iOS 17 (current App Intents, StoreKit 2, interactive widgets, StandBy); it runs on every iPhone from the XS and XR on.
 5. **Apple Developer account:** does one exist (99 € a year), under which name and with which bundle id? Recommendation: `one.tearoom.dahlia`, like the Android id scheme.
 6. **Order:** spike first, then the rest as in section 7? Recommendation: yes.
