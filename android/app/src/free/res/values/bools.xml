@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- The free test build runs without Pro, so the free app can be tried next to the others. -->
+    <bool name="pro_for_testing">false</bool>
+</resources>

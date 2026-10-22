@@ -51,6 +51,12 @@ android {
             signingConfig = signingConfigs.getByName("debug")
             matchingFallbacks += "debug"
         }
+        // The fast build without Pro, to try the free app (ADR-0016) on a phone that owns Pro.
+        create("free") {
+            initWith(getByName("fast"))
+            applicationIdSuffix = ".free"
+            matchingFallbacks += "debug"
+        }
         release {
             isMinifyEnabled = true
             isShrinkResources = true

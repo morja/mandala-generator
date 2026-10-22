@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- The free test build shows its own name next to the store, fast and debug apps. -->
+    <string name="app_name">Dahlia Free</string>
+</resources>
