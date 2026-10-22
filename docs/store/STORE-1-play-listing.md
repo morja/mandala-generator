@@ -95,6 +95,10 @@ German (360 characters):
 
 > Version 1.3: Pro dunkelt dein Hintergrundbild ab oder hellt es auf, setzt Start- und Sperrbildschirm als Paar, wechselt das Hintergrundbild jeden Morgen und bringt einen Live-Hintergrund, der sich langsam dreht. Hochformate füllen jetzt den Bildschirm oder zeigen das ganze Mandala, ohne harte Kanten. Speichern ist aufgeräumter und passt auf einen Bildschirm.
 
+## Promo video
+
+The live wallpaper (Pro), 30 seconds, shown sped up and labelled so: https://www.youtube.com/watch?v=I7TlzGe-Bcg (unlisted on Mathis' channel, not made for kids, no age restriction), entered in the default listing's video field on 22 October 2026; the German listing uses it too. The videos (1920×1080 for YouTube, a portrait one) are kept outside the repository in `Mandala-Generator/media/`; the README has a small GIF (`docs/images/live-wallpaper.gif`). Recorded in Android's live wallpaper preview with a demo build turning about six times faster (local branch `demo/live-video`, not for `main`).
+
 ## Release notes for 1.3.0 (code 6)
 
 English (255 characters, max. 500):
