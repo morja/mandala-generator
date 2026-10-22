@@ -73,6 +73,9 @@ struct ColorPalettes {
         synthwave,
         lava,
         gold,
+        silver,
+        earth,
+        roseQuartz,
     ]
 
     // MARK: - Rich multi-colour palettes
@@ -84,7 +87,7 @@ struct ColorPalettes {
             (0.0,  NSColor(red: 1.0,  green: 0.0,  blue: 0.5,  alpha: 1)),
             (0.17, NSColor(red: 1.0,  green: 0.45, blue: 0.0,  alpha: 1)),
             (0.33, NSColor(red: 0.85, green: 1.0,  blue: 0.0,  alpha: 1)),
-            (0.5,  NSColor(red: 0.0,  green: 1.0,  blue: 0.6,  alpha: 1)),
+            (0.52,  NSColor(red: 0.0,  green: 1.0,  blue: 0.6,  alpha: 1)),
             (0.67, NSColor(red: 0.0,  green: 0.7,  blue: 1.0,  alpha: 1)),
             (0.83, NSColor(red: 0.6,  green: 0.0,  blue: 1.0,  alpha: 1)),
             (1.0,  NSColor(red: 1.0,  green: 0.0,  blue: 0.5,  alpha: 1)),
@@ -122,7 +125,7 @@ struct ColorPalettes {
         id: "neon-city", name: "Neon City",
         stops: [
             (0.0,  NSColor(red: 1.0,  green: 0.05, blue: 0.55, alpha: 1)),
-            (0.25, NSColor(red: 1.0,  green: 0.45, blue: 0.0,  alpha: 1)),
+            (0.28, NSColor(red: 1.0,  green: 0.45, blue: 0.0,  alpha: 1)),
             (0.5,  NSColor(red: 0.0,  green: 0.95, blue: 0.95, alpha: 1)),
             (0.75, NSColor(red: 0.45, green: 0.0,  blue: 1.0,  alpha: 1)),
             (1.0,  NSColor(red: 1.0,  green: 0.05, blue: 0.55, alpha: 1)),
@@ -150,7 +153,7 @@ struct ColorPalettes {
             (0.2,  NSColor(red: 1.0,  green: 0.55, blue: 0.0,  alpha: 1)),
             (0.38, NSColor(red: 0.8,  green: 1.0,  blue: 0.0,  alpha: 1)),
             (0.55, NSColor(red: 0.0,  green: 1.0,  blue: 0.35, alpha: 1)),
-            (0.72, NSColor(red: 0.0,  green: 0.6,  blue: 1.0,  alpha: 1)),
+            (0.76, NSColor(red: 0.0,  green: 0.6,  blue: 1.0,  alpha: 1)),
             (0.88, NSColor(red: 0.65, green: 0.0,  blue: 1.0,  alpha: 1)),
             (1.0,  NSColor(red: 1.0,  green: 0.0,  blue: 0.15, alpha: 1)),
         ]
@@ -296,6 +299,42 @@ struct ColorPalettes {
             (0.65, NSColor(red: 1.0,  green: 0.88, blue: 0.05, alpha: 1)),
             (0.82, NSColor(red: 1.0,  green: 0.97, blue: 0.45, alpha: 1)),
             (1.0,  NSColor(red: 1.0,  green: 1.0,  blue: 0.88, alpha: 1)),
+        ]
+    )
+
+    /// Neutral: charcoal → grey → silver → warm white
+    static let silver = ColorPalette(
+        id: "silver", name: "Silver",
+        stops: [
+            (0.0,  NSColor(red: 0.06, green: 0.06, blue: 0.07, alpha: 1)),
+            (0.3,  NSColor(red: 0.36, green: 0.37, blue: 0.4, alpha: 1)),
+            (0.55, NSColor(red: 0.66, green: 0.68, blue: 0.72, alpha: 1)),
+            (0.78, NSColor(red: 0.86, green: 0.87, blue: 0.89, alpha: 1)),
+            (1.0,  NSColor(red: 1.0, green: 0.98, blue: 0.94, alpha: 1)),
+        ]
+    )
+
+    /// Natural: umber → terracotta → ochre → olive → sage
+    static let earth = ColorPalette(
+        id: "earth", name: "Earth",
+        stops: [
+            (0.0,  NSColor(red: 0.14, green: 0.1, blue: 0.05, alpha: 1)),
+            (0.28, NSColor(red: 0.58, green: 0.36, blue: 0.22, alpha: 1)),
+            (0.52, NSColor(red: 0.66, green: 0.58, blue: 0.3, alpha: 1)),
+            (0.76, NSColor(red: 0.44, green: 0.54, blue: 0.3, alpha: 1)),
+            (1.0,  NSColor(red: 0.7, green: 0.8, blue: 0.64, alpha: 1)),
+        ]
+    )
+
+    /// Soft: plum → rose → peach → lilac → cream
+    static let roseQuartz = ColorPalette(
+        id: "roseQuartz", name: "Rose Quartz",
+        stops: [
+            (0.0,  NSColor(red: 0.22, green: 0.06, blue: 0.16, alpha: 1)),
+            (0.3,  NSColor(red: 0.8, green: 0.33, blue: 0.48, alpha: 1)),
+            (0.6,  NSColor(red: 1.0, green: 0.66, blue: 0.62, alpha: 1)),
+            (0.82, NSColor(red: 0.93, green: 0.78, blue: 0.92, alpha: 1)),
+            (1.0,  NSColor(red: 1.0, green: 0.94, blue: 0.92, alpha: 1)),
         ]
     )
 }

@@ -58,11 +58,11 @@ object Editing {
 
     /**
      * Built-in palettes offered in the pickers, the dice and "add layer", by index into
-     * [BuiltInPalettes.all]: colourful first, then once round the colour wheel. The others (Prism,
-     * Candy, Nebula, Ocean, Synthwave, Dragon, Cosmic) look too much like one of these; they keep
-     * rendering in saved settings and are shown in the picker only while a layer uses them.
+     * [BuiltInPalettes.all], in rows of three by family: colourful, warm, green, blue, soft. The others (Prism,
+     * Candy, Nebula, Ocean, Synthwave, Dragon) look too much like one of these; they keep
+     * rendering in saved settings and are shown only while a layer uses them.
      */
-    val offeredPalettes: List<Int> = listOf(0, 3, 13, 4, 16, 17, 7, 9, 14, 1, 11)
+    val offeredPalettes: List<Int> = listOf(0, 3, 13, 4, 16, 17, 19, 7, 9, 14, 6, 1, 11, 20, 18)
 
     /** The palettes a picker shows: the offered ones, plus `current` at the end if it is a hidden built-in one. */
     fun paletteChoices(current: Int): List<Int> =

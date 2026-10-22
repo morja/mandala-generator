@@ -41,10 +41,11 @@ class PortFidelityTest {
     @Test
     fun builtInPalettesKeepTheMacOrder() {
         val ids = BuiltInPalettes.all.map { it.id }
-        assertEquals(18, ids.size)
+        assertEquals(21, ids.size)
         assertEquals("psychedelic", ids.first())
         assertEquals("synthwave", ids[15])
-        assertEquals("gold", ids.last())
+        assertEquals("gold", ids[17])
+        assertEquals(listOf("silver", "earth", "roseQuartz"), ids.drop(18))
     }
 
     @Test

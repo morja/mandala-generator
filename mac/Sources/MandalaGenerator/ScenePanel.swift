@@ -82,12 +82,12 @@ struct BaseLayerCard: View {
                 Text("Background")
                     .font(.caption.weight(.medium))
                     .foregroundColor(settings.isEnabled ? .primary : .secondary)
-                Spacer()
+                CardHeaderFoldArea { withAnimation(.easeInOut(duration: 0.18)) { isExpanded.toggle() } }
                 Button(action: { withAnimation(.easeInOut(duration: 0.18)) { isExpanded.toggle() } }) {
                     Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
                         .font(.system(size: 9)).foregroundColor(.secondary)
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.cardIcon)
             }
             .padding(.horizontal, 10).padding(.vertical, 8)
             .background(Color(NSColor.windowBackgroundColor))
@@ -253,11 +253,11 @@ struct EffectsLayerCard: View {
                 Text("Effects")
                     .font(.caption.weight(.medium))
                     .foregroundColor(settings.isEnabled ? .primary : .secondary)
-                Spacer()
+                CardHeaderFoldArea { withAnimation(.easeInOut(duration: 0.18)) { isExpanded.toggle() } }
                 Button(action: { settings = EffectsLayerSettings(isEnabled: settings.isEnabled) }) {
                     Image(systemName: "arrow.counterclockwise").font(.system(size: 10)).foregroundColor(.secondary)
                 }
-                .buttonStyle(.plain).help("Reset all effects to defaults")
+                .buttonStyle(.cardIcon).help("Reset all effects to defaults")
                 Button(action: {
                     settings.dimmingSeed    = UInt64.random(in: 1...UInt64.max)
                     settings.erasureSeed    = UInt64.random(in: 1...UInt64.max)
@@ -267,12 +267,12 @@ struct EffectsLayerCard: View {
                 }) {
                     Image(systemName: "dice").font(.system(size: 10)).foregroundColor(.blue)
                 }
-                .buttonStyle(.plain).help("Randomize all effect positions")
+                .buttonStyle(.cardIcon).help("Randomize all effect positions")
                 Button(action: { withAnimation(.easeInOut(duration: 0.18)) { isExpanded.toggle() } }) {
                     Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
                         .font(.system(size: 9)).foregroundColor(.secondary)
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.cardIcon)
             }
             .padding(.horizontal, 10).padding(.vertical, 8)
             .background(Color(NSColor.windowBackgroundColor))
@@ -602,25 +602,25 @@ struct TextLayerCard: View {
                 Text("Text")
                     .font(.caption.weight(.medium))
                     .foregroundColor(settings.isEnabled ? .primary : .secondary)
-                Spacer()
+                CardHeaderFoldArea { withAnimation(.easeInOut(duration: 0.18)) { isExpanded.toggle() } }
                 // Random all settings
                 Button(action: randomizeAll) {
                     Image(systemName: "dice")
                         .font(.system(size: 10)).foregroundColor(.purple)
                 }
-                .buttonStyle(.plain).help("Randomize all text settings")
+                .buttonStyle(.cardIcon).help("Randomize all text settings")
                 // Reset
                 Button(action: { settings = TextLayerSettings() }) {
                     Image(systemName: "arrow.counterclockwise")
                         .font(.system(size: 10)).foregroundColor(.secondary)
                 }
-                .buttonStyle(.plain).help("Reset text layer")
+                .buttonStyle(.cardIcon).help("Reset text layer")
                 // Expand
                 Button(action: { withAnimation(.easeInOut(duration: 0.18)) { isExpanded.toggle() } }) {
                     Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
                         .font(.system(size: 9)).foregroundColor(.secondary)
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.cardIcon)
             }
             .padding(.horizontal, 10).padding(.vertical, 8)
             .background(Color(NSColor.windowBackgroundColor))

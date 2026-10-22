@@ -7,10 +7,10 @@ import Foundation
 
 enum ControlChoices {
     /// Built-in palettes offered in the pickers, the dice and "add layer", by index into
-    /// `ColorPalettes.all`: colourful first, then once round the colour wheel. The others (Prism,
-    /// Candy, Nebula, Ocean, Synthwave, Dragon, Cosmic) look too much like one of these; they keep
+    /// `ColorPalettes.all`, in rows of three by family: colourful, warm, green, blue, soft. The others (Prism,
+    /// Candy, Nebula, Ocean, Synthwave, Dragon) look too much like one of these; they keep
     /// rendering in saved settings and are shown only while a layer uses them.
-    static let offeredPalettes = [0, 3, 13, 4, 16, 17, 7, 9, 14, 1, 11]
+    static let offeredPalettes = [0, 3, 13, 4, 16, 17, 19, 7, 9, 14, 6, 1, 11, 20, 18]
 
     /// Palette of a new layer above one with palette `last`: three steps on in the offered order
     /// (was `(last + 3) % 18`). Above a hidden or custom palette the offered order starts again.

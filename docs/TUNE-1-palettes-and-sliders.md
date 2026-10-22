@@ -159,3 +159,9 @@ New choice:
 9. **Emblem glow mode** (new field `glowMode`, both apps): "Shadow" is the original glow (a soft coloured halo that is dark with Normal blending); "Light" screens the blurred light of the emblem on top after it is blended, with strength following the square root of the glow and the reach starting at a third, so low values already show a soft halo. Saved settings without the field, and unknown values, decode as Shadow and render exactly as before; switching the emblem on, its dice and its reset start with Light. With Multiply the glow is always Shadow. Fixtures `emblem-glow-light` and `emblem-glow-shadow`.
 
 Layer Wash is unchanged.
+
+## 12. Palettes after trying them
+
+22 October 2026, after Mathis tried them on the Mac: Cosmic is offered again, and three new palettes are appended in both apps: **Silver** (charcoal to warm white), **Earth** (umber, clay, ochre, olive, sage) and **Rose Quartz** (plum, rose, peach, lilac, cream). 15 are offered, in rows of three by family: Psychedelic, Neon City, Tropical · Sunset, Lava, Gold · Earth, Toxic, Bio Glow · Ice, Cosmic, Aurora · Violet, Rose Quartz, Silver. Hidden: Prism, Candy, Nebula, Ocean, Synthwave, Dragon. Custom Mac palettes now start at index 21.
+
+The Mac card headers got easier to hit: icon buttons take a 24 pt square with a hover background, and a click in the empty part of a header folds the card.
