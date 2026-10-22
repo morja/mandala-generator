@@ -79,7 +79,7 @@ The two tearoom.one pages exist in the website repository (commit "Add Mandala G
 | Beschreibung (DE) | Bis zu fünf Ebenen, Embleme, Text, Ebenen verschieben, 2048 px, Ausschnitt und Feinschliff, SVG, Hintergrund-Paar, täglich und live. Einmaliger Kauf. |
 | Price | 2.99 € in Germany from version 1.3 (before 1.99 €): base price 2.51 € for all 174 countries, set in the Play Console on 22 October 2026 (US 2.79 $) |
 
-In the Play Console since 22 October 2026: active, with the earlier descriptions in English and German. The descriptions above follow ADR-0016 (version 1.4) and are not in the Play Console yet.
+In the Play Console since 22 October 2026: active. The descriptions above (ADR-0016 as amended for 1.4.1) were written there through the API on 22 October 2026 (`oneTimeProducts:batchUpdate`; the single PATCH answers with an HTML 404), together with both full listing descriptions.
 
 Google Play lets you create in-app products only after a build that contains the billing permission has been uploaded (any testing track).
 
