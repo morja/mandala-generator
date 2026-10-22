@@ -133,6 +133,13 @@ fun EditorScreen(
     val snackbar = remember { SnackbarHostState() }
     val context = LocalContext.current
     var showFavorites by remember { mutableStateOf(false) }
+    // A message goes as soon as the next action happens: a change to the mandala (other than the one
+    // it reports) or opening a sheet. Its Undo would no longer fit anyway.
+    var messageFor by remember { mutableStateOf<MandalaParameters?>(null) }
+    LaunchedEffect(params) { if (messageFor != null && params != messageFor) snackbar.currentSnackbarData?.dismiss() }
+    LaunchedEffect(showSave, showFavorites, showPro) {
+        if (showSave || showFavorites || showPro) snackbar.currentSnackbarData?.dismiss()
+    }
 
     val openFile = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri -> uri?.let(vm::openFile) }
     val saveSettings = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri ->
@@ -145,11 +152,13 @@ fun EditorScreen(
                 is EditorEvent.Message -> {
                     // With an action Compose would keep the message until it is tapped; let it go on its own.
                     val undoable = event.canUndo || event.undo != null
+                    messageFor = vm.params.value
                     val result = snackbar.showSnackbar(
                         event.text,
                         actionLabel = if (undoable) "Undo" else null,
                         duration = if (undoable) SnackbarDuration.Long else SnackbarDuration.Short,
                     )
+                    messageFor = null
                     if (result == SnackbarResult.ActionPerformed) event.undo?.invoke() ?: vm.undo()
                 }
                 is EditorEvent.ShareImage -> {
