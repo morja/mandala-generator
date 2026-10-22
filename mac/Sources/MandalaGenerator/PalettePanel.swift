@@ -306,6 +306,15 @@ private struct LayerCard: View {
                         }
                         .pickerStyle(.menu).labelsHidden()
 
+                        // The header's die picks a new style too; this one keeps it.
+                        Button(action: { appState.randomizeLayer(at: index, keepStyle: true) }) {
+                            Image(systemName: "dice")
+                                .font(.system(size: 11))
+                                .foregroundColor(.blue)
+                        }
+                        .buttonStyle(.cardIcon)
+                        .help("New \(layer.style.displayName) variant")
+
                         Picker("", selection: $layer.blendMode) {
                             ForEach(LayerBlendMode.allCases) { m in
                                 Text(m.displayName).tag(m)

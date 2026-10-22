@@ -61,6 +61,14 @@ object Randomize {
         return copy(layers = list)
     }
 
+    /** A new variant of one layer in its own style: seed, palette and look; symmetry, blend mode and opacity stay. */
+    fun MandalaParameters.randomVariant(index: Int, random: Random): MandalaParameters {
+        if (index !in layers.indices) return this
+        val list = layers.toMutableList()
+        list[index] = randomLayer(list[index], index, list[index].style, Editing.offeredPalettes.random(random), random)
+        return copy(layers = list)
+    }
+
     /** Shared symmetry of new layers; 1 and 2 look lopsided for most styles. */
     val SYMMETRY = 3..8
 

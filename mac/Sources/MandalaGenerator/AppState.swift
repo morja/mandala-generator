@@ -65,7 +65,8 @@ class AppState: ObservableObject {
     @Published var disabledStyleRawValues: Set<String> = [] {
         didSet { saveStylePreferences() }
     }
-    @Published var styleSortOrder: LayerStyleSortOrder = .style {
+    // By name by default, so a style is found where its name says; "Style" groups them by kind.
+    @Published var styleSortOrder: LayerStyleSortOrder = .alphabetic {
         didSet { saveStylePreferences() }
     }
     
@@ -530,10 +531,11 @@ class AppState: ObservableObject {
         parameters.layers.insert(copy, at: index + 1)
     }
 
-    func randomizeLayer(at index: Int) {
+    /// New look for one layer; `keepStyle` makes a new variant of its style instead of picking another.
+    func randomizeLayer(at index: Int, keepStyle: Bool = false) {
         guard index < parameters.layers.count else { return }
         let allStyles = enabledStyles
-        parameters.layers[index].style          = allStyles.randomElement() ?? .mixed
+        if !keepStyle { parameters.layers[index].style = allStyles.randomElement() ?? .mixed }
         parameters.layers[index].seed           = UInt64.random(in: 1...UInt64.max)
         let calm = index == 0 ? 1.0 : ControlChoices.upperLayerCalm
         parameters.layers[index].paletteIndex   = ControlChoices.offeredPalettes.randomElement() ?? 0

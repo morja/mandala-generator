@@ -4,6 +4,7 @@ import com.mathis.mandala.app.Editing.addStroke
 import com.mathis.mandala.app.Randomize.randomAll
 import com.mathis.mandala.app.Randomize.randomLayer
 import com.mathis.mandala.app.Randomize.randomLayers
+import com.mathis.mandala.app.Randomize.randomVariant
 import com.mathis.mandala.app.Randomize.randomized
 import com.mathis.mandala.core.BaseLayerSettings
 import com.mathis.mandala.core.EmblemLayerSettings
@@ -112,5 +113,16 @@ class HistoryAndRandomizeTest {
         }
         assertEquals(0.15..0.5, Editing.Ranges.layerComplexity(MandalaStyle.STRANGE_ATTRACTOR))
         assertEquals(Editing.Ranges.layerComplexity, Editing.Ranges.layerComplexity(MandalaStyle.FLORAL))
+    }
+
+    @Test
+    fun aVariantKeepsTheStyle() {
+        val p = MandalaParameters().randomLayers(Random(3))
+        repeat(50) { n ->
+            val v = p.randomVariant(0, Random(n))
+            assertEquals(p.layers[0].style, v.layers[0].style)
+            assertEquals(p.layers[0].symmetry, v.layers[0].symmetry)
+        }
+        assertTrue((0 until 50).any { p.randomVariant(0, Random(it)).layers[0].seed != p.layers[0].seed })
     }
 }
