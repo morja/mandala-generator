@@ -20,4 +20,4 @@ Favourites and settings can move between Mac and phone, and the parity tests (AD
 
 ## Consequences
 
-Changes to the Swift model must be mirrored in `Model.kt`. Custom palettes are not part of the file in the macOS app either (`paletteIndex` refers to built-in palettes first); syncing them is an open question.
+Changes to the Swift model must be mirrored in `Model.kt`. Fields added after the port, with the default a missing or unknown value decodes to: `emblemLayer.glowMode` (`"shadow"`, the original glow; or `"light"`), added with TUNE-1 on 22 October 2026. Custom palettes are not part of the file in the macOS app either (`paletteIndex` refers to built-in palettes first); syncing them is an open question.
