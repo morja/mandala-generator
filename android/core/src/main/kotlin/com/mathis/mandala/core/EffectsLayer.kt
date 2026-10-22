@@ -154,7 +154,7 @@ internal class EffectsLayer(private val par: Parallel, private val fx: LayerEffe
         private val channels = ThreadLocal.withInitial { Array(2) { FloatArray(width) } }
 
         fun apply(row: FloatArray, y: Int) {
-            if (s.vignette > 0) vignette(row, y, s.vignette * 2.5, 0.4 + s.vignette * 0.6)
+            if (s.vignette > 0) vignette(row, y, s.vignette * 3.75, 1.0)
             for (spot in spots) radial(row, y, spot)
             if (s.chromatic > 0) chromatic(row)
             if (s.wash > 0.001 || s.sepia > 0.001 || s.fade > 0.001) colourSteps(row)

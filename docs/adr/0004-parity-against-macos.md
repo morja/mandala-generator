@@ -35,12 +35,13 @@ These look like accidents in the macOS app but define how its images look, so th
 - **CIVignette and CISepiaTone** have no documented formula; both are tabulated from measurements.
 - **Symbols** picks its type with `% 20`, so the last three symbols of the macOS library (Eye of Horus, Star of Ishtar, Caduceus) never appear; they are not ported.
 
-## Fixed in both renderers (TUNE-1, 22 October 2026)
+## Fixed and retuned in both renderers (TUNE-1, 22 October 2026)
 
-Accidents that made a slider useless were fixed in the macOS renderer first and ported; the references were re-rendered (details in `docs/TUNE-1-palettes-and-sliders.md`, section 10).
+Accidents that made a slider useless, and effects that were too weak to see, were changed in the macOS renderer first and ported; the references were re-rendered (details in `docs/TUNE-1-palettes-and-sliders.md`, section 10).
 
 - **Relief** no longer turns the image grey: the emboss convolves colour only (CIConvolutionRGB3X3, alpha stays 1) and repeats the edge pixels. `fx-relief`: about 53 dB, default threshold.
 - **Chromatic** repeats the edge pixels where red and blue are shifted in from outside, so no stripe remains at the left and right edges. `fx-chromatic`: about 43 dB as before.
+- **Vignette** uses a fixed CIVignette radius of 1 (the measured table's strongest column) and intensity 3.75 × the value instead of 2.5 ×. `fx-vignette` 58 dB, `fx-brightness-contrast` 56 dB.
 
 ## Consequences
 
