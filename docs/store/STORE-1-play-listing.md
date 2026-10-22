@@ -1,6 +1,6 @@
 # STORE-1 · Google Play listing and Play Console answers
 
-Prepared 20 October 2026 for the first Android release; entered in the Play Console the same day. Graphics in this folder: `play-icon-512.png` (512×512, 32-bit PNG), `play-feature-graphic.png` (1024×500), and six phone screenshots in `screenshots/` (1080×1920, cropped from Mathis' Galaxy S23 without the status bar): Flower of Life, Flow Field, Lotus emblem, quote, favourites, drawing. AI asset declaration: "Don't label assets" (icon and feature graphic are rendered by the app, screenshots are real).
+Prepared 20 October 2026 for the first Android release; entered in the Play Console the same day. Updated 22 October 2026 for version 1.1 and later (save formats, wallpaper, what Pro adds, starter favourites); the Play Console still has the 20 October texts. Graphics in this folder: `play-icon-512.png` (512×512, 32-bit PNG), `play-feature-graphic.png` (1024×500), and six phone screenshots in `screenshots/` (1080×1920, cropped from Mathis' Galaxy S23 without the status bar): Flower of Life, Flow Field, Lotus emblem, quote, favourites, drawing. AI asset declaration: "Don't label assets" (icon and feature graphic are rendered by the app, screenshots are real).
 
 ## App details
 
@@ -34,9 +34,9 @@ The two tearoom.one pages exist in the website repository (commit "Add Mandala G
 >
 > Choose a gradient, a sunburst, grain or one of your own pictures as background. Add bloom, stars or a vignette, a quote with a soft glow, or draw by hand in rotated symmetry.
 >
-> Save your mandalas to the gallery or share them. Keep favourites, and move them between your phone and the Mac version.
+> Save your mandalas to the gallery as a square, in the shape of your screen or in portrait and landscape ratios such as 4:5, 2:3 and 16:9, set one as your wallpaper, or share it. Start with 21 example favourites, keep your own, and move them between your phone and the Mac version.
 >
-> The app is free. Pro is an optional one-time purchase, no subscription: it saves your mandalas at 2048 px for prints and wallpapers.
+> The app is free. Pro is an optional one-time purchase, no subscription: it saves your mandalas at 2048 px for prints and wallpapers, lets you move and zoom the mandala in the frame, and move layers and the emblem.
 >
 > No account, no ads, no tracking. Your mandalas stay on your device.
 >
@@ -58,9 +58,9 @@ The two tearoom.one pages exist in the website repository (commit "Add Mandala G
 >
 > Wähle einen Verlauf, Strahlen, Körnung oder ein eigenes Bild als Hintergrund. Füge Bloom, Sterne oder eine Vignette hinzu, ein Zitat mit weichem Leuchten, oder zeichne von Hand in gedrehter Symmetrie.
 >
-> Speichere deine Mandalas in der Galerie oder teile sie. Behalte Favoriten und tausche sie zwischen Handy und Mac-Version aus.
+> Speichere deine Mandalas quadratisch, im Format deines Bildschirms oder in Hoch- und Querformaten wie 4:5, 2:3 und 16:9 in der Galerie, setze eines als Hintergrundbild oder teile es. Starte mit 21 Beispiel-Favoriten, behalte eigene und tausche sie zwischen Handy und Mac-Version aus.
 >
-> Die App ist kostenlos. Pro ist ein optionaler einmaliger Kauf ohne Abo: Damit speicherst du deine Mandalas mit 2048 px für Drucke und Hintergrundbilder.
+> Die App ist kostenlos. Pro ist ein optionaler einmaliger Kauf ohne Abo: Damit speicherst du deine Mandalas mit 2048 px für Drucke und Hintergrundbilder, verschiebst und zoomst das Mandala im Bildausschnitt und verschiebst Ebenen und Emblem.
 >
 > Kein Konto, keine Werbung, kein Tracking. Deine Mandalas bleiben auf deinem Gerät.
 >
@@ -73,9 +73,11 @@ The two tearoom.one pages exist in the website repository (commit "Add Mandala G
 | Product ID | `pro` (must match `ProPurchases.kt`) |
 | Type | One-time product, non-consumable |
 | Name (EN / DE) | Mandala Generator Pro |
-| Description (EN) | Save your mandalas at 2048 px for prints and wallpapers. One-time purchase, no subscription. |
-| Beschreibung (DE) | Speichere deine Mandalas mit 2048 px für Drucke und Hintergrundbilder. Einmaliger Kauf, kein Abo. |
-| Price | Open (ADR-0007 suggests 1 to 3 euros) |
+| Description (EN) | Save at 2048 px for prints and wallpapers, frame the mandala by hand, and move layers and the emblem. One-time purchase, no subscription. |
+| Beschreibung (DE) | Speichere mit 2048 px für Drucke und Hintergrundbilder, richte das Mandala im Bild aus und verschiebe Ebenen und Emblem. Einmaliger Kauf, kein Abo. |
+| Price | 1.99 € in Germany (US 1.89 $), set in the Play Console |
+
+In the Play Console on 22 October 2026: the product exists and is active, with the 20 October English description only; the German listing and the new description are still to be entered.
 
 Google Play lets you create in-app products only after a build that contains the billing permission has been uploaded (any testing track).
 
@@ -98,7 +100,7 @@ These answers follow what the app does today (checked in `android/app` on 20 Oct
 
 ## Building the app bundle (AAB)
 
-Version 1.0 (`versionName` "1.0", `versionCode` 1, in `android/app/build.gradle.kts`). Raise `versionCode` by one for every upload.
+Version and code are in `android/app/build.gradle.kts` (on 22 October 2026: 1.1.0, code 3, which is on the internal track). Raise `versionCode` by one for every upload.
 
 1. Create `android/keystore.properties` (git-ignored, like `*.jks`; never commit it):
 
@@ -120,14 +122,32 @@ Version 1.0 (`versionName` "1.0", `versionCode` 1, in `android/app/build.gradle.
 
 Without `keystore.properties`, release builds are signed with the local debug key, so `assembleRelease` keeps working for tests on devices; Google Play rejects a bundle signed that way. Release builds are shrunk with R8 (minify and resource shrinking); the R8 mapping file is part of the bundle, so the Play Console shows readable stack traces.
 
+## Screenshots with the starter favourites
+
+The six screenshots from 20 October show favourites that are no longer among the starters and the editor before the fold button. New set, taken on the S23 like before (1080 × 1920 without the status bar), each from a starter favourite:
+
+1. Om emblem (favourite 2), Emblem tab open.
+2. Flower of Life emblem (favourite 6), Emblem tab open.
+3. Lotus with the Gibran quote (favourite 9), Text tab open.
+4. The Rumi quote "This is the House of Love" (favourite 4), Text tab open.
+5. Favourites sheet, scrolled to the top.
+6. Flow Field (favourite 17), Layers tab open.
+7. Save sheet with the ratio menu and Set as wallpaper.
+8. Drawing in rotated symmetry (as now).
+
+Google Play takes up to eight phone screenshots. All quotes shown are public domain (ADR-0007): Gibran's The Prophet (1923, Gibran died 1931), Rumi in Nicholson's translation (1898, Nicholson died 1945).
+
 ## What Mathis does himself
 
-State on 21 October 2026. The developer account is older than November 2023, so Google's closed test with 12 testers does not apply.
+State on 22 October 2026, read from the Play Console through the API: production, beta and alpha are empty; the internal track has 1.1.0 (code 3); the English listing has the icon, the feature graphic and six phone screenshots (the German listing uses them too); the product `pro` is active at 1.99 €. The developer account is older than November 2023, so Google's closed test with 12 testers does not apply.
 
-1. Done: upload key and `android/keystore.properties` (release builds are signed with it). To create one again:
+1. Done: upload key and `android/keystore.properties`. To create one again:
    `keytool -genkeypair -v -keystore ~/.keystore/mandalagenerator-upload.jks -alias upload -keyalg RSA -keysize 4096 -validity 10000`
-2. Done: the app in the Play Console (name, default language, app, free) and the declarations.
-3. Enrol in Play App Signing with the first upload of an app bundle (AAB).
-4. Done: tearoom.one is deployed; the privacy policy URL works.
-5. Create the product `pro` and set its price after the first upload.
-6. Done: six phone screenshots. Tablet screenshots are recommended, not required.
+2. Done: the app in the Play Console, Play App Signing (with the first upload), tearoom.one with the privacy policy, the product `pro` with its price.
+3. Take the new screenshots (list above) and replace the six in the console.
+4. Enter the updated listing texts above (English and German) and the product's new description, also in German.
+5. Fill in Data safety, Content rating and Target audience with the answers above, if not done yet (the API cannot read them).
+6. Build a new bundle from `main` (raise the version, for example 1.2.0, code 4), put it on the internal track and buy Pro once with a licence tester.
+7. Promote that release to production and send it for review.
+
+Tablet screenshots are recommended, not required.
