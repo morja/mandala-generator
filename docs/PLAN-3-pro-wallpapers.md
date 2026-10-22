@@ -1,6 +1,6 @@
 # PLAN-3 · More for Pro: finishing, wallpaper pair, daily and live wallpaper
 
-22 October 2026. Status: draft for Mathis, nothing built. Decision draft: [ADR-0013](adr/0013-pro-wallpapers-and-finish.md).
+22 October 2026. Status: draft for Mathis, nothing built. Decision draft: [ADR-0014](adr/0014-pro-wallpapers-and-finish.md).
 
 Decided by Mathis today: "Show whole" and "Fill" are free in every format, a wallpaper from the menu fills the screen (ADR-0010), and there is no third option for a deeper fill (Pro users zoom by hand). Pro should get more by adding features, not by taking free ones away (ADR-0007: no paywall on saving, no watermark, no limit on layers or styles, which would also lock Mac files with five layers).
 

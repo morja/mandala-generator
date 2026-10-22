@@ -1,4 +1,4 @@
-# ADR-0013 · Pro wallpapers and a finishing step
+# ADR-0014 · Pro wallpapers and a finishing step
 
 Status: proposed, 22 October 2026 ([PLAN-3](../PLAN-3-pro-wallpapers.md)); not decided yet.
 
