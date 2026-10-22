@@ -22,6 +22,6 @@ Status: accepted, 20 October 2026 (Mathis' decision)
 
 ## Open
 
-- ~~The price (set in the Play Console for product `pro`).~~ 1.99 € in Germany (Play Console, by 22 October 2026).
+- ~~The price (set in the Play Console for product `pro`).~~ 1.99 € in Germany (Play Console, by 22 October 2026). Raised to 2.99 € on 22 October 2026 (Mathis), with the Pro wallpapers of ADR-0014; buyers before keep Pro.
 - ~~Store signing: release builds are still signed with the local debug key; Play needs an upload key.~~ Upload signing through `android/keystore.properties` (20 October 2026, STORE-1); the key itself is Mathis'.
 - Whether 4096 px is worth tiled rendering later.

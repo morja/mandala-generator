@@ -10,7 +10,7 @@ Status: accepted, 22 October 2026 (Mathis, [PLAN-3](../PLAN-3-pro-wallpapers.md)
    - **home and lock screen as a pair**, with a preview of both and the home screen darker by default;
    - a **daily wallpaper**, set by the app every morning from the favourites in turn;
    - a **live wallpaper**: the mandala rendered once and turned slowly on the graphics chip, optionally breathing and drifting in colour, fading over to the next mandala or palette (rendered in the background).
-5. **Price** stays at 1.99 € for now; to be looked at again after the first sales.
+5. **Price:** first kept at 1.99 €, then raised to **2.99 €** the same day (Mathis, 22 October 2026), set in the Play Console for product `pro`.
 3. **No new packages:** `JobScheduler` for the daily wallpaper, `WallpaperService` for the live one. New in the manifest: `RECEIVE_BOOT_COMPLETED` and the wallpaper service.
 4. **Order:** finish, pair, daily, live; each checked on the phone with the fast build, the live wallpaper's battery use measured before release.
 

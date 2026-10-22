@@ -1,6 +1,6 @@
 # PLAN-3 · More for Pro: finishing, wallpaper pair, daily and live wallpaper
 
-22 October 2026. Status: approved by Mathis the same day, questions 1 to 5 and 7 as recommended, the price stays (6); being built on `feature/pro-wallpapers`. Decision: [ADR-0014](adr/0014-pro-wallpapers-and-finish.md).
+22 October 2026. Status: approved by Mathis the same day, questions 1 to 5 and 7 as recommended, the price raised to 2.99 € (6); being built on `feature/pro-wallpapers`. Decision: [ADR-0014](adr/0014-pro-wallpapers-and-finish.md).
 
 Decided by Mathis today: "Show whole" and "Fill" are free in every format, a wallpaper from the menu fills the screen (ADR-0010), and there is no third option for a deeper fill (Pro users zoom by hand). Pro should get more by adding features, not by taking free ones away (ADR-0007: no paywall on saving, no watermark, no limit on layers or styles, which would also lock Mac files with five layers).
 
@@ -53,5 +53,5 @@ Needs approval: the extension of Pro in ADR-0007 (this plan), the permission `RE
 3. **Daily wallpaper source by default:** favourites in turn, variations of one favourite, or surprise? Recommendation: favourites in turn, since they are mandalas the user liked. **Mathis: yes.**
 4. **Daily time:** early morning, or at the first unlock of the day? Recommendation: early morning while charging, with the first unlock as fallback. **Mathis: yes.**
 5. **Live wallpaper movements:** rotation always, breathing and colour drift as switches? Recommendation: yes, rotation slow by default. **Mathis: yes, and a crossfade to another mandala and cycling through the palettes.**
-6. **Price:** stays 1.99 € with these features, or higher (for example 2.99 €) once 3 and 4 are in? Recommendation: raise it when the live wallpaper ships; existing buyers keep everything. **Mathis: stays at 1.99 € for now; decide after seeing sales.**
+6. **Price:** stays 1.99 € with these features, or higher (for example 2.99 €) once 3 and 4 are in? Recommendation: raise it when the live wallpaper ships; existing buyers keep everything. **Mathis: first 1.99 €, then the same day 2.99 €.**
 7. **Order** as above? **Mathis: yes, build it.**
