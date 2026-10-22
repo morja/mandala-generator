@@ -4,6 +4,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -126,7 +127,7 @@ internal fun SaveSheet(
         // the frame takes the height the other parts leave, and shrinks while "Adjust" is open.
         Column(Modifier.fillMaxHeight()) {
             Column(
-                Modifier.weight(1f).padding(horizontal = Spacing.lg).padding(bottom = Spacing.md),
+                Modifier.weight(1f).padding(horizontal = Spacing.lg),
                 verticalArrangement = Arrangement.spacedBy(Spacing.md),
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -163,11 +164,24 @@ internal fun SaveSheet(
                     Group(
                         "Adjust",
                         summary = finishSummary(choice.finish, proOwned),
-                        // Reset in the heading, only when something is changed; it saves the frame a line.
+                        // Reset in the heading, only when something is changed; it saves the frame a line. Plain
+                        // text, not a button, so the heading keeps its height and the frame does not jump.
                         trailing = if (proOwned && !choice.finish.isIdentity) {
-                            { TextButton(onClick = { onFinish(Finish()) }, enabled = !busy) { Text("Reset") } }
+                            {
+                                Text(
+                                    "Reset",
+                                    style = MaterialTheme.typography.labelLarge,
+                                    color = t.accent,
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(Radius.sm))
+                                        .clickable(enabled = !busy, role = Role.Button) { onFinish(Finish()) }
+                                        .padding(horizontal = Spacing.sm),
+                                )
+                            }
                         } else null,
                         openState = adjustOpen,
+                        // The line above the size and buttons already closes it off.
+                        divider = false,
                     ) {
                         FinishControls(choice.finish, proOwned, enabled = !busy, onFinish = onFinish, onShowPro = onShowPro)
                     }
