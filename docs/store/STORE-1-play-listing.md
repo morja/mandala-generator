@@ -1,6 +1,6 @@
 # STORE-1 · Google Play listing and Play Console answers
 
-Prepared 20 October 2026 for the first Android release; entered in the Play Console the same day. Updated 22 October 2026 for version 1.1 and later (save formats, wallpaper, what Pro adds, starter favourites) and entered in the Play Console the same day; the screenshots there are still the 20 October ones. Graphics in this folder: `play-icon-512.png` (512×512, 32-bit PNG), `play-feature-graphic.png` (1024×500), and seven phone screenshots in `screenshots/` (1080×2160, the longest side Google allows, cropped from Mathis' Galaxy S23 without the status bar and the gesture bar; taken 22 October 2026): Flower of Life emblem, favourites, quote, layers, new mandala with preview, save formats, menu. AI asset declaration: "Don't label assets" (icon and feature graphic are rendered by the app, screenshots are real).
+Prepared 20 October 2026 for the first Android release; entered in the Play Console the same day. Updated 22 October 2026 for version 1.1 and later (save formats, wallpaper, what Pro adds, starter favourites) and entered in the Play Console the same day; the screenshots there are still the 20 October ones. Graphics in this folder: `play-icon-512.png` (512×512, 32-bit PNG), `play-feature-graphic.png` (1024×500), and seven phone screenshots in `screenshots/` (1080×2160, the longest side Google allows, cropped from Mathis' Galaxy S23 without the status bar and the gesture bar; taken 22 October 2026): layers, Flower of Life emblem, quote, favourites, save formats, menu, new mandala with preview. AI asset declaration: "Don't label assets" (icon and feature graphic are rendered by the app, screenshots are real).
 
 ## App details
 
@@ -124,15 +124,17 @@ Without `keystore.properties`, release builds are signed with the local debug ke
 
 ## Screenshots
 
-Taken on 22 October 2026 with the starter favourites and the current editor, in this order:
+Taken on 22 October 2026 with the starter favourites and the current editor. The order starts with what the app shows first, the layers (Mathis' choice):
 
-1. Flower of Life emblem (favourite 6), Emblem tab.
-2. Favourites sheet, from the top.
+1. Hypocycloid, Universe and Phyllotaxis (favourite 21), Layers tab.
+2. Flower of Life emblem (favourite 6), Emblem tab.
 3. The Rumi quote "This is the House of Love" (favourite 4), Text tab.
-4. Hypocycloid, Universe and Phyllotaxis (favourite 21), Layers tab.
-5. Menu > New layers: the new mandala next to the current one before it replaces it.
-6. Save sheet in the screen format, with Save and Save large.
-7. Menu with Favourite, Share, Wallpaper and the dice for a new mandala.
+4. Favourites sheet, from the top.
+5. Save sheet in the screen format, with Save and Save large.
+6. Menu with Favourite, Share, Wallpaper and the dice for a new mandala.
+7. Menu > New layers: the new mandala next to the current one before it replaces it.
+
+`docs/mocks/DM-8-store-preview.html` shows the listing with these texts and screenshots as a local page (light and dark, English and German), since Google shows the real page only after the first review.
 
 The German listing has no screenshots of its own and shows these. All quotes shown are public domain (ADR-0007): Rumi in Nicholson's translation (1898, Nicholson died 1945), and in the favourites Gibran's The Prophet (1923, Gibran died 1931) and Whitman.
 

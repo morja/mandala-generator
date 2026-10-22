@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DM-8 Store preview</title>
+<style>
+:root {
+  --bg: #ffffff;
+  --surface: #f3f4f1;
+  --text: #1f1f1f;
+  --muted: #5f6368;
+  --line: #e2e3df;
+  --accent: #01875f;
+  --accent-text: #ffffff;
+  --chip: #eef0ec;
+  --radius-lg: 20px;
+  --radius-md: 12px;
+  --radius-sm: 8px;
+  --gap: 16px;
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #131314; --surface: #1e1f20; --text: #e3e3e3; --muted: #a8abb0;
+    --line: #2e3033; --accent: #5ec29a; --accent-text: #0b2a1e; --chip: #26282a;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #131314; --surface: #1e1f20; --text: #e3e3e3; --muted: #a8abb0;
+  --line: #2e3033; --accent: #5ec29a; --accent-text: #0b2a1e; --chip: #26282a;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.5 var(--font); }
+.bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between;
+  padding: 10px 16px; border-bottom: 1px solid var(--line); background: var(--surface); font-size: 14px; }
+.bar p { margin: 0; color: var(--muted); }
+.toggles { display: flex; gap: 8px; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; overflow: hidden; }
+.seg button { border: 0; background: transparent; color: var(--text); font: inherit; padding: 4px 12px; cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--chip); font-weight: 600; }
+main { max-width: 1040px; margin: 0 auto; padding: 24px 16px 64px; }
+.head { display: flex; gap: var(--gap); align-items: center; }
+.head img { width: 96px; height: 96px; border-radius: var(--radius-lg); flex: none; }
+h1 { font-size: 28px; line-height: 1.2; margin: 0; font-weight: 600; }
+.dev { color: var(--accent); font-weight: 600; margin: 4px 0 0; }
+.sub { color: var(--muted); font-size: 13px; margin: 2px 0 0; }
+.facts { display: flex; flex-wrap: wrap; gap: 24px; margin: 20px 0; padding: 0; list-style: none; }
+.facts li { font-size: 13px; color: var(--muted); }
+.facts strong { display: block; color: var(--text); font-size: 15px; }
+.install { display: inline-block; background: var(--accent); color: var(--accent-text); border: 0; border-radius: var(--radius-sm);
+  padding: 10px 40px; font: 600 15px var(--font); }
+.shots { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 10px; margin: 28px 0; }
+.shots button { padding: 0; border: 0; background: none; cursor: zoom-in; }
+.shots img { width: 100%; aspect-ratio: 1 / 2; object-fit: cover; border-radius: var(--radius-md); display: block; border: 1px solid var(--line); }
+h2 { font-size: 20px; font-weight: 600; margin: 32px 0 8px; }
+.short { margin: 0 0 12px; }
+.full p { margin: 0 0 12px; overflow-wrap: anywhere; }
+.full.clamped { max-height: 9.5em; overflow: hidden; }
+.more { background: none; border: 0; color: var(--accent); font: 600 15px var(--font); padding: 0; cursor: pointer; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 0; }
+.chips span { background: var(--chip); border-radius: 999px; padding: 4px 12px; font-size: 13px; }
+.card { border: 1px solid var(--line); border-radius: var(--radius-md); padding: 16px; }
+.card p { margin: 0 0 8px; }
+.card p:last-child { margin: 0; }
+.muted { color: var(--muted); font-size: 14px; }
+.iap { margin-top: 20px; }
+.graphic img { width: 100%; border-radius: var(--radius-md); display: block; }
+dialog { border: 0; padding: 0; background: transparent; max-width: 92vw; max-height: 92vh; }
+dialog::backdrop { background: rgba(0,0,0,.8); }
+dialog img { max-height: 90vh; max-width: 92vw; border-radius: var(--radius-md); display: block; }
+@media (max-width: 700px) {
+  .shots { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  h1 { font-size: 22px; }
+  .head img { width: 72px; height: 72px; }
+  .install { display: block; text-align: center; }
+}
+</style>
+</head>
+<body>
+<div class="bar">
+  <p>DM-8 · Local preview of the Play listing, built from STORE-1. Not Google's page; layout simplified.</p>
+  <div class="toggles">
+    <div class="seg" role="group" aria-label="Language">
+      <button data-lang="en" aria-pressed="true">English</button><button data-lang="de" aria-pressed="false">Deutsch</button>
+    </div>
+    <div class="seg" role="group" aria-label="Theme">
+      <button data-theme-set="light" aria-pressed="false">Light</button><button data-theme-set="dark" aria-pressed="false">Dark</button>
+    </div>
+  </div>
+</div>
+<main>
+  <div class="head">
+    <img src="../store/play-icon-512.png" alt="">
+    <div>
+      <h1>Mandala Generator</h1>
+      <p class="dev">tearoom.one</p>
+      <p class="sub" data-t="iapNote"></p>
+    </div>
+  </div>
+  <ul class="facts">
+    <li><strong data-t="ratingValue"></strong><span data-t="ratingLabel"></span></li>
+    <li><strong data-t="price"></strong><span data-t="priceLabel"></span></li>
+    <li><strong data-t="category"></strong><span data-t="categoryLabel"></span></li>
+  </ul>
+  <span class="install" data-t="install"></span>
+
+  <div class="shots" id="shots"></div>
+
+  <h2 data-t="about"></h2>
+  <p class="short" id="short"></p>
+  <div class="full clamped" id="full"></div>
+  <button class="more" id="more" data-t="more"></button>
+  <div class="chips"><span data-t="category"></span><span data-t="chipFree"></span></div>
+
+  <h2 data-t="safety"></h2>
+  <div class="card">
+    <p data-t="safety1"></p>
+    <p data-t="safety2"></p>
+    <p class="muted" data-t="safety3"></p>
+  </div>
+
+  <div class="card iap">
+    <p><strong>Mandala Generator Pro</strong> · 1,99 €</p>
+    <p class="muted" id="iap"></p>
+  </div>
+
+  <h2 data-t="graphic"></h2>
+  <p class="muted" data-t="graphicNote"></p>
+  <div class="graphic"><img src="../store/play-feature-graphic.png" alt=""></div>
+</main>
+<dialog id="zoom"><img id="zoomimg" alt=""></dialog>
+<script>
+const DATA = {"en": {"short": "Create glowing mandalas from curves, layers and sacred symbols.", "full": ["Mandala Generator draws glowing mandalas from mathematical curves, light and symbols.", "Build each mandala from up to five layers. Every layer has its own style – spirographs, rose curves, sacred geometry, flow fields, 3D forms and more, 36 in all – with its own symmetry, palette and glow. Roll the dice for new combinations; the history arrows take you back.", "Place a symbol large in the centre: Om, the Tree of Life, the Flower of Life, a lotus, yin and yang, the Dharma wheel, an unalome, the triple moon or the Sri Yantra. Draw it as a line, an outline, filled or in beads, frame it with a ring, a lotus ring, square gates or an ensō, and give it a more organic, hand-drawn character.", "Choose a gradient, a sunburst, grain or one of your own pictures as background. Add bloom, stars or a vignette, a quote with a soft glow, or draw by hand in rotated symmetry.", "Save your mandalas to the gallery as a square, in the shape of your screen or in portrait and landscape ratios such as 4:5, 2:3 and 16:9, set one as your wallpaper, or share it. Start with 21 example favourites, keep your own, and move them between your phone and the Mac version.", "The app is free. Pro is an optional one-time purchase, no subscription: it saves your mandalas at 2048 px for prints and wallpapers, lets you move and zoom the mandala in the frame, and move layers and the emblem.", "No account, no ads, no tracking. Your mandalas stay on your device.", "Mandala Generator is open source under the GNU GPL 3.0: https://github.com/morja/mandala-generator"], "iap": "Save at 2048 px for prints and wallpapers, frame the mandala by hand, and move layers and the emblem. One-time purchase, no subscription."}, "de": {"short": "Leuchtende Mandalas aus Kurven, Ebenen und heiligen Symbolen gestalten.", "full": ["Mandala Generator zeichnet leuchtende Mandalas aus mathematischen Kurven, Licht und Symbolen.", "Jedes Mandala entsteht aus bis zu fünf Ebenen. Jede Ebene hat ihren eigenen Stil – Spirographen, Rosenkurven, heilige Geometrie, Strömungsfelder, 3D-Formen und mehr, insgesamt 36 – mit eigener Symmetrie, Farbpalette und eigenem Leuchten. Der Würfel schlägt neue Kombinationen vor, mit den Verlaufspfeilen kommst du zurück.", "Setze ein Symbol groß in die Mitte: Om, Lebensbaum, Blume des Lebens, Lotus, Yin und Yang, das Dharma-Rad, ein Unalome, den dreifachen Mond oder das Sri Yantra. Zeichne es als Linie, als Umriss, gefüllt oder aus Perlen, rahme es mit einem Ring, einem Lotusring, einem Quadrat mit Toren oder einem Ensō und gib ihm einen organischeren, handgezeichneten Charakter.", "Wähle einen Verlauf, Strahlen, Körnung oder ein eigenes Bild als Hintergrund. Füge Bloom, Sterne oder eine Vignette hinzu, ein Zitat mit weichem Leuchten, oder zeichne von Hand in gedrehter Symmetrie.", "Speichere deine Mandalas quadratisch, im Format deines Bildschirms oder in Hoch- und Querformaten wie 4:5, 2:3 und 16:9 in der Galerie, setze eines als Hintergrundbild oder teile es. Starte mit 21 Beispiel-Favoriten, behalte eigene und tausche sie zwischen Handy und Mac-Version aus.", "Die App ist kostenlos. Pro ist ein optionaler einmaliger Kauf ohne Abo: Damit speicherst du deine Mandalas mit 2048 px für Drucke und Hintergrundbilder, verschiebst und zoomst das Mandala im Bildausschnitt und verschiebst Ebenen und Emblem.", "Kein Konto, keine Werbung, kein Tracking. Deine Mandalas bleiben auf deinem Gerät.", "Mandala Generator ist Open Source unter der GNU GPL 3.0: https://github.com/morja/mandala-generator"], "iap": "Speichere mit 2048 px für Drucke und Hintergrundbilder, richte das Mandala im Bild aus und verschiebe Ebenen und Emblem. Einmaliger Kauf, kein Abo."}};
+const SHOTS = ["../store/screenshots/phone-1-layers.png", "../store/screenshots/phone-2-flower-of-life-emblem.png", "../store/screenshots/phone-3-quote.png", "../store/screenshots/phone-4-favourites.png", "../store/screenshots/phone-5-save-formats.png", "../store/screenshots/phone-6-menu.png", "../store/screenshots/phone-7-new-mandala-preview.png"];
+const UI = {
+  en: { iapNote: "Contains in-app purchases", ratingValue: "3+", ratingLabel: "Rated for 3+ (PEGI)", price: "Free", priceLabel: "In-app purchase 1,99 €",
+    category: "Art & Design", categoryLabel: "Category", install: "Install", about: "About this app", more: "Show more", less: "Show less",
+    chipFree: "No ads", safety: "Data safety", safety1: "No data shared with third parties", safety2: "No data collected",
+    safety3: "Safety starts with understanding how developers collect and share your data.", graphic: "Feature graphic",
+    graphicNote: "Google shows it only in some places, for example with a promo video or in featured lists." },
+  de: { iapNote: "Enthält In-App-Käufe", ratingValue: "USK 0", ratingLabel: "Freigegeben ohne Altersbeschränkung", price: "Kostenlos", priceLabel: "In-App-Kauf 1,99 €",
+    category: "Kunst & Design", categoryLabel: "Kategorie", install: "Installieren", about: "Über diese App", more: "Mehr anzeigen", less: "Weniger anzeigen",
+    chipFree: "Keine Werbung", safety: "Datensicherheit", safety1: "Keine Daten werden an Dritte weitergegeben", safety2: "Keine Daten werden erhoben",
+    safety3: "Sicherheit beginnt damit, zu verstehen, wie Entwickler deine Daten erheben und weitergeben.", graphic: "Feature-Grafik",
+    graphicNote: "Google zeigt sie nur an manchen Stellen, etwa mit einem Werbevideo oder in Empfehlungslisten." },
+};
+let lang = "en", open = false;
+const $ = id => document.getElementById(id);
+function render() {
+  const d = DATA[lang], u = UI[lang];
+  document.documentElement.lang = lang;
+  document.querySelectorAll("[data-t]").forEach(el => { el.textContent = u[el.dataset.t]; });
+  $("short").textContent = d.short;
+  $("full").replaceChildren(...d.full.map(t => Object.assign(document.createElement("p"), { textContent: t })));
+  $("full").classList.toggle("clamped", !open);
+  $("more").textContent = open ? u.less : u.more;
+  $("iap").textContent = d.iap;
+  document.querySelectorAll("[data-lang]").forEach(b => b.setAttribute("aria-pressed", b.dataset.lang === lang));
+}
+$("shots").replaceChildren(...SHOTS.map(src => {
+  const b = document.createElement("button"), i = document.createElement("img");
+  i.src = src; i.alt = ""; b.append(i);
+  b.onclick = () => { $("zoomimg").src = src; $("zoom").showModal(); };
+  return b;
+}));
+$("zoom").onclick = () => $("zoom").close();
+$("more").onclick = () => { open = !open; render(); };
+document.querySelectorAll("[data-lang]").forEach(b => b.onclick = () => { lang = b.dataset.lang; render(); });
+document.querySelectorAll("[data-theme-set]").forEach(b => b.onclick = () => {
+  document.documentElement.dataset.theme = b.dataset.themeSet;
+  document.querySelectorAll("[data-theme-set]").forEach(x => x.setAttribute("aria-pressed", x === b));
+});
+render();
+</script>
+</body>
+</html>
