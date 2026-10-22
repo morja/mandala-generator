@@ -231,6 +231,21 @@ class EditingTest {
     }
 
     @Test
+    fun fillFitsTheLongerSideAndShowWholeTheShorterOne() {
+        val phone = 2340.0 / 1080
+        assertEquals(Framing(), Editing.presetFraming(false, phone))
+        assertEquals(phone, Editing.presetFraming(true, phone).zoom, 1e-9)
+        // Landscape fills its width; a square looks the same either way.
+        assertEquals(16.0 / 9, Editing.presetFraming(true, 9.0 / 16).zoom, 1e-9)
+        assertEquals(Framing(), Editing.presetFraming(true, 1.0))
+        // A preset read back as floats is still recognised; one placed by hand is none.
+        val stored = Editing.presetFraming(true, phone).let { Framing(it.centreX.toFloat().toDouble(), it.centreY.toFloat().toDouble(), it.zoom.toFloat().toDouble()) }
+        assertEquals(true, Editing.presetOf(stored, phone))
+        assertEquals(false, Editing.presetOf(Framing(), phone))
+        assertEquals(null, Editing.presetOf(Framing().moved(0.1, 0.0), phone))
+    }
+
+    @Test
     fun layersAndTheEmblemMoveSizeAndTurnWithinTheirRanges() {
         val layer = com.mathis.mandala.core.StyleLayer(scale = 1.0, rotation = 0.9).movedBy(0.3, -0.2, zoom = 2.0, turnDegrees = 72.0)
         assertEquals(0.3, layer.offsetX, 1e-9)

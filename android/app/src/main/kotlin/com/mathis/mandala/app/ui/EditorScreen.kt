@@ -187,7 +187,8 @@ fun EditorScreen(
             onFraming = vm::setFraming,
             onTextFollows = vm::setTextFollowsMandala,
             onSave = vm::saveImage,
-            onWallpaper = vm::setWallpaper,
+            onWallpaper = { vm.setWallpaper(it) },
+            onFill = vm::setFill,
             onShowPro = { showPro = true },
             onDismiss = { showSave = false },
             snackbar = snackbar,
@@ -211,7 +212,7 @@ fun EditorScreen(
             actions = MenuActions(
                 onFavourite = closing(vm::addFavorite),
                 onShare = closing(vm::shareImage),
-                onWallpaper = { target -> showMenu = false; vm.closeCandidate(); vm.setWallpaper(target) },
+                onWallpaper = { target -> showMenu = false; vm.closeCandidate(); vm.setWallpaper(target, filled = true) },
                 onTryNew = vm::tryNew,
                 onUseNew = { showMenu = false; vm.useCandidate() },
                 onBackToMenu = vm::closeCandidate,

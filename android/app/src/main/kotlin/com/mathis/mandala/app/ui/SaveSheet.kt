@@ -85,13 +85,16 @@ internal fun SaveSheet(
     onTextFollows: (Boolean) -> Unit,
     onSave: (large: Boolean) -> Unit,
     onWallpaper: (WallpaperTarget) -> Unit,
+    onFill: (Boolean) -> Unit,
     onShowPro: () -> Unit,
     onDismiss: () -> Unit,
     snackbar: SnackbarHostState,
 ) {
     val t = LocalTokens.current
     val aspect = Editing.aspect(choice.format, screenAspect)
-    val framing = if (proOwned) choice.framing else Framing()
+    val framing = if (proOwned) choice.framing else Editing.presetFraming(choice.fill, aspect)
+    // The preset the frame is on; none once a Pro user has moved or zoomed by hand.
+    val preset = if (proOwned) Editing.presetOf(choice.framing, aspect) else choice.fill
     val (w, h) = Editing.exportSize(choice.format, screenAspect, large = false)
     val (lw, lh) = Editing.exportSize(choice.format, screenAspect, large = true)
     ModalBottomSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
@@ -107,6 +110,13 @@ internal fun SaveSheet(
                     FilterChip(selected = choice.format == f, onClick = { onFormat(f) }, label = { Text(f.label) })
                 }
                 RatioChip(choice.format, onFormat)
+            }
+            // A square frame looks the same either way.
+            if (aspect != 1.0) {
+                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+                    FilterChip(selected = preset == false, onClick = { onFill(false) }, enabled = !busy, label = { Text("Show whole") })
+                    FilterChip(selected = preset == true, onClick = { onFill(true) }, enabled = !busy, label = { Text("Fill") })
+                }
             }
             // The frame takes the width, but leaves room for the buttons below on a phone.
             val maxFrameHeight = LocalConfiguration.current.screenHeightDp.dp * 0.5f

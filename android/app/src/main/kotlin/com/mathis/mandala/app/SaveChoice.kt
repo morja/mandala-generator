@@ -16,6 +16,8 @@ data class SaveChoice(
     val format: SaveFormat = SaveFormat.SCREEN,
     val framing: Framing = Framing(),
     val textFollowsMandala: Boolean = false,
+    /** Without Pro: the mandala fills the frame instead of showing whole ([Editing.presetFraming]). */
+    val fill: Boolean = false,
 )
 
 /** The last save choice, in shared preferences. */
@@ -29,7 +31,7 @@ class SaveChoiceStore(context: Context) {
             prefs.getFloat(KEY_CENTRE_Y, 0.5f).toDouble(),
             prefs.getFloat(KEY_ZOOM, 1f).toDouble(),
         ).clamped()
-        return SaveChoice(format, framing, prefs.getBoolean(KEY_TEXT_FOLLOWS, false))
+        return SaveChoice(format, framing, prefs.getBoolean(KEY_TEXT_FOLLOWS, false), prefs.getBoolean(KEY_FILL, false))
     }
 
     fun save(choice: SaveChoice) = prefs.edit()
@@ -38,6 +40,7 @@ class SaveChoiceStore(context: Context) {
         .putFloat(KEY_CENTRE_Y, choice.framing.centreY.toFloat())
         .putFloat(KEY_ZOOM, choice.framing.zoom.toFloat())
         .putBoolean(KEY_TEXT_FOLLOWS, choice.textFollowsMandala)
+        .putBoolean(KEY_FILL, choice.fill)
         .apply()
 
     private companion object {
@@ -46,6 +49,7 @@ class SaveChoiceStore(context: Context) {
         const val KEY_CENTRE_Y = "centre_y"
         const val KEY_ZOOM = "zoom"
         const val KEY_TEXT_FOLLOWS = "text_follows"
+        const val KEY_FILL = "fill"
     }
 }
 

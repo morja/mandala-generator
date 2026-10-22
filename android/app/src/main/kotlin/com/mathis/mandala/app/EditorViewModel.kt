@@ -199,7 +199,18 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
     )
     private var lastExport: Pair<ExportKey, Image8>? = null
 
-    fun setSaveFormat(format: Editing.SaveFormat) = _saveChoice.update { it.copy(format = format) }
+    /** A framing still on a preset ("Show whole" or "Fill") follows the new format's shape; one placed by hand stays. */
+    fun setSaveFormat(format: Editing.SaveFormat) = _saveChoice.update { c ->
+        val preset = Editing.presetOf(c.framing, aspectOf(c.format))
+        c.copy(format = format, framing = preset?.let { Editing.presetFraming(it, aspectOf(format)) } ?: c.framing)
+    }
+
+    /** "Fill" or "Show whole", free in every format; with Pro it also resets the framing placed by hand. */
+    fun setFill(fill: Boolean) = _saveChoice.update { c ->
+        c.copy(fill = fill, framing = if (pro.state.value.owned) Editing.presetFraming(fill, aspectOf(c.format)) else c.framing)
+    }
+
+    private fun aspectOf(format: Editing.SaveFormat) = Editing.aspect(format, _screenAspect.value)
 
     /** Moving and zooming the mandala is part of Pro; without it the mandala stays centred. */
     fun setFraming(framing: Framing) {
@@ -208,8 +219,11 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
 
     fun setTextFollowsMandala(follows: Boolean) = _saveChoice.update { it.copy(textFollowsMandala = follows) }
 
-    /** The framing the images are drawn with: the chosen one with Pro, centred without. */
-    private fun effectiveFraming(choice: SaveChoice): Framing = if (pro.state.value.owned) choice.framing else Framing()
+    /** The framing the images are drawn with: the one placed by hand with Pro, the chosen preset without. */
+    private fun effectiveFraming(choice: SaveChoice): Framing = framingFor(choice, aspectOf(choice.format), pro.state.value.owned)
+
+    private fun framingFor(choice: SaveChoice, aspect: Double, pro: Boolean): Framing =
+        if (pro) choice.framing else Editing.presetFraming(choice.fill, aspect)
 
     override fun onCleared() {
         pro.close()
@@ -619,12 +633,15 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
     /**
      * Sets the image as wallpaper in the phone screen format, at the largest size the user may save;
      * an image of this screen format just saved is reused when it is at least as wide as the screen.
+     * From the save sheet it takes the framing in the frame; from the menu (`filled`) the mandala
+     * fills the screen, which suits a wallpaper best.
      */
-    fun setWallpaper(target: WallpaperTarget) {
+    fun setWallpaper(target: WallpaperTarget, filled: Boolean = false) {
         val choice = _saveChoice.value
         val large = pro.state.value.owned
         val (w, h) = Editing.exportSize(Editing.SaveFormat.SCREEN, _screenAspect.value, large)
-        val framing = effectiveFraming(choice)
+        val screen = aspectOf(Editing.SaveFormat.SCREEN)
+        val framing = if (filled) Editing.presetFraming(true, screen) else framingFor(choice, screen, large)
         val reuse = { k: ExportKey ->
             k.params == _params.value && k.framing == framing && k.textFollows == choice.textFollowsMandala &&
                 k.width >= screenShortSide && kotlin.math.abs(k.height.toDouble() / k.width - h.toDouble() / w) < 0.002
@@ -715,7 +732,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
             return
         }
         val (w, h) = Editing.size(request.choice.format, request.aspect, Editing.FRAME_PREVIEW_WIDTH)
-        val framing = if (request.pro) request.choice.framing else Framing()
+        val framing = framingFor(request.choice, Editing.aspect(request.choice.format, request.aspect), request.pro)
         _framePreview.update { it.copy(rendering = true) }
         try {
             val result = withContext(Dispatchers.Default) {
