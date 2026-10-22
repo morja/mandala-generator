@@ -6,6 +6,7 @@ import android.content.Context
 import android.os.Build
 import android.util.DisplayMetrics
 import com.mathis.mandala.app.Editing.SaveFormat
+import com.mathis.mandala.core.Finish
 import com.mathis.mandala.core.Framing
 import com.mathis.mandala.core.Image8
 import kotlin.math.max
@@ -18,6 +19,8 @@ data class SaveChoice(
     val textFollowsMandala: Boolean = false,
     /** How the mandala sits in the frame; [Fit.HAND] (placed by hand, `framing`) needs Pro. */
     val fit: Fit = Fit.WHOLE,
+    /** Pro: brightness, contrast and saturation of the saved image or wallpaper (ADR-0014). */
+    val finish: Finish = Finish(),
 )
 
 /** How the mandala sits in the frame (ADR-0010): free presets, or placed by hand with Pro. */
@@ -44,7 +47,12 @@ class SaveChoiceStore(context: Context) {
         // Before the presets a framing was always by hand; a centred one at zoom 1 is "Show whole".
         val fit = prefs.getString(KEY_FIT, null)?.let { name -> Fit.entries.firstOrNull { it.name == name } }
             ?: if (framing == Framing()) Fit.WHOLE else Fit.HAND
-        return SaveChoice(format, framing, prefs.getBoolean(KEY_TEXT_FOLLOWS, false), fit)
+        val finish = Finish(
+            prefs.getFloat(KEY_BRIGHTNESS, 1f).toDouble(),
+            prefs.getFloat(KEY_CONTRAST, 1f).toDouble(),
+            prefs.getFloat(KEY_SATURATION, 1f).toDouble(),
+        ).clamped()
+        return SaveChoice(format, framing, prefs.getBoolean(KEY_TEXT_FOLLOWS, false), fit, finish)
     }
 
     fun save(choice: SaveChoice) = prefs.edit()
@@ -54,6 +62,9 @@ class SaveChoiceStore(context: Context) {
         .putFloat(KEY_ZOOM, choice.framing.zoom.toFloat())
         .putBoolean(KEY_TEXT_FOLLOWS, choice.textFollowsMandala)
         .putString(KEY_FIT, choice.fit.name)
+        .putFloat(KEY_BRIGHTNESS, choice.finish.brightness.toFloat())
+        .putFloat(KEY_CONTRAST, choice.finish.contrast.toFloat())
+        .putFloat(KEY_SATURATION, choice.finish.saturation.toFloat())
         .apply()
 
     private companion object {
@@ -63,6 +74,9 @@ class SaveChoiceStore(context: Context) {
         const val KEY_ZOOM = "zoom"
         const val KEY_TEXT_FOLLOWS = "text_follows"
         const val KEY_FIT = "fit"
+        const val KEY_BRIGHTNESS = "finish_brightness"
+        const val KEY_CONTRAST = "finish_contrast"
+        const val KEY_SATURATION = "finish_saturation"
     }
 }
 

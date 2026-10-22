@@ -197,6 +197,7 @@ fun EditorScreen(
             onSave = vm::saveImage,
             onWallpaper = { vm.setWallpaper(it) },
             onFill = vm::setFill,
+            onFinish = vm::setFinish,
             hasPointLayers = VectorExport.hasPointLayers(params),
             onLineDrawing = { look -> lineDrawingLook = look; saveLineDrawing.launch(vm.suggestedLineDrawingName(look)) },
             onShowPro = { showPro = true },

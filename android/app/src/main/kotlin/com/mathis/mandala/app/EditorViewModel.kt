@@ -38,6 +38,7 @@ import com.mathis.mandala.core.EffectsLayerSettings
 import com.mathis.mandala.core.EmblemLayerSettings
 import com.mathis.mandala.core.GraffitiLayerSettings
 import com.mathis.mandala.core.Favorite
+import com.mathis.mandala.core.Finish
 import com.mathis.mandala.core.Framing
 import com.mathis.mandala.core.Image8
 import com.mathis.mandala.core.LayerCache
@@ -200,7 +201,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
      */
     private data class ExportKey(
         val params: MandalaParameters, val framing: Framing, val textFollows: Boolean,
-        val width: Int, val height: Int, val supersample: Boolean,
+        val width: Int, val height: Int, val supersample: Boolean, val finish: Finish,
     )
     private var lastExport: Pair<ExportKey, Image8>? = null
 
@@ -217,6 +218,14 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
     }
 
     fun setTextFollowsMandala(follows: Boolean) = _saveChoice.update { it.copy(textFollowsMandala = follows) }
+
+    /** The last adjustment of saved images and wallpapers (ADR-0014), part of Pro. */
+    fun setFinish(finish: Finish) {
+        if (pro.state.value.owned) _saveChoice.update { it.copy(finish = finish.clamped()) }
+    }
+
+    /** The finish exports get: the chosen one with Pro, none without. */
+    private fun effectiveFinish(): Finish = if (pro.state.value.owned) _saveChoice.value.finish else Finish()
 
     /** Fill zooms measured recently, by mandala and shape; touched only on the main thread. */
     private val fillZooms = LinkedHashMap<Pair<MandalaParameters, Double>, Double>()
@@ -277,6 +286,9 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
 
     /** Save sheet previews rendered recently, by everything they were rendered from. */
     private val recentFrames = RecentImages<FrameRequest, FramePreviewState>(RECENT_FRAMES)
+
+    /** The last frame preview as drawn, before its finish (about 0.4 MB). */
+    private var lastFrame: Pair<FrameRequest, Image8>? = null
 
     private val textRenderer = AndroidTextRenderer()
     private val imageLoader = AndroidImageLoader()
@@ -645,7 +657,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         val (w, h) = Editing.exportSize(choice.format, _screenAspect.value, large)
         val params = _params.value
         val framing: suspend () -> Framing = { framingFor(choice, params, aspectOf(choice.format), pro.state.value.owned) }
-        renderFullSize("Creating the image", w, h, large, framing, choice.textFollowsMandala) { image, fileName ->
+        renderFullSize("Creating the image", w, h, large, framing, choice.textFollowsMandala, finish = effectiveFinish()) { image, fileName ->
             exportStep("Saving to Pictures")
             withContext(Dispatchers.IO) { GalleryExport.savePng(getApplication(), image, fileName) }
             message("Saved $w × $h to Pictures/${GalleryExport.FOLDER}")
@@ -666,10 +678,10 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         val params = _params.value
         val framing: suspend () -> Framing = { framingFor(if (filled) choice.copy(fit = Fit.FILL) else choice, params, screen, large) }
         val reuse = { k: ExportKey, f: Framing ->
-            k.params == params && k.framing == f && k.textFollows == choice.textFollowsMandala &&
+            k.params == params && k.framing == f && k.textFollows == choice.textFollowsMandala && k.finish == effectiveFinish() &&
                 k.width >= screenShortSide && kotlin.math.abs(k.height.toDouble() / k.width - h.toDouble() / w) < 0.002
         }
-        renderFullSize("Creating the wallpaper", w, h, large, framing, choice.textFollowsMandala, reuse) { image, _ ->
+        renderFullSize("Creating the wallpaper", w, h, large, framing, choice.textFollowsMandala, reuse, effectiveFinish()) { image, _ ->
             exportStep("Setting the wallpaper")
             withContext(Dispatchers.IO) { Wallpapers.set(getApplication(), image, target) }
             _export.value = null
@@ -724,6 +736,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
     private fun renderFullSize(
         label: String, width: Int, height: Int, large: Boolean, framingOf: suspend () -> Framing, textFollows: Boolean,
         reuse: ((ExportKey, Framing) -> Boolean)? = null,
+        finish: Finish = Finish(),
         then: suspend (Image8, String) -> Unit,
     ) {
         if (_busy.value) return
@@ -733,7 +746,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         viewModelScope.launch {
             try {
                 val framing = framingOf()
-                val key = ExportKey(snapshot, framing, textFollows, width, height, !large)
+                val key = ExportKey(snapshot, framing, textFollows, width, height, !large, finish)
                 val cached = lastExport?.takeIf { (k, _) -> k == key || reuse?.invoke(k, framing) == true }?.second
                 if (cached != null) {
                     then(cached, Editing.fileName(snapshot, cached.width, cached.height))
@@ -757,6 +770,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
                         framing = framing,
                         textFollowsMandala = textFollows,
                         supersample = !large,
+                        finish = finish,
                         threads = threads,
                         textRenderer = textRenderer,
                         imageLoader = imageLoader,
@@ -787,9 +801,12 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         }
         val (w, h) = Editing.size(request.choice.format, request.aspect, Editing.FRAME_PREVIEW_WIDTH)
         val framing = framingFor(request.choice, request.params, Editing.aspect(request.choice.format, request.aspect), request.pro)
+        // The finish is applied to the drawn preview, so its sliders follow the finger without a new render.
+        val finish = if (request.pro) request.choice.finish else Finish()
+        val unfinished = request.copy(choice = request.choice.copy(finish = Finish()))
         _framePreview.update { it.copy(rendering = true) }
         try {
-            val result = withContext(Dispatchers.Default) {
+            val drawn = lastFrame?.takeIf { it.first == unfinished }?.second ?: withContext(Dispatchers.Default) {
                 val job = coroutineContext.job
                 MandalaRenderer.render(
                     request.params,
@@ -797,9 +814,10 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
                         width = w, height = h, framing = framing, textFollowsMandala = request.choice.textFollowsMandala,
                         threads = threads, textRenderer = textRenderer, imageLoader = imageLoader, isCancelled = { !job.isActive },
                     ),
-                )
-            }
-            _framePreview.value = FramePreviewState(result.image.toBitmap().asImageBitmap(), rendering = false, framing = framing, width = w, height = h)
+                ).image
+            }.also { lastFrame = unfinished to it }
+            val image = withContext(Dispatchers.Default) { finish.apply(drawn, threads) }
+            _framePreview.value = FramePreviewState(image.toBitmap().asImageBitmap(), rendering = false, framing = framing, width = w, height = h)
             recentFrames[request] = _framePreview.value
         } catch (e: RenderCancelledException) {
             // A newer framing is already being rendered.

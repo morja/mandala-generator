@@ -64,9 +64,11 @@ import com.mathis.mandala.app.ui.theme.LocalTokens
 import com.mathis.mandala.app.ui.theme.Radius
 import com.mathis.mandala.app.ui.theme.Sizes
 import com.mathis.mandala.app.ui.theme.Spacing
+import com.mathis.mandala.core.Finish
 import com.mathis.mandala.core.Framing
 import com.mathis.mandala.core.VectorExport
 import kotlin.math.abs
+import kotlin.math.roundToInt
 
 /**
  * Saving in a format (ADR-0010): format, the mandala placed in the frame (Pro), whether the quote
@@ -90,6 +92,7 @@ internal fun SaveSheet(
     onSave: (large: Boolean) -> Unit,
     onWallpaper: (WallpaperTarget) -> Unit,
     onFill: (Boolean) -> Unit,
+    onFinish: (Finish) -> Unit,
     hasPointLayers: Boolean,
     onLineDrawing: (VectorExport.Look) -> Unit,
     onShowPro: () -> Unit,
@@ -135,6 +138,7 @@ internal fun SaveSheet(
                 }
             }
             if (hasQuote) SwitchRow("Quote moves with the mandala", choice.textFollowsMandala, onTextFollows)
+            FinishControls(choice.finish, proOwned, enabled = !busy, onFinish = onFinish, onShowPro = onShowPro)
             Button(onClick = { onSave(false) }, enabled = !busy, modifier = Modifier.fillMaxWidth()) { Text("Save · $w × $h") }
             OutlinedButton(onClick = { if (proOwned) onSave(true) else onShowPro() }, enabled = !busy, modifier = Modifier.fillMaxWidth()) {
                 Text(if (proOwned) "Save large · $lw × $lh" else "Save large · $lw × $lh · Pro")
@@ -220,6 +224,34 @@ private fun Frame(
             } else if (preview.rendering) {
                 LinearProgressIndicator(Modifier.fillMaxWidth().height(Sizes.progress).align(Alignment.BottomCenter))
             }
+        }
+    }
+}
+
+/**
+ * The last adjustment of the saved image or wallpaper (ADR-0014): brightness, contrast and
+ * saturation, applied to the frame at once. Without Pro a line says so and opens the Pro sheet.
+ */
+@Composable
+private fun FinishControls(finish: Finish, proOwned: Boolean, enabled: Boolean, onFinish: (Finish) -> Unit, onShowPro: () -> Unit) {
+    val t = LocalTokens.current
+    if (!proOwned) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text("Brightness, contrast and saturation of the image come with Pro.", style = MaterialTheme.typography.bodySmall, color = t.textMuted, modifier = Modifier.weight(1f))
+            TextButton(onClick = onShowPro) { Text("About Pro") }
+        }
+        return
+    }
+    val percent = { v: Double -> "${(v * 100).roundToInt()} %" }
+    Column {
+        ValueSlider("Brightness", finish.brightness, Finish.MIN_BRIGHTNESS.toFloat()..Finish.MAX_BRIGHTNESS.toFloat(), default = 1.0, display = percent) {
+            if (enabled) onFinish(finish.copy(brightness = it))
+        }
+        ValueSlider("Contrast", finish.contrast, Finish.MIN_CONTRAST.toFloat()..Finish.MAX_CONTRAST.toFloat(), default = 1.0, display = percent) {
+            if (enabled) onFinish(finish.copy(contrast = it))
+        }
+        ValueSlider("Saturation", finish.saturation, 0f..Finish.MAX_SATURATION.toFloat(), default = 1.0, display = percent) {
+            if (enabled) onFinish(finish.copy(saturation = it))
         }
     }
 }
