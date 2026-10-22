@@ -87,12 +87,8 @@ object MandalaRenderer {
         val place = Placement.of(options.framing, bufW, bufH)
         val mandalaSize = place.size
         val baseRadius = mandalaSize * 0.72
-        // Lines are hairlines up to the normal export's buffer (2048 px); a mandala drawn larger
-        // (zoomed in) gets proportionally wider lines, so it looks enlarged, not thinner and darker.
-        val lineWidth = max(1.0, mandalaSize / LINE_REFERENCE_SIZE.toDouble())
         // Same lines spread over a larger canvas give a lower mean; this linear factor cancels it.
-        // Wider lines already cover more, so above the reference it stays at the reference's value.
-        val brightnessScale = (if (lineWidth > 1.0) LINE_REFERENCE_SIZE else mandalaSize) / 1600f
+        val brightnessScale = mandalaSize / 1600f
         // Offset of the mandala centre from the canvas centre (zero with the default framing).
         val dX = place.centreX - bufW / 2.0
         val dY = place.centreY - bufH / 2.0
@@ -221,11 +217,16 @@ object MandalaRenderer {
                         layerCount, symmetry, layer.ripple.toFloat(), layer.colorOffset,
                     )
                     // Same order per pixel as one full buffer: attractor points, curves, lines.
-                    PixelBuffer.drawInStrips(vw, vh, reject, lineWidth.toFloat()) { strip ->
+                    // Lines are hairlines up to the preview's buffer (1024 px); a mandala drawn larger (the
+                    // export, or zoomed in) gets proportionally wider lines and keeps the reference's
+                    // brightness, so it looks like the preview enlarged instead of thinner and darker.
+                    val lineWidth = lineWidth(mandalaSize, layer.style)
+                    val layerBrightness = if (lineWidth > 1f) LINE_REFERENCE_SIZE / 1600f else brightnessScale
+                    PixelBuffer.drawInStrips(vw, vh, reject, lineWidth) { strip ->
                         for (p in points) p.drawInto(strip)
                         drawTasks(tasks, strip, palette, layer.colorOffset, par)
                         lines.drawInto(strip, par)
-                        strip.scale(brightnessScale)
+                        strip.scale(layerBrightness)
                     }
                 }
                 checkpoint()
@@ -309,8 +310,16 @@ object MandalaRenderer {
         }
     }
 
-    /** Buffer size up to which lines are hairlines: the normal export's (1024 px drawn at twice the size). */
-    private const val LINE_REFERENCE_SIZE = 2048
+    /** Buffer size up to which lines are hairlines: the preview's (512 px drawn at twice the size), as on the Mac. */
+    private const val LINE_REFERENCE_SIZE = 1024
+
+    /**
+     * Line width for a layer drawn for a mandala square of `size` pixels: proportionally wider above
+     * the reference, the same rule as the Mac's `lineWidth(forSize:style:)`. Universe and Symbols
+     * already grow their elements with the size and keep hairlines.
+     */
+    internal fun lineWidth(size: Int, style: MandalaStyle): Float =
+        if (style == MandalaStyle.UNIVERSE || style == MandalaStyle.SYMBOLS) 1f else max(1f, size.toFloat() / LINE_REFERENCE_SIZE)
 
     /** Distance from (cx, cy) to the farthest corner of the canvas grown by `margin` on every side. */
     private fun farthestCorner(cx: Double, cy: Double, width: Int, height: Int, margin: Int): Double {
