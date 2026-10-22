@@ -183,18 +183,34 @@ object MandalaRenderer {
                 val margin = effectMargin(layer, effectWidth)
                 // A moved layer shows parts beyond the centred square, so it gets the full one (ADR-0011).
                 val moved = layer.offsetX != 0.0 || layer.offsetY != 0.0
-                val size = if (rotated || moved) effectWidth else min(effectWidth, mandalaSize + 2 * margin)
-
-                // That square of side `size` sits around the mandala centre at (sx0, sy0) on the
-                // canvas. Only the part that can reach the canvas is drawn: for an unrotated layer the
-                // canvas plus the effect margin, for a rotated one what can turn into view. With the
-                // default framing this is the whole square, as before.
                 // The layer's own offset from the mandala centre (ADR-0011): whole pixels move its square,
                 // the rest goes into the centre it is drawn around (zero for a centred layer).
                 val lX = dX + layer.offsetX * mandalaSize
                 val lY = dY + layer.offsetY * mandalaSize
                 val lXi = Math.round(lX).toInt()
                 val lYi = Math.round(lY).toInt()
+                // A canvas reaching past the centred square and its margin (portrait, landscape, zoomed
+                // out, ADR-0010) or a moved layer (ADR-0011) shows the layer's outer area, and many
+                // styles draw beyond the macOS buffer (see styleReach). Such a layer gets a square as
+                // large as its style reaches plus the effect margin; a smaller one shows its edge as a
+                // hard line. The centred square canvas keeps the old buffers, so its images stay the same.
+                val small = min(effectWidth, mandalaSize + 2 * margin)
+                val smallX0 = lXi - (small - bufW) / 2
+                val smallY0 = lYi - (small - bufH) / 2
+                val canvasBeyond = smallX0 > -margin || smallY0 > -margin || smallX0 + small < bufW + margin || smallY0 + small < bufH + margin
+                val size = when {
+                    moved || canvasBeyond -> {
+                        val reached = ceil(2 * styleReach(layer.style) * layerRadius).toInt() + 2 * margin + 8
+                        max(effectWidth, reached + (reached and 1))
+                    }
+                    rotated -> effectWidth
+                    else -> small
+                }
+
+                // That square of side `size` sits around the mandala centre at (sx0, sy0) on the
+                // canvas. Only the part that can reach the canvas is drawn: for an unrotated layer the
+                // canvas plus the effect margin, for a rotated one what can turn into view. With the
+                // default framing this is the whole square, as before.
                 val layerCentreX = bufW / 2.0 + lX
                 val layerCentreY = bufH / 2.0 + lY
                 val sx0 = lXi - (size - bufW) / 2
@@ -389,6 +405,53 @@ object MandalaRenderer {
             const val PAINTED = 0.95
         }
     }
+
+    /**
+     * How far a style draws from the layer centre, in layer radii: measured with every style at
+     * low and high complexity, density and ripple (`StyleReachTest`), plus about 5 %. Deep Nebula
+     * fills whatever it gets and Mixed draws zones of other styles; both get the cap, which keeps
+     * the layer buffer and its glow within the memory budget.
+     */
+    internal fun styleReach(style: MandalaStyle): Double = when (style) {
+        MandalaStyle.SPIROGRAPH -> 1.0
+        MandalaStyle.ROSE_CURVES -> 1.1
+        MandalaStyle.FLORAL -> 0.9
+        MandalaStyle.BUTTERFLY -> 1.95
+        MandalaStyle.EPITROCHOID -> 1.3
+        MandalaStyle.LISSAJOUS -> 1.45
+        MandalaStyle.HYPOCYCLOID -> 1.4
+        MandalaStyle.PHYLLOTAXIS -> 1.2
+        MandalaStyle.FRACTAL -> 1.2
+        MandalaStyle.SUPERFORMULA -> 1.1
+        MandalaStyle.WAVE_INTERFERENCE -> 1.55
+        MandalaStyle.GEOMETRIC -> 1.35
+        MandalaStyle.SACRED_GEOMETRY -> 1.15
+        MandalaStyle.SUNBURST -> 1.05
+        MandalaStyle.STAR_BURST -> 1.15
+        MandalaStyle.STRING_ART -> 1.05
+        MandalaStyle.SPIDER_WEB -> 1.1
+        MandalaStyle.WEAVE -> 1.1
+        MandalaStyle.RADIAL_MESH -> 1.2
+        MandalaStyle.MOIRE -> 1.45
+        MandalaStyle.FLOW_FIELD -> 1.15
+        MandalaStyle.TENDRIL -> 2.2
+        MandalaStyle.VORONOI -> 1.15
+        MandalaStyle.STRANGE_ATTRACTOR -> 1.35
+        MandalaStyle.CONSTELLATION_WEB -> 0.95
+        MandalaStyle.INTERFERENCE_BLOOM -> 1.15
+        MandalaStyle.HYPERBOLOID -> 1.45
+        MandalaStyle.TORUS -> 1.3
+        MandalaStyle.NAUTILUS -> 1.2
+        MandalaStyle.SPHERE_GRID -> 0.9
+        MandalaStyle.TORUS_KNOT -> 0.9
+        MandalaStyle.TESSERACT -> 2.2
+        MandalaStyle.UNIVERSE -> 1.2
+        MandalaStyle.SYMBOLS -> 1.2
+        MandalaStyle.DEEP_NEBULA, MandalaStyle.MIXED -> STYLE_REACH_CAP
+    }
+
+    /** The largest style reach drawn, in layer radii: beyond this even Deep Nebula ends. */
+    internal const val STYLE_REACH_CAP = 2.5
 
     /** Buffer size up to which lines are hairlines: the preview's (512 px drawn at twice the size), as on the Mac. */
     private const val LINE_REFERENCE_SIZE = 1024
