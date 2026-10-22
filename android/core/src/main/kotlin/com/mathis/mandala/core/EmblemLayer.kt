@@ -256,6 +256,69 @@ internal class EmblemMask(
     }
 
     fun draw(g: EmblemGeometry, rendering: EmblemRendering, weight: Double, par: Parallel): ByteArray {
+        build(g, rendering, weight)
+        return rasterise(par)
+    }
+
+    /**
+     * The same shapes as SVG elements for a `<mask>` (ADR-0013): white ones add, black ones cut.
+     * Round-capped segments of one width in a row become one path.
+     */
+    fun writeSvgMask(g: EmblemGeometry, rendering: EmblemRendering, weight: Double, out: Appendable) {
+        build(g, rendering, weight)
+        val d = StringBuilder()
+        var key = ""
+        var lastX = Double.NaN
+        var lastY = Double.NaN
+        fun flush() {
+            if (d.isEmpty()) return
+            val (colour, width) = key.split('|')
+            out.append("<path d=\"").append(d).append("\" stroke=\"").append(colour).append("\" stroke-width=\"").append(width)
+                .append("\" fill=\"none\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>\n")
+            d.setLength(0)
+            lastX = Double.NaN
+        }
+        for (shape in shapes) {
+            val colour = if (shape.white) "#fff" else "#000"
+            when (shape) {
+                is Segment -> {
+                    val k = colour + "|" + svgNumber(shape.r * 2)
+                    if (k != key) { flush(); key = k }
+                    if (d.isEmpty() || shape.ax != lastX || shape.ay != lastY) {
+                        d.append('M').append(svgNumber(shape.ax)).append(' ').append(svgNumber(shape.ay))
+                    }
+                    d.append('L').append(svgNumber(shape.bx)).append(' ').append(svgNumber(shape.by))
+                    lastX = shape.bx
+                    lastY = shape.by
+                }
+                is Disc -> {
+                    flush()
+                    out.append("<circle cx=\"").append(svgNumber(shape.cx)).append("\" cy=\"").append(svgNumber(shape.cy))
+                        .append("\" r=\"").append(svgNumber(shape.r)).append('"')
+                    if (shape.ring > 0) {
+                        out.append(" fill=\"none\" stroke=\"").append(colour).append("\" stroke-width=\"").append(svgNumber(shape.ring * 2)).append("\"/>\n")
+                    } else {
+                        out.append(" fill=\"").append(colour).append("\"/>\n")
+                    }
+                }
+                is Polygons -> {
+                    flush()
+                    out.append("<path fill-rule=\"evenodd\" fill=\"").append(colour).append("\" d=\"")
+                    for (poly in shape.polys) {
+                        for (k in poly.indices step 2) {
+                            out.append(if (k == 0) 'M' else 'L').append(svgNumber(poly[k])).append(' ').append(svgNumber(poly[k + 1]))
+                        }
+                        out.append('Z')
+                    }
+                    out.append("\"/>\n")
+                }
+            }
+        }
+        flush()
+    }
+
+    private fun build(g: EmblemGeometry, rendering: EmblemRendering, weight: Double) {
+        shapes.clear()
         val w = weight.coerceIn(0.0, 1.0)
         val thick = 0.4 + 1.6 * w // scales the motif's own widths
         val line = 0.006 + 0.03 * w // uniform line width, in units
@@ -310,7 +373,6 @@ internal class EmblemMask(
                 for (d in g.dots) disc(d.x, d.y, d.r * sqrt(thick), true)
             }
         }
-        return rasterise(par)
     }
 
     /** Dots spaced along a stroke by arc length, sized by the stroke width there. */
@@ -466,4 +528,12 @@ internal class EmblemMask(
             for (x in minX..maxX) put(mask, y * width + x, min(1f, acc[x]).toDouble(), true)
         }
     }
+}
+
+/** A coordinate or length in SVG: at most two decimals, no trailing zeros. */
+internal fun svgNumber(v: Double): String {
+    val r = Math.round(v * 100)
+    if (r % 100 == 0L) return (r / 100).toString()
+    val text = (r / 100.0).toString()
+    return if (text.contains('E')) "0" else text
 }

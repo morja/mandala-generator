@@ -51,6 +51,7 @@ import com.mathis.mandala.core.RenderCancelledException
 import com.mathis.mandala.core.RenderOptions
 import com.mathis.mandala.core.SettingsJson
 import com.mathis.mandala.core.StyleLayer
+import com.mathis.mandala.core.VectorExport
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
@@ -644,6 +645,36 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         val uri = withContext(Dispatchers.IO) { ImageShare.prepare(getApplication(), image, fileName) }
         _events.send(EditorEvent.ShareImage(uri))
     }
+
+    /**
+     * Writes the mandala as an SVG line drawing (ADR-0013, Pro) to a file the user picked: the
+     * layers' lines and the emblem, square and centred, without the pixel steps.
+     */
+    fun saveLineDrawing(look: VectorExport.Look, uri: Uri) {
+        if (!pro.state.value.owned || _busy.value) return
+        val snapshot = _params.value
+        _busy.value = true
+        _export.value = ExportProgress("Creating the line drawing")
+        viewModelScope.launch {
+            try {
+                withContext(Dispatchers.IO) {
+                    val stream = getApplication<Application>().contentResolver.openOutputStream(uri, "wt") ?: error("no stream")
+                    stream.bufferedWriter().use { VectorExport.svg(snapshot, Editing.EXPORT_SIZE, look, it) }
+                }
+                message("Line drawing saved")
+            } catch (e: OutOfMemoryError) {
+                message("Not enough memory for this line drawing.")
+            } catch (e: Exception) {
+                message("Could not save the line drawing: ${e.message ?: e.javaClass.simpleName}")
+            } finally {
+                _export.value = null
+                _busy.value = false
+            }
+        }
+    }
+
+    fun suggestedLineDrawingName(look: VectorExport.Look): String =
+        Editing.fileName(_params.value).removeSuffix(".png") + (if (look == VectorExport.Look.LINES) "-lines" else "") + ".svg"
 
     /** Shows `label` while Android works on the drawn image, for which there is no share to show. */
     private fun exportStep(label: String) {

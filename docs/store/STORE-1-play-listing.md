@@ -2,7 +2,7 @@
 
 Prepared 20 October 2026 for the first Android release; entered in the Play Console the same day. Updated 22 October 2026 for version 1.1 and later (save formats, wallpaper, what Pro adds, starter favourites) and entered in the Play Console the same day; the screenshots there are still the 20 October ones. Graphics in this folder: `play-icon-512.png` (512×512, 32-bit PNG), `play-feature-graphic.png` (1024×500), and seven phone screenshots in `screenshots/` (1080×2160, the longest side Google allows, cropped from Mathis' Galaxy S23 without the status bar and the gesture bar; taken 22 October 2026): layers, Om emblem, a mandala as lock screen wallpaper, quote, favourites, save formats, new mandala with preview. AI asset declaration: "Don't label assets" (icon and feature graphic are rendered by the app, screenshots are real).
 
-Renamed on 22 October 2026 from "Mandala Generator" to "Dahlia – Mandala Maker" (ADR-0012): app name, both full descriptions and the Pro product name. The title (English and German) was set in the Play Console through the API the same day; the Pro product name (English and German) as well, with descriptions, prices and state unchanged. The full descriptions there still say "Mandala Generator". The website pages and their URLs still use "mandala-generator".
+Renamed on 22 October 2026 from "Mandala Generator" to "Dahlia – Mandala Maker" (ADR-0012): app name, both full descriptions and the Pro product name. The title (English and German) was set in the Play Console through the API the same day; the Pro product name (English and German) as well, with descriptions, prices and state unchanged. The full descriptions there still say "Mandala Generator". The website pages and their URLs still use "mandala-generator". The SVG line drawing (ADR-0013) was added to the Pro paragraph of both full descriptions on the branch `feature/svg-export`; not in the Play Console, and the Pro product description there does not mention it yet.
 
 ## App details
 
@@ -38,7 +38,7 @@ The two tearoom.one pages exist in the website repository (commit "Add Mandala G
 >
 > Save your mandalas to the gallery as a square, in the shape of your screen or in portrait and landscape ratios such as 4:5, 2:3 and 16:9, set one as your wallpaper, or share it. Start with 21 example favourites, keep your own, and move them between your phone and the Mac version.
 >
-> The app is free. Pro is an optional one-time purchase, no subscription: it saves your mandalas at 2048 px for prints and wallpapers, lets you move and zoom the mandala in the frame, and move layers and the emblem.
+> The app is free. Pro is an optional one-time purchase, no subscription: it saves your mandalas at 2048 px for prints and wallpapers, lets you move and zoom the mandala in the frame, move layers and the emblem, and save line drawings as SVG for plotters and prints.
 >
 > No account, no ads, no tracking. Your mandalas stay on your device.
 >
@@ -62,7 +62,7 @@ The two tearoom.one pages exist in the website repository (commit "Add Mandala G
 >
 > Speichere deine Mandalas quadratisch, im Format deines Bildschirms oder in Hoch- und Querformaten wie 4:5, 2:3 und 16:9 in der Galerie, setze eines als Hintergrundbild oder teile es. Starte mit 21 Beispiel-Favoriten, behalte eigene und tausche sie zwischen Handy und Mac-Version aus.
 >
-> Die App ist kostenlos. Pro ist ein optionaler einmaliger Kauf ohne Abo: Damit speicherst du deine Mandalas mit 2048 px für Drucke und Hintergrundbilder, verschiebst und zoomst das Mandala im Bildausschnitt und verschiebst Ebenen und Emblem.
+> Die App ist kostenlos. Pro ist ein optionaler einmaliger Kauf ohne Abo: Damit speicherst du deine Mandalas mit 2048 px für Drucke und Hintergrundbilder, verschiebst und zoomst das Mandala im Bildausschnitt, verschiebst Ebenen und Emblem und speicherst Linienzeichnungen als SVG für Plotter und Drucke.
 >
 > Kein Konto, keine Werbung, kein Tracking. Deine Mandalas bleiben auf deinem Gerät.
 >

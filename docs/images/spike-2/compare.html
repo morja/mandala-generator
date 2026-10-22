@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SPIKE-2 SVG export</title>
+<style>
+:root {
+  --bg: #ffffff;
+  --surface: #f3f4f1;
+  --text: #1f1f1f;
+  --muted: #5f6368;
+  --line: #e2e3df;
+  --chip: #eef0ec;
+  --frame: #8a8d91;
+  --radius-md: 12px;
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --bg: #131314; --surface: #1e1f20; --text: #e3e3e3; --muted: #a8abb0; --line: #2e3033; --chip: #26282a; --frame: #4a4d52; }
+}
+:root[data-theme="dark"] { --bg: #131314; --surface: #1e1f20; --text: #e3e3e3; --muted: #a8abb0; --line: #2e3033; --chip: #26282a; --frame: #4a4d52; }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.5 var(--font); }
+.bar { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; padding: 10px 16px;
+  border-bottom: 1px solid var(--line); background: var(--surface); font-size: 14px; position: sticky; top: 0; z-index: 1; }
+.bar p { margin: 0; color: var(--muted); flex: 1 1 260px; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: var(--radius-md); overflow: hidden; }
+.seg button { border: 0; background: transparent; color: var(--text); font: inherit; padding: 4px 12px; cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--chip); font-weight: 600; }
+main { max-width: 1200px; margin: 0 auto; padding: 24px 16px 64px; }
+h2 { font-size: 18px; font-weight: 600; margin: 32px 0 4px; }
+h2:first-child { margin-top: 0; }
+.note { color: var(--muted); font-size: 14px; margin: 0 0 12px; }
+.row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+figure { margin: 0; }
+.frame { aspect-ratio: 1; overflow: hidden; border-radius: var(--radius-md); background: var(--frame); }
+.frame img { width: 100%; height: 100%; display: block; transform-origin: 50% 50%; }
+body.zoom .frame img { transform: scale(4); }
+figcaption { font-size: 13px; color: var(--muted); margin-top: 6px; }
+figcaption strong { color: var(--text); font-weight: 600; }
+@media (max-width: 700px) { .row { grid-template-columns: minmax(0, 1fr); } }
+</style>
+</head>
+<body>
+<div class="bar">
+  <p>SPIKE-2 · The same settings as PNG (today's renderer) and as SVG in two looks. The SVGs are shown by the browser itself.</p>
+  <div class="seg" role="group" aria-label="Zoom">
+    <button data-zoom="1" aria-pressed="true">Whole</button><button data-zoom="4" aria-pressed="false">Centre 4×</button>
+  </div>
+  <div class="seg" role="group" aria-label="Theme">
+    <button data-theme-set="light" aria-pressed="false">Light</button><button data-theme-set="dark" aria-pressed="false">Dark</button>
+  </div>
+</div>
+<main id="list"></main>
+<script>
+const SAMPLES = [
+  { n: "icon", t: "App icon (Spirograph mesh)", png: 2459, c: 847, l: 810, seg: 30672, out: "glow, wash, painted, effects layer" },
+  { n: "spirograph-basic", t: "Spirograph", png: 911, c: 1153, l: 1022, seg: 90000, out: "glow" },
+  { n: "rose-ripple", t: "Rose curves with ripple", png: 732, c: 805, l: 681, seg: 60000, out: "glow" },
+  { n: "style-floral", t: "Floral", png: 561, c: 85, l: 79, seg: 4235, out: "glow" },
+  { n: "style-sacred-geometry", t: "Sacred geometry", png: 704, c: 249, l: 93, seg: 4362, out: "glow" },
+  { n: "style-string-art", t: "String art", png: 890, c: 49, l: 15, seg: 663, out: "glow" },
+  { n: "style-mixed", t: "Mixed (three styles)", png: 1126, c: 2971, l: 614, seg: 40215, out: "glow" },
+  { n: "lotus-gibran", t: "Starter favourite: lotus with quote", png: 1581, c: 150, l: 137, seg: 7515, out: "gradient background, glow, painted, emblem, quote" },
+  { n: "style-strange-attractor", t: "Strange Attractor (points)", png: 2525, c: 0, l: 0, seg: 0, out: "everything: the style is a cloud of points, no lines" },
+];
+const fig = (src, label, detail) => {
+  const f = document.createElement("figure");
+  const d = document.createElement("div"); d.className = "frame";
+  if (src) { const i = document.createElement("img"); i.src = src; i.alt = ""; i.loading = "lazy"; d.append(i); }
+  const c = document.createElement("figcaption");
+  const s = document.createElement("strong"); s.textContent = label;
+  c.append(s, document.createTextNode(" · " + detail));
+  f.append(d, c); return f;
+};
+document.getElementById("list").replaceChildren(...SAMPLES.flatMap(x => {
+  const h = document.createElement("h2"); h.textContent = x.t;
+  const p = document.createElement("p"); p.className = "note";
+  p.textContent = `${x.seg.toLocaleString("en")} line segments. Left out of the SVG: ${x.out}.`;
+  const r = document.createElement("div"); r.className = "row";
+  r.append(
+    fig(x.n + ".jpg", "PNG", `${x.png} KB at 1024 px`),
+    fig(x.c ? x.n + "-colour.svg" : null, "SVG colour", x.c ? `${x.c} KB, any size` : "empty"),
+    fig(x.l ? x.n + "-lines.svg" : null, "SVG lines", x.l ? `${x.l} KB, any size` : "empty"),
+  );
+  return [h, p, r];
+}));
+document.querySelectorAll("[data-zoom]").forEach(b => b.onclick = () => {
+  document.body.classList.toggle("zoom", b.dataset.zoom === "4");
+  document.querySelectorAll("[data-zoom]").forEach(x => x.setAttribute("aria-pressed", x === b));
+});
+document.querySelectorAll("[data-theme-set]").forEach(b => b.onclick = () => {
+  document.documentElement.dataset.theme = b.dataset.themeSet;
+  document.querySelectorAll("[data-theme-set]").forEach(x => x.setAttribute("aria-pressed", x === b));
+});
+</script>
+</body>
+</html>
