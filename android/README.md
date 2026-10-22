@@ -18,7 +18,7 @@ Android 10 or later. With an emulator or a phone connected:
 ./gradlew :app:installRelease
 ```
 
-The release build is signed with the upload key when `keystore.properties` exists (STORE-1), otherwise with the local debug key. Pro (saving at 2048 px, framing the mandala, moving layers and the emblem; ADR-0007) is sold through Google Play as product `pro`; debug builds count as Pro. Debug builds work too (`installDebug`) but render about 2.5 times slower. Exports land in `Pictures/Mandala`.
+The release build is signed with the upload key when `keystore.properties` exists (STORE-1), otherwise with the local debug key. Pro (saving at 2048 px, framing the mandala, moving layers and the emblem; ADR-0007) is sold through Google Play as product `pro`; debug and fast builds count as Pro. Debug builds work too (`installDebug`) but are debuggable and render many times slower (a lock screen wallpaper: 4 minutes instead of 13 seconds on a Galaxy phone). To test on a phone at release speed without replacing the store app, use the fast build (`installFast`, app "Mandala Fast", signed with the debug key). Exports land in `Pictures/Mandala`.
 
 ## Render a settings file from the Mac app
 

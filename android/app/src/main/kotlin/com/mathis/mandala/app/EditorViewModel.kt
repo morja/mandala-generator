@@ -91,6 +91,12 @@ data class FramePreviewState(
     val height: Int = 0,
 )
 
+/**
+ * A running export: what it does ("Creating the wallpaper") and the share of the image drawn, from
+ * 0 to 1; null while the share is not known yet or Android is at work (saving, setting the wallpaper).
+ */
+data class ExportProgress(val label: String, val share: Float? = null)
+
 /** How much a new mandala from the menu changes (DM-7): more dots on its die, more change. */
 enum class NewKind(val label: String) { VARIATION("Variation"), LAYERS("New layers"), EVERYTHING("Everything") }
 
@@ -135,6 +141,10 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
     /** True while an export or share render runs. */
     private val _busy = MutableStateFlow(false)
     val busy: StateFlow<Boolean> = _busy.asStateFlow()
+
+    /** What the running export does and how far it is; null when none runs. */
+    private val _export = MutableStateFlow<ExportProgress?>(null)
+    val export: StateFlow<ExportProgress?> = _export.asStateFlow()
 
     private val _events = Channel<EditorEvent>(Channel.BUFFERED)
     val events: Flow<EditorEvent> = _events.receiveAsFlow()
@@ -599,7 +609,8 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         if (large && !pro.state.value.owned) return
         val choice = _saveChoice.value
         val (w, h) = Editing.exportSize(choice.format, _screenAspect.value, large)
-        renderFullSize(w, h, large, effectiveFraming(choice), choice.textFollowsMandala) { image, fileName ->
+        renderFullSize("Creating the image", w, h, large, effectiveFraming(choice), choice.textFollowsMandala) { image, fileName ->
+            exportStep("Saving to Pictures")
             withContext(Dispatchers.IO) { GalleryExport.savePng(getApplication(), image, fileName) }
             message("Saved $w × $h to Pictures/${GalleryExport.FOLDER}")
         }
@@ -618,21 +629,30 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
             k.params == _params.value && k.framing == framing && k.textFollows == choice.textFollowsMandala &&
                 k.width >= screenShortSide && kotlin.math.abs(k.height.toDouble() / k.width - h.toDouble() / w) < 0.002
         }
-        renderFullSize(w, h, large, framing, choice.textFollowsMandala, reuse) { image, _ ->
+        renderFullSize("Creating the wallpaper", w, h, large, framing, choice.textFollowsMandala, reuse) { image, _ ->
+            exportStep("Setting the wallpaper")
             withContext(Dispatchers.IO) { Wallpapers.set(getApplication(), image, target) }
+            _export.value = null
             // Android recreates the screen when the wallpaper changes; a message sent right away is lost with it.
             delay(WALLPAPER_MESSAGE_DELAY_MS)
             message("Wallpaper set")
         }
     }
 
-    fun shareImage() = renderFullSize(Editing.EXPORT_SIZE, Editing.EXPORT_SIZE, large = false, Framing(), textFollows = false) { image, fileName ->
+    fun shareImage() = renderFullSize("Creating the image", Editing.EXPORT_SIZE, Editing.EXPORT_SIZE, large = false, Framing(), textFollows = false) { image, fileName ->
+        exportStep("Preparing to share")
         val uri = withContext(Dispatchers.IO) { ImageShare.prepare(getApplication(), image, fileName) }
         _events.send(EditorEvent.ShareImage(uri))
     }
 
+    /** Shows `label` while Android works on the drawn image, for which there is no share to show. */
+    private fun exportStep(label: String) {
+        _export.value = ExportProgress(label)
+    }
+
+    /** Renders the image at full size and hands it to `then`; `label` says what for while it is drawn. */
     private fun renderFullSize(
-        width: Int, height: Int, large: Boolean, framing: Framing, textFollows: Boolean,
+        label: String, width: Int, height: Int, large: Boolean, framing: Framing, textFollows: Boolean,
         reuse: ((ExportKey) -> Boolean)? = null,
         then: suspend (Image8, String) -> Unit,
     ) {
@@ -641,6 +661,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         val key = ExportKey(snapshot, framing, textFollows, width, height, !large)
         val cached = lastExport?.takeIf { (k, _) -> k == key || reuse?.invoke(k) == true }?.second
         _busy.value = true
+        _export.value = ExportProgress(label)
         viewModelScope.launch {
             try {
                 if (cached != null) {
@@ -650,7 +671,16 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
                 // Free the previous image first; the new render needs the memory more.
                 lastExport = null
                 val image = withContext(Dispatchers.Default) {
+                    // Whole percents, so the screen redraws at most a hundred times.
+                    var shown = 0
                     val options = RenderOptions(
+                        onProgress = { share ->
+                            val percent = (share * 100).toInt()
+                            if (percent > shown) {
+                                shown = percent
+                                _export.value = ExportProgress(label, percent / 100f)
+                            }
+                        },
                         width = width,
                         height = height,
                         framing = framing,
@@ -669,6 +699,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
             } catch (e: Exception) {
                 message("Could not create the image: ${e.message ?: e.javaClass.simpleName}")
             } finally {
+                _export.value = null
                 _busy.value = false
             }
         }

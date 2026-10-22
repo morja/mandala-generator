@@ -42,6 +42,15 @@ android {
         debug {
             applicationIdSuffix = ".debug"
         }
+        // A debuggable app runs mostly in the interpreter and renders many times slower; this one runs
+        // at release speed for testing on a phone, next to the store and debug apps.
+        create("fast") {
+            initWith(getByName("debug"))
+            isDebuggable = false
+            applicationIdSuffix = ".fast"
+            signingConfig = signingConfigs.getByName("debug")
+            matchingFallbacks += "debug"
+        }
         release {
             isMinifyEnabled = true
             isShrinkResources = true

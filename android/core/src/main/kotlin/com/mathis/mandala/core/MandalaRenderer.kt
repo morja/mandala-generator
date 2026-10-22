@@ -43,6 +43,8 @@ data class RenderOptions(
     val imageLoader: ImageLoader? = null,
     /** Polled between steps; when it returns true the render stops with [RenderCancelledException]. */
     val isCancelled: () -> Boolean = { false },
+    /** Called on the rendering thread with the share of the work done, rising to 1 at the end. */
+    val onProgress: (Double) -> Unit = {},
     /** Reuses the images of layers that did not change since the last render with this cache. */
     val layerCache: LayerCache? = null,
     /**
@@ -113,12 +115,26 @@ object MandalaRenderer {
                 Image8(bufW, bufH, Encoding.SRGB)
             }
             val solidBackground = if (base.isEnabled && base.type == BaseLayerType.COLOR) solidColor(base) else null
+            val graffiti = params.graffitiLayer.isEnabled && params.graffitiLayer.strokes.isNotEmpty()
+            val drawing = params.drawingLayer.isEnabled && params.drawingLayer.strokes.isNotEmpty()
+            val text = params.textLayer.isEnabled && params.textLayer.text.isNotEmpty()
+            val progress = RenderProgress(
+                options.onProgress,
+                background = if (base.isEnabled && base.type != BaseLayerType.COLOR) RenderProgress.BACKGROUND else 0.0,
+                layers = params.layers.count { it.isEnabled && it.style in supportedStyles },
+                above = (if (graffiti) RenderProgress.HAND_LAYER else 0.0) + (if (drawing) RenderProgress.HAND_LAYER else 0.0) +
+                    (if (params.emblemLayer.isEnabled) RenderProgress.EMBLEM else 0.0) +
+                    (if (text && options.textRenderer != null) RenderProgress.TEXT else 0.0) +
+                    (if (params.effectsLayer.isEnabled) RenderProgress.EFFECTS else 0.0),
+            )
+            progress.background()
 
             // ── Layers ──
             fun checkpoint() { if (options.isCancelled()) throw RenderCancelledException() }
             val cache = options.layerCache
             cache?.begin()
 
+            var layerNo = 0
             for ((li, layer) in params.layers.withIndex()) {
                 checkpoint()
                 if (!layer.isEnabled) continue
@@ -126,6 +142,9 @@ object MandalaRenderer {
                     warnings += "Layer ${li + 1} (${layer.style.displayName}) is not available yet; skipped."
                     continue
                 }
+                // Reaching a layer also completes the one before, whichever way that one ended.
+                val n = layerNo++
+                progress.layer(n, 0.0)
                 val palette = palettes[layer.paletteIndex.coerceIn(0, palettes.size - 1)]
                 val op = when (layer.blendMode) {
                     LayerBlendMode.SCREEN -> BlendOp.SCREEN
@@ -222,7 +241,7 @@ object MandalaRenderer {
                     // brightness, so it looks like the preview enlarged instead of thinner and darker.
                     val lineWidth = lineWidth(mandalaSize, layer.style)
                     val layerBrightness = if (lineWidth > 1f) LINE_REFERENCE_SIZE / 1600f else brightnessScale
-                    PixelBuffer.drawInStrips(vw, vh, reject, lineWidth) { strip ->
+                    PixelBuffer.drawInStrips(vw, vh, reject, lineWidth, onStrip = { progress.layer(n, RenderProgress.DRAWN * it) }) { strip ->
                         for (p in points) p.drawInto(strip)
                         drawTasks(tasks, strip, palette, layer.colorOffset, par)
                         lines.drawInto(strip, par)
@@ -231,8 +250,10 @@ object MandalaRenderer {
                 }
                 checkpoint()
                 img = fx.glow(img, layer.glowIntensity, effectWidth)
+                progress.layer(n, RenderProgress.GLOWN)
                 checkpoint()
                 if (layer.wash > 0) img = fx.wash(img, layer.wash, effectWidth)
+                progress.layer(n, RenderProgress.WASHED)
                 checkpoint()
                 if (layer.abstractLevel > 0.01) {
                     if (!rotated && place.size > bufW) {
@@ -248,6 +269,7 @@ object MandalaRenderer {
                     }
                     img = fx.painted(img, layer.abstractLevel, effectWidth, offsetX, offsetY)
                 }
+                progress.layer(n, RenderProgress.PAINTED)
                 checkpoint()
                 img = fx.colourGrade(img, layer.saturation, layer.brightness)
                 if (rotated) img = fx.rotate(img, layer.rotation * Math.PI * 2, cx, cy)
@@ -256,17 +278,20 @@ object MandalaRenderer {
                 if (cacheKey != null) cache.put(cacheKey, LayerCache.Entry(img, view[0], view[1]))
                 composite = fx.composite(composite, img, op, view[0], view[1])
             }
+            progress.layer(layerNo, 0.0)
             cache?.finish()
 
             // ── Hand-made layers ──
             val hand = HandLayers(par, fx)
-            if (params.graffitiLayer.isEnabled && params.graffitiLayer.strokes.isNotEmpty()) {
+            if (graffiti) {
                 checkpoint()
                 composite = hand.graffiti(composite, params.graffitiLayer, place)
+                progress.above(RenderProgress.HAND_LAYER)
             }
-            if (params.drawingLayer.isEnabled && params.drawingLayer.strokes.isNotEmpty()) {
+            if (drawing) {
                 checkpoint()
                 composite = hand.drawing(composite, params.drawingLayer, place)
+                progress.above(RenderProgress.HAND_LAYER)
             }
 
             // Solid background goes in after all layers (lighten) so layer blend modes don't tint it.
@@ -278,9 +303,10 @@ object MandalaRenderer {
             if (params.emblemLayer.isEnabled) {
                 checkpoint()
                 composite = EmblemLayer(par, fx).apply(composite, params.emblemLayer, palettes, place)
+                progress.above(RenderProgress.EMBLEM)
             }
 
-            if (params.textLayer.isEnabled && params.textLayer.text.isNotEmpty()) {
+            if (text) {
                 val textRenderer = options.textRenderer
                 if (textRenderer == null) {
                     warnings += "Text needs a text renderer; skipped."
@@ -293,11 +319,13 @@ object MandalaRenderer {
                         TextFrame(0f, 0f, bufW, bufH, min(bufW, bufH))
                     }
                     composite = TextLayer(par, textRenderer).apply(composite, params.textLayer, frame)
+                    progress.above(RenderProgress.TEXT)
                 }
             }
             if (params.effectsLayer.isEnabled) {
                 checkpoint()
                 composite = EffectsLayer(par, fx).apply(composite, params.effectsLayer)
+                progress.above(RenderProgress.EFFECTS)
             }
 
             checkpoint()
@@ -306,7 +334,59 @@ object MandalaRenderer {
                 composite.encoding == Encoding.SRGB -> composite
                 else -> WorkingSpace.convertToSrgb(composite)
             }
+            progress.done()
             return RenderResult(result, warnings, (System.nanoTime() - start) / 1_000_000)
+        }
+    }
+
+    /**
+     * Turns the steps of a render into a share of the work done. Each step has a weight, counted in
+     * mandala layers, measured roughly on exports of a light and of the worst case; the share only rises.
+     */
+    private class RenderProgress(
+        private val report: (Double) -> Unit,
+        private val background: Double,
+        private val layers: Int,
+        above: Double,
+    ) {
+        private val total = background + layers + above + FINISH
+        private var aboveDone = 0.0
+        private var done = 0.0
+
+        fun background() = at(background)
+
+        /** Layer `n` (counting only drawn ones) is `part` done, from 0 to 1. */
+        fun layer(n: Int, part: Double) = at(background + n + part)
+
+        /** One of the steps above the layers, of this weight, is done. */
+        fun above(weight: Double) {
+            aboveDone += weight
+            at(background + layers + aboveDone)
+        }
+
+        fun done() = to(1.0)
+
+        private fun at(weight: Double) = to(weight / total)
+
+        private fun to(share: Double) {
+            if (share <= done) return
+            done = min(share, 1.0)
+            report(done)
+        }
+
+        companion object {
+            const val BACKGROUND = 1.0
+            const val HAND_LAYER = 0.5
+            const val EMBLEM = 1.0
+            const val TEXT = 0.3
+            const val EFFECTS = 2.0
+            const val FINISH = 0.2
+
+            // Share of a layer done after each of its steps.
+            const val DRAWN = 0.4
+            const val GLOWN = 0.6
+            const val WASHED = 0.8
+            const val PAINTED = 0.95
         }
     }
 
