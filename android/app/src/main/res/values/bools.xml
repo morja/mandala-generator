@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Test builds (debug, fast) count as Pro, so the Pro features can be tried without a Play install. -->
+    <bool name="pro_for_testing">false</bool>
+</resources>

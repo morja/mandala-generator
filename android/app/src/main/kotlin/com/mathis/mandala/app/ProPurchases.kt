@@ -2,7 +2,6 @@ package com.mathis.mandala.app
 
 import android.app.Activity
 import android.content.Context
-import android.content.pm.ApplicationInfo
 import com.android.billingclient.api.AcknowledgePurchaseParams
 import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.BillingClientStateListener
@@ -29,13 +28,13 @@ data class ProState(
 
 /**
  * The one-time "Pro" purchase through Google Play Billing (ADR-0007). Ownership is cached so the app
- * knows it offline, and checked with Google Play on every start. Debuggable builds count as Pro, so
- * the Pro features can be tried without a Play install.
+ * knows it offline, and checked with Google Play on every start. Test builds (debug, fast) count as
+ * Pro, so the Pro features can be tried without a Play install.
  */
 class ProPurchases(context: Context, private val onEvent: (String) -> Unit) {
     private val prefs = context.getSharedPreferences("pro", Context.MODE_PRIVATE)
-    private val debuggable = context.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE != 0
-    private val _state = MutableStateFlow(ProState(owned = debuggable || prefs.getBoolean(KEY_OWNED, false)))
+    private val testBuild = context.resources.getBoolean(R.bool.pro_for_testing)
+    private val _state = MutableStateFlow(ProState(owned = testBuild || prefs.getBoolean(KEY_OWNED, false)))
     val state: StateFlow<ProState> = _state.asStateFlow()
 
     private var details: ProductDetails? = null
@@ -125,7 +124,7 @@ class ProPurchases(context: Context, private val onEvent: (String) -> Unit) {
 
     private fun setOwned(owned: Boolean) {
         prefs.edit().putBoolean(KEY_OWNED, owned).apply()
-        _state.update { it.copy(owned = owned || debuggable) }
+        _state.update { it.copy(owned = owned || testBuild) }
     }
 
     companion object {
