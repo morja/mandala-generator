@@ -1,6 +1,6 @@
 # PLAN-5 · One line between free and Pro for Android and iPhone
 
-22 October 2026. Status: approved by Mathis the same day, question by question (see the end); the effects layer free and the price 2.99 € differ from the first draft. Decision: [ADR-0016](adr/0016-one-pro-line.md), which replaces the free part of ADR-0007 and point 1 of ADR-0014. Nothing is built yet.
+22 October 2026. Status: approved by Mathis the same day, question by question (see the end); the effects layer free and the price 2.99 € differ from the first draft. Built for Android in 1.4.0 ([QA-3](QA-3-pro-line.md)). Decision: [ADR-0016](adr/0016-one-pro-line.md), which replaces the free part of ADR-0007 and point 1 of ADR-0014.
 
 Thought through as if both apps were started today (Mathis, 22 October 2026): one product "Dahlia" on two platforms. The free app keeps the full fun of making mandalas, and both apps give a real reason to buy Pro. No one has bought Pro yet, so the line can still move.
 

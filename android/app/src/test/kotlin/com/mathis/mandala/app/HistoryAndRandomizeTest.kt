@@ -125,4 +125,13 @@ class HistoryAndRandomizeTest {
         }
         assertTrue((0 until 50).any { p.randomVariant(0, Random(it)).layers[0].seed != p.layers[0].seed })
     }
+
+    @Test
+    fun throwsWithoutProStayWithinTwoLayers() {
+        for (n in 0 until 50) {
+            assertTrue(MandalaParameters().randomLayers(Random(n), maxLayers = 2).layers.size in 1..2)
+            assertTrue(MandalaParameters().randomAll(Random(n), maxLayers = 2).layers.size in 1..2)
+        }
+        assertEquals(3, (0 until 50).maxOf { MandalaParameters().randomLayers(Random(it)).layers.size })
+    }
 }

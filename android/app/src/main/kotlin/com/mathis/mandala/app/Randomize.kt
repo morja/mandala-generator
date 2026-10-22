@@ -20,8 +20,12 @@ import kotlin.random.Random
  */
 object Randomize {
 
-    fun MandalaParameters.randomLayers(random: Random): MandalaParameters {
-        val count = random.nextInt(1, 4)
+    /** Most layers a throw makes, as on the Mac. */
+    const val MAX_LAYERS = 3
+
+    /** Up to `maxLayers` new layers (at most [MAX_LAYERS]); fewer without Pro (ADR-0016). */
+    fun MandalaParameters.randomLayers(random: Random, maxLayers: Int = MAX_LAYERS): MandalaParameters {
+        val count = random.nextInt(1, maxLayers.coerceIn(1, MAX_LAYERS) + 1)
         val symmetry = random.nextInt(SYMMETRY.first, SYMMETRY.last + 1)
         val usedStyles = mutableSetOf<MandalaStyle>()
         val usedPalettes = mutableSetOf<Int>()
@@ -33,8 +37,8 @@ object Randomize {
         return copy(seed = random.nextLong().toULong(), layers = layers)
     }
 
-    fun MandalaParameters.randomAll(random: Random): MandalaParameters {
-        val next = randomLayers(random)
+    fun MandalaParameters.randomAll(random: Random, maxLayers: Int = MAX_LAYERS): MandalaParameters {
+        val next = randomLayers(random, maxLayers)
         // The macOS dice leave out auto and image, and Grain since it is no longer offered (TUNE-1).
         val types = listOf(BaseLayerType.COLOR, BaseLayerType.GRADIENT, BaseLayerType.SUNBURST)
         return next.copy(

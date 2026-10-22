@@ -49,6 +49,8 @@ import com.mathis.mandala.core.Quotes
 import com.mathis.mandala.core.TextLayerSettings
 import com.mathis.mandala.core.MandalaParameters
 import com.mathis.mandala.core.MandalaRenderer
+import com.mathis.mandala.core.ProFeature
+import com.mathis.mandala.core.ProFeatures
 import com.mathis.mandala.core.RenderCancelledException
 import com.mathis.mandala.core.RenderOptions
 import com.mathis.mandala.core.SettingsJson
@@ -116,6 +118,18 @@ enum class NewKind(val label: String) { VARIATION("Variation"), LAYERS("New laye
 /** A new mandala shown next to the current one in the menu; nothing is replaced until it is used. */
 data class Candidate(val kind: NewKind, val params: MandalaParameters, val image: ImageBitmap? = null, val rendering: Boolean = true)
 
+/**
+ * The Pro sheet's reason to open (ADR-0016): the Pro features the mandala uses, what the user was
+ * about to do with it, and that step, taken again once the features are removed; or a plain `note`
+ * (the favourites limit). A request without any of them is the sheet opened from an "About Pro" link.
+ */
+data class ProRequest(
+    val features: Set<ProFeature> = emptySet(),
+    val action: String? = null,
+    val note: String? = null,
+    val then: (() -> Unit)? = null,
+)
+
 /** One-off things for the screen to do. */
 data class HistoryState(val canGoBack: Boolean, val canGoForward: Boolean)
 
@@ -175,6 +189,62 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
     val proState: StateFlow<ProState> = pro.state
 
     fun buyPro(activity: android.app.Activity) = pro.buy(activity)
+
+    // ── The line between free and Pro (ADR-0016) ──
+
+    private val _proRequest = MutableStateFlow<ProRequest?>(null)
+
+    /** Why the Pro sheet is open; null while it is closed. */
+    val proRequest: StateFlow<ProRequest?> = _proRequest.asStateFlow()
+
+    /** The Pro features the mandala uses that the user does not own: empty with Pro. */
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val missingPro: StateFlow<Set<ProFeature>> = combine(_params, pro.state) { p, pr -> if (pr.owned) emptySet() else ProFeatures.of(p) }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, emptySet())
+
+    /** Opens the Pro sheet from an "About Pro" link or the mark on the mandala. */
+    fun showPro() {
+        _proRequest.value = ProRequest(features = missingPro.value)
+    }
+
+    fun closePro() {
+        _proRequest.value = null
+    }
+
+    /**
+     * Pro features may be tried, but keeping a mandala that uses them needs Pro: returns true when
+     * `step` may go ahead, otherwise opens the Pro sheet, which can take it after removing them.
+     */
+    private fun mayKeep(action: String, step: () -> Unit): Boolean {
+        val missing = if (pro.state.value.owned) emptySet() else ProFeatures.of(_params.value)
+        if (missing.isEmpty()) return true
+        _proRequest.value = ProRequest(missing, action, then = step)
+        return false
+    }
+
+    /** Hides the Pro features (Back brings them back) and takes the step the sheet was opened for, if any. */
+    fun continueWithoutPro() {
+        val request = _proRequest.value ?: return
+        _proRequest.value = null
+        _params.update { ProFeatures.removed(it) }
+        request.then?.invoke()
+    }
+
+    /** Favourites the user keeps beyond the built-in starters, which do not count towards the free five. */
+    private val starterIds: Set<String> by lazy {
+        runCatching { application.assets.open(STARTER_FAVORITES).use { SettingsJson.decodeFavorites(it.reader().readText()) }.mapTo(HashSet()) { it.id } }
+            .getOrDefault(emptySet())
+    }
+
+    /** How many more favourites fit without Pro; unlimited with it. */
+    private fun favouriteRoom(): Int =
+        if (pro.state.value.owned) Int.MAX_VALUE else Favorites.room(_favorites.value, starterIds, ProFeatures.FREE_FAVOURITES)
+
+    /** Own favourites (not starters) and how many are free, for the favourites sheet; null with Pro. */
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val favouriteCount: StateFlow<Pair<Int, Int>?> = combine(_favorites, pro.state) { f, pr ->
+        if (pr.owned) null else f.count { it.id !in starterIds } to ProFeatures.FREE_FAVOURITES
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, null)
 
     // ── Save sheet (ADR-0010) ──
 
@@ -455,9 +525,12 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
 
     /** New layers and background, like "Randomize All" on the Mac. */
     fun surprise() {
-        _params.update { it.randomAll(Random) }
+        _params.update { it.randomAll(Random, surpriseLayers()) }
         _selected.value = 0
     }
+
+    /** Surprise mandalas stay within the free line without Pro, so they can always be kept. */
+    private fun surpriseLayers(): Int = if (pro.state.value.owned) Randomize.MAX_LAYERS else ProFeatures.FREE_LAYERS
 
     private val _candidate = MutableStateFlow<Candidate?>(null)
 
@@ -470,8 +543,8 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         val current = _params.value
         val next = when (kind) {
             NewKind.VARIATION -> current.newVariation(::randomSeed)
-            NewKind.LAYERS -> current.randomLayers(Random)
-            NewKind.EVERYTHING -> current.randomAll(Random)
+            NewKind.LAYERS -> current.randomLayers(Random, surpriseLayers())
+            NewKind.EVERYTHING -> current.randomAll(Random, surpriseLayers())
         }
         // The last picture stays while the next one is drawn.
         _candidate.value = Candidate(kind, next, image = _candidate.value?.image)
@@ -516,7 +589,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
 
     /** New layers, like "Randomize Layers" on the Mac. */
     fun randomLayers() {
-        _params.update { it.randomLayers(Random) }
+        _params.update { it.randomLayers(Random, surpriseLayers()) }
         _selected.value = 0
     }
 
@@ -529,18 +602,16 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
 
     private val _moveTarget = MutableStateFlow<MoveTarget?>(null)
 
-    /** What drags on the canvas move: the selected layer or the emblem; null while they do not. Pro only. */
+    /** What drags on the canvas move: the selected layer or the emblem; null while they do not. Moved layers are Pro to keep. */
     val moveTarget: StateFlow<MoveTarget?> = _moveTarget.asStateFlow()
 
     fun setMoveTarget(target: MoveTarget?) {
-        if (target != null && !pro.state.value.owned) return
         _moveTarget.value = target
         if (target != null) _drawTool.value = null
     }
 
     /** Moves, sizes and turns the move target by a gesture on the canvas (fractions of its width). */
     fun moveBy(dx: Double, dy: Double, zoom: Double, turnDegrees: Double) {
-        if (!pro.state.value.owned) return
         when (_moveTarget.value) {
             MoveTarget.LAYER -> updateSelected { it.movedBy(dx, dy, zoom, turnDegrees) }
             MoveTarget.EMBLEM -> updateEmblem { it.movedBy(dx, dy, zoom, turnDegrees) }
@@ -592,6 +663,14 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
     // ── Favourites ──
 
     fun addFavorite() {
+        if (favouriteRoom() <= 0) {
+            _proRequest.value = ProRequest(
+                note = "You keep ${ProFeatures.FREE_FAVOURITES} favourites of your own without Pro, besides the examples. " +
+                    "Delete one to make room, or get Pro for as many as you like.",
+            )
+            return
+        }
+        if (!mayKeep("Keep as favourite", ::addFavorite)) return
         val image = _preview.value.image ?: return
         val favorite = Favorite(
             id = UUID.randomUUID().toString().uppercase(),
@@ -644,10 +723,19 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
                     }
                 }
                 is MacFile.Favorites -> {
+                    val room = favouriteRoom()
                     var added = 0
-                    _favorites.update { current -> Favorites.merge(current, file.favorites).also { added = it.second }.first }
-                    val already = file.favorites.size - added
-                    message("Imported $added favourites" + if (already > 0) " ($already were already there)" else "")
+                    var left = 0
+                    _favorites.update { current ->
+                        val merged = Favorites.merge(current, file.favorites, room)
+                        added = merged.added
+                        left = merged.left
+                        merged.list
+                    }
+                    val already = file.favorites.size - added - left
+                    val alreadyNote = if (already > 0) " ($already were already there)" else ""
+                    val proNote = if (left > 0) ". $left more fit with Pro" else ""
+                    message("Imported $added favourites$alreadyNote$proNote")
                 }
                 null -> message("This is not a Mandala settings or favourites file.")
             }
@@ -677,6 +765,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
      */
     fun saveImage(large: Boolean) {
         if (large && !pro.state.value.owned) return
+        if (!mayKeep("Save") { saveImage(large) }) return
         val choice = _saveChoice.value
         val (w, h) = Editing.exportSize(choice.format, _screenAspect.value, large)
         val params = _params.value
@@ -695,6 +784,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
      * fills the screen, which suits a wallpaper best.
      */
     fun setWallpaper(target: WallpaperTarget, filled: Boolean = false) {
+        if (!mayKeep("Set as wallpaper") { setWallpaper(target, filled) }) return
         val choice = _saveChoice.value
         val large = pro.state.value.owned
         val (w, h) = Editing.exportSize(Editing.SaveFormat.SCREEN, _screenAspect.value, large)
@@ -715,7 +805,11 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
-    fun shareImage() = renderFullSize("Creating the image", Editing.EXPORT_SIZE, Editing.EXPORT_SIZE, large = false, { Framing() }, textFollows = false) { image, fileName ->
+    fun shareImage() {
+        if (mayKeep("Share", ::shareImage)) shareSquare()
+    }
+
+    private fun shareSquare() = renderFullSize("Creating the image", Editing.EXPORT_SIZE, Editing.EXPORT_SIZE, large = false, { Framing() }, textFollows = false) { image, fileName ->
         exportStep("Preparing to share")
         val uri = withContext(Dispatchers.IO) { ImageShare.prepare(getApplication(), image, fileName) }
         _events.send(EditorEvent.ShareImage(uri))

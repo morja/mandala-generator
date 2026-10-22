@@ -28,6 +28,16 @@ class FavoritesTest {
     }
 
     @Test
+    fun withoutProOnlyFiveOwnFavouritesFitAndStartersDoNotCount() {
+        val list = listOf(fav("s1"), fav("s2")) + List(3) { fav("own$it") }
+        assertEquals(2, Favorites.room(list, setOf("s1", "s2"), 5))
+        val merged = Favorites.merge(list, List(4) { fav("new$it") }, room = 2)
+        assertEquals(2, merged.added)
+        assertEquals(2, merged.left)
+        assertEquals(0, Favorites.room(merged.list, setOf("s1", "s2"), 5))
+    }
+
+    @Test
     fun storeRoundTripAndBrokenFile() {
         val file = File(folder.root, "favorites.json")
         val store = FavoritesStore(file)
