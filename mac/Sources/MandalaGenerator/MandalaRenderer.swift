@@ -971,11 +971,12 @@ struct MandalaRenderer {
         var ci  = CIImage(cgImage: image)
 
         // ── Vignette ──
+        // Above 1 (slider up to 2, TUNE-1) the radius stays at 1 and only the intensity keeps growing.
         if settings.vignette > 0,
            let vig = CIFilter(name: "CIVignette") {
             vig.setValue(ci, forKey: kCIInputImageKey)
             vig.setValue(settings.vignette * 2.5, forKey: kCIInputIntensityKey)
-            vig.setValue(0.4 + settings.vignette * 0.6, forKey: kCIInputRadiusKey)
+            vig.setValue(min(1.0, 0.4 + settings.vignette * 0.6), forKey: kCIInputRadiusKey)
             if let out = vig.outputImage?.cropped(to: ext) { ci = out }
         }
 
