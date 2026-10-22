@@ -1,6 +1,6 @@
 # STORE-1 · Google Play listing and Play Console answers
 
-Prepared 20 October 2026 for the first Android release; entered in the Play Console the same day. Updated 22 October 2026 for version 1.1 and later (save formats, wallpaper, what Pro adds, starter favourites) and entered in the Play Console the same day; the screenshots there are still the 20 October ones. Graphics in this folder: `play-icon-512.png` (512×512, 32-bit PNG), `play-feature-graphic.png` (1024×500), and seven phone screenshots in `screenshots/` (1080×2160, the longest side Google allows, cropped from Mathis' Galaxy S23 without the status bar and the gesture bar; taken 22 October 2026): Flower of Life emblem, favourites, quote, layers, new mandala with preview, save formats, menu. AI asset declaration: "Don't label assets" (icon and feature graphic are rendered by the app, screenshots are real).
+Prepared 20 October 2026 for the first Android release; entered in the Play Console the same day. Updated 22 October 2026 for version 1.1 and later (save formats, wallpaper, what Pro adds, starter favourites) and entered in the Play Console the same day; the screenshots there are still the 20 October ones. Graphics in this folder: `play-icon-512.png` (512×512, 32-bit PNG), `play-feature-graphic.png` (1024×500), and seven phone screenshots in `screenshots/` (1080×2160, the longest side Google allows, cropped from Mathis' Galaxy S23 without the status bar and the gesture bar; taken 22 October 2026): layers, Om emblem, a mandala as lock screen wallpaper, quote, favourites, save formats, new mandala with preview. AI asset declaration: "Don't label assets" (icon and feature graphic are rendered by the app, screenshots are real).
 
 ## App details
 
@@ -124,15 +124,19 @@ Without `keystore.properties`, release builds are signed with the local debug ke
 
 ## Screenshots
 
-Taken on 22 October 2026 with the starter favourites and the current editor, in this order:
+Taken on 22 October 2026 with the starter favourites and the current editor. The order starts with what the app shows first, the layers (Mathis' choice):
 
-1. Flower of Life emblem (favourite 6), Emblem tab.
-2. Favourites sheet, from the top.
-3. The Rumi quote "This is the House of Love" (favourite 4), Text tab.
-4. Hypocycloid, Universe and Phyllotaxis (favourite 21), Layers tab.
-5. Menu > New layers: the new mandala next to the current one before it replaces it.
+1. Hypocycloid, Universe and Phyllotaxis (favourite 21), Layers tab.
+2. Om emblem (favourite 2), Emblem tab.
+3. A mandala set as lock screen wallpaper (Menu > Wallpaper), without widgets.
+4. The Rumi quote "This is the House of Love" (favourite 4), Text tab.
+5. Favourites sheet, from the top.
 6. Save sheet in the screen format, with Save and Save large.
-7. Menu with Favourite, Share, Wallpaper and the dice for a new mandala.
+7. Menu > New layers: the new mandala next to the current one before it replaces it.
+
+No drawing screenshot (Mathis, 22 October 2026). Samsung marks the lock screen with "AI-generated content" at the bottom; the app writes no such metadata (the saved PNG has only IHDR, sBIT and sRGB), and the crop removes the label.
+
+`docs/mocks/DM-8-store-preview.html` shows the listing with these texts and screenshots as a local page (light and dark, English and German), since Google shows the real page only after the first review.
 
 The German listing has no screenshots of its own and shows these. All quotes shown are public domain (ADR-0007): Rumi in Nicholson's translation (1898, Nicholson died 1945), and in the favourites Gibran's The Prophet (1923, Gibran died 1931) and Whitman.
 
@@ -143,7 +147,7 @@ State on 22 October 2026, read from the Play Console through the API: production
 1. Done: upload key and `android/keystore.properties`. To create one again:
    `keytool -genkeypair -v -keystore ~/.keystore/mandalagenerator-upload.jks -alias upload -keyalg RSA -keysize 4096 -validity 10000`
 2. Done: the app in the Play Console, Play App Signing (with the first upload), tearoom.one with the privacy policy, the product `pro` with its price.
-3. Done on 22 October 2026: the seven new screenshots, uploaded through the API in place of the six from 20 October.
+3. Done on 22 October 2026: the seven new screenshots, uploaded through the API in place of the six from 20 October; the same day replaced by the set above.
 4. Done on 22 October 2026 (through the API): the listing texts above in English and German, and the product's new description in English and German.
 5. Done on 20 October 2026 (checked in the console on 22 October): all ten App content declarations. Data safety "doesn't collect or share data" (data that Google Play's billing collects itself need not be declared, Play Console Help); target audience 13 and over; content ratings ESRB Everyone, PEGI 3, USK 0, and ClassInd 14+ in Brazil only because of in-app purchases.
    Sign in details (app access) says "restricted" with promo codes for Pro, which is right for a paid product; Google's reviewers read its instructions. Mathis updated them on 22 October 2026 to the save button in the top bar, then "Save large".
