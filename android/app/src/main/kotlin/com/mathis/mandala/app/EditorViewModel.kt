@@ -101,8 +101,8 @@ data class Candidate(val kind: NewKind, val params: MandalaParameters, val image
 data class HistoryState(val canGoBack: Boolean, val canGoForward: Boolean)
 
 sealed interface EditorEvent {
-    /** `canUndo` steps back in the settings history; `undo` restores something else instead. */
-    data class Message(val text: String, val canUndo: Boolean = false, val undo: (() -> Unit)? = null) : EditorEvent
+    /** `undo` restores what the message reports; changes to the mandala are undone with Back instead. */
+    data class Message(val text: String, val undo: (() -> Unit)? = null) : EditorEvent
     data class ShareImage(val uri: Uri) : EditorEvent
 }
 
@@ -138,9 +138,6 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
 
     private val _events = Channel<EditorEvent>(Channel.BUFFERED)
     val events: Flow<EditorEvent> = _events.receiveAsFlow()
-
-    /** Settings before the last replace (favourite or file), for "Undo". */
-    private var beforeReplace: MandalaParameters? = null
 
     private val historyStore = HistoryStore(File(application.filesDir, "history.json"))
     private val history = History<MandalaParameters>().apply { restore(historyStore.load()) }
@@ -496,8 +493,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
 
     fun clearStrokes(tool: DrawTool) {
         if (_params.value.strokeCount(tool) == 0) return
-        replace(_params.value.clearStrokes(tool), keepSelection = true)
-        message("${tool.label} cleared", canUndo = true)
+        _params.update { it.clearStrokes(tool) }
     }
 
     /** Applies a layer operation and selects the layer it returns. */
@@ -507,18 +503,10 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         _selected.value = index
     }
 
-    /** Replaces all settings (favourite or file); the previous ones can be restored with [undo]. */
-    private fun replace(params: MandalaParameters, keepSelection: Boolean = false) {
-        beforeReplace = _params.value
+    /** Replaces all settings (favourite or file); Back in the history brings the previous ones back. */
+    private fun replace(params: MandalaParameters) {
         _params.value = params
-        if (!keepSelection) _selected.value = 0
-    }
-
-    fun undo() {
-        val previous = beforeReplace ?: return
-        beforeReplace = null
-        _params.value = previous
-        _selected.value = _selected.value.coerceIn(0, previous.layers.lastIndex)
+        _selected.value = 0
     }
 
     // ── Favourites ──
@@ -541,7 +529,6 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
             Thumbnails.decode(favorite.thumbnailData)?.let { thumb -> _preview.update { it.copy(image = thumb, rendering = true) } }
         }
         replace(favorite.parameters)
-        message("Favourite applied", canUndo = true)
     }
 
     fun removeFavorite(id: String) {
@@ -574,7 +561,6 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
                         message("The file has no layers.")
                     } else {
                         replace(file.params)
-                        message("Settings loaded", canUndo = true)
                     }
                 }
                 is MacFile.Favorites -> {
@@ -688,8 +674,8 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
-    private fun message(text: String, canUndo: Boolean = false, undo: (() -> Unit)? = null) {
-        _events.trySend(EditorEvent.Message(text, canUndo, undo))
+    private fun message(text: String, undo: (() -> Unit)? = null) {
+        _events.trySend(EditorEvent.Message(text, undo))
     }
 
     private suspend fun renderFramePreview(request: FrameRequest) {
