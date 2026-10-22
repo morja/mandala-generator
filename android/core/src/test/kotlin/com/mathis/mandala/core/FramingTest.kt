@@ -1,6 +1,7 @@
 package com.mathis.mandala.core
 
 import kotlin.math.abs
+import kotlin.math.log10
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -16,6 +17,10 @@ class FramingTest {
 
     private fun pixel(img: Image8, x: Int, y: Int, c: Int) = img.get((y * img.width + x) * 3 + c)
 
+    /**
+     * Not byte-identical: on the taller canvas the layer is drawn as far as its style reaches, and
+     * its glow is blurred on that larger buffer, on a slightly different reference grid (68 dB).
+     */
     @Test
     fun portraitWithTheDefaultFramingHasTheSquareImageInItsMiddle() {
         val square = render(oneLayer, RenderOptions(outputSize = 256, supersample = false))
@@ -23,9 +28,23 @@ class FramingTest {
         assertEquals(256, portrait.width)
         assertEquals(400, portrait.height)
         val top = (400 - 256) / 2
+        var squared = 0.0
         for (y in 0 until 256) for (x in 0 until 256) for (c in 0..2) {
-            assertEquals(pixel(square, x, y, c), pixel(portrait, x, y + top, c), "pixel $x,$y")
+            val d = pixel(square, x, y, c) - pixel(portrait, x, y + top, c)
+            squared += d * d
         }
+        val psnr = 10 * log10(255.0 * 255.0 / (squared / (256 * 256 * 3)))
+        assertTrue(psnr > 60, "middle of the portrait at $psnr dB")
+    }
+
+    /** The edge of a layer's buffer must not show on a canvas taller than the mandala (Star Burst reaches past its radius). */
+    @Test
+    fun aPortraitShowsNoBufferEdgeAboveTheMandala() {
+        val rays = SettingsJson.decode("""{"layers":[{"style":"starBurst","complexity":1,"density":1,"glowIntensity":0,"wash":0,"abstractLevel":0,"seed":5}],"baseLayer":{"isEnabled":false}}""")
+        val img = render(rays, RenderOptions(width = 200, height = 400, supersample = false))
+        // Rows just above and below where the centred square (and its margin) ended: rays go on.
+        fun lit(y: Int) = (0 until 200).count { x -> pixel(img, x, y, 0) + pixel(img, x, y, 1) + pixel(img, x, y, 2) > 6 }
+        assertTrue(lit(92) > 0 && lit(308) > 0, "no rays beyond the square: ${lit(92)} above, ${lit(308)} below")
     }
 
     @Test

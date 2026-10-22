@@ -74,6 +74,18 @@ class MemoryBudgetTest {
         assertEquals(4779, MandalaRenderer.render(params, options).image.height)
     }
 
+    /**
+     * The tallest Pro portrait with the mandala fitting the width, its layers in the styles that reach
+     * farthest past their radius: each is drawn in a square as large as its style reaches (ADR-0010).
+     */
+    @Test
+    fun exportsTheProPortraitWithFarReachingStylesWithin256MbHeap() {
+        val far = listOf(MandalaStyle.DEEP_NEBULA, MandalaStyle.TENDRIL, MandalaStyle.TESSERACT, MandalaStyle.BUTTERFLY, MandalaStyle.WAVE_INTERFERENCE)
+        val params = SettingsJson.decode(fiveHeavyLayers).let { p -> p.copy(layers = p.layers.mapIndexed { i, l -> l.copy(style = far[i], scale = 1.2) }) }
+        val options = RenderOptions(width = 2048, height = 4779, supersample = false, threads = 4)
+        assertEquals(4779, MandalaRenderer.render(params, options).image.height)
+    }
+
     /** The widest Pro landscape (16:9, 3641 x 2048) zoomed in as far as the app allows. */
     @Test
     fun exportsTheProLandscapeZoomedInWithin256MbHeap() {
