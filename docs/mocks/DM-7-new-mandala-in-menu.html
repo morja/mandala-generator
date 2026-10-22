@@ -1,0 +1,344 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DM-7 New mandala in the menu</title>
+<style>
+  :root {
+    --background: #0A0908; --surface: #121110; --surface-raised: #1B1917; --text: #E6E1DB;
+    --text-muted: #9C948B; --outline: #2E2A26; --accent: #D9A15C; --on-accent: #241605;
+    --accent-soft: #2A2117; --accent-fill: rgba(217, 161, 92, .22); --canvas: #000000; --scrim: rgba(0, 0, 0, .55);
+    --xs: 4px; --sm: 8px; --md: 12px; --lg: 16px; --xl: 24px; --r-sm: 8px; --r-md: 12px; --r-lg: 20px;
+    --ease: cubic-bezier(.2, .7, .2, 1);
+    --viewer-bg: #3a3632; --viewer-text: #f0ebe4; --viewer-line: #6b645c;
+  }
+  :root[data-theme="light"] {
+    --background: #F7F4EF; --surface: #FFFDFA; --surface-raised: #EFEAE3; --text: #221F1C;
+    --text-muted: #5F5851; --outline: #CFC7BD; --accent: #8A5210; --on-accent: #FFFFFF; --accent-soft: #F3E3CF;
+    --accent-fill: rgba(138, 82, 16, .16); --scrim: rgba(34, 31, 28, .35);
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--viewer-bg); font: 15px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color: var(--text); }
+  .viewer { max-width: 1100px; margin: 0 auto; padding: var(--lg); }
+  .switcher { display: flex; flex-wrap: wrap; gap: var(--sm); align-items: center; margin-bottom: var(--lg); color: var(--viewer-text); }
+  .switcher button { font: inherit; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--viewer-line); background: transparent; color: inherit; cursor: pointer; }
+  .switcher button.on { background: var(--viewer-text); color: #221F1C; border-color: var(--viewer-text); }
+  .switcher .gap { width: var(--lg); }
+  .note { color: var(--viewer-text); max-width: 720px; margin: 0 0 var(--lg); }
+  .caption { color: var(--viewer-text); font-size: 13px; margin-top: var(--sm); max-width: 375px; }
+
+  /* Phone */
+  .phone { width: min(375px, 100%); height: 800px; border-radius: 28px; overflow: hidden; background: var(--background); position: relative;
+           display: flex; flex-direction: column; border: 8px solid #1d1b19; }
+  .topbar { height: 52px; display: flex; align-items: center; padding: 0 var(--xs); gap: 2px; flex: none; }
+  .icon { width: 40px; height: 40px; display: grid; place-items: center; color: var(--text); border-radius: 50%; }
+  .icon svg { width: 22px; height: 22px; }
+  .icon.accent { color: var(--accent); }
+  .icon.more { cursor: pointer; }
+  .icon.more.open { background: var(--surface-raised); }
+  .spacer { flex: 1; }
+  .canvas { margin: 0 var(--lg); aspect-ratio: 1; border-radius: var(--r-md); background: var(--canvas); overflow: hidden; flex: none; }
+  .canvas img, .thumb img { width: 100%; height: 100%; display: block; }
+  .tabs { display: flex; flex: none; border-bottom: 1px solid var(--outline); margin: var(--sm) var(--lg) 0; }
+  .tabs div { flex: 1; text-align: center; padding: var(--md) 0; font-weight: 600; font-size: 14px; }
+  .tabs div.on { color: var(--accent); box-shadow: inset 0 -3px 0 var(--accent); }
+  .scrim { position: absolute; inset: 0; background: var(--scrim); opacity: 0; pointer-events: none; transition: opacity .2s; }
+  .open-menu .scrim { opacity: 1; pointer-events: auto; }
+
+  /* Icons: two tones, a soft fill under an accent line */
+  .ico { width: 24px; height: 24px; flex: none; color: var(--accent); }
+  .ico .fill { fill: var(--accent-fill); stroke: none; }
+  .ico.muted { color: var(--text-muted); }
+  .ico.muted .fill { fill: transparent; }
+  .switch { width: 40px; height: 24px; border-radius: 12px; background: var(--surface-raised); border: 1px solid var(--outline); position: relative; flex: none; }
+  .switch::after { content: ""; position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; border-radius: 50%; background: var(--text-muted); transition: left .15s; }
+  .switch.on { background: var(--accent); border-color: var(--accent); }
+  .switch.on::after { left: 19px; background: var(--on-accent); }
+
+  /* Sheet (from DM-5 C) */
+  .sheet { position: absolute; left: 0; right: 0; bottom: 0; max-height: 92%; overflow-y: auto; scrollbar-width: none; background: var(--surface);
+           border-radius: var(--r-lg) var(--r-lg) 0 0; padding: var(--sm) var(--lg) var(--xl); transform: translateY(100%); transition: transform .28s var(--ease); }
+  .sheet::-webkit-scrollbar { display: none; }
+  .open-menu .sheet { transform: none; }
+  .grip { width: 36px; height: 4px; border-radius: 2px; background: var(--outline); margin: 0 auto var(--md); }
+  .current { display: flex; gap: var(--md); align-items: center; }
+  .thumb { width: 56px; height: 56px; border-radius: var(--r-sm); overflow: hidden; flex: none; background: var(--canvas); }
+  .name { font-weight: 600; }
+  .meta { color: var(--text-muted); font-size: 13px; }
+  .keep { display: flex; gap: var(--sm); margin-top: var(--md); }
+  .keep .pill { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: var(--md) 0; border-radius: var(--r-md);
+                background: var(--surface-raised); font-size: 12px; cursor: pointer; }
+  .section { margin-top: var(--lg); }
+  .section h3 { margin: 0; font-size: 15px; font-weight: 600; }
+  .section .lead { color: var(--text-muted); font-size: 13px; margin: 2px 0 var(--sm); }
+  .rows .row { display: flex; align-items: center; gap: var(--md); padding: var(--md) 0; border-bottom: 1px solid var(--outline); cursor: pointer; }
+  .rows .row:last-child { border-bottom: 0; }
+  .rows .txt { flex: 1; }
+  .rows .txt small { display: block; color: var(--text-muted); font-size: 12px; }
+  .chev { color: var(--text-muted); width: 18px; height: 18px; flex: none; }
+  .seg { display: flex; background: var(--surface-raised); border-radius: 999px; padding: 3px; flex: none; }
+  .seg span { padding: 4px 10px; border-radius: 999px; font-size: 13px; color: var(--text-muted); cursor: pointer; }
+  .seg span.on { background: var(--surface); color: var(--text); }
+  .settings { margin-top: var(--md); border-top: 1px solid var(--outline); }
+  .undo-hint { display: flex; align-items: center; gap: var(--sm); color: var(--text-muted); font-size: 13px; margin-top: var(--sm); }
+  .undo-hint svg { width: 16px; height: 16px; flex: none; }
+
+  /* A: explained list */
+  .new-list { background: var(--surface-raised); border-radius: var(--r-md); padding: 0 var(--md); }
+  .new-list .row { border-color: var(--outline); }
+
+  /* B: how much changes */
+  .amount { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--sm); }
+  .amount .opt { background: var(--surface-raised); border-radius: var(--r-md); padding: var(--md) var(--sm) var(--sm); display: flex; flex-direction: column;
+                 align-items: center; gap: 6px; text-align: center; cursor: pointer; }
+  .amount .opt .ico { width: 30px; height: 30px; }
+  .amount .opt b { font-size: 13px; font-weight: 600; }
+  .amount .opt small { color: var(--text-muted); font-size: 12px; line-height: 1.3; }
+  .scale { display: flex; gap: 3px; margin-top: 2px; }
+  .scale i { width: 14px; height: 4px; border-radius: 2px; background: var(--outline); }
+  .scale i.on { background: var(--accent); }
+
+  /* C: try before replacing */
+  .compare { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: var(--sm); }
+  .compare figure { margin: 0; }
+  .compare .big { aspect-ratio: 1; border-radius: var(--r-md); overflow: hidden; background: var(--canvas); position: relative; }
+  .compare .big img { width: 100%; height: 100%; display: block; transition: filter .3s, transform .3s; }
+  .compare figcaption { text-align: center; font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+  .compare .arrow { color: var(--text-muted); width: 20px; height: 20px; }
+  .chips { display: flex; gap: 6px; margin: var(--md) 0 var(--sm); }
+  .chips span { flex: 1; text-align: center; padding: 7px 0; border-radius: 999px; border: 1px solid var(--outline); font-size: 13px; cursor: pointer; }
+  .chips span.on { background: var(--accent-soft); border-color: var(--accent); color: var(--text); }
+  .buttons { display: flex; gap: var(--sm); }
+  .buttons .b { flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 11px 0; border-radius: 999px; font-weight: 600; font-size: 14px; cursor: pointer; }
+  .buttons .b.ghost { border: 1px solid var(--outline); }
+  .buttons .b.main { background: var(--accent); color: var(--on-accent); }
+  .buttons .b svg { width: 18px; height: 18px; }
+  .buttons .b.main .ico { color: var(--on-accent); }
+  .buttons .b.main .ico .fill { fill: transparent; }
+  .back { display: flex; align-items: center; gap: var(--xs); color: var(--text-muted); font-size: 14px; cursor: pointer; margin-bottom: var(--sm); }
+  .back svg { width: 18px; height: 18px; transform: scaleX(-1); }
+  .amount .opt.picked { background: var(--accent-soft); box-shadow: inset 0 0 0 1px var(--accent); }
+  .step { display: none; }
+  .step.on { display: block; }
+</style>
+</head>
+<body>
+<div class="viewer">
+  <div class="switcher">
+    <button data-v="A" class="on">A · A tap replaces</button>
+    <button data-v="B">B · A tap shows a preview first</button>
+    <span class="gap"></span>
+    <button data-t="dark" class="on">Dark</button>
+    <button data-t="light">Light</button>
+  </div>
+  <p class="note" id="note"></p>
+  <div class="phone" id="phone"></div>
+  <p class="caption" id="caption"></p>
+</div>
+
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <!-- Dice: every action that makes something random uses one, with more pips for more change. -->
+    <symbol id="i-die1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect class="fill" x="3.5" y="3.5" width="17" height="17" rx="4"/><rect x="3.5" y="3.5" width="17" height="17" rx="4"/><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="i-die3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect class="fill" x="3.5" y="3.5" width="17" height="17" rx="4"/><rect x="3.5" y="3.5" width="17" height="17" rx="4"/><g fill="currentColor" stroke="none"><circle cx="8.3" cy="8.3" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="15.7" cy="15.7" r="1.5"/></g></symbol>
+    <symbol id="i-die5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect class="fill" x="3.5" y="3.5" width="17" height="17" rx="4"/><rect x="3.5" y="3.5" width="17" height="17" rx="4"/><g fill="currentColor" stroke="none"><circle cx="8.3" cy="8.3" r="1.5"/><circle cx="15.7" cy="8.3" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="8.3" cy="15.7" r="1.5"/><circle cx="15.7" cy="15.7" r="1.5"/></g></symbol>
+    <symbol id="i-share" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path class="fill" d="M5 11h14v8.5a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1z"/><path d="M8.5 11H6a1 1 0 0 0-1 1v7.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V12a1 1 0 0 0-1-1h-2.5"/><path d="M12 15V3.5M8.5 7 12 3.5 15.5 7"/></symbol>
+    <symbol id="i-star" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path class="fill" d="m12 3.5 2.6 5.3 5.8.8-4.2 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8-4.2-4.1 5.8-.8z"/><path d="m12 3.5 2.6 5.3 5.8.8-4.2 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8-4.2-4.1 5.8-.8z"/></symbol>
+    <symbol id="i-image" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect class="fill" x="3.5" y="4.5" width="17" height="15" rx="2.5"/><rect x="3.5" y="4.5" width="17" height="15" rx="2.5"/><circle cx="12" cy="12" r="3.2"/><path d="M12 6.8v1.6M12 15.6v1.6M6.8 12h1.6M15.6 12h1.6"/></symbol>
+    <symbol id="i-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path class="fill" d="M3.5 9.5h17v8.5a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 18z"/><path d="M3.5 7.5V18a1.5 1.5 0 0 0 1.5 1.5h14a1.5 1.5 0 0 0 1.5-1.5V9.5A1.5 1.5 0 0 0 19 8h-7l-2-2.5H5A1.5 1.5 0 0 0 3.5 7z"/></symbol>
+    <symbol id="i-save" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path class="fill" d="M14 3.5H7A1.5 1.5 0 0 0 5.5 5v14A1.5 1.5 0 0 0 7 20.5h10a1.5 1.5 0 0 0 1.5-1.5V8z"/><path d="M14 3.5H7A1.5 1.5 0 0 0 5.5 5v14A1.5 1.5 0 0 0 7 20.5h10a1.5 1.5 0 0 0 1.5-1.5V8z"/><path d="M14 3.5V8h4.5M12 11v6m-2.5-2.5L12 17l2.5-2.5"/></symbol>
+    <symbol id="i-fast" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path class="fill" d="M13 3 5 13.5h6L10 21l8-10.5h-6z"/><path d="M13 3 5 13.5h6L10 21l8-10.5h-6z"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path class="fill" d="M19.5 14.5A8 8 0 0 1 9.5 4.5a8 8 0 1 0 10 10z"/><path d="M19.5 14.5A8 8 0 0 1 9.5 4.5a8 8 0 1 0 10 10z"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle class="fill" cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="8.5"/><path d="M12 11v5.5"/><circle cx="12" cy="7.8" r=".6" fill="currentColor"/></symbol>
+    <symbol id="i-undo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></symbol>
+    <symbol id="i-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-5-5 5 5-5 5"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5"/></symbol>
+  </defs>
+</svg>
+
+<template id="base">
+  <div class="topbar">
+    <div class="icon"><svg><use href="#i-undo"/></svg></div>
+    <div class="icon" style="opacity:.4;transform:scaleX(-1)"><svg><use href="#i-undo"/></svg></div>
+    <div class="spacer"></div>
+    <div class="icon"><svg class="ico" style="color:var(--text)"><use href="#i-die5"/></svg></div>
+    <div class="icon accent"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 4v11m-5-5 5 5 5-5M5 20h14"/></svg></div>
+    <div class="icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/></svg></div>
+    <div class="icon more" id="more" role="button" aria-label="More"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg></div>
+  </div>
+  <div class="canvas"><img id="main-img" src="dm-4-mandala.png" alt="Mandala preview"></div>
+  <div class="tabs"><div class="on">Layers</div><div>Scene</div><div>Emblem</div><div>Text</div><div>Draw</div></div>
+  <div class="scrim" id="scrim"></div>
+</template>
+
+<!-- Shared top of the sheet: the mandala on screen and what keeps it -->
+<template id="head">
+  <div class="grip"></div>
+  <div class="current">
+    <div class="thumb"><img class="cur-img" src="dm-4-mandala.png" alt=""></div>
+    <div style="flex:1"><div class="name">Floral, Wave, Moiré</div><div class="meta">4 layers · emblem off</div></div>
+  </div>
+  <div class="keep">
+    <div class="pill"><svg class="ico"><use href="#i-star"/></svg>Favourite</div>
+    <div class="pill"><svg class="ico"><use href="#i-share"/></svg>Share</div>
+    <div class="pill"><svg class="ico"><use href="#i-image"/></svg>Wallpaper</div>
+  </div>
+</template>
+
+<template id="settings">
+  <div class="rows settings">
+    <div class="row"><svg class="ico muted"><use href="#i-open"/></svg><div class="txt">Open file</div><svg class="chev"><use href="#i-chev"/></svg></div>
+    <div class="row"><svg class="ico muted"><use href="#i-save"/></svg><div class="txt">Save settings</div><svg class="chev"><use href="#i-chev"/></svg></div>
+    <div class="row" data-toggle="fast"><svg class="ico muted"><use href="#i-fast"/></svg><div class="txt">Fast preview<small>Saved images always get the full glow</small></div><i class="switch on"></i></div>
+    <div class="row"><svg class="ico muted"><use href="#i-moon"/></svg><div class="txt">Theme</div>
+      <div class="seg"><span data-seg="dark">Dark</span><span data-seg="light">Light</span></div></div>
+    <div class="row"><svg class="ico muted"><use href="#i-info"/></svg><div class="txt">About</div><svg class="chev"><use href="#i-chev"/></svg></div>
+  </div>
+</template>
+
+<template id="menu-A">
+  <div class="sheet">
+    <div data-slot="head"></div>
+    <div class="section">
+      <h3>New mandala</h3>
+      <p class="lead">Replaces the one above. More dots, more changes.</p>
+      <div class="amount">
+        <div class="opt" data-kind="Variation"><svg class="ico"><use href="#i-die1"/></svg><b>Variation</b><small>new details</small><span class="scale"><i class="on"></i><i></i><i></i></span></div>
+        <div class="opt" data-kind="New layers"><svg class="ico"><use href="#i-die3"/></svg><b>New layers</b><small>new styles</small><span class="scale"><i class="on"></i><i class="on"></i><i></i></span></div>
+        <div class="opt" data-kind="Everything"><svg class="ico"><use href="#i-die5"/></svg><b>Surprise me</b><small>everything</small><span class="scale"><i class="on"></i><i class="on"></i><i class="on"></i></span></div>
+      </div>
+    </div>
+    <div data-slot="settings"></div>
+  </div>
+</template>
+
+<template id="menu-B">
+  <div class="sheet">
+    <div class="step on" id="step1">
+      <div data-slot="head"></div>
+      <div class="section">
+        <h3>New mandala</h3>
+        <p class="lead">Shows it next to this one first. More dots, more changes.</p>
+      <div class="amount">
+        <div class="opt" data-kind="Variation"><svg class="ico"><use href="#i-die1"/></svg><b>Variation</b><small>new details</small><span class="scale"><i class="on"></i><i></i><i></i></span></div>
+        <div class="opt" data-kind="New layers"><svg class="ico"><use href="#i-die3"/></svg><b>New layers</b><small>new styles</small><span class="scale"><i class="on"></i><i class="on"></i><i></i></span></div>
+        <div class="opt" data-kind="Everything"><svg class="ico"><use href="#i-die5"/></svg><b>Surprise me</b><small>everything</small><span class="scale"><i class="on"></i><i class="on"></i><i class="on"></i></span></div>
+      </div>
+      </div>
+      <div data-slot="settings"></div>
+    </div>
+    <div class="step" id="step2">
+      <div class="grip"></div>
+      <div class="back" id="back"><svg><use href="#i-chev"/></svg>Menu</div>
+      <div class="compare">
+        <figure><div class="big"><img class="cur-img" src="dm-4-mandala.png" alt="Current mandala"></div><figcaption>Now</figcaption></figure>
+        <svg class="arrow"><use href="#i-arrow"/></svg>
+        <figure><div class="big"><img id="cand" src="dm-4-mandala.png" alt="New mandala"></div><figcaption id="cand-cap">Variation</figcaption></figure>
+      </div>
+      <div class="chips" id="chips"><span data-kind="Variation">Variation</span><span data-kind="New layers">New layers</span><span data-kind="Everything">Everything</span></div>
+      <div class="buttons">
+        <div class="b ghost" id="again"><svg class="ico"><use href="#i-die3"/></svg>Try another</div>
+        <div class="b main" id="use"><svg class="ico"><use href="#i-check"/></svg>Use new</div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+  const notes = {
+    A: "A is DM-6 B without the hint below. A tap on a die replaces the mandala at once; the menu stays open, so you can tap again and watch the small picture change. Like the die in the top bar, which stays instant and gets the five-dot die.",
+    B: "B is DM-6 B where a tap on a die opens the comparison from DM-6 C in the same sheet, not in a new dialog: now and new side by side, Try another, Use new, and Menu to go back. Nothing is replaced before Use new. Each try needs one small render.",
+  };
+  const captions = {
+    A: "Tap a die: the mandala above changes at once.",
+    B: "Tap a die, try a few, then use one or go back to the menu.",
+  };
+  const phone = document.getElementById('phone');
+  let variant = 'A';
+  let state = { light: false, fast: true, current: '', candidate: 'hue-rotate(70deg) saturate(1.2)', kind: 'Variation', roll: 0 };
+  const looks = {
+    'Variation': ['hue-rotate(25deg)', 'hue-rotate(-30deg) saturate(1.2)', 'hue-rotate(50deg) brightness(1.1)'],
+    'New layers': ['hue-rotate(120deg) saturate(1.3)', 'hue-rotate(200deg)', 'hue-rotate(160deg) contrast(1.15)'],
+    'Everything': ['hue-rotate(260deg) saturate(1.5)', 'hue-rotate(300deg) brightness(1.15)', 'invert(.15) hue-rotate(90deg)'],
+  };
+  const spin = { 'Variation': 'rotate(8deg)', 'New layers': 'rotate(30deg) scale(1.1)', 'Everything': 'rotate(60deg) scale(1.25)' };
+
+  function render(open) {
+    let menu = document.getElementById('menu-' + variant).innerHTML;
+    phone.innerHTML = document.getElementById('base').innerHTML + menu;
+    phone.querySelectorAll('[data-slot]').forEach(s => s.innerHTML = document.getElementById(s.dataset.slot).innerHTML);
+    document.getElementById('note').textContent = notes[variant];
+    document.getElementById('caption').textContent = captions[variant];
+    phone.querySelectorAll('#main-img, .cur-img').forEach(i => i.style.filter = state.current);
+    const more = document.getElementById('more');
+    const toggle = o => { phone.classList.toggle('open-menu', o); more.classList.toggle('open', o); };
+    more.onclick = () => toggle(!phone.classList.contains('open-menu'));
+    document.getElementById('scrim').onclick = () => toggle(false);
+    phone.querySelectorAll('[data-toggle]').forEach(el => {
+      const sw = el.querySelector('.switch'); sw.classList.toggle('on', state.fast);
+      el.onclick = () => { state.fast = !state.fast; sw.classList.toggle('on', state.fast); };
+    });
+    phone.querySelectorAll('[data-seg]').forEach(el => {
+      el.classList.toggle('on', (el.dataset.seg === 'light') === state.light);
+      el.onclick = () => { setTheme(el.dataset.seg); render(true); };
+    });
+    if (variant === 'A') setupInstant(); else setupStep();
+    if (open) { phone.classList.add('open-menu'); more.classList.add('open'); }
+  }
+
+  function applyLook(f) {
+    state.current = f;
+    phone.querySelectorAll('#main-img, .cur-img').forEach(i => i.style.filter = state.current);
+  }
+
+  function setupInstant() {
+    phone.querySelectorAll('.amount .opt').forEach(o => o.onclick = () => {
+      state.kind = o.dataset.kind; state.roll++;
+      applyLook(looks[state.kind][state.roll % 3]);
+    });
+  }
+
+  function setupStep() {
+    const s1 = document.getElementById('step1'), s2 = document.getElementById('step2');
+    phone.querySelectorAll('.amount .opt').forEach(o => o.onclick = () => {
+      state.kind = o.dataset.kind; state.roll++;
+      s1.classList.remove('on'); s2.classList.add('on'); setupTry();
+    });
+    document.getElementById('back').onclick = () => { s2.classList.remove('on'); s1.classList.add('on'); };
+  }
+
+  function setupTry() {
+    const cand = document.getElementById('cand');
+    const show = () => {
+      cand.style.filter = looks[state.kind][state.roll % 3];
+      cand.style.transform = spin[state.kind];
+      document.getElementById('cand-cap').textContent = state.kind;
+      document.querySelectorAll('#chips span').forEach(c => c.classList.toggle('on', c.dataset.kind === state.kind));
+    };
+    document.querySelectorAll('#chips span').forEach(c => c.onclick = () => { state.kind = c.dataset.kind; state.roll = 0; show(); });
+    document.getElementById('again').onclick = () => { state.roll++; show(); };
+    document.getElementById('use').onclick = () => {
+      applyLook(looks[state.kind][state.roll % 3]); state.roll++;
+      show();
+    };
+    show();
+  }
+
+  function setTheme(t) {
+    state.light = t === 'light';
+    document.documentElement.dataset.theme = t;
+    document.querySelectorAll('[data-t]').forEach(b => b.classList.toggle('on', b.dataset.t === t));
+  }
+
+  document.querySelectorAll('[data-v]').forEach(b => b.onclick = () => {
+    variant = b.dataset.v;
+    document.querySelectorAll('[data-v]').forEach(x => x.classList.toggle('on', x === b));
+    render(true);
+  });
+  document.querySelectorAll('[data-t]').forEach(b => b.onclick = () => { setTheme(b.dataset.t); render(true); });
+  render(true);
+</script>
+</body>
+</html>
