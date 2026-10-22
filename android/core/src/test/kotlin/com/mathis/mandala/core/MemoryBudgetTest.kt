@@ -37,6 +37,22 @@ class MemoryBudgetTest {
         assertTrue(result.warnings.isEmpty(), result.warnings.joinToString())
     }
 
+    /** The SVG line drawing (ADR-0013) is streamed, so only one layer's lines are held at a time. */
+    @Test
+    fun writesTheLineDrawingWithin256MbHeap() {
+        val params = SettingsJson.decode(fiveHeavyLayers)
+        var chars = 0L
+        val counter = object : Appendable {
+            override fun append(csq: CharSequence?): Appendable { chars += csq?.length ?: 4; return this }
+            override fun append(csq: CharSequence?, start: Int, end: Int): Appendable { chars += end - start; return this }
+            override fun append(c: Char): Appendable { chars++; return this }
+        }
+        val stats = VectorExport.svg(params, 1024, VectorExport.Look.COLOUR, counter)
+        assertTrue(stats.segments > 0)
+        // A file larger than this would be impractical to open; the worst case stays well below it.
+        assertTrue(chars < 64L * 1024 * 1024, "SVG of ${chars / 1024 / 1024} MB")
+    }
+
     @Test
     fun exports2048WithoutSupersamplingWithin256MbHeap() {
         val params = SettingsJson.decode(fiveHeavyLayers)

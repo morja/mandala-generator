@@ -14,7 +14,7 @@ private const val USAGE = """Usage:
   mandala render <settings.json> <out.png> [--size N] [--width N --height N]
                  [--centre-x F] [--centre-y F] [--zoom F] [--text follows|stays] [--threads N]
   mandala compare <a.png> <b.png> [--diff diff.png]
-  mandala svg <settings.json> <out.svg> [--size N] [--look glow|lines] [--gain F] [--blur yes|no]
+  mandala svg <settings.json> <out.svg> [--size N] [--look colour|lines]
 
 render   Renders a settings file saved by the macOS app to a PNG.
          --size       output size in pixels of a square image (default: the size stored in the file)
@@ -25,7 +25,8 @@ render   Renders a settings file saved by the macOS app to a PNG.
          --zoom       mandala size relative to fitting the width, 0.25 to 4 (default 1)
          --text       the quote stays in place on the canvas (default) or follows the mandala
          --threads    drawing/filter threads (default: all cores)
-svg      SPIKE-2: writes the layers' curves as SVG, without glow, effects, emblem or text.
+svg      Writes the mandala as an SVG line drawing (ADR-0013): layers' lines and the emblem,
+         without glow, effects, background or quote. --look colour (default) or lines.
 compare  Prints how far two images of equal size differ (mean/max error, PSNR)."""
 
 fun main(args: Array<String>) {
@@ -105,20 +106,15 @@ private fun svg(raw: List<String>): Int {
     if (args.positional.size != 2) throw UsageException("svg needs <settings.json> and <out.svg>")
     val (input, output) = args.positional
     val params = SettingsJson.decode(File(input).readText())
-    val look = when (args.options["look"] ?: "glow") {
-        "glow" -> VectorExport.Look.GLOW
+    val look = when (args.options["look"] ?: "colour") {
+        "colour" -> VectorExport.Look.COLOUR
         "lines" -> VectorExport.Look.LINES
-        else -> throw UsageException("--look is glow or lines")
+        else -> throw UsageException("--look is colour or lines")
     }
     val start = System.nanoTime()
-    val stats = File(output).bufferedWriter().use { w ->
-        // Defaults found in SPIKE-2: without tone map and glow, lines need about 4 (colour) or 3 (lines) times the light.
-        val gain = args.double("gain") ?: if (look == VectorExport.Look.GLOW) 4.0 else 3.0
-        val blur = (args.options["blur"] ?: if (look == VectorExport.Look.GLOW) "yes" else "no") == "yes"
-        VectorExport.svg(params, args.int("size") ?: 1024, look, w, gain, blur)
-    }
+    val stats = File(output).bufferedWriter().use { w -> VectorExport.svg(params, args.int("size") ?: 1024, look, w) }
     val ms = (System.nanoTime() - start) / 1_000_000
-    stats.skipped.forEach { System.err.println("left out: $it") }
+    stats.leftOut.forEach { System.err.println("left out: $it") }
     println("svg ${stats.paths} paths, ${stats.segments} segments, ${File(output).length() / 1024} KB in $ms ms -> $output")
     return 0
 }
