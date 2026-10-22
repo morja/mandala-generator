@@ -62,10 +62,10 @@
   .frame .fit button { color: #E6E1DB; }
   .frame .fit button.on { background: #E6E1DB; color: #221F1C; }
   /* Variant A: Whole/Fill beside a portrait frame, below a landscape one. */
-  .framewrap .fitside { position: absolute; top: 50%; transform: translateY(-50%); flex-direction: column; border-radius: 22px; }
+  .framewrap .fitside { position: absolute; bottom: 0; flex-direction: column; border-radius: 22px; }
   .framewrap .fitside button { padding: 8px 12px; }
   .framewrap.below { flex-direction: column; align-items: center; gap: var(--sm); }
-  .framewrap.below .fitside { position: static; transform: none; flex-direction: row; border-radius: 999px; }
+  .framewrap.below .fitside { position: static; flex-direction: row; border-radius: 999px; }
   .hint { color: var(--text-muted); font-size: 12px; text-align: center; margin: 0 0 var(--md); }
 
   /* Rows. */
