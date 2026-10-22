@@ -2,8 +2,12 @@
 """Builds app/src/main/assets/starter-favorites.json from the macOS favourites file.
 
 Usage: tools/starter-favorites.py [path to favorites.json]
-Picks favourites by index (Mathis' Mac favourites, 20 October 2026), keeps their ids so importing
-the Mac file later does not add them twice, and drops strokes of drawing layers that are off.
+Picks favourites by index (Mathis' Mac favourites, chosen again 22 October 2026), keeps their ids so
+importing the Mac file later does not add them twice, and keeps only what is visible: layers that are
+off are dropped, and switched-off drawing, graffiti and text layers lose their strokes and text.
+Adds the emblem favourites composed for the app (tools/starter-favorites/*.json). Every thumbnail is
+rendered again with the command-line renderer (./gradlew :cli:installDist first), so it shows what
+the app draws.
 """
 import base64
 import json
@@ -11,23 +15,25 @@ import os
 import subprocess
 import sys
 import tempfile
+import uuid
 
-# Shown first: the icon's mandala. Left out: near-duplicates, one with a custom palette, and quotes
-# in fonts Android has no close match for (Copperplate, Zapfino).
-PICKS = [3, 5, 2, 17, 0, 4, 6, 7, 8, 9, 12, 10, 19, 20, 21, 23, 24, 25, 15, 26, 27, 28, 29]
+# Mac favourites by index, or a file name in tools/starter-favorites/. Shown first: the icon's mandala.
+PICKS = [3, "om.json", 5, 17, 1, "flower-of-life.json", 4, 14, 6, "lotus-gibran.json", 7, 8, 9, 10, 11,
+         0, 2, 19, 20, 23, 25, 26, 29]
 
-# The app ships only public-domain quotes (ADR-0007), so the text favourites get new ones; their
-# thumbnails are rendered again with the command-line renderer (./gradlew :cli:installDist first).
+# The app ships only public-domain quotes (ADR-0007), so the text favourites get new ones.
 NEW_TEXT = {
-    12: ("I cannot choose the best. The best chooses me.", "Rabindranath Tagore"),
-    17: ("Beauty is eternity gazing at itself in a mirror.", "Kahlil Gibran"),
-    15: ("Let life be beautiful like summer flowers and death like autumn leaves.", "Rabindranath Tagore"),
+    11: ("I exist as I am, that is enough.", "Walt Whitman"),
+    14: ("Embrace the Soul which is embraced by nothing.", "Rumi"),
+    17: ("This is the House of Love, which has no bound or end.", "Rumi"),
 }
-# Favourite 12 was saved with an older Mac version; today's renderer (Mac and Android alike) puts its
-# hard shadow far off, so the starter gets a closer, softer one.
-TEXT_TWEAKS = {12: {"shadowOffsetX": 0.12, "shadowOffsetY": -0.18, "shadowBlur": 0.6, "shadowOpacity": 0.8}}
+# Favourite 1 uses Mathis' own Mac palette "Fun", which the app does not have; Bio Glow comes closest.
+PALETTES = {1: 9}
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
 CLI = os.path.join(ROOT, "cli", "build", "install", "mandala", "bin", "mandala")
+COMPOSED = os.path.join(ROOT, "tools", "starter-favorites")
+# Seconds since 1 January 2001, as the Mac stores dates: 22 October 2026.
+COMPOSED_DATE = 814_320_000.0
 
 
 def thumbnail(params):
@@ -41,21 +47,37 @@ def thumbnail(params):
         return base64.b64encode(open(jpg, "rb").read()).decode()
 
 
-src = sys.argv[1] if len(sys.argv) > 1 else os.path.expanduser(
-    "~/Library/Application Support/MandalaGenerator/favorites.json")
-favorites = json.load(open(src))
-out = []
-for i in PICKS:
-    fav = json.loads(json.dumps(favorites[i]))
-    params = fav["parameters"]
+def visible_only(params):
+    params["layers"] = [layer for layer in params["layers"] if layer.get("isEnabled", True)]
     for key in ("drawingLayer", "graffitiLayer"):
         layer = params.get(key)
         if layer and not layer.get("isEnabled"):
             layer["strokes"] = []
-    if i in NEW_TEXT:
-        params["textLayer"]["text"], params["textLayer"]["customAuthor"] = NEW_TEXT[i]
-        params["textLayer"].update(TEXT_TWEAKS.get(i, {}))
-        fav["thumbnailData"] = thumbnail(params)
+    text = params.get("textLayer")
+    if text and not text.get("isEnabled"):
+        text["text"], text["customAuthor"] = "", ""
+
+
+src = sys.argv[1] if len(sys.argv) > 1 else os.path.expanduser(
+    "~/Library/Application Support/MandalaGenerator/favorites.json")
+favorites = json.load(open(src))
+out = []
+for pick in PICKS:
+    if isinstance(pick, str):
+        params = json.load(open(os.path.join(COMPOSED, pick)))
+        fav = {"id": str(uuid.uuid5(uuid.NAMESPACE_URL, "mandala-starter/" + pick)).upper(), "name": "",
+               "createdAt": COMPOSED_DATE, "parameters": params}
+    else:
+        fav = json.loads(json.dumps(favorites[pick]))
+        params = fav["parameters"]
+        if pick in NEW_TEXT:
+            params["textLayer"]["text"], params["textLayer"]["customAuthor"] = NEW_TEXT[pick]
+        if pick in PALETTES:
+            for layer in params["layers"]:
+                if layer.get("paletteIndex", 0) >= 18:
+                    layer["paletteIndex"] = PALETTES[pick]
+    visible_only(params)
+    fav["thumbnailData"] = thumbnail(params)
     out.append(fav)
 dest = os.path.join(ROOT, "app", "src", "main", "assets", "starter-favorites.json")
 with open(dest, "w") as f:
