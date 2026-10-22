@@ -1,0 +1,33 @@
+{
+  "layers": [
+    {
+      "isEnabled": true,
+      "style": "roseCurves",
+      "scale": 0.6,
+      "paletteIndex": 3,
+      "colorOffset": 0.3,
+      "complexity": 0.6,
+      "density": 0.5,
+      "glowIntensity": 0.6,
+      "colorDrift": 0.4,
+      "ripple": 0.4,
+      "wash": 0.0,
+      "abstractLevel": 0.0,
+      "saturation": 0.8,
+      "brightness": 0.6,
+      "rotation": 0.0,
+      "opacity": 1.0,
+      "blendMode": "screen",
+      "symmetry": 6,
+      "seed": 17463462634133840693
+    }
+  ],
+  "baseLayer": {
+    "isEnabled": false
+  },
+  "effectsLayer": {
+    "isEnabled": false
+  },
+  "seed": 13730275572896771193,
+  "outputSize": 512
+}

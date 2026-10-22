@@ -426,7 +426,7 @@ object MandalaRenderer {
      * Curve styles fill `tasks`; styles the macOS renderer draws directly fill `lines`; point styles
      * (Strange Attractor) fill `points`. Mixed calls this again for three zones.
      */
-    private fun collectStyle(
+    internal fun collectStyle(
         style: MandalaStyle, tasks: MutableList<CurveTask>, lines: LineList, points: MutableList<AttractorPoints>, cx: Float, cy: Float, radius: Double,
         ctx: StyleContext, palette: ColorPalette, rng: SeededRng, layerCount: Int, symmetry: Int, ripple: Float,
         colorOffset: Double, weightMul: Float = 1f,

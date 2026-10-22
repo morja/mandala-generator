@@ -26,6 +26,11 @@ class LineList {
     fun add(x0: Float, y0: Float, x1: Float, y1: Float, c: FloatArray, weight: Float) =
         add(x0, y0, x1, y1, c[0], c[1], c[2], weight)
 
+    /** Every line in drawing order: x0, y0, x1, y1, r, g, b, weight (SPIKE-2, vector export). */
+    internal fun forEachLine(block: (FloatArray, Int) -> Unit) {
+        for (i in 0 until size) block(data, i * 8)
+    }
+
     fun drawInto(buffer: PixelBuffer, par: Parallel) {
         if (size == 0) return
         val rows = buffer.rowsUntil - buffer.rowsFrom
