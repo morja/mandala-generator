@@ -4178,7 +4178,9 @@ struct MandalaRenderer {
         if settings.glow > 0.005 {
             let ciImage = CIImage(cgImage: overlayImage)
             let ctx = CIContext(options: [.workingColorSpace: CGColorSpace(name: CGColorSpace.displayP3) as Any])
-            let iF = CGFloat(settings.glow)
+            // Up to 1 as always; above 1 (slider up to 3, TUNE-1) this part stays at its value for 1
+            // (except with Multiply) and the wide passes add light on top at the end (textGlowLightPasses).
+            let iF = CGFloat(settings.blendMode == .multiply ? settings.glow : min(1, settings.glow))
             let passes: [(radius: CGFloat, strength: CGFloat)] = [
                 (10.0 * iF * 3.0, 0.9 * iF),
                 (35.0 * iF * 3.0, 0.5 * iF),
@@ -4216,6 +4218,9 @@ struct MandalaRenderer {
             }
         }
 
+        // The light source of the glow above 1: the text with blur and brightness boost, before opacity.
+        let glowSource = overlayImage
+
         // Opacity
         if settings.opacity < 0.999 {
             overlayImage = applyLayerOpacity(image: overlayImage, opacity: settings.opacity)
@@ -4250,7 +4255,32 @@ struct MandalaRenderer {
             }
         }
 
-        return blendComposite(base: result, overlay: overlayImage, mode: blendFilter)
+        let blended = blendComposite(base: result, overlay: overlayImage, mode: blendFilter)
+        guard settings.blendMode != .multiply,
+              let passes = textGlowLightPasses(settings.glow, opacity: settings.opacity) else { return blended }
+        return screenGlowLight(base: blended, source: glowSource, passes: passes)
+    }
+
+    /// Glow above 1 (slider up to 3): the two wide passes of the glow at 1, as light screened on top,
+    /// growing from nothing at 1, faded with the text. Nil up to 1, so saved settings look as before.
+    static func textGlowLightPasses(_ glow: Double, opacity: Double) -> [(radius: CGFloat, strength: CGFloat)]? {
+        guard glow > 1 else { return nil }
+        let k = CGFloat((glow - 1) * max(0, min(1, opacity)))
+        return [(35.0 * 3.0, 0.75 * k), (70.0 * 3.0, 0.3 * k)]
+    }
+
+    /// Screens the light of `source`, blurred with `passes` (radii in reference-1600px pixels), onto
+    /// the opaque `base`: light added around a shape with transparent surroundings (text, emblem).
+    static func screenGlowLight(base: CGImage, source: CGImage,
+                                passes: [(radius: CGFloat, strength: CGFloat)]) -> CGImage {
+        guard let light = referenceBlurOverlay(source: CIImage(cgImage: source), passes: passes),
+              let screen = CIFilter(name: "CIScreenBlendMode") else { return base }
+        let ciBase = CIImage(cgImage: base)
+        screen.setValue(ciBase, forKey: kCIInputBackgroundImageKey)
+        screen.setValue(light,  forKey: kCIInputImageKey)
+        let context = CIContext(options: [.workingColorSpace: CGColorSpace(name: CGColorSpace.displayP3) as Any])
+        guard let out = screen.outputImage?.cropped(to: ciBase.extent) else { return base }
+        return context.createCGImage(out, from: ciBase.extent) ?? base
     }
 
     private static func renderTextToCGImage(settings: TextLayerSettings, size: Int) -> CGImage? {
