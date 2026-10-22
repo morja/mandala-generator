@@ -44,7 +44,6 @@ Accidents that made a slider useless, and effects that were too weak to see, wer
 - **Chromatic** repeats the edge pixels where red and blue are shifted in from outside, so no stripe remains at the left and right edges. `fx-chromatic`: about 43 dB as before.
 - **Vignette** uses a fixed CIVignette radius of 1 (the measured table's strongest column) and intensity 3.75 × the value instead of 2.5 ×. `fx-vignette` 58 dB, `fx-brightness-contrast` 56 dB.
 - **Grain** works on the Mac: the noise had alpha 0, so Core Image added nothing there (only Kotlin showed grain). It now has alpha 1, the addition's alpha is reset to 1, the amplitude is twice the former (0.56 × the value, offset −0.28 ×), and above 1024 px the noise cells grow with the image (bilinear), so large exports keep the preview's grain. `fx-grain`: about 28 dB, threshold 26 (see the table).
-- **Glitter** maps the stored value 0–1 to 0.2–0.6 of the former amount (count and brightness), 0 stays off: visible from the first step, calmer at the top, about 0.33 unchanged. `fx-glitter`: about 57 dB.
 - **Bloom** has twice the former gain (passes 1.1 and 0.6 × the value instead of 0.55 and 0.3), so it shows on dark images. `fx-bloom`: about 43 dB, threshold 42 (see the table).
 - **Sunburst background** rounds its number of rays (`patternScale × 14 + 3`) to a whole number, so the rays meet where the angle wraps round instead of leaving a seam on the left horizontal axis. New fixture `background-sunburst-default-scale` (scale 0.3, 7 rays): about 59 dB.
 

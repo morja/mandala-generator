@@ -1143,12 +1143,11 @@ struct MandalaRenderer {
 
         // ── Bloom — multi-scale soft glow (two passes: medium + wide) ──
         if settings.bloom > 0.001 {
-            // Radii in reference-1600px pixels (= 1600 * 0.025 and 1600 * 0.090).
-            // Twice the former gain, so bloom shows on dark images too.
+            // Radii in reference-1600px pixels (= 1600 * 0.025 and 1600 * 0.090)
             let bF = CGFloat(settings.bloom)
             let bloomPasses: [(radius: CGFloat, strength: CGFloat)] = [
-                (40.0,  1.10 * bF),   // medium glow
-                (144.0, 0.60 * bF),   // wide atmospheric haze
+                (40.0,  0.55 * bF),   // medium glow
+                (144.0, 0.30 * bF),   // wide atmospheric haze
             ]
             if let bloomOverlay = referenceBlurOverlay(source: ci, passes: bloomPasses),
                let screen = CIFilter(name: "CIScreenBlendMode") {
@@ -1337,17 +1336,14 @@ struct MandalaRenderer {
         if settings.glitter > 0 {
             let glitterBuffer = PixelBuffer(width: bufferSize, height: bufferSize)
             var rng = SeededRNG(seed: settings.glitterSeed)
-            // The slider runs over 0.2–0.6 of the former range: visible from the first step, calmer
-            // at the top; values around 0.33 look as before.
-            let amount = 0.2 + 0.4 * settings.glitter
-            let nGlitter = Int(amount * 2500) + 80
+            let nGlitter = Int(settings.glitter * 2500) + 80
             let wf = Float(bufferSize)
 
             for _ in 0..<nGlitter {
                 let x = rng.nextFloat() * wf
                 let y = rng.nextFloat() * wf
                 let hue = rng.nextFloat()
-                let bright = Float(amount) * (rng.nextFloat() * 0.55 + 0.45) * 9.0
+                let bright = Float(settings.glitter) * (rng.nextFloat() * 0.55 + 0.45) * 9.0
                 // HSV → RGB inline
                 let hi = Int(hue * 6.0) % 6
                 let f  = hue * 6.0 - Float(Int(hue * 6.0))

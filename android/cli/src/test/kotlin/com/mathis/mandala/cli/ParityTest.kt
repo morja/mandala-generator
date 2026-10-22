@@ -33,8 +33,6 @@ class ParityTest {
         "fx-grain" to 26.0,
         // Two additions leave alpha 3, which Core Image's final colour conversion takes into account.
         "fx-chromatic" to 42.0,
-        // Near the border Core Image's bloom is a little darker; the doubled bloom gain (TUNE-1) shows it more.
-        "fx-bloom" to 42.0,
         // Chaotic map: tiny sin/cos differences between Apple's and Java's maths library grow with every
         // iteration, so points land elsewhere; the attractor's shape and density are the same.
         "style-strange-attractor" to 15.0,
