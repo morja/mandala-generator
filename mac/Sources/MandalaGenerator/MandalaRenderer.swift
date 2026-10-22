@@ -1054,13 +1054,16 @@ struct MandalaRenderer {
         }
 
         // ── Chromatic aberration — shift R left, B right ──
+        // Red and blue repeat the edge pixels where they are shifted in from outside the image,
+        // instead of leaving a green or coloured stripe at the left and right edges.
         if settings.chromatic > 0 {
             let shift = CGFloat(bufferSize) * CGFloat(settings.chromatic) * 0.012
+            let edged = ci.clampedToExtent()
             if let rMask = CIFilter(name: "CIColorMatrix"),
                let gMask = CIFilter(name: "CIColorMatrix"),
                let bMask = CIFilter(name: "CIColorMatrix") {
                 let zero = CIVector(x: 0, y: 0, z: 0, w: 0)
-                rMask.setValue(ci, forKey: kCIInputImageKey)
+                rMask.setValue(edged, forKey: kCIInputImageKey)
                 rMask.setValue(CIVector(x: 1, y: 0, z: 0, w: 0), forKey: "inputRVector")
                 rMask.setValue(zero, forKey: "inputGVector"); rMask.setValue(zero, forKey: "inputBVector")
                 rMask.setValue(CIVector(x: 0, y: 0, z: 0, w: 1), forKey: "inputAVector")
@@ -1069,7 +1072,7 @@ struct MandalaRenderer {
                 gMask.setValue(CIVector(x: 0, y: 1, z: 0, w: 0), forKey: "inputGVector")
                 gMask.setValue(zero, forKey: "inputBVector")
                 gMask.setValue(CIVector(x: 0, y: 0, z: 0, w: 1), forKey: "inputAVector")
-                bMask.setValue(ci, forKey: kCIInputImageKey)
+                bMask.setValue(edged, forKey: kCIInputImageKey)
                 bMask.setValue(zero, forKey: "inputRVector"); bMask.setValue(zero, forKey: "inputGVector")
                 bMask.setValue(CIVector(x: 0, y: 0, z: 1, w: 0), forKey: "inputBVector")
                 bMask.setValue(CIVector(x: 0, y: 0, z: 0, w: 1), forKey: "inputAVector")

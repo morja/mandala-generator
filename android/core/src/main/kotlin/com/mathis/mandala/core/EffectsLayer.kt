@@ -233,7 +233,7 @@ internal class EffectsLayer(private val par: Parallel, private val fx: LayerEffe
             }
         }
 
-        /** Red moves left, blue right by `shift` pixels (bilinear, zero outside). */
+        /** Red moves left, blue right by `shift` pixels (bilinear, edge pixels repeated outside). */
         private fun chromatic(row: FloatArray) {
             val (r, b) = channels.get()
             for (x in 0 until width) { r[x] = row[x * 3]; b[x] = row[x * 3 + 2] }
@@ -273,8 +273,8 @@ internal class EffectsLayer(private val par: Parallel, private val fx: LayerEffe
     private fun sample(line: FloatArray, pos: Double): Float {
         val i = floor(pos).toInt()
         val f = (pos - i).toFloat()
-        val a = if (i in line.indices) line[i] else 0f
-        val b = if (i + 1 in line.indices) line[i + 1] else 0f
+        val a = line[i.coerceIn(0, line.size - 1)]
+        val b = line[(i + 1).coerceIn(0, line.size - 1)]
         return a + (b - a) * f
     }
 
