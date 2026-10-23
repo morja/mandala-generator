@@ -16,7 +16,7 @@ window.MKT_TEXT = {
     wallpaper: ["Decorate your lock screen.", "Or put one on your lock screen.", "Beautify your lock screen."]
   },
   de: {
-    message: "Sie heißt Dahlia und ist für Android da. Probier sie aus, ich freue mich über Feedback und eine Bewertung.",
+    message: "Sie heißt Dahlia, jetzt für Android. Probier sie aus, ich freue mich über Feedback und eine Bewertung.",
     facts: "Kostenlos und Open Source, keine Werbung, kein Konto.",
     link: "tearoom.one/dahlia",
     mandala: "Mandalas aus Kurven, Licht und Symbolen. Meine neue Android-App, kostenlos zum Ausprobieren.",

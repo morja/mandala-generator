@@ -58,10 +58,10 @@ html, body { margin: 0; background: var(--bg); color: var(--fg); font-family: va
 .v-portrait .phone { position: absolute; left: 50%; transform: translateX(-50%); top: 690px; width: 470px; }
 
 /* ---------- B · story 1080×1920 ---------- */
-.v-story .text { position: absolute; left: var(--gutter); right: var(--gutter); top: 120px; }
+.v-story .text { position: relative; padding: 120px var(--gutter) 0; }
 .v-story .title { font-size: 144px; }
 .v-story .message { font-size: 58px; margin-top: 44px; }
-.v-story .phone { position: absolute; left: 50%; transform: translateX(-50%); top: 640px; width: 500px; }
+.v-story .phone { position: relative; margin: 56px auto 0; width: 500px; }
 .v-story .foot { position: absolute; left: var(--gutter); right: var(--gutter); bottom: 100px; text-align: center; }
 .v-story .facts { font-size: 34px; white-space: nowrap; }
 .v-story .link { font-size: 54px; margin-top: 16px; }
