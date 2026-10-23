@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MKT-2 share images</title>
+<style>
+:root {
+  --bg: #0a0908;
+  --bg-raised: #15130f;
+  --fg: #f4efe6;
+  --muted: #b9b2a6;
+  --accent: #e3b071;
+  --frame: #1f1c18;
+  --frame-edge: #3b362e;
+  --shadow: 0 30px 80px rgba(0, 0, 0, .55);
+  --font: "Inter", "Inter Variable", system-ui, sans-serif;
+  --radius-phone: 48px;
+  --gutter: 72px;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--font); }
+
+/* ---------- viewer (no ?v= parameter) ---------- */
+.viewer { min-height: 100vh; display: flex; flex-direction: column; }
+.bar { display: flex; flex-wrap: wrap; gap: 8px 20px; align-items: center; padding: 14px 16px; background: var(--bg-raised); border-bottom: 1px solid var(--frame-edge); font-size: 14px; }
+.bar h1 { font-size: 15px; font-weight: 600; margin: 0 12px 0 0; }
+.bar .group { display: flex; gap: 6px; align-items: center; }
+.bar .group span { color: var(--muted); margin-right: 4px; }
+.bar button { font: inherit; color: var(--fg); background: transparent; border: 1px solid var(--frame-edge); border-radius: 8px; padding: 6px 12px; cursor: pointer; }
+.bar button[aria-pressed="true"] { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+.bar .meta { color: var(--muted); margin-left: auto; }
+.stage { flex: 1; display: flex; align-items: center; justify-content: center; padding: 24px; overflow: hidden; }
+.stage iframe { border: 0; background: var(--bg); transform-origin: top left; box-shadow: var(--shadow); }
+
+/* ---------- shared card parts ---------- */
+.card { position: relative; overflow: hidden; width: 100%; height: 100%; }
+.art { position: absolute; inset: 0; background-size: cover; background-position: center; }
+.scrim { position: absolute; inset: 0; background: rgba(10, 9, 8, .62); }
+.title { font-weight: 600; letter-spacing: -0.02em; line-height: 1; margin: 0; }
+.title small { display: block; font-size: .46em; font-weight: 500; letter-spacing: -0.01em; margin-top: .22em; }
+.message { font-weight: 400; line-height: 1.32; margin: 0; max-width: 20em; }
+.facts { color: var(--muted); font-weight: 400; line-height: 1.35; margin: 0; }
+.link { color: var(--accent); font-weight: 500; margin: 0; }
+.phone { position: relative; background: var(--frame); border: 4px solid var(--frame-edge); border-radius: var(--radius-phone); padding: 14px; box-shadow: var(--shadow); }
+.phone img { display: block; width: 100%; border-radius: calc(var(--radius-phone) - 18px); }
+.icon { display: block; border-radius: 22%; }
+.qr { background: #fff; padding: 12px; border-radius: 12px; }
+.qr canvas, .qr img { display: block; }
+
+/* ---------- A · portrait 1080×1350 ---------- */
+.v-portrait .text { position: absolute; left: var(--gutter); right: var(--gutter); top: 84px; }
+.v-portrait .title { font-size: 128px; }
+.v-portrait .message { font-size: 46px; margin-top: 44px; }
+.v-portrait .link { font-size: 32px; margin-top: 28px; }
+.v-portrait .phone { position: absolute; left: 50%; transform: translateX(-50%); top: 600px; width: 500px; }
+
+/* ---------- B · story 1080×1920 ---------- */
+.v-story .text { position: absolute; left: var(--gutter); right: var(--gutter); top: 120px; }
+.v-story .title { font-size: 136px; }
+.v-story .message { font-size: 50px; margin-top: 48px; }
+.v-story .phone { position: absolute; left: 50%; transform: translateX(-50%); top: 600px; width: 540px; }
+.v-story .foot { position: absolute; left: var(--gutter); right: var(--gutter); bottom: 84px; text-align: center; }
+.v-story .facts { font-size: 28px; }
+.v-story .link { font-size: 34px; margin-top: 14px; }
+
+/* ---------- C · landscape 1920×1080 ---------- */
+.v-landscape .text { position: absolute; left: var(--gutter); top: 120px; width: 640px; }
+.v-landscape .scrim { background: rgba(10, 9, 8, .5); }
+.v-landscape .title { font-size: 120px; }
+.v-landscape .message { font-size: 42px; margin-top: 44px; }
+.v-landscape .facts { font-size: 28px; margin-top: 36px; }
+.v-landscape .link { font-size: 30px; margin-top: 12px; }
+.v-landscape .qr { position: absolute; left: var(--gutter); bottom: var(--gutter); }
+.v-landscape .phones { position: absolute; right: var(--gutter); top: 120px; display: flex; gap: 40px; align-items: flex-start; }
+.v-landscape .phone { width: 320px; }
+
+/* ---------- D · square 1080×1080 ---------- */
+.v-square .head { position: absolute; left: var(--gutter); right: var(--gutter); top: 72px; display: flex; gap: 36px; align-items: center; }
+.v-square .icon { width: 150px; height: 150px; }
+.v-square .title { font-size: 92px; }
+.v-square .message { font-size: 42px; position: absolute; left: var(--gutter); right: var(--gutter); top: 286px; max-width: none; }
+.v-square .link { font-size: 30px; position: absolute; left: var(--gutter); top: 432px; }
+.v-square .phones { position: absolute; left: var(--gutter); right: var(--gutter); bottom: -330px; display: flex; gap: 48px; justify-content: center; align-items: flex-start; }
+.v-square .phone { width: 420px; }
+.v-square .phone + .phone { margin-top: 70px; }
+
+/* ---------- E · emblem portrait 1080×1350 ---------- */
+.v-emblem .art { background-size: 1080px auto; background-position: center -60px; }
+.v-emblem .fade { position: absolute; left: 0; right: 0; bottom: 0; height: 58%; background: linear-gradient(to bottom, rgba(10,9,8,0), rgba(10,9,8,.97) 50%); }
+.v-emblem .text { position: absolute; left: var(--gutter); right: var(--gutter); bottom: 72px; }
+.v-emblem .title { font-size: 104px; }
+.v-emblem .message { font-size: 42px; margin-top: 36px; max-width: none; }
+.v-emblem .link { font-size: 30px; margin-top: 24px; }
+</style>
+</head>
+<body>
+<script>
+// One file, two jobs: with ?v=<variant>&lang=<en|de> it shows a single card at its pixel size
+// (what render-share-images.sh screenshots); without parameters it is the viewer with a switcher.
+const SIZES = { portrait: [1080, 1350], story: [1080, 1920], landscape: [1920, 1080], square: [1080, 1080], emblem: [1080, 1350] };
+const LABELS = { portrait: "A · Portrait 4:5", story: "B · Story 9:16", landscape: "C · Landscape 16:9", square: "D · Square", emblem: "E · Emblem portrait" };
+const TEXT = {
+  en: {
+    message: "My new Android app. Try it out, I'd love some feedback and reviews.",
+    facts: "Free and open source, no ads, no account. Pro is an optional one-time purchase.",
+    link: "tearoom.one/en/apps/dahlia",
+    emblem: "Mandalas from curves, light and symbols. My new Android app, free to try."
+  },
+  de: {
+    message: "Meine neue Android-App. Probier sie aus, ich freue mich über Feedback und Bewertungen.",
+    facts: "Kostenlos und Open Source, keine Werbung, kein Konto. Pro ist ein optionaler Einmalkauf.",
+    link: "tearoom.one/de/apps/dahlia",
+    emblem: "Mandalas aus Kurven, Licht und Symbolen. Meine neue Android-App, kostenlos zum Ausprobieren."
+  }
+};
+const PLAY = "https://play.google.com/store/apps/details?id=one.tearoom.mandala";
+const SHOT = n => `../store/screenshots/phone-${n}.png`;
+const ICON = "../store/play-icon-512.png";
+
+const params = new URLSearchParams(location.search);
+const v = params.get("v"), lang = params.get("lang") || "en";
+
+function title() { return `<h1 class="title">Dahlia<small>Mandala Maker</small></h1>`; }
+function phone(n) { return `<div class="phone"><img src="${SHOT(n)}" alt=""></div>`; }
+
+function card(v, t) {
+  switch (v) {
+    case "portrait": return `
+      <div class="card v-portrait">
+        <div class="art" style="background-image:url(renders/hypocycloid-portrait.jpg)"></div><div class="scrim"></div>
+        <div class="text">${title()}<p class="message">${t.message}</p><p class="link">${t.link}</p></div>
+        ${phone("1-layers")}
+      </div>`;
+    case "story": return `
+      <div class="card v-story">
+        <div class="art" style="background-image:url(renders/hypocycloid-portrait.jpg)"></div><div class="scrim"></div>
+        <div class="text">${title()}<p class="message">${t.message}</p></div>
+        ${phone("2-om-emblem")}
+        <div class="foot"><p class="facts">${t.facts}</p><p class="link">${t.link}</p></div>
+      </div>`;
+    case "landscape": return `
+      <div class="card v-landscape">
+        <div class="art" style="background-image:url(renders/hypocycloid-landscape.jpg)"></div><div class="scrim"></div>
+        <div class="text">${title()}<p class="message">${t.message}</p><p class="facts">${t.facts}</p><p class="link">${t.link}</p></div>
+        <div class="qr" id="qr"></div>
+        <div class="phones">${phone("1-layers")}${phone("2-om-emblem")}${phone("4-quote")}</div>
+      </div>`;
+    case "square": return `
+      <div class="card v-square">
+        <div class="art" style="background-image:url(renders/hypocycloid-square.jpg)"></div><div class="scrim"></div>
+        <div class="head"><img class="icon" src="${ICON}" alt="">${title()}</div>
+        <p class="message">${t.message}</p><p class="link">${t.link}</p>
+        <div class="phones">${phone("1-layers")}${phone("7-new-mandala-preview")}</div>
+      </div>`;
+    case "emblem": return `
+      <div class="card v-emblem">
+        <div class="art" style="background-image:url(renders/om-square.jpg)"></div><div class="fade"></div>
+        <div class="text">${title()}<p class="message">${t.emblem}</p><p class="link">${t.link}</p></div>
+      </div>`;
+  }
+}
+
+if (v && SIZES[v]) {
+  const [w, h] = SIZES[v];
+  document.documentElement.lang = lang;
+  document.body.style.width = w + "px"; document.body.style.height = h + "px"; document.body.style.overflow = "hidden";
+  document.body.innerHTML = card(v, TEXT[lang]);
+  if (document.getElementById("qr")) {
+    const s = document.createElement("script");
+    s.src = "https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js";
+    s.onload = () => new QRCode(document.getElementById("qr"), { text: PLAY, width: 180, height: 180, correctLevel: QRCode.CorrectLevel.M });
+    s.onerror = () => document.getElementById("qr").remove();
+    document.head.appendChild(s);
+  }
+} else {
+  let cur = localStorage.getItem("mkt2.v") || "portrait", curLang = localStorage.getItem("mkt2.lang") || "en";
+  document.body.innerHTML = `
+    <div class="viewer">
+      <div class="bar"><h1>MKT-2 share images</h1>
+        <div class="group" id="variants"><span>Variant</span></div>
+        <div class="group" id="langs"><span>Language</span></div>
+        <div class="meta" id="meta"></div></div>
+      <div class="stage"><iframe id="frame"></iframe></div>
+    </div>`;
+  const variants = document.getElementById("variants"), langs = document.getElementById("langs");
+  for (const k in SIZES) { const b = document.createElement("button"); b.textContent = LABELS[k]; b.dataset.v = k; variants.appendChild(b); }
+  for (const k of ["en", "de"]) { const b = document.createElement("button"); b.textContent = k.toUpperCase(); b.dataset.lang = k; langs.appendChild(b); }
+  function show() {
+    const [w, h] = SIZES[cur], f = document.getElementById("frame"), stage = f.parentElement;
+    f.src = `?v=${cur}&lang=${curLang}`; f.width = w; f.height = h;
+    const scale = Math.min((stage.clientWidth - 48) / w, (stage.clientHeight - 48) / h, 1);
+    f.style.transform = `scale(${scale})`; f.style.width = w + "px"; f.style.height = h + "px";
+    f.style.marginRight = (w * scale - w) + "px"; f.style.marginBottom = (h * scale - h) + "px";
+    document.getElementById("meta").textContent = `${w} × ${h} px · share/${cur}-${curLang}.png`;
+    for (const b of variants.querySelectorAll("button")) b.setAttribute("aria-pressed", b.dataset.v === cur);
+    for (const b of langs.querySelectorAll("button")) b.setAttribute("aria-pressed", b.dataset.lang === curLang);
+    localStorage.setItem("mkt2.v", cur); localStorage.setItem("mkt2.lang", curLang);
+  }
+  variants.addEventListener("click", e => { if (e.target.dataset.v) { cur = e.target.dataset.v; show(); } });
+  langs.addEventListener("click", e => { if (e.target.dataset.lang) { curLang = e.target.dataset.lang; show(); } });
+  addEventListener("resize", show);
+  show();
+}
+</script>
+</body>
+</html>
