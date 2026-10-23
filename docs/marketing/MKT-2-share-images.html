@@ -41,8 +41,8 @@ html, body { margin: 0; background: var(--bg); color: var(--fg); font-family: va
 .scrim { position: absolute; inset: 0; background: rgba(10, 9, 8, .62); }
 .title { font-weight: 600; letter-spacing: -0.02em; line-height: 1; margin: 0; }
 .title small { display: block; font-size: .46em; font-weight: 500; letter-spacing: -0.01em; margin-top: .22em; }
-.message { font-weight: 400; line-height: 1.32; margin: 0; max-width: 20em; }
-.facts { color: var(--muted); font-weight: 400; line-height: 1.35; margin: 0; }
+.message { font-weight: 400; line-height: 1.3; margin: 0; max-width: 20em; text-wrap: pretty; }
+.facts { color: var(--muted); font-weight: 400; line-height: 1.35; margin: 0; text-wrap: pretty; }
 .link { color: var(--accent); font-weight: 500; margin: 0; }
 .phone { position: relative; background: var(--frame); border: 4px solid var(--frame-edge); border-radius: var(--radius-phone); padding: 14px; box-shadow: var(--shadow); }
 .phone img { display: block; width: 100%; border-radius: calc(var(--radius-phone) - 18px); }
@@ -53,26 +53,26 @@ html, body { margin: 0; background: var(--bg); color: var(--fg); font-family: va
 /* ---------- A · portrait 1080×1350 ---------- */
 .v-portrait .text { position: absolute; left: var(--gutter); right: var(--gutter); top: 84px; }
 .v-portrait .title { font-size: 128px; }
-.v-portrait .message { font-size: 46px; margin-top: 44px; }
-.v-portrait .link { font-size: 32px; margin-top: 28px; }
-.v-portrait .phone { position: absolute; left: 50%; transform: translateX(-50%); top: 600px; width: 500px; }
+.v-portrait .message { font-size: 56px; margin-top: 40px; }
+.v-portrait .link { font-size: 44px; margin-top: 24px; }
+.v-portrait .phone { position: absolute; left: 50%; transform: translateX(-50%); top: 690px; width: 470px; }
 
 /* ---------- B · story 1080×1920 ---------- */
 .v-story .text { position: absolute; left: var(--gutter); right: var(--gutter); top: 120px; }
-.v-story .title { font-size: 136px; }
-.v-story .message { font-size: 50px; margin-top: 48px; }
-.v-story .phone { position: absolute; left: 50%; transform: translateX(-50%); top: 600px; width: 540px; }
-.v-story .foot { position: absolute; left: var(--gutter); right: var(--gutter); bottom: 84px; text-align: center; }
-.v-story .facts { font-size: 28px; }
-.v-story .link { font-size: 34px; margin-top: 14px; }
+.v-story .title { font-size: 144px; }
+.v-story .message { font-size: 58px; margin-top: 44px; }
+.v-story .phone { position: absolute; left: 50%; transform: translateX(-50%); top: 620px; width: 500px; }
+.v-story .foot { position: absolute; left: var(--gutter); right: var(--gutter); bottom: 100px; text-align: center; }
+.v-story .facts { font-size: 48px; color: var(--fg); line-height: 1.3; }
+.v-story .link { font-size: 54px; margin-top: 20px; }
 
 /* ---------- C · landscape 1920×1080 ---------- */
 .v-landscape .text { position: absolute; left: var(--gutter); top: 120px; width: 640px; }
 .v-landscape .scrim { background: rgba(10, 9, 8, .5); }
 .v-landscape .title { font-size: 120px; }
-.v-landscape .message { font-size: 42px; margin-top: 44px; }
-.v-landscape .facts { font-size: 28px; margin-top: 36px; }
-.v-landscape .link { font-size: 30px; margin-top: 12px; }
+.v-landscape .message { font-size: 50px; margin-top: 40px; }
+.v-landscape .facts { font-size: 36px; margin-top: 32px; }
+.v-landscape .link { font-size: 40px; margin-top: 14px; }
 .v-landscape .qr { position: absolute; left: var(--gutter); bottom: var(--gutter); }
 .v-landscape .phones { position: absolute; right: var(--gutter); top: 120px; display: flex; gap: 40px; align-items: flex-start; }
 .v-landscape .phone { width: 320px; }
@@ -81,9 +81,10 @@ html, body { margin: 0; background: var(--bg); color: var(--fg); font-family: va
 .v-square .head { position: absolute; left: var(--gutter); right: var(--gutter); top: 72px; display: flex; gap: 36px; align-items: center; }
 .v-square .icon { width: 150px; height: 150px; }
 .v-square .title { font-size: 92px; }
-.v-square .message { font-size: 42px; position: absolute; left: var(--gutter); right: var(--gutter); top: 286px; max-width: none; }
-.v-square .link { font-size: 30px; position: absolute; left: var(--gutter); top: 432px; }
-.v-square .phones { position: absolute; left: var(--gutter); right: var(--gutter); bottom: -330px; display: flex; gap: 48px; justify-content: center; align-items: flex-start; }
+.v-square .body { position: absolute; left: var(--gutter); right: var(--gutter); top: 268px; }
+.v-square .message { font-size: 48px; max-width: none; }
+.v-square .link { font-size: 40px; margin-top: 20px; }
+.v-square .phones { position: absolute; left: var(--gutter); right: var(--gutter); bottom: -400px; display: flex; gap: 48px; justify-content: center; align-items: flex-start; }
 .v-square .phone { width: 420px; }
 .v-square .phone + .phone { margin-top: 70px; }
 
@@ -92,22 +93,22 @@ html, body { margin: 0; background: var(--bg); color: var(--fg); font-family: va
 .v-mandala .fade { position: absolute; left: 0; right: 0; bottom: 0; height: 58%; background: linear-gradient(to bottom, rgba(10,9,8,0), rgba(10,9,8,.97) 50%); }
 .v-mandala .text { position: absolute; left: var(--gutter); right: var(--gutter); bottom: 72px; }
 .v-mandala .title { font-size: 104px; }
-.v-mandala .message { font-size: 42px; margin-top: 36px; max-width: none; }
-.v-mandala .link { font-size: 30px; margin-top: 24px; }
+.v-mandala .message { font-size: 52px; margin-top: 32px; max-width: none; }
+.v-mandala .link { font-size: 42px; margin-top: 24px; }
 /* ---------- F · wide 1920×1080, one or two phones, larger text for small screens ---------- */
 .v-wide .text { position: absolute; left: var(--gutter); top: 130px; width: 780px; }
 .v-wide .title { font-size: 150px; }
-.v-wide .message { font-size: 54px; margin-top: 52px; }
-.v-wide .facts { font-size: 34px; margin-top: 40px; }
-.v-wide .link { font-size: 40px; margin-top: 16px; }
+.v-wide .message { font-size: 60px; margin-top: 48px; }
+.v-wide .facts { font-size: 44px; margin-top: 36px; }
+.v-wide .link { font-size: 50px; margin-top: 16px; }
 .v-wide .scrim { background: rgba(10, 9, 8, .5); }
 .v-wide .phones { position: absolute; right: var(--gutter); top: 110px; display: flex; gap: 48px; align-items: flex-start; }
 .v-wide .phone { width: 480px; }
 .v-wide .phones.two .phone { width: 420px; }
 /* ---------- G · teaser story 1080×1920: the mandala alone, one quiet line ---------- */
-.v-teaser .fade { position: absolute; left: 0; right: 0; bottom: 0; height: 32%; background: linear-gradient(to bottom, rgba(10,9,8,0), rgba(10,9,8,.88)); }
-.v-teaser .text { position: absolute; left: var(--gutter); right: var(--gutter); bottom: 120px; text-align: center; }
-.v-teaser .message { font-size: 38px; max-width: none; white-space: nowrap; }
+.v-teaser .fade { position: absolute; left: 0; right: 0; bottom: 0; height: 34%; background: linear-gradient(to bottom, rgba(10,9,8,0), rgba(10,9,8,.9)); }
+.v-teaser .text { position: absolute; left: var(--gutter); right: var(--gutter); bottom: 100px; text-align: center; }
+.v-teaser .message { font-size: 48px; max-width: none; text-wrap: balance; }
 </style>
 </head>
 <script>
@@ -202,7 +203,7 @@ function card(v, t, set) {
       <div class="card v-square">
         <div class="art" style="background-image:url(${art})"></div><div class="scrim"></div>
         <div class="head"><img class="icon" src="${ICON}" alt="">${title()}</div>
-        <p class="message">${t.message}</p><p class="link">${t.link}</p>
+        <div class="body"><p class="message">${t.message}</p><p class="link">${t.link}</p></div>
         <div class="phones">${sh.map(phone).join("")}</div>
       </div>`;
     case "mandala": return `
