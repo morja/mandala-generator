@@ -106,7 +106,7 @@ html, body { margin: 0; background: var(--bg); color: var(--fg); font-family: va
 /* ---------- G · teaser story 1080×1920: the mandala alone, one quiet line ---------- */
 .v-teaser .fade { position: absolute; left: 0; right: 0; bottom: 0; height: 32%; background: linear-gradient(to bottom, rgba(10,9,8,0), rgba(10,9,8,.88)); }
 .v-teaser .text { position: absolute; left: var(--gutter); right: var(--gutter); bottom: 120px; text-align: center; }
-.v-teaser .message { font-size: 40px; max-width: none; }
+.v-teaser .message { font-size: 38px; max-width: none; white-space: nowrap; }
 </style>
 </head>
 <script>
@@ -126,14 +126,21 @@ const H = "hypocycloid", F = "flower-of-life", R = "ribbon";
 const TEASERS = ["hypocycloid", "torus", "rumi-quote", "flower-of-life", "ribbon", "lotus-quote"];
 const SETS = {
   portrait:  [["1-layers", H], ["2-om-emblem", F], ["4-quote", R], ["3-wallpaper", H], ["7-new-mandala-preview", F]].map(([s, a]) => ({ shots: [s], art: a + "-portrait" })),
-  story:     [["2-om-emblem", H], ["1-layers", F], ["3-wallpaper", R], ["5-favourites", H]].map(([s, a]) => ({ shots: [s], art: a + "-portrait" })),
+  story:     [["1-layers", H], ["4-quote", F], ["3-wallpaper", R], ["5-favourites", H], ["7-new-mandala-preview", F]].map(([s, a]) => ({ shots: [s], art: a + "-portrait" })),
   landscape: [[["1-layers", "2-om-emblem", "4-quote"], H], [["3-wallpaper", "5-favourites", "7-new-mandala-preview"], F], [["2-om-emblem", "6-save-formats", "1-layers"], R]].map(([s, a]) => ({ shots: s, art: a + "-landscape" })),
   square:    [[["1-layers", "7-new-mandala-preview"], H], [["2-om-emblem", "4-quote"], F], [["3-wallpaper", "5-favourites"], R]].map(([s, a]) => ({ shots: s, art: a + "-square" })),
   mandala:   [H + "-square", R + "-portrait", F + "-square"].map(a => ({ shots: [], art: a })),
   wide:      [[["1-layers"], H], [["2-om-emblem", "4-quote"], F], [["3-wallpaper"], R], [["1-layers", "7-new-mandala-preview"], H]].map(([s, a]) => ({ shots: s, art: a + "-landscape" })),
   // Teaser stories: full-bleed renders from renders/story-*.jpg, posted before the story variant B.
-  teaser:    TEASERS.map(a => ({ shots: [], art: "story-" + a }))
+  // Every mandala three times: with the first teaser line, the second, and without text (name …-0).
+  teaser:    TEASERS.flatMap(a => [1, 2, 0].map(n => ({ shots: [], art: "story-" + a, text: n, name: `${a}-${n}` })))
 };
+// Where a rendered image goes: share/<text>/<folder>/<file prefix>-<set name>-<lang>.jpg. The story folder
+// holds the teasers and the app story together, in posting order; a set's name is its number unless it has one.
+const FOLDER = { teaser: "story", story: "story", portrait: "portrait", mandala: "portrait", square: "square", landscape: "landscape", wide: "landscape" };
+const FILE = { teaser: "1-teaser", story: "2-app", portrait: "portrait", mandala: "mandala", square: "square", landscape: "landscape", wide: "wide" };
+const setName = (v, i) => SETS[v][i].name || String(i + 1);
+const fileName = (v, i, lang) => `${FOLDER[v]}/${FILE[v]}-${setName(v, i)}-${lang}.jpg`;
 const TEXT = window.MKT_TEXT; // from texts/<name>.js, loaded in <head>
 const PLAY = "https://play.google.com/store/apps/details?id=one.tearoom.mandala";
 const SHOT = n => `../store/screenshots/phone-${n}.png`;
@@ -181,11 +188,11 @@ function card(v, t, set) {
         <div class="text">${title()}<p class="message">${t.mandala}</p><p class="link">${t.link}</p></div>
       </div>`;
     case "teaser": {
-      const lines = Array.isArray(t.teaser) && t.teaser.length ? t.teaser : [t.mandala];
+      const lines = Array.isArray(t.teaser) ? t.teaser : [], line = set.text ? lines[set.text - 1] : null;
       return `
       <div class="card v-teaser">
-        <div class="art" style="background-image:url(${art})"></div><div class="fade"></div>
-        <div class="text"><p class="message">${lines[setIndex % lines.length]}</p></div>
+        <div class="art" style="background-image:url(${art})"></div>
+        ${line ? `<div class="fade"></div><div class="text"><p class="message">${line}</p></div>` : ""}
       </div>`;
     }
     case "wide": return `
@@ -197,7 +204,12 @@ function card(v, t, set) {
   }
 }
 
-if (v && SIZES[v]) {
+if (params.get("list")) {
+  // For render-share-images.sh: one line per image and language, "IMG variant index width height lang file".
+  const lines = [];
+  for (const k in SIZES) SETS[k].forEach((_, i) => { for (const l of ["en", "de"]) lines.push(`IMG ${k} ${i + 1} ${SIZES[k][0]} ${SIZES[k][1]} ${l} ${fileName(k, i, l)}`); });
+  document.body.innerHTML = `<pre id="list">${lines.join("\n")}</pre>`;
+} else if (v && SIZES[v]) {
   if (!TEXT) { document.body.textContent = `texts/${TEXT_NAME}.js not found`; throw new Error("text set missing"); }
   const [w, h] = SIZES[v];
   document.documentElement.lang = lang;
@@ -229,12 +241,12 @@ if (v && SIZES[v]) {
     const [w, h] = SIZES[cur], f = document.getElementById("frame"), stage = f.parentElement;
     if (curSet > SETS[cur].length) curSet = 1;
     sets.querySelectorAll("button").forEach(b => b.remove());
-    SETS[cur].forEach((_, i) => { const b = document.createElement("button"); b.textContent = i + 1; b.dataset.set = i + 1; b.setAttribute("aria-pressed", i + 1 === curSet); sets.appendChild(b); });
+    SETS[cur].forEach((_, i) => { const b = document.createElement("button"); b.textContent = setName(cur, i); b.dataset.set = i + 1; b.setAttribute("aria-pressed", i + 1 === curSet); sets.appendChild(b); });
     f.src = `?v=${cur}&s=${curSet}&lang=${curLang}&t=${curText}`; f.width = w; f.height = h;
     const scale = Math.min((stage.clientWidth - 48) / w, (stage.clientHeight - 48) / h, 1);
     f.style.transform = `scale(${scale})`; f.style.width = w + "px"; f.style.height = h + "px";
     f.style.marginRight = (w * scale - w) + "px"; f.style.marginBottom = (h * scale - h) + "px";
-    document.getElementById("meta").textContent = `${w} × ${h} px · share/${curText}/${cur}-${curSet}-${curLang}.jpg · texts/${curText}.js`;
+    document.getElementById("meta").textContent = `${w} × ${h} px · share/${curText}/${fileName(cur, curSet - 1, curLang)} · texts/${curText}.js`;
     for (const b of variants.querySelectorAll("button")) b.setAttribute("aria-pressed", b.dataset.v === cur);
     for (const b of langs.querySelectorAll("button")) b.setAttribute("aria-pressed", b.dataset.lang === curLang);
     localStorage.setItem("mkt2.v", cur); localStorage.setItem("mkt2.lang", curLang);
