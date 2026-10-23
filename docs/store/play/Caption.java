@@ -1,7 +1,7 @@
 import java.awt.*; import java.awt.font.*; import java.awt.geom.*; import java.awt.image.BufferedImage; import java.io.File; import java.text.AttributedString; import javax.imageio.ImageIO; import java.util.*;
-/** Captioned Play screenshot: 1080x1920, caption block on top, phone screenshot below with rounded corners. */
+/** Captioned Play screenshot: 1080x1920, caption block on top, the whole phone screenshot below with rounded corners. */
 public class Caption {
-  static final int W = 1080, H = 1920, PAD = 72, SHOT_TOP = 400, RADIUS = 44;
+  static final int W = 1080, H = 1920, PAD = 72, SHOT_TOP = 330, RADIUS = 44;
   static final Color BG = new Color(0x0A0908), TEXT = new Color(0xE6E1DB), MUTED = new Color(0x9C948B), OUTLINE = new Color(0x2E2A26);
   public static void main(String[] a) throws Exception {
     String out = a[0], shot = a[1], titleFont = a[2], subFont = a[3], title = a[4], sub = a[5];
@@ -25,9 +25,13 @@ public class Caption {
       y += l.getAscent(); float x = (W - (float) l.getBounds().getWidth()) / 2 - (float) l.getBounds().getX();
       g.setColor(t ? TEXT : MUTED); l.draw(g, x, y); y += l.getDescent() + (t ? 10 : 8);
     }
-    BufferedImage src = ImageIO.read(new File(shot)); int sw = W - 2 * PAD, sh = (int) Math.round((double) src.getHeight() * sw / src.getWidth());
-    RoundRectangle2D rr = new RoundRectangle2D.Float(PAD, SHOT_TOP, sw, sh, RADIUS, RADIUS);
-    Shape clip = g.getClip(); g.setClip(rr); g.drawImage(src, PAD, SHOT_TOP, sw, sh, null); g.setClip(clip);
+    // The whole screen stays visible: the screenshot is scaled to the height left under the caption and centred.
+    BufferedImage src = ImageIO.read(new File(shot));
+    int sh = H - SHOT_TOP - PAD, sw = (int) Math.round((double) src.getWidth() * sh / src.getHeight());
+    if (sw > W - 2 * PAD) { sw = W - 2 * PAD; sh = (int) Math.round((double) src.getHeight() * sw / src.getWidth()); }
+    int sx = (W - sw) / 2;
+    RoundRectangle2D rr = new RoundRectangle2D.Float(sx, SHOT_TOP, sw, sh, RADIUS, RADIUS);
+    Shape clip = g.getClip(); g.setClip(rr); g.drawImage(src, sx, SHOT_TOP, sw, sh, null); g.setClip(clip);
     g.setColor(OUTLINE); g.setStroke(new BasicStroke(2)); g.draw(rr);
     ImageIO.write(img, "png", new File(out));
   }
