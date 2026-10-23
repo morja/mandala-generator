@@ -47,7 +47,7 @@ Skip: r/Android (no app promotion at all), r/apps (dead), paid "app review" subr
 
 ## 4. Assets to prepare before the first post
 
-1. Six wallpaper-sized renders (1080×2160) from the starter favourites, exported from the app at screen size: two with emblems, one with a quote, three pure layers. Keep them in `docs/marketing/` (not yet created).
+1. Six wallpaper-sized renders (1080×2160) from the starter favourites, exported from the app at screen size: two with emblems, one with a quote, three pure layers. Keep them in `docs/marketing/` (created 23 October 2026 with the share images, [MKT-2](marketing/README.md)).
 2. One 10-second clip of the live wallpaper turning, as MP4 and GIF (Reddit plays MP4; GIF for comments). The promo video on YouTube is not good enough for this; record the phone screen directly.
 3. The Play link with a campaign parameter so installs from Reddit show up in the Play Console: `https://play.google.com/store/apps/details?id=one.tearoom.mandala&referrer=utm_source%3Dreddit%26utm_medium%3Dpost` (Play Console → Grow → Store performance → Acquisition reports; the "referrer" parameter is Google's own).
 4. Profile text on Reddit with the Play link, so image posts never need a link in the comments.

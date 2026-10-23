@@ -10,4 +10,5 @@ Mandala Generator for macOS and Android in one repository (ADR-0009): `mac/` is 
 - **Releases:** the macOS app through a `mac-v*` tag (`.github/workflows/mac-release.yml`), the Android app through Google Play. No release, tag or store upload unless Mathis asks.
 - **Agents** build in worktrees, never merge themselves and never publish.
 - **Docs:** decisions as ADRs, open approvals in `docs/APPROVALS.md`, reports with an ID (`POC-1`, `PLAN-1`, …) in `docs/`.
+- **Marketing:** share images and other promotion material live in `docs/marketing/` (README there). New texts are a text set in `docs/marketing/texts/<name>.js`, rendered with `docs/marketing/render-share-images.sh <name>` into `docs/marketing/share/<name>/`; do not rebuild the template for a new text.
 - **Commit often**, after every larger change.

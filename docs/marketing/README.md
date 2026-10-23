@@ -6,9 +6,15 @@ Images to share with friends, on WhatsApp and elsewhere (MKT-1 names this folder
 - `texts/<name>.js`: one text set per audience (`friends` is the first). The `message`, `facts`, `link` and `mandala` lines in English and German.
 - `render-share-images.sh [name]`: renders every variant and set in English and German to `share/<name>/<variant>-<set>-<lang>.jpg` with headless Google Chrome and ImageMagick (default `friends`). Needs the Inter font installed; the landscape QR code loads a small library from cdnjs, so render it online.
 - `share/<name>/`: the rendered images of one text set, ready to send; kept in git.
+- `renders/`: large mandalas rendered from the starter favourites (`android/app/src/main/assets/starter-favorites.json`, the `parameters` of one entry saved as a settings file) with the CLI, used as backgrounds: portrait `mandala render <settings> <out.png> --width 1080 --height 1920 --zoom 1.15 --centre-y 0.40`, landscape `--width 1920 --height 1080 --zoom 0.52 --centre-x 0.72`, square `--size 1400`; saved as JPEG quality 92. Favourites with an image or gradient background show hard edges on non-square canvases; the hypocycloid, Flower of Life and ribbon ones work.
 
-New text: copy `texts/friends.js` to `texts/<name>.js`, change the lines, run `docs/marketing/render-share-images.sh <name>`. The viewer shows a text set by its name in the "Text set" field.
-- `renders/`: large mandalas rendered from the starter favourites with the CLI (`android/cli/build/install/mandala/bin/mandala render`), used as backgrounds.
+## New text, same images
+
+1. Copy `texts/friends.js` to `texts/<name>.js` and change the lines.
+2. Run `docs/marketing/render-share-images.sh <name>` (about three minutes).
+3. The images are in `share/<name>/`. The viewer shows a text set by its name in the "Text set" field.
+
+New screenshots or backgrounds: change `SETS` in the HTML (and the set counts in the script), new screenshots go to `../store/screenshots/`.
 
 | Variant | Size | For |
 |---|---|---|
