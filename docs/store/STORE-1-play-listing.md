@@ -206,6 +206,6 @@ State on 22 October 2026, read from the Play Console through the API: production
 7. Promote that release to production and send it for review.
    State on 22 October 2026: a production release **draft** "6 (1.3.0)" with the release notes above (English and German) is saved in the Play Console. Open before sending it for review: choose the production countries (Production → Countries / regions; none yet, which the release reports as an error); the warning about missing native debug symbols comes from libraries and does not block. The listing texts and the Pro product description above (English and German) are in the Play Console, entered the same day.
    *Later on 22 October 2026:* version 1.3.1 (code 7) replaced it: internal track rolled out, production **draft** "7 (1.3.1)" with the 1.3.1 notes above, uploaded through the API; git tag `android-v1.3.1` and a GitHub release without binaries. Still open for Mathis: production countries, then "Send for review".
-   *Done on 22 October 2026:* 1.4.1 (code 9) replaced the 1.3.1 draft, countries chosen, released to production through the API. **Live since 23 October 2026** (see the 1.4.1 notes above). Open: a GitHub release for `android-v1.4.1`, as there is one for 1.3.1.
+   *Done on 22 October 2026:* 1.4.1 (code 9) replaced the 1.3.1 draft, countries chosen, released to production through the API. **Live since 23 October 2026** (see the 1.4.1 notes above). GitHub release for `android-v1.4.1` without binaries created on 23 October 2026.
 
 Tablet screenshots are recommended, not required.
