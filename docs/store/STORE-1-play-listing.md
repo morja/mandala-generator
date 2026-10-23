@@ -87,6 +87,12 @@ On 23 October 2026 the closing sentence of the full description and of the 1.4.1
 
 Google Play lets you create in-app products only after a build that contains the billing permission has been uploaded (any testing track).
 
+## Listing languages and search terms
+
+Since 23 October 2026 the listing exists in seven languages: English (default), German, Spanish (es-ES), Brazilian Portuguese, French, Simplified Chinese and Japanese, each with its own title, short and full description and captioned screenshots; release notes and the Pro product stay English and German (Play falls back to the default language). Texts in `docs/store/play/listings.py`, written through the API. The short descriptions carry the search terms people use: English "Mandala maker and live wallpaper: curves, layers, sacred geometry.", German "Mandala-Maker und Live-Hintergrund: Kurven, Ebenen, heilige Geometrie."; the first line of the full description names "mandala maker", wallpaper and live wallpaper. The listing texts quoted above are the versions before that change, apart from the try-before-you-buy sentence.
+
+The Reddit and launch plan is [MKT-1](../MKT-1-reddit-and-launch-plan.md).
+
 ## Release notes for 1.4.1 (code 9)
 
 The free line moved (ADR-0016, amended): three layers free instead of two, no limit on favourites. Same notes as 1.4.0, since 1.4.0 never went public.
@@ -178,6 +184,8 @@ Version and code are in `android/app/build.gradle.kts` (on 22 October 2026: 1.1.
 Without `keystore.properties`, release builds are signed with the local debug key, so `assembleRelease` keeps working for tests on devices; Google Play rejects a bundle signed that way. Release builds are shrunk with R8 (minify and resource shrinking); the R8 mapping file is part of the bundle, so the Play Console shows readable stack traces.
 
 ## Screenshots
+
+On 23 October 2026 the seven screenshots were replaced in every listing language by captioned versions (1080 × 1920: a caption and a muted second line on the app's dark background, the screenshot below with rounded corners), rendered with `docs/store/play/Caption.java` from `captions.json` and uploaded with `play_shots.py`. The originals below stay the source.
 
 Taken on 22 October 2026 with the starter favourites and the current editor. The order starts with what the app shows first, the layers (Mathis' choice):
 

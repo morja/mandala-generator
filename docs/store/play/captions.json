@@ -1,0 +1,58 @@
+{
+ "en-US": {"tf":"Inter-SemiBold","sf":"Inter-Medium","c":[
+  ["Build it layer by layer","36 styles, each with its own palette and glow"],
+  ["A symbol in the centre","Om, Tree of Life, Flower of Life, lotus and more"],
+  ["Your mandala as wallpaper","Also live and turning slowly, or new every morning"],
+  ["Add a quote with a soft glow","Or draw by hand in rotated symmetry"],
+  ["Keep your favourites","Start with 23 examples"],
+  ["Save in any format","Square, your screen, 4:5, 2:3, 16:9"],
+  ["Roll the dice","A variation, new layers or everything new"]]},
+ "de-DE": {"tf":"Inter-SemiBold","sf":"Inter-Medium","c":[
+  ["Ebene für Ebene","36 Stile, jeder mit eigener Palette und eigenem Leuchten"],
+  ["Ein Symbol in der Mitte","Om, Lebensbaum, Blume des Lebens, Lotus und mehr"],
+  ["Dein Mandala als Hintergrund","Auch live und langsam drehend oder jeden Morgen neu"],
+  ["Ein Zitat mit weichem Leuchten","Oder von Hand zeichnen, in gedrehter Symmetrie"],
+  ["Deine Favoriten","Mit 23 Beispielen zum Start"],
+  ["Speichern in jedem Format","Quadrat, dein Bildschirm, 4:5, 2:3, 16:9"],
+  ["Würfel neu","Eine Variante, neue Ebenen oder alles neu"]]},
+ "es-ES": {"tf":"Inter-SemiBold","sf":"Inter-Medium","c":[
+  ["Capa por capa","36 estilos, cada uno con su paleta y su brillo"],
+  ["Un símbolo en el centro","Om, Árbol de la Vida, Flor de la Vida, loto y más"],
+  ["Tu mandala como fondo","También animado y girando despacio, o nuevo cada mañana"],
+  ["Una cita con brillo suave","O dibuja a mano con simetría rotada"],
+  ["Guarda tus favoritos","Empieza con 23 ejemplos"],
+  ["Guarda en cualquier formato","Cuadrado, tu pantalla, 4:5, 2:3, 16:9"],
+  ["Lanza el dado","Una variación, capas nuevas o todo nuevo"]]},
+ "pt-BR": {"tf":"Inter-SemiBold","sf":"Inter-Medium","c":[
+  ["Camada por camada","36 estilos, cada um com sua paleta e seu brilho"],
+  ["Um símbolo no centro","Om, Árvore da Vida, Flor da Vida, lótus e mais"],
+  ["Sua mandala como papel de parede","Também animado e girando devagar, ou novo toda manhã"],
+  ["Uma citação com brilho suave","Ou desenhe à mão em simetria rotacionada"],
+  ["Guarde seus favoritos","Comece com 23 exemplos"],
+  ["Salve em qualquer formato","Quadrado, sua tela, 4:5, 2:3, 16:9"],
+  ["Jogue o dado","Uma variação, camadas novas ou tudo novo"]]},
+ "fr-FR": {"tf":"Inter-SemiBold","sf":"Inter-Medium","c":[
+  ["Calque par calque","36 styles, chacun avec sa palette et sa lueur"],
+  ["Un symbole au centre","Om, Arbre de vie, Fleur de vie, lotus et plus"],
+  ["Votre mandala en fond d'écran","Aussi animé et tournant lentement, ou nouveau chaque matin"],
+  ["Une citation avec une lueur douce","Ou dessinez à la main en symétrie tournée"],
+  ["Gardez vos favoris","Commencez avec 23 exemples"],
+  ["Enregistrez à tout format","Carré, votre écran, 4:5, 2:3, 16:9"],
+  ["Lancez le dé","Une variation, de nouveaux calques ou tout nouveau"]]},
+ "zh-CN": {"tf":"PingFangSC-Semibold","sf":"PingFangSC-Medium","c":[
+  ["一层一层地构建","36 种风格，各有自己的调色板和光晕"],
+  ["中心放一个符号","唵、生命之树、生命之花、莲花等"],
+  ["把曼陀罗设为壁纸","也可缓慢转动的动态壁纸，或每天早晨换新"],
+  ["加一句柔光名言","或以旋转对称的方式手绘"],
+  ["保存你的收藏","内置 23 个示例"],
+  ["以任意格式保存","正方形、你的屏幕、4:5、2:3、16:9"],
+  ["掷骰子","一个变体、新图层或全部重来"]]},
+ "ja-JP": {"tf":"HiraginoSans-W6","sf":"HiraginoSans-W4","c":[
+  ["レイヤーを重ねて作る","36 のスタイル、それぞれにパレットと輝き"],
+  ["中央にシンボルを","オーム、生命の樹、生命の花、蓮など"],
+  ["曼荼羅を壁紙に","ゆっくり回るライブ壁紙や、毎朝新しい壁紙にも"],
+  ["やわらかく光る名言を","または回転対称で手描き"],
+  ["お気に入りを保存","23 のサンプルから始められます"],
+  ["好きな形式で保存","正方形、画面サイズ、4:5、2:3、16:9"],
+  ["サイコロを振る","バリエーション、新しいレイヤー、すべて新しく"]]}
+}
