@@ -7,9 +7,10 @@
 // line and once without text into story/.
 // `stories` is the plan for the ready-made story sequences in stories/: `count` sequences, each with
 // these steps in order. "teaser:1" and "teaser:2" are a mandala with line 1 or 2, "teaser:0" one
-// without text, "app" the app story (variant B). No mandala repeats within a sequence.
+// without text, "wallpaper" the phone with the mandala as lock screen (variant H, lines in `wallpaper`,
+// alternatives like the teaser lines), "app" the app story (variant B). No mandala repeats within a sequence.
 window.MKT_TEXT = {
-  stories: { count: 5, steps: ["teaser:1", "teaser:2", "teaser:0", "app"] },
+  stories: { count: 5, steps: ["teaser:1", "teaser:2", "teaser:0", "wallpaper", "app"] },
   en: {
     message: "Try out my new Android app. I'd love some feedback and reviews.",
     facts: "Free and open source, no ads, no account.",
@@ -18,7 +19,8 @@ window.MKT_TEXT = {
     teaser: [
       ["See what you can make with my new app.", "Look what my new app can do.", "Made this with my new app."],
       ["Another one. Made on my phone.", "One more, straight from my phone.", "And another, a minute on my phone."]
-    ]
+    ],
+    wallpaper: ["Or on your lock screen.", "It also makes your wallpaper.", "Or as your wallpaper, new every morning."]
   },
   de: {
     message: "Meine neue Android-App. Probier sie aus, ich freue mich über Feedback und Bewertungen.",
@@ -28,6 +30,7 @@ window.MKT_TEXT = {
     teaser: [
       ["Schau, was man mit meiner neuen App machen kann.", "Schau, was meine neue App kann.", "Mit meiner neuen App gemacht."],
       ["Noch eins. Auf dem Handy gemacht.", "Noch eins, direkt vom Handy.", "Und noch eins, eine Minute am Handy."]
-    ]
+    ],
+    wallpaper: ["Oder auf dem Sperrbildschirm.", "Auch als Hintergrundbild.", "Oder als Hintergrund, jeden Morgen neu."]
   }
 };
