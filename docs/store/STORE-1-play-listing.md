@@ -14,11 +14,13 @@ Renamed on 22 October 2026 from "Mandala Generator" to "Dahlia – Mandala Maker
 | Free or paid | Free (with one in-app product) |
 | Category | Art & Design |
 | Contact email | apps@tearoom.one |
-| Website | https://www.tearoom.one/en/apps/mandala-generator |
-| Privacy policy | https://www.tearoom.one/en/apps/privacy/mandala-generator |
+| Website | https://www.tearoom.one/en/apps/dahlia |
+| Privacy policy | https://www.tearoom.one/en/apps/privacy/dahlia |
 | Package name | `one.tearoom.mandala` (`applicationId` in `android/app/build.gradle.kts`; the Play Console app exists with it since 20 October 2026 and it cannot change. The Kotlin namespace stays `com.mathis.mandala.app`.) |
 
 The two tearoom.one pages exist in the website repository (commit "Add Mandala Generator to the apps, with its privacy policy") but are not deployed yet.
+
+On 23 October 2026 the pages moved to `/apps/dahlia` and `/apps/privacy/dahlia` (both languages), renamed after ADR-0012, with 301 redirects from the `mandala-generator` addresses in the site's `routes.php`. The Play Console was pointed at the new addresses the same day: the website through the API (`edits.details`), the privacy policy URL by hand under App content.
 
 ## Store listing, English
 
