@@ -27,6 +27,7 @@ html, body { margin: 0; background: var(--bg); color: var(--fg); font-family: va
 .bar h1 { font-size: 15px; font-weight: 600; margin: 0 12px 0 0; }
 .bar .group { display: flex; gap: 6px; align-items: center; }
 .bar .group span { color: var(--muted); margin-right: 4px; }
+.bar input { font: inherit; color: var(--fg); background: transparent; border: 1px solid var(--frame-edge); border-radius: 8px; padding: 6px 10px; }
 .bar button { font: inherit; color: var(--fg); background: transparent; border: 1px solid var(--frame-edge); border-radius: 8px; padding: 6px 12px; cursor: pointer; }
 .bar button[aria-pressed="true"] { background: var(--accent); color: var(--bg); border-color: var(--accent); }
 .bar .meta { color: var(--muted); margin-left: auto; }
@@ -104,6 +105,12 @@ html, body { margin: 0; background: var(--bg); color: var(--fg); font-family: va
 .v-wide .phones.two .phone { width: 420px; }
 </style>
 </head>
+<script>
+// The texts come from texts/<name>.js (?t=<name>, default "friends"), loaded before the page script runs.
+const TEXT_NAME = (new URLSearchParams(location.search).get("t") || "friends").replace(/[^a-z0-9-]/gi, "");
+document.write(`<script src="texts/${TEXT_NAME}.js"><\/script>`);
+</script>
+</head>
 <body>
 <script>
 // One file, two jobs: with ?v=<variant>&lang=<en|de> it shows a single card at its pixel size
@@ -120,26 +127,13 @@ const SETS = {
   mandala:   [H + "-square", R + "-portrait", F + "-square"].map(a => ({ shots: [], art: a })),
   wide:      [[["1-layers"], H], [["2-om-emblem", "4-quote"], F], [["3-wallpaper"], R], [["1-layers", "7-new-mandala-preview"], H]].map(([s, a]) => ({ shots: s, art: a + "-landscape" }))
 };
-const TEXT = {
-  en: {
-    message: "My new Android app. Try it out, I'd love some feedback and reviews.",
-    facts: "Free and open source, no ads, no account. Pro is an optional one-time purchase.",
-    link: "tearoom.one/dahlia",
-    mandala: "Mandalas from curves, light and symbols. My new Android app, free to try."
-  },
-  de: {
-    message: "Meine neue Android-App. Probier sie aus, ich freue mich über Feedback und Bewertungen.",
-    facts: "Kostenlos und Open Source, keine Werbung, kein Konto. Pro ist ein optionaler Einmalkauf.",
-    link: "tearoom.one/dahlia",
-    mandala: "Mandalas aus Kurven, Licht und Symbolen. Meine neue Android-App, kostenlos zum Ausprobieren."
-  }
-};
+const TEXT = window.MKT_TEXT; // from texts/<name>.js, loaded in <head>
 const PLAY = "https://play.google.com/store/apps/details?id=one.tearoom.mandala";
 const SHOT = n => `../store/screenshots/phone-${n}.png`;
 const ICON = "../store/play-icon-512.png";
 
 const params = new URLSearchParams(location.search);
-const v = params.get("v"), lang = params.get("lang") || "en", setIndex = Math.max(0, (parseInt(params.get("s") || "1", 10) || 1) - 1);
+const v = params.get("v"), lang = params.get("lang") || "en", t = params.get("t") || "friends", setIndex = Math.max(0, (parseInt(params.get("s") || "1", 10) || 1) - 1);
 
 function title() { return `<h1 class="title">Dahlia<small>Mandala Maker</small></h1>`; }
 function phone(n) { return `<div class="phone"><img src="${SHOT(n)}" alt=""></div>`; }
@@ -189,6 +183,7 @@ function card(v, t, set) {
 }
 
 if (v && SIZES[v]) {
+  if (!TEXT) { document.body.textContent = `texts/${TEXT_NAME}.js not found`; throw new Error("text set missing"); }
   const [w, h] = SIZES[v];
   document.documentElement.lang = lang;
   document.body.style.width = w + "px"; document.body.style.height = h + "px"; document.body.style.overflow = "hidden";
@@ -201,13 +196,14 @@ if (v && SIZES[v]) {
     document.head.appendChild(s);
   }
 } else {
-  let cur = localStorage.getItem("mkt2.v") || "portrait", curLang = localStorage.getItem("mkt2.lang") || "en", curSet = 1;
+  let cur = localStorage.getItem("mkt2.v") || "portrait", curLang = localStorage.getItem("mkt2.lang") || "en", curSet = 1, curText = t;
   document.body.innerHTML = `
     <div class="viewer">
       <div class="bar"><h1>MKT-2 share images</h1>
         <div class="group" id="variants"><span>Variant</span></div>
         <div class="group" id="sets"><span>Images</span></div>
         <div class="group" id="langs"><span>Language</span></div>
+        <div class="group"><span>Text set</span><input id="text" value="${t}" size="10"></div>
         <div class="meta" id="meta"></div></div>
       <div class="stage"><iframe id="frame"></iframe></div>
     </div>`;
@@ -219,11 +215,11 @@ if (v && SIZES[v]) {
     if (curSet > SETS[cur].length) curSet = 1;
     sets.querySelectorAll("button").forEach(b => b.remove());
     SETS[cur].forEach((_, i) => { const b = document.createElement("button"); b.textContent = i + 1; b.dataset.set = i + 1; b.setAttribute("aria-pressed", i + 1 === curSet); sets.appendChild(b); });
-    f.src = `?v=${cur}&s=${curSet}&lang=${curLang}`; f.width = w; f.height = h;
+    f.src = `?v=${cur}&s=${curSet}&lang=${curLang}&t=${curText}`; f.width = w; f.height = h;
     const scale = Math.min((stage.clientWidth - 48) / w, (stage.clientHeight - 48) / h, 1);
     f.style.transform = `scale(${scale})`; f.style.width = w + "px"; f.style.height = h + "px";
     f.style.marginRight = (w * scale - w) + "px"; f.style.marginBottom = (h * scale - h) + "px";
-    document.getElementById("meta").textContent = `${w} × ${h} px · share/${cur}-${curSet}-${curLang}.jpg`;
+    document.getElementById("meta").textContent = `${w} × ${h} px · share/${curText}/${cur}-${curSet}-${curLang}.jpg · texts/${curText}.js`;
     for (const b of variants.querySelectorAll("button")) b.setAttribute("aria-pressed", b.dataset.v === cur);
     for (const b of langs.querySelectorAll("button")) b.setAttribute("aria-pressed", b.dataset.lang === curLang);
     localStorage.setItem("mkt2.v", cur); localStorage.setItem("mkt2.lang", curLang);
@@ -231,6 +227,7 @@ if (v && SIZES[v]) {
   variants.addEventListener("click", e => { if (e.target.dataset.v) { cur = e.target.dataset.v; show(); } });
   langs.addEventListener("click", e => { if (e.target.dataset.lang) { curLang = e.target.dataset.lang; show(); } });
   sets.addEventListener("click", e => { if (e.target.dataset.set) { curSet = parseInt(e.target.dataset.set, 10); show(); } });
+  document.getElementById("text").addEventListener("change", e => { curText = e.target.value.replace(/[^a-z0-9-]/gi, "") || "friends"; show(); });
   addEventListener("resize", show);
   show();
 }
