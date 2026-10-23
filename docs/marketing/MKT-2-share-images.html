@@ -33,6 +33,7 @@ html, body { margin: 0; background: var(--bg); color: var(--fg); font-family: va
 .bar .meta { color: var(--muted); margin-left: auto; }
 .stage { flex: 1; display: flex; align-items: center; justify-content: center; padding: 24px; overflow: hidden; }
 .stage iframe { border: 0; background: var(--bg); transform-origin: top left; box-shadow: var(--shadow); }
+.stage .row { display: flex; gap: 16px; align-items: flex-start; }
 
 /* ---------- shared card parts ---------- */
 .card { position: relative; overflow: hidden; width: 100%; height: 100%; }
@@ -142,12 +143,34 @@ const FILE = { teaser: "1-teaser", story: "2-app", portrait: "portrait", mandala
 const setName = (v, i) => SETS[v][i].name || String(i + 1);
 const fileName = (v, i, lang) => `${FOLDER[v]}/${FILE[v]}-${setName(v, i)}-${lang}.jpg`;
 const TEXT = window.MKT_TEXT; // from texts/<name>.js, loaded in <head>
+
+// Ready-made story sequences (TEXT.stories): sequence n (1-based) is a list of steps, each a variant, a set
+// index and the sequence number (which picks the alternative teaser line). Mandalas rotate so that none
+// repeats within a sequence and the sequences differ from each other; the app story cycles through its sets.
+function storySteps(n) {
+  const plan = (TEXT && TEXT.stories) || { count: 0, steps: [] };
+  let teaserNo = 0;
+  return plan.steps.map((step, k) => {
+    const [kind, arg] = step.split(":");
+    if (kind === "app") return { v: "story", i: (n - 1) % SETS.story.length, seq: n, step: k + 1 };
+    const mandala = ((n - 1) + 2 * teaserNo++) % TEASERS.length, text = parseInt(arg || "0", 10);
+    return { v: "teaser", i: mandala * 3 + [1, 2, 0].indexOf(text), seq: n, step: k + 1 };
+  });
+}
+const storyCount = () => (TEXT && TEXT.stories && TEXT.stories.count) || 0;
+const storyFile = (n, st, lang) => `stories/story-${n}-${lang}/${st.step}-${st.v === "story" ? "app" : "teaser"}-${setName(st.v, st.i)}.jpg`;
+// A teaser line for a position: a string, or a list of alternatives chosen by the sequence number.
+function teaserLine(t, position, seq) {
+  const entry = Array.isArray(t.teaser) ? t.teaser[position - 1] : null;
+  if (Array.isArray(entry)) return entry.length ? entry[(seq - 1) % entry.length] : null;
+  return entry || null;
+}
 const PLAY = "https://play.google.com/store/apps/details?id=one.tearoom.mandala";
 const SHOT = n => `../store/screenshots/phone-${n}.png`;
 const ICON = "../store/play-icon-512.png";
 
 const params = new URLSearchParams(location.search);
-const v = params.get("v"), lang = params.get("lang") || "en", t = params.get("t") || "friends", setIndex = Math.max(0, (parseInt(params.get("s") || "1", 10) || 1) - 1);
+const v = params.get("v"), lang = params.get("lang") || "en", t = params.get("t") || "friends", setIndex = Math.max(0, (parseInt(params.get("s") || "1", 10) || 1) - 1), seq = Math.max(1, parseInt(params.get("seq") || "1", 10) || 1);
 
 function title() { return `<h1 class="title">Dahlia<small>Mandala Maker</small></h1>`; }
 function phone(n) { return `<div class="phone"><img src="${SHOT(n)}" alt=""></div>`; }
@@ -188,7 +211,7 @@ function card(v, t, set) {
         <div class="text">${title()}<p class="message">${t.mandala}</p><p class="link">${t.link}</p></div>
       </div>`;
     case "teaser": {
-      const lines = Array.isArray(t.teaser) ? t.teaser : [], line = set.text ? lines[set.text - 1] : null;
+      const line = set.text ? teaserLine(t, set.text, seq) : null;
       return `
       <div class="card v-teaser">
         <div class="art" style="background-image:url(${art})"></div>
@@ -205,9 +228,10 @@ function card(v, t, set) {
 }
 
 if (params.get("list")) {
-  // For render-share-images.sh: one line per image and language, "IMG variant index width height lang file".
+  // For render-share-images.sh: one line per image and language, "IMG variant index width height lang seq file".
   const lines = [];
-  for (const k in SIZES) SETS[k].forEach((_, i) => { for (const l of ["en", "de"]) lines.push(`IMG ${k} ${i + 1} ${SIZES[k][0]} ${SIZES[k][1]} ${l} ${fileName(k, i, l)}`); });
+  for (const k in SIZES) SETS[k].forEach((_, i) => { for (const l of ["en", "de"]) lines.push(`IMG ${k} ${i + 1} ${SIZES[k][0]} ${SIZES[k][1]} ${l} 1 ${fileName(k, i, l)}`); });
+  for (let n = 1; n <= storyCount(); n++) for (const st of storySteps(n)) for (const l of ["en", "de"]) lines.push(`IMG ${st.v} ${st.i + 1} ${SIZES[st.v][0]} ${SIZES[st.v][1]} ${l} ${n} ${storyFile(n, st, l)}`);
   document.body.innerHTML = `<pre id="list">${lines.join("\n")}</pre>`;
 } else if (v && SIZES[v]) {
   if (!TEXT) { document.body.textContent = `texts/${TEXT_NAME}.js not found`; throw new Error("text set missing"); }
@@ -223,7 +247,7 @@ if (params.get("list")) {
     document.head.appendChild(s);
   }
 } else {
-  let cur = localStorage.getItem("mkt2.v") || "portrait", curLang = localStorage.getItem("mkt2.lang") || "en", curSet = 1, curText = t;
+  let cur = localStorage.getItem("mkt2.v") || "stories", curLang = localStorage.getItem("mkt2.lang") || "en", curSet = 1, curText = t;
   document.body.innerHTML = `
     <div class="viewer">
       <div class="bar"><h1>MKT-2 share images</h1>
@@ -236,17 +260,35 @@ if (params.get("list")) {
     </div>`;
   const variants = document.getElementById("variants"), langs = document.getElementById("langs"), sets = document.getElementById("sets");
   for (const k in SIZES) { const b = document.createElement("button"); b.textContent = LABELS[k]; b.dataset.v = k; variants.appendChild(b); }
+  { const b = document.createElement("button"); b.textContent = "Stories"; b.dataset.v = "stories"; variants.appendChild(b); }
   for (const k of ["en", "de"]) { const b = document.createElement("button"); b.textContent = k.toUpperCase(); b.dataset.lang = k; langs.appendChild(b); }
-  function show() {
-    const [w, h] = SIZES[cur], f = document.getElementById("frame"), stage = f.parentElement;
-    if (curSet > SETS[cur].length) curSet = 1;
-    sets.querySelectorAll("button").forEach(b => b.remove());
-    SETS[cur].forEach((_, i) => { const b = document.createElement("button"); b.textContent = setName(cur, i); b.dataset.set = i + 1; b.setAttribute("aria-pressed", i + 1 === curSet); sets.appendChild(b); });
-    f.src = `?v=${cur}&s=${curSet}&lang=${curLang}&t=${curText}`; f.width = w; f.height = h;
-    const scale = Math.min((stage.clientWidth - 48) / w, (stage.clientHeight - 48) / h, 1);
+  function fit(f, w, h, maxW, maxH) {
+    const scale = Math.min(maxW / w, maxH / h, 1);
     f.style.transform = `scale(${scale})`; f.style.width = w + "px"; f.style.height = h + "px";
     f.style.marginRight = (w * scale - w) + "px"; f.style.marginBottom = (h * scale - h) + "px";
-    document.getElementById("meta").textContent = `${w} × ${h} px · share/${curText}/${fileName(cur, curSet - 1, curLang)} · texts/${curText}.js`;
+  }
+  function show() {
+    const stage = document.querySelector(".stage");
+    sets.querySelectorAll("button").forEach(b => b.remove());
+    if (cur === "stories") {
+      const count = (window.MKT_TEXT && window.MKT_TEXT.stories && window.MKT_TEXT.stories.count) || 0;
+      if (curSet > count) curSet = 1;
+      for (let n = 1; n <= count; n++) { const b = document.createElement("button"); b.textContent = n; b.dataset.set = n; b.setAttribute("aria-pressed", n === curSet); sets.appendChild(b); }
+      const steps = storySteps(curSet);
+      stage.innerHTML = `<div class="row">${steps.map(st => `<iframe src="?v=${st.v}&s=${st.i + 1}&lang=${curLang}&t=${curText}&seq=${curSet}"></iframe>`).join("")}</div>`;
+      const n = steps.length || 1, maxW = (stage.clientWidth - 48 - 16 * (n - 1)) / n, maxH = stage.clientHeight - 48;
+      stage.querySelectorAll("iframe").forEach((f, k) => fit(f, SIZES[steps[k].v][0], SIZES[steps[k].v][1], maxW, maxH));
+      document.getElementById("meta").textContent = `share/${curText}/stories/story-${curSet}-${curLang}/ · texts/${curText}.js`;
+    } else {
+      const [w, h] = SIZES[cur];
+      if (curSet > SETS[cur].length) curSet = 1;
+      SETS[cur].forEach((_, i) => { const b = document.createElement("button"); b.textContent = setName(cur, i); b.dataset.set = i + 1; b.setAttribute("aria-pressed", i + 1 === curSet); sets.appendChild(b); });
+      stage.innerHTML = `<iframe id="frame"></iframe>`;
+      const f = document.getElementById("frame");
+      f.src = `?v=${cur}&s=${curSet}&lang=${curLang}&t=${curText}`;
+      fit(f, w, h, stage.clientWidth - 48, stage.clientHeight - 48);
+      document.getElementById("meta").textContent = `${w} × ${h} px · share/${curText}/${fileName(cur, curSet - 1, curLang)} · texts/${curText}.js`;
+    }
     for (const b of variants.querySelectorAll("button")) b.setAttribute("aria-pressed", b.dataset.v === cur);
     for (const b of langs.querySelectorAll("button")) b.setAttribute("aria-pressed", b.dataset.lang === curLang);
     localStorage.setItem("mkt2.v", cur); localStorage.setItem("mkt2.lang", curLang);

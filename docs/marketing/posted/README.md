@@ -1,0 +1,6 @@
+# Posted images
+
+Copy here, by hand, what was actually posted or sent (the rendered images in `../share/` are not in git). One folder per post, named by date and place, for example `2026-10-25-whatsapp-status/` with the images in posting order, and a line here on where it went:
+
+| Folder | Where | Text set |
+|---|---|---|
