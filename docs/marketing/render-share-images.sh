@@ -12,7 +12,7 @@ text="${1:-friends}"
 chrome="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
 page="file://$(pwd)/MKT-2-share-images.html"
 mkdir -p "share/$text"
-for v in portrait:1080x1350:5 story:1080x1920:4 landscape:1920x1080:3 square:1080x1080:3 mandala:1080x1350:3 wide:1920x1080:4; do
+for v in portrait:1080x1350:5 story:1080x1920:4 landscape:1920x1080:3 square:1080x1080:3 mandala:1080x1350:3 wide:1920x1080:4 teaser:1080x1920:6; do
     name="${v%%:*}"; rest="${v#*:}"; size="${rest%%:*}"; count="${rest##*:}"
     i=1
     while [ "$i" -le "$count" ]; do
