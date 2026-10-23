@@ -4,18 +4,21 @@
 # and ImageMagick. Run from anywhere:
 #   render-share-images.sh            # text set "friends" (texts/friends.js)
 #   render-share-images.sh <name>     # text set texts/<name>.js
+#   render-share-images.sh <name> <variant>   # only that variant (portrait, story, landscape, square, mandala, wide, teaser)
 # The list of images and their file names comes from the HTML itself (?list=1), so SETS there is the
 # only place to edit. Nothing is deleted: files of renamed or removed sets stay until you remove them.
 # Ready-made story sequences (stories/story-<n>-<lang>/) follow the `stories` plan in the text set.
 set -eu
 cd "$(dirname "$0")"
 text="${1:-friends}"
+only="${2:-}"
 [ -f "texts/$text.js" ] || { echo "texts/$text.js not found" >&2; exit 1; }
 chrome="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
 page="file://$(pwd)/MKT-2-share-images.html"
 list=$("$chrome" --headless=new --disable-gpu --dump-dom "$page?list=1" 2>/dev/null | grep -o 'IMG [^<]*' | cut -c5-)
 [ -n "$list" ] || { echo "could not read the image list from the HTML" >&2; exit 1; }
 echo "$list" | while read -r name i w h lang seq file; do
+    [ -z "$only" ] || [ "$name" = "$only" ] || continue
     out="share/$text/${file%.jpg}"
     mkdir -p "$(dirname "$out")"
     "$chrome" --headless=new --disable-gpu --hide-scrollbars --force-device-scale-factor=1 \
