@@ -85,33 +85,53 @@ html, body { margin: 0; background: var(--bg); color: var(--fg); font-family: va
 .v-square .phone { width: 420px; }
 .v-square .phone + .phone { margin-top: 70px; }
 
-/* ---------- E · emblem portrait 1080×1350 ---------- */
-.v-emblem .art { background-size: 1080px auto; background-position: center -60px; }
-.v-emblem .fade { position: absolute; left: 0; right: 0; bottom: 0; height: 58%; background: linear-gradient(to bottom, rgba(10,9,8,0), rgba(10,9,8,.97) 50%); }
-.v-emblem .text { position: absolute; left: var(--gutter); right: var(--gutter); bottom: 72px; }
-.v-emblem .title { font-size: 104px; }
-.v-emblem .message { font-size: 42px; margin-top: 36px; max-width: none; }
-.v-emblem .link { font-size: 30px; margin-top: 24px; }
+/* ---------- E · mandala portrait 1080×1350 ---------- */
+.v-mandala .art { background-position: center top; }
+.v-mandala .fade { position: absolute; left: 0; right: 0; bottom: 0; height: 58%; background: linear-gradient(to bottom, rgba(10,9,8,0), rgba(10,9,8,.97) 50%); }
+.v-mandala .text { position: absolute; left: var(--gutter); right: var(--gutter); bottom: 72px; }
+.v-mandala .title { font-size: 104px; }
+.v-mandala .message { font-size: 42px; margin-top: 36px; max-width: none; }
+.v-mandala .link { font-size: 30px; margin-top: 24px; }
+/* ---------- F · wide 1920×1080, one or two phones, larger text for small screens ---------- */
+.v-wide .text { position: absolute; left: var(--gutter); top: 130px; width: 780px; }
+.v-wide .title { font-size: 150px; }
+.v-wide .message { font-size: 54px; margin-top: 52px; }
+.v-wide .facts { font-size: 34px; margin-top: 40px; }
+.v-wide .link { font-size: 40px; margin-top: 16px; }
+.v-wide .scrim { background: rgba(10, 9, 8, .5); }
+.v-wide .phones { position: absolute; right: var(--gutter); top: 110px; display: flex; gap: 48px; align-items: flex-start; }
+.v-wide .phone { width: 480px; }
+.v-wide .phones.two .phone { width: 420px; }
 </style>
 </head>
 <body>
 <script>
 // One file, two jobs: with ?v=<variant>&lang=<en|de> it shows a single card at its pixel size
 // (what render-share-images.sh screenshots); without parameters it is the viewer with a switcher.
-const SIZES = { portrait: [1080, 1350], story: [1080, 1920], landscape: [1920, 1080], square: [1080, 1080], emblem: [1080, 1350] };
-const LABELS = { portrait: "A · Portrait 4:5", story: "B · Story 9:16", landscape: "C · Landscape 16:9", square: "D · Square", emblem: "E · Emblem portrait" };
+const SIZES = { portrait: [1080, 1350], story: [1080, 1920], landscape: [1920, 1080], square: [1080, 1080], mandala: [1080, 1350], wide: [1920, 1080] };
+const LABELS = { portrait: "A · Portrait 4:5", story: "B · Story 9:16", landscape: "C · Landscape 16:9", square: "D · Square", mandala: "E · Mandala portrait", wide: "F · Wide 16:9, large" };
+// Image sets per variant: which screenshots (../store/screenshots/phone-<n>.png) and which background (renders/<art>.jpg).
+const H = "hypocycloid", F = "flower-of-life", R = "ribbon";
+const SETS = {
+  portrait:  [["1-layers", H], ["2-om-emblem", F], ["4-quote", R], ["3-wallpaper", H], ["7-new-mandala-preview", F]].map(([s, a]) => ({ shots: [s], art: a + "-portrait" })),
+  story:     [["2-om-emblem", H], ["1-layers", F], ["3-wallpaper", R], ["5-favourites", H]].map(([s, a]) => ({ shots: [s], art: a + "-portrait" })),
+  landscape: [[["1-layers", "2-om-emblem", "4-quote"], H], [["3-wallpaper", "5-favourites", "7-new-mandala-preview"], F], [["2-om-emblem", "6-save-formats", "1-layers"], R]].map(([s, a]) => ({ shots: s, art: a + "-landscape" })),
+  square:    [[["1-layers", "7-new-mandala-preview"], H], [["2-om-emblem", "4-quote"], F], [["3-wallpaper", "5-favourites"], R]].map(([s, a]) => ({ shots: s, art: a + "-square" })),
+  mandala:   [H + "-square", R + "-portrait", F + "-square"].map(a => ({ shots: [], art: a })),
+  wide:      [[["1-layers"], H], [["2-om-emblem", "4-quote"], F], [["3-wallpaper"], R], [["1-layers", "7-new-mandala-preview"], H]].map(([s, a]) => ({ shots: s, art: a + "-landscape" }))
+};
 const TEXT = {
   en: {
     message: "My new Android app. Try it out, I'd love some feedback and reviews.",
     facts: "Free and open source, no ads, no account. Pro is an optional one-time purchase.",
-    link: "tearoom.one/en/apps/dahlia",
-    emblem: "Mandalas from curves, light and symbols. My new Android app, free to try."
+    link: "tearoom.one/dahlia",
+    mandala: "Mandalas from curves, light and symbols. My new Android app, free to try."
   },
   de: {
     message: "Meine neue Android-App. Probier sie aus, ich freue mich über Feedback und Bewertungen.",
     facts: "Kostenlos und Open Source, keine Werbung, kein Konto. Pro ist ein optionaler Einmalkauf.",
-    link: "tearoom.one/de/apps/dahlia",
-    emblem: "Mandalas aus Kurven, Licht und Symbolen. Meine neue Android-App, kostenlos zum Ausprobieren."
+    link: "tearoom.one/dahlia",
+    mandala: "Mandalas aus Kurven, Licht und Symbolen. Meine neue Android-App, kostenlos zum Ausprobieren."
   }
 };
 const PLAY = "https://play.google.com/store/apps/details?id=one.tearoom.mandala";
@@ -119,44 +139,51 @@ const SHOT = n => `../store/screenshots/phone-${n}.png`;
 const ICON = "../store/play-icon-512.png";
 
 const params = new URLSearchParams(location.search);
-const v = params.get("v"), lang = params.get("lang") || "en";
+const v = params.get("v"), lang = params.get("lang") || "en", setIndex = Math.max(0, (parseInt(params.get("s") || "1", 10) || 1) - 1);
 
 function title() { return `<h1 class="title">Dahlia<small>Mandala Maker</small></h1>`; }
 function phone(n) { return `<div class="phone"><img src="${SHOT(n)}" alt=""></div>`; }
 
-function card(v, t) {
+function card(v, t, set) {
+  const art = `renders/${set.art}.jpg`, sh = set.shots;
   switch (v) {
     case "portrait": return `
       <div class="card v-portrait">
-        <div class="art" style="background-image:url(renders/hypocycloid-portrait.jpg)"></div><div class="scrim"></div>
+        <div class="art" style="background-image:url(${art})"></div><div class="scrim"></div>
         <div class="text">${title()}<p class="message">${t.message}</p><p class="link">${t.link}</p></div>
-        ${phone("1-layers")}
+        ${phone(sh[0])}
       </div>`;
     case "story": return `
       <div class="card v-story">
-        <div class="art" style="background-image:url(renders/hypocycloid-portrait.jpg)"></div><div class="scrim"></div>
+        <div class="art" style="background-image:url(${art})"></div><div class="scrim"></div>
         <div class="text">${title()}<p class="message">${t.message}</p></div>
-        ${phone("2-om-emblem")}
+        ${phone(sh[0])}
         <div class="foot"><p class="facts">${t.facts}</p><p class="link">${t.link}</p></div>
       </div>`;
     case "landscape": return `
       <div class="card v-landscape">
-        <div class="art" style="background-image:url(renders/hypocycloid-landscape.jpg)"></div><div class="scrim"></div>
+        <div class="art" style="background-image:url(${art})"></div><div class="scrim"></div>
         <div class="text">${title()}<p class="message">${t.message}</p><p class="facts">${t.facts}</p><p class="link">${t.link}</p></div>
         <div class="qr" id="qr"></div>
-        <div class="phones">${phone("1-layers")}${phone("2-om-emblem")}${phone("4-quote")}</div>
+        <div class="phones">${sh.map(phone).join("")}</div>
       </div>`;
     case "square": return `
       <div class="card v-square">
-        <div class="art" style="background-image:url(renders/hypocycloid-square.jpg)"></div><div class="scrim"></div>
+        <div class="art" style="background-image:url(${art})"></div><div class="scrim"></div>
         <div class="head"><img class="icon" src="${ICON}" alt="">${title()}</div>
         <p class="message">${t.message}</p><p class="link">${t.link}</p>
-        <div class="phones">${phone("1-layers")}${phone("7-new-mandala-preview")}</div>
+        <div class="phones">${sh.map(phone).join("")}</div>
       </div>`;
-    case "emblem": return `
-      <div class="card v-emblem">
-        <div class="art" style="background-image:url(renders/om-square.jpg)"></div><div class="fade"></div>
-        <div class="text">${title()}<p class="message">${t.emblem}</p><p class="link">${t.link}</p></div>
+    case "mandala": return `
+      <div class="card v-mandala">
+        <div class="art" style="background-image:url(${art})"></div><div class="fade"></div>
+        <div class="text">${title()}<p class="message">${t.mandala}</p><p class="link">${t.link}</p></div>
+      </div>`;
+    case "wide": return `
+      <div class="card v-wide">
+        <div class="art" style="background-image:url(${art})"></div><div class="scrim"></div>
+        <div class="text">${title()}<p class="message">${t.message}</p><p class="facts">${t.facts}</p><p class="link">${t.link}</p></div>
+        <div class="phones ${sh.length === 2 ? "two" : ""}">${sh.map(phone).join("")}</div>
       </div>`;
   }
 }
@@ -165,7 +192,7 @@ if (v && SIZES[v]) {
   const [w, h] = SIZES[v];
   document.documentElement.lang = lang;
   document.body.style.width = w + "px"; document.body.style.height = h + "px"; document.body.style.overflow = "hidden";
-  document.body.innerHTML = card(v, TEXT[lang]);
+  document.body.innerHTML = card(v, TEXT[lang], SETS[v][Math.min(setIndex, SETS[v].length - 1)]);
   if (document.getElementById("qr")) {
     const s = document.createElement("script");
     s.src = "https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js";
@@ -174,31 +201,36 @@ if (v && SIZES[v]) {
     document.head.appendChild(s);
   }
 } else {
-  let cur = localStorage.getItem("mkt2.v") || "portrait", curLang = localStorage.getItem("mkt2.lang") || "en";
+  let cur = localStorage.getItem("mkt2.v") || "portrait", curLang = localStorage.getItem("mkt2.lang") || "en", curSet = 1;
   document.body.innerHTML = `
     <div class="viewer">
       <div class="bar"><h1>MKT-2 share images</h1>
         <div class="group" id="variants"><span>Variant</span></div>
+        <div class="group" id="sets"><span>Images</span></div>
         <div class="group" id="langs"><span>Language</span></div>
         <div class="meta" id="meta"></div></div>
       <div class="stage"><iframe id="frame"></iframe></div>
     </div>`;
-  const variants = document.getElementById("variants"), langs = document.getElementById("langs");
+  const variants = document.getElementById("variants"), langs = document.getElementById("langs"), sets = document.getElementById("sets");
   for (const k in SIZES) { const b = document.createElement("button"); b.textContent = LABELS[k]; b.dataset.v = k; variants.appendChild(b); }
   for (const k of ["en", "de"]) { const b = document.createElement("button"); b.textContent = k.toUpperCase(); b.dataset.lang = k; langs.appendChild(b); }
   function show() {
     const [w, h] = SIZES[cur], f = document.getElementById("frame"), stage = f.parentElement;
-    f.src = `?v=${cur}&lang=${curLang}`; f.width = w; f.height = h;
+    if (curSet > SETS[cur].length) curSet = 1;
+    sets.querySelectorAll("button").forEach(b => b.remove());
+    SETS[cur].forEach((_, i) => { const b = document.createElement("button"); b.textContent = i + 1; b.dataset.set = i + 1; b.setAttribute("aria-pressed", i + 1 === curSet); sets.appendChild(b); });
+    f.src = `?v=${cur}&s=${curSet}&lang=${curLang}`; f.width = w; f.height = h;
     const scale = Math.min((stage.clientWidth - 48) / w, (stage.clientHeight - 48) / h, 1);
     f.style.transform = `scale(${scale})`; f.style.width = w + "px"; f.style.height = h + "px";
     f.style.marginRight = (w * scale - w) + "px"; f.style.marginBottom = (h * scale - h) + "px";
-    document.getElementById("meta").textContent = `${w} × ${h} px · share/${cur}-${curLang}.png`;
+    document.getElementById("meta").textContent = `${w} × ${h} px · share/${cur}-${curSet}-${curLang}.jpg`;
     for (const b of variants.querySelectorAll("button")) b.setAttribute("aria-pressed", b.dataset.v === cur);
     for (const b of langs.querySelectorAll("button")) b.setAttribute("aria-pressed", b.dataset.lang === curLang);
     localStorage.setItem("mkt2.v", cur); localStorage.setItem("mkt2.lang", curLang);
   }
   variants.addEventListener("click", e => { if (e.target.dataset.v) { cur = e.target.dataset.v; show(); } });
   langs.addEventListener("click", e => { if (e.target.dataset.lang) { curLang = e.target.dataset.lang; show(); } });
+  sets.addEventListener("click", e => { if (e.target.dataset.set) { curSet = parseInt(e.target.dataset.set, 10); show(); } });
   addEventListener("resize", show);
   show();
 }
