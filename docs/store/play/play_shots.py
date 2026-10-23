@@ -1,4 +1,4 @@
-import sys, json, os, urllib.request; sys.path.insert(0, sys.argv[1]); from play_api import *
+import sys, json, os, urllib.request; sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); from play_api import *
 S=sys.argv[1]; UP=f"https://androidpublisher.googleapis.com/upload/androidpublisher/v3/applications/{PKG}"
 def upload(eid, lang, path):
     r=urllib.request.Request(f"{UP}/edits/{eid}/listings/{lang}/phoneScreenshots?uploadType=media",method="POST",data=open(path,"rb").read(),headers={"Authorization":"Bearer "+TOK,"Content-Type":"image/png"})
