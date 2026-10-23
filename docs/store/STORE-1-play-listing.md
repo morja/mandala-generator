@@ -38,7 +38,7 @@ The two tearoom.one pages exist in the website repository (commit "Add Mandala G
 >
 > Save your mandalas to the gallery as a square, in the shape of your screen or in portrait and landscape ratios such as 4:5, 2:3 and 16:9, showing the whole mandala or filling the picture, set one as your wallpaper, or share it. Start with 23 example favourites, keep your own, and move them between your phone and the Mac version.
 >
-> The app is free: every style and palette, all effects, three layers, as many favourites as you like, and saving and sharing at screen size without a watermark. Pro is an optional one-time purchase, no subscription: up to five layers, emblems, text and quotes, and moving layers and the emblem. It saves at 2048 px for prints and wallpapers, with the mandala placed by hand and brightness, contrast and saturation fine-tuned, and exports an SVG line drawing. Pro also brings wallpapers that change: a live wallpaper that turns slowly, a new wallpaper from your favourites every morning, and home and lock screen as a matching pair. Try every Pro feature before you buy.
+> The app is free: every style and palette, all effects, three layers, as many favourites as you like, and saving and sharing at screen size without a watermark. Pro is an optional one-time purchase, no subscription: up to five layers, emblems, text and quotes, and moving layers and the emblem. It saves at 2048 px for prints and wallpapers, with the mandala placed by hand and brightness, contrast and saturation fine-tuned, and exports an SVG line drawing. Pro also brings wallpapers that change: a live wallpaper that turns slowly, a new wallpaper from your favourites every morning, and home and lock screen as a matching pair. Try more layers, emblems and quotes in the editor before you buy.
 >
 > No account, no ads, no tracking. Your mandalas stay on your device.
 >
@@ -62,7 +62,7 @@ The two tearoom.one pages exist in the website repository (commit "Add Mandala G
 >
 > Speichere deine Mandalas quadratisch, im Format deines Bildschirms oder in Hoch- und Querformaten wie 4:5, 2:3 und 16:9 in der Galerie, ganz sichtbar oder bildfüllend, setze eines als Hintergrundbild oder teile es. Starte mit 23 Beispiel-Favoriten, behalte eigene und tausche sie zwischen Handy und Mac-Version aus.
 >
-> Die App ist kostenlos: alle Stile und Paletten, alle Effekte, drei Ebenen, beliebig viele Favoriten und Speichern und Teilen in Bildschirmgröße ohne Wasserzeichen. Pro ist ein optionaler einmaliger Kauf ohne Abo: bis zu fünf Ebenen, Embleme, Text und Zitate sowie Ebenen und Emblem verschieben. Damit speicherst du mit 2048 px für Drucke und Hintergrundbilder, richtest das Mandala im Bildausschnitt aus, stimmst Helligkeit, Kontrast und Sättigung fein ab und exportierst eine SVG-Strichzeichnung. Dazu kommen Hintergründe, die sich verändern: ein Live-Hintergrund, der sich langsam dreht, jeden Morgen ein neues Hintergrundbild aus deinen Favoriten und Start- und Sperrbildschirm als passendes Paar. Alles aus Pro kannst du vor dem Kauf ausprobieren.
+> Die App ist kostenlos: alle Stile und Paletten, alle Effekte, drei Ebenen, beliebig viele Favoriten und Speichern und Teilen in Bildschirmgröße ohne Wasserzeichen. Pro ist ein optionaler einmaliger Kauf ohne Abo: bis zu fünf Ebenen, Embleme, Text und Zitate sowie Ebenen und Emblem verschieben. Damit speicherst du mit 2048 px für Drucke und Hintergrundbilder, richtest das Mandala im Bildausschnitt aus, stimmst Helligkeit, Kontrast und Sättigung fein ab und exportierst eine SVG-Strichzeichnung. Dazu kommen Hintergründe, die sich verändern: ein Live-Hintergrund, der sich langsam dreht, jeden Morgen ein neues Hintergrundbild aus deinen Favoriten und Start- und Sperrbildschirm als passendes Paar. Mehr Ebenen, Embleme und Zitate kannst du im Editor vor dem Kauf ausprobieren.
 >
 > Kein Konto, keine Werbung, kein Tracking. Deine Mandalas bleiben auf deinem Gerät.
 >
@@ -81,6 +81,8 @@ The two tearoom.one pages exist in the website repository (commit "Add Mandala G
 
 In the Play Console since 22 October 2026: active. The descriptions above (ADR-0016 as amended for 1.4.1) were written there through the API on 22 October 2026 (`oneTimeProducts:batchUpdate`; the single PATCH answers with an HTML 404), together with both full listing descriptions.
 
+On 23 October 2026 the closing sentence of the full description and of the 1.4.1 release notes changed from "Try every Pro feature before you buy" to "Try more layers, emblems and quotes in the editor before you buy" (German accordingly): only the four editor features of `ProFeatures` can be tried; 2048 px, framing, finish, SVG and the wallpapers are simply behind Pro. The in-app Pro sheet (`EditorScreen.kt`, "Try everything before you buy") still has the old claim and changes with the next release.
+
 Google Play lets you create in-app products only after a build that contains the billing permission has been uploaded (any testing track).
 
 ## Release notes for 1.4.1 (code 9)
@@ -97,11 +99,11 @@ The first public release (ADR-0016); 1.3.1 was never sent for review. On the int
 
 English:
 
-> Dahlia makes mandalas: choose styles and palettes, add a background and effects, draw by hand, and save or set them as your wallpaper. Pro adds more layers, emblems, quotes, large images and wallpapers that change every day or move slowly. Try every Pro feature before you buy.
+> Dahlia makes mandalas: choose styles and palettes, add a background and effects, draw by hand, and save or set them as your wallpaper. Pro adds more layers, emblems, quotes, large images and wallpapers that change every day or move slowly. Try more layers, emblems and quotes in the editor before you buy.
 
 German:
 
-> Dahlia macht Mandalas: Wähle Stile und Paletten, füge Hintergrund und Effekte hinzu, zeichne von Hand und speichere sie oder setze sie als Hintergrundbild. Pro bringt mehr Ebenen, Embleme, Zitate, große Bilder und Hintergründe, die jeden Tag wechseln oder sich langsam bewegen. Alles aus Pro kannst du vor dem Kauf ausprobieren.
+> Dahlia macht Mandalas: Wähle Stile und Paletten, füge Hintergrund und Effekte hinzu, zeichne von Hand und speichere sie oder setze sie als Hintergrundbild. Pro bringt mehr Ebenen, Embleme, Zitate, große Bilder und Hintergründe, die jeden Tag wechseln oder sich langsam bewegen. Mehr Ebenen, Embleme und Zitate kannst du im Editor vor dem Kauf ausprobieren.
 
 ## Release notes for 1.3.1 (code 7)
 
