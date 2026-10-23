@@ -7,7 +7,8 @@
 #   render-share-images.sh <name> <variant>   # only that variant (portrait, story, landscape, square, mandala, wide, teaser)
 # The list of images and their file names comes from the HTML itself (?list=1), so SETS there is the
 # only place to edit. Nothing is deleted: files of renamed or removed sets stay until you remove them.
-# Ready-made story sequences (stories/story-<n>-<lang>/) follow the `stories` plan in the text set.
+# Ready-made story sequences (stories/story-<n>-<lang>/) follow the `stories` plan in the text set; each
+# folder also gets 00-overview.jpg with all its images side by side, for comparing.
 set -eu
 cd "$(dirname "$0")"
 text="${1:-friends}"
@@ -26,4 +27,13 @@ echo "$list" | while read -r name i w h lang seq file; do
         --screenshot="$out.png" "$page?v=$name&s=$i&lang=$lang&t=$text&seq=$seq" >/dev/null 2>&1
     magick "$out.png" -quality 90 "$out.jpg" && rm "$out.png"
     echo "$out.jpg"
+done
+
+# Overview sheet per story folder: all images of the sequence side by side.
+for d in "share/$text"/stories/story-*; do
+    [ -d "$d" ] || continue
+    overview="$d/00-overview.jpg"
+    rm -f "$overview"
+    magick montage "$d"/*.jpg -tile x1 -geometry 540x960+10+10 -background '#0a0908' -quality 88 "$overview"
+    echo "$overview"
 done
