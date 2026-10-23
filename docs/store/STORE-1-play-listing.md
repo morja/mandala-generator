@@ -137,6 +137,7 @@ These answers follow what the app does today (checked in `android/app` on 20 Oct
 - **Ads:** No, the app contains no ads.
 - **App access:** All functionality is available without special access (no login). Pro needs a purchase; reviewers can use the free features.
 - **Content rating (IARC questionnaire):** Category "All other app types". No violence, sexual content, profanity, drugs, gambling or user-generated content shared with others; no user interaction or data sharing; digital purchases: yes (Pro). Expected rating: Everyone / PEGI 3 / USK 0.
+  IARC Live Rating Notice of 23 October 2026 for "Dahlia – Mandala Maker" (storefront Google Play): Global Rating ID `df6c1666-36d7-8f9f-8b00-3fb0c14bde99`. Enter this ID on other storefronts that license IARC instead of filling in the questionnaire again. If a later change would alter the answers (for example user-generated content or ads), the questionnaire must be filled in again.
 - **Target audience:** 13 and over. (Choosing younger age groups brings the app under the Families policy, which the app does not need.)
 - **News app:** No.
 - **Data safety:**
