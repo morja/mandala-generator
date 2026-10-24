@@ -17,10 +17,12 @@
   --font: "Inter", "Inter Variable", system-ui, sans-serif;
   --radius-phone: 48px;
   --gutter: 72px;
-  /* Story format (1080×1920): Instagram and WhatsApp draw the name and progress bar over the top ~250 px and
-     the reply field, or a caption plus the reply field, over the bottom ~400 px. Text stays inside these. */
-  --safe-top: 270px;
-  --safe-bottom: 420px;
+  /* Story format (1080×1920): on a tall phone the image sits between black bars and the app's own interface
+     mostly falls into the bars. Measured on Mathis' Galaxy S23 in WhatsApp Status (24 October 2026): about
+     60 px of the image covered at the top, about 150 px at the bottom with a one-line caption. Kept with some
+     reserve for shorter screens; text stays inside these. */
+  --safe-top: 150px;
+  --safe-bottom: 250px;
 }
 * { box-sizing: border-box; }
 html, body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--font); }
@@ -110,11 +112,11 @@ html, body { margin: 0; background: var(--bg); color: var(--fg); font-family: va
 .v-wide .phone { width: 480px; }
 .v-wide .phones.two .phone { width: 420px; }
 /* ---------- G · teaser story 1080×1920: the mandala alone, one quiet line ---------- */
-.v-teaser .fade { position: absolute; left: 0; right: 0; bottom: 0; height: 44%; background: linear-gradient(to bottom, rgba(10,9,8,0), rgba(10,9,8,.85) 60%); }
+.v-teaser .fade { position: absolute; left: 0; right: 0; bottom: 0; height: 36%; background: linear-gradient(to bottom, rgba(10,9,8,0), rgba(10,9,8,.85) 60%); }
 .v-teaser .text { position: absolute; left: var(--gutter); right: var(--gutter); bottom: var(--safe-bottom); text-align: center; }
 .v-teaser .message { font-size: 48px; max-width: none; text-wrap: balance; }
 /* ---------- H · wallpaper story 1080×1920: the lock screen on the phone, one quiet line ---------- */
-.v-wallpaper .phone { position: absolute; left: 50%; transform: translateX(-50%); top: var(--safe-top); width: 540px; }
+.v-wallpaper .phone { position: absolute; left: 50%; transform: translateX(-50%); top: calc(var(--safe-top) + 40px); width: 600px; }
 .v-wallpaper .text { position: absolute; left: var(--gutter); right: var(--gutter); bottom: var(--safe-bottom); text-align: center; }
 .v-wallpaper .message { font-size: 48px; max-width: none; text-wrap: balance; }
 </style>
