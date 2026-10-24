@@ -1,5 +1,5 @@
 #!/bin/sh
-# Renders every variant and image set of MKT-2-share-images.html in English and German to
+# Renders every variant and image set of MKT-2-share-images.html in English (LANGS="en de" for German too) to
 # share/<text set>/<folder>/<file>.jpg with headless Google Chrome (the Inter font must be installed)
 # and ImageMagick. Run from anywhere:
 #   render-share-images.sh            # text set "friends" (texts/friends.js)
@@ -14,6 +14,7 @@ set -eu
 cd "$(dirname "$0")"
 text="${1:-friends}"
 only="${2:-}"
+langs="${LANGS:-en}"
 [ -f "texts/$text.js" ] || { echo "texts/$text.js not found" >&2; exit 1; }
 chrome="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
 timeout="$(command -v gtimeout || command -v timeout)" || { echo "needs GNU timeout (brew install coreutils)" >&2; exit 1; }
@@ -21,6 +22,7 @@ page="file://$(pwd)/MKT-2-share-images.html"
 list=$("$chrome" --headless=new --disable-gpu --dump-dom "$page?list=1" 2>/dev/null | grep -o 'IMG [^<]*' | cut -c5-)
 [ -n "$list" ] || { echo "could not read the image list from the HTML" >&2; exit 1; }
 echo "$list" | while read -r name i w h lang seq file; do
+    case " $langs " in *" $lang "*) ;; *) continue ;; esac
     if [ "$only" = "proof" ]; then case "$file" in stories/story-1-en/*) ;; *) continue ;; esac
     else [ -z "$only" ] || [ "$name" = "$only" ] || continue; fi
     out="share/$text/${file%.jpg}"
