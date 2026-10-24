@@ -16,6 +16,7 @@ text="${1:-friends}"
 only="${2:-}"
 [ -f "texts/$text.js" ] || { echo "texts/$text.js not found" >&2; exit 1; }
 chrome="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+timeout="$(command -v gtimeout || command -v timeout)" || { echo "needs GNU timeout (brew install coreutils)" >&2; exit 1; }
 page="file://$(pwd)/MKT-2-share-images.html"
 list=$("$chrome" --headless=new --disable-gpu --dump-dom "$page?list=1" 2>/dev/null | grep -o 'IMG [^<]*' | cut -c5-)
 [ -n "$list" ] || { echo "could not read the image list from the HTML" >&2; exit 1; }
@@ -24,11 +25,15 @@ echo "$list" | while read -r name i w h lang seq file; do
     else [ -z "$only" ] || [ "$name" = "$only" ] || continue; fi
     out="share/$text/${file%.jpg}"
     mkdir -p "$(dirname "$out")"
-    "$chrome" --headless=new --disable-gpu --hide-scrollbars --force-device-scale-factor=1 \
+    # Headless Chrome occasionally hangs; give each image 90 seconds, then skip it and say so.
+    if "$timeout" 90 "$chrome" --headless=new --disable-gpu --hide-scrollbars --force-device-scale-factor=1 \
         --window-size="$w,$h" --virtual-time-budget=8000 \
-        --screenshot="$out.png" "$page?v=$name&s=$i&lang=$lang&t=$text&seq=$seq" >/dev/null 2>&1
-    magick "$out.png" -quality 90 "$out.jpg" && rm "$out.png"
-    echo "$out.jpg"
+        --screenshot="$out.png" "$page?v=$name&s=$i&lang=$lang&t=$text&seq=$seq" >/dev/null 2>&1 && [ -s "$out.png" ]; then
+        magick "$out.png" -quality 90 "$out.jpg" && rm "$out.png"
+        echo "$out.jpg"
+    else
+        rm -f "$out.png"; echo "FAILED $out.jpg (timeout or Chrome error), run again" >&2
+    fi
 done
 
 # Overview sheet per story folder: all images of the sequence side by side.
