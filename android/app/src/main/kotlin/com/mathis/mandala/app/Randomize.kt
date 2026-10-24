@@ -37,11 +37,16 @@ object Randomize {
         return copy(seed = random.nextLong().toULong(), layers = layers)
     }
 
+    /**
+     * New layers and background; the effect strengths are a tuned look and stay, but the positions of
+     * highlights, dimming, erasure, stars and glitter belonged to the old mandala and move (as on the Mac).
+     */
     fun MandalaParameters.randomAll(random: Random, maxLayers: Int = MAX_LAYERS): MandalaParameters {
         val next = randomLayers(random, maxLayers)
         // The macOS dice leave out auto and image, and Grain since it is no longer offered (TUNE-1).
         val types = listOf(BaseLayerType.COLOR, BaseLayerType.GRADIENT, BaseLayerType.SUNBURST)
         return next.copy(
+            effectsLayer = with(Editing) { effectsLayer.newPattern { random.nextLong().toULong() } },
             baseLayer = baseLayer.copy(
                 isEnabled = random.nextBoolean(),
                 type = types.random(random),

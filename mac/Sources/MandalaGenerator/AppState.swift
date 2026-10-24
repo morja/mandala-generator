@@ -355,6 +355,13 @@ class AppState: ObservableObject {
         parameters.baseLayer.isRadial   = Bool.random()
         parameters.baseLayer.gradientAngle = Double.random(in: 0...1)
 
+        // ── Effects ───────────────────────────────────────────────────
+        // The strengths are a tuned look and stay; the positions belonged to the old mandala and move.
+        parameters.effectsLayer.dimmingSeed    = UInt64.random(in: 1...UInt64.max)
+        parameters.effectsLayer.erasureSeed    = UInt64.random(in: 1...UInt64.max)
+        parameters.effectsLayer.highlightsSeed = UInt64.random(in: 1...UInt64.max)
+        parameters.effectsLayer.starsSeed      = UInt64.random(in: 1...UInt64.max)
+        parameters.effectsLayer.glitterSeed    = UInt64.random(in: 1...UInt64.max)
     }
 
     func goBack() {

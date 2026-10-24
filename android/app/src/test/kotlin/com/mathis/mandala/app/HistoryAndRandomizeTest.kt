@@ -7,6 +7,7 @@ import com.mathis.mandala.app.Randomize.randomLayers
 import com.mathis.mandala.app.Randomize.randomVariant
 import com.mathis.mandala.app.Randomize.randomized
 import com.mathis.mandala.core.BaseLayerSettings
+import com.mathis.mandala.core.EffectsLayerSettings
 import com.mathis.mandala.core.EmblemLayerSettings
 import com.mathis.mandala.core.MandalaParameters
 import com.mathis.mandala.core.MandalaStyle
@@ -84,6 +85,15 @@ class HistoryAndRandomizeTest {
             assertTrue(p.randomLayer(0, Random(n)).layers[0].paletteIndex in Editing.offeredPalettes)
             assertTrue(EmblemLayerSettings().randomized(Random(n)).paletteIndex in Editing.offeredPalettes)
         }
+    }
+
+    @Test
+    fun randomAllMovesTheEffectPatternsButKeepsTheirStrengths() {
+        val tuned = MandalaParameters().copy(effectsLayer = EffectsLayerSettings(isEnabled = true, dimming = 0.4, glitter = 0.2, sepia = 0.3))
+        val all = tuned.randomAll(Random(5))
+        val seeds = { fx: EffectsLayerSettings -> listOf(fx.dimmingSeed, fx.erasureSeed, fx.highlightsSeed, fx.starsSeed, fx.glitterSeed) }
+        assertTrue(seeds(all.effectsLayer).none { it in seeds(tuned.effectsLayer) })
+        assertEquals(tuned.effectsLayer, all.effectsLayer.copy(dimmingSeed = 11uL, erasureSeed = 22uL, highlightsSeed = 33uL, starsSeed = 44uL, glitterSeed = 55uL))
     }
 
     @Test

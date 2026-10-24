@@ -409,6 +409,8 @@ private fun backgroundName(type: BaseLayerType) = when (type) {
  * The effects layer over the whole image, switched on in its heading; the quick, reliable sliders in
  * four groups and the rarer ones under "More" (TUNE-1). "Fade" sets the `wash` field; the old `fade`
  * field does almost the same and gets its own slider ("Old fade") only in settings that use it.
+ * The die in the heading moves highlights, dimming, erasure, stars and glitter to new places, as the
+ * one on the Mac's card does; it used to sit under "Sparkle", where it read as a glitter-only button.
  */
 @Composable
 private fun EffectsGroup(
@@ -419,10 +421,18 @@ private fun EffectsGroup(
     // Once shown, the old fade slider stays while this screen is open, so it does not vanish at 0 mid-drag.
     var showOldFade by rememberSaveable { mutableStateOf(false) }
     LaunchedEffect(fx.fade > 0) { if (fx.fade > 0) showOldFade = true }
+    val t = LocalTokens.current
     Group(
         "Effects",
         summary = if (fx.isEnabled) "On" else "Off",
-        trailing = { Switch(checked = fx.isEnabled, onCheckedChange = { on -> update { it.copy(isEnabled = on) } }) },
+        trailing = {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                if (fx.isEnabled) {
+                    IconButton(onClick = newPattern) { Icon(EditorIcons.DieOne, contentDescription = "New pattern of highlights, dimming, stars and glitter", tint = t.accent) }
+                }
+                Switch(checked = fx.isEnabled, onCheckedChange = { on -> update { it.copy(isEnabled = on) } })
+            }
+        },
     ) {
         if (!fx.isEnabled) {
             Text("Switch on to use vignette, bloom, grain, stars and more.", style = MaterialTheme.typography.bodySmall,
@@ -446,7 +456,6 @@ private fun EffectsGroup(
         Group("Sparkle", nested = true) {
             ValueSlider("Stars", fx.stars, default = EffectsLayerSettings().stars) { v -> update { it.copy(stars = v) } }
             ValueSlider("Glitter", fx.glitter, Editing.Ranges.effectsGlitter.floats(), default = EffectsLayerSettings().glitter) { v -> update { it.copy(glitter = v) } }
-            TextButton(onClick = newPattern) { Text("New pattern") }
         }
         Group("More", nested = true) {
             ValueSlider("Highlights", fx.highlights, default = EffectsLayerSettings().highlights) { v -> update { it.copy(highlights = v) } }
