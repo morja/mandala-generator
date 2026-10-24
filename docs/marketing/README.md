@@ -1,6 +1,6 @@
 # Marketing material
 
-Images to share with friends, on WhatsApp and elsewhere (MKT-1 names this folder for the Reddit assets as well).
+Images to share with friends, on WhatsApp and elsewhere (MKT-1 names this folder for the Reddit assets as well). What goes out when is in [MKT-3](../MKT-3-editorial-plan.md).
 
 - `MKT-2-share-images.html`: the share images as one HTML template with a switcher (variant, image set, language). Opened without parameters it is the viewer; with `?v=<variant>&s=<set>&lang=<en|de>` it shows one card at its pixel size. Each variant has several image sets (`SETS` in the HTML): different screenshots and a different background mandala.
 - `texts/<name>.js`: one text set per audience (`friends`: the plain lines; `friends-story`: the narrative series for stories). The `message`, `facts`, `link` and `mandala` lines and the `teaser` lines (with alternatives) in English and German, plus the `stories` plan.
