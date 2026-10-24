@@ -212,8 +212,9 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
     }
 
     /**
-     * Pro features may be tried, but keeping a mandala that uses them needs Pro: returns true when
-     * `step` may go ahead, otherwise opens the Pro sheet, which can take it after removing them.
+     * Pro features may be tried, but saving, sharing or setting as wallpaper a mandala that uses them
+     * needs Pro: returns true when `step` may go ahead, otherwise opens the Pro sheet, which can take
+     * it after removing them. Favourites are not gated (ADR-0016).
      */
     private fun mayKeep(action: String, step: () -> Unit): Boolean {
         val missing = if (pro.state.value.owned) emptySet() else ProFeatures.of(_params.value)
@@ -646,8 +647,8 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
 
     // ── Favourites ──
 
+    /** Favourites keep Pro features and open for everyone, like the starters (ADR-0016, 24 October 2026). */
     fun addFavorite() {
-        if (!mayKeep("Keep as favourite", ::addFavorite)) return
         val image = _preview.value.image ?: return
         val favorite = Favorite(
             id = UUID.randomUUID().toString().uppercase(),
