@@ -41,6 +41,7 @@ done
 # Overview sheet per story folder: all images of the sequence side by side.
 for d in "share/$text"/stories/story-*; do
     [ -d "$d" ] || continue
+    case " $langs " in *" ${d##*-} "*) ;; *) continue ;; esac
     [ "$only" != "proof" ] || [ "$d" = "share/$text/stories/story-1-en" ] || continue
     overview="$d/00-overview.jpg"
     rm -f "$overview"
