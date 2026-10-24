@@ -4,7 +4,8 @@
 # and ImageMagick. Run from anywhere:
 #   render-share-images.sh            # text set "friends" (texts/friends.js)
 #   render-share-images.sh <name>     # text set texts/<name>.js
-#   render-share-images.sh <name> <variant>   # only that variant (portrait, story, landscape, square, mandala, wide, teaser)
+#   render-share-images.sh <name> <variant>   # only that variant (portrait, story, landscape, square, mandala, wide, teaser, wallpaper)
+#   render-share-images.sh <name> proof       # proof run: only story sequence 1 in English (five images and its overview)
 # The list of images and their file names comes from the HTML itself (?list=1), so SETS there is the
 # only place to edit. Nothing is deleted: files of renamed or removed sets stay until you remove them.
 # Ready-made story sequences (stories/story-<n>-<lang>/) follow the `stories` plan in the text set; each
@@ -19,7 +20,8 @@ page="file://$(pwd)/MKT-2-share-images.html"
 list=$("$chrome" --headless=new --disable-gpu --dump-dom "$page?list=1" 2>/dev/null | grep -o 'IMG [^<]*' | cut -c5-)
 [ -n "$list" ] || { echo "could not read the image list from the HTML" >&2; exit 1; }
 echo "$list" | while read -r name i w h lang seq file; do
-    [ -z "$only" ] || [ "$name" = "$only" ] || continue
+    if [ "$only" = "proof" ]; then case "$file" in stories/story-1-en/*) ;; *) continue ;; esac
+    else [ -z "$only" ] || [ "$name" = "$only" ] || continue; fi
     out="share/$text/${file%.jpg}"
     mkdir -p "$(dirname "$out")"
     "$chrome" --headless=new --disable-gpu --hide-scrollbars --force-device-scale-factor=1 \
@@ -32,6 +34,7 @@ done
 # Overview sheet per story folder: all images of the sequence side by side.
 for d in "share/$text"/stories/story-*; do
     [ -d "$d" ] || continue
+    [ "$only" != "proof" ] || [ "$d" = "share/$text/stories/story-1-en" ] || continue
     overview="$d/00-overview.jpg"
     rm -f "$overview"
     magick montage "$d"/*.jpg -tile x1 -geometry 540x960+10+10 -background '#0a0908' -quality 88 "$overview"
