@@ -95,15 +95,15 @@ The Reddit and launch plan is [MKT-1](../MKT-1-reddit-and-launch-plan.md).
 
 ## Release notes for 1.5.1 (code 11)
 
-**Released to production on 24 October 2026** through the API (`docs/store/play/play_release.py`). Git tag `android-v1.5.1`. Fix: the live wallpaper's check for a new mandala every three seconds restarted a first render that took longer than that, so the wallpaper could stay black (commit `b5d9f77`). Tested on the phone with an uncached mandala: black for about two seconds, then turning.
+**Released to production on 24 October 2026** through the API (`docs/store/play/play_release.py`). Git tag `android-v1.5.1`. Fix: the live wallpaper's check for a new mandala every three seconds restarted a first render that took longer than that, so the wallpaper could stay black (commit `b5d9f77`). The app now also renders the image first, with its progress showing, and opens Android's preview only then, which shows the mandala at once (`193b8a4`). Tested on the phone with uncached mandalas.
 
 English:
 
-> The live wallpaper no longer stays black the first time it is set.
+> The live wallpaper no longer stays black the first time it is set: the app prepares it first and shows its progress, then the preview opens with the mandala.
 
 German:
 
-> Der Live-Hintergrund bleibt beim ersten Festlegen nicht mehr schwarz.
+> Der Live-Hintergrund bleibt beim ersten Festlegen nicht mehr schwarz: Die App bereitet ihn erst vor und zeigt den Fortschritt, dann öffnet sich die Vorschau mit dem Mandala.
 
 ## Release notes for 1.5.0 (code 10)
 
