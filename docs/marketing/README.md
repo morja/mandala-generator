@@ -25,17 +25,4 @@ New screenshots or backgrounds: change `SETS` in the HTML, new screenshots go to
 
 ## Safe zones in the story format
 
-Instagram Stories and WhatsApp Status draw their own interface over the image: name and progress bar at the top, a caption (with the clickable link) and the reply field at the bottom. On a tall phone the 1080 × 1920 image sits between black bars and most of that interface falls into the bars: measured on Mathis' Galaxy S23 in WhatsApp Status on 24 October 2026, about 60 px of the image are covered at the top and about 150 px at the bottom with a one-line caption. The story-format cards (B, G, H) keep all text between `--safe-top` (150 px) and `--safe-bottom` (250 px), set in the HTML, with some reserve for shorter screens. The guides on the web quote 250 px top and 250 to 400 px bottom; those apply to screens that show the image without bars.
-
-| Variant | Size | For |
-|---|---|---|
-| A portrait | 1080 × 1350 | WhatsApp chats, Instagram feed |
-| B story | 1080 × 1920 | WhatsApp status, Instagram story |
-| C landscape | 1920 × 1080 | Desktop chats, slides, e-mail; has a QR code to the Play page |
-| D square | 1080 × 1080 | Group chats, Mastodon |
-| E mandala portrait | 1080 × 1350 | A calmer one: a large mandala with a short line, no screenshot |
-| F wide | 1920 × 1080 | Landscape with one or two phones and larger text, readable on small screens |
-| G teaser story | 1080 × 1920 | The mandala alone, no app, no title; each mandala with the first `teaser` line, the second, and without text. Post two or three first, then H and B |
-| H wallpaper story | 1080 × 1920 | The phone with a mandala as lock screen over a mandala background, one quiet line (`wallpaper` in the text set) |
-
-The images print the short address `tearoom.one/dahlia`, a redirect in the website repository (`site/config/routes.php`, every app and plugin page has one). Texts live in `texts/`; the screenshots come from `../store/screenshots/`, the icon from `../store/play-icon-512.png`.
+Instagram Stories and WhatsApp Status draw their own interface over the image: name and progress bar at the top, a caption (with the clickable link) and the reply field at the bottom. On a tall phone the 1080 × 1920 image sits between black bars and most of that interface falls into the bars: measured on Mathis' Galaxy S23 on 24 October 2026, about 60 px of the image are covered at the top and about 150 px at the bottom with a one-line caption (WhatsApp), about 150 px and 120 px on Instagram. The story-format cards (B, G, H) keep all text between `--safe-top` (150 px) and `--safe-bottom` (250 px), set in the HTML, with some reserve for shorter screens: the teaser and wallpaper lines sit just above the bottom band, the app card has its title below the top band, the link above the phone and the phone above the bottom band. The quote mandalas sit centred at full size, so a quote's author line may reach into the bottom band (Mathis' choice). The guides on the web quote 250 px top and 250 to 400 px bottom; those apply to screens that show the image without bars.
