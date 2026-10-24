@@ -65,9 +65,9 @@ html, body { margin: 0; background: var(--bg); color: var(--fg); font-family: va
 
 /* ---------- B · story 1080×1920 ---------- */
 .v-story .text { position: relative; padding: var(--safe-top) var(--gutter) 0; }
-.v-story .title { font-size: 132px; }
+.v-story .title { font-size: 104px; }
 .v-story .message { font-size: 56px; margin-top: 40px; }
-.v-story .phone { position: relative; margin: 48px auto 0; width: 420px; }
+.v-story .phone { position: relative; margin: 48px auto 0; width: 470px; }
 .v-story .foot { margin-top: 28px; }
 .v-story .facts { font-size: 34px; white-space: nowrap; margin-top: 10px; }
 .v-story .link { font-size: 54px; }
@@ -210,7 +210,7 @@ function card(v, t, set) {
     case "story": return `
       <div class="card v-story">
         <div class="art" style="background-image:url(${art})"></div><div class="scrim"></div>
-        <div class="text">${title()}<p class="message">${t.message}</p><div class="foot"><p class="link">${t.link}</p><p class="facts">${t.facts}</p></div></div>
+        <div class="text">${title()}<p class="message">${t.message}</p><div class="foot"><p class="link">${t.link}</p></div></div>
         ${phone(sh[0])}
       </div>`;
     case "landscape": return `
