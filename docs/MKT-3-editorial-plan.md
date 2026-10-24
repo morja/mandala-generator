@@ -2,7 +2,7 @@
 
 Four weeks after the Instagram start of @tearoom.one (24 October 2026). Companion to [MKT-1](MKT-1-reddit-and-launch-plan.md) (Reddit) and the share images in [docs/marketing](marketing/README.md). Images are in `docs/marketing/share/friends-story/` unless noted; what goes out is copied to `docs/marketing/posted/`.
 
-**How to read it.** "Suite" means Mathis approves the row and Claude schedules it in Meta Business Suite (needs the Facebook Page linked to @tearoom.one). "Phone" means Mathis posts it himself, because stories with an @-mention or link sticker cannot be scheduled. "Prepare" is a task, not a post; it belongs in Microsoft To-Do with its date.
+**How to read it.** "Suite" means Mathis approves the row and Claude schedules it in Meta Business Suite (Instagram only; the Facebook Page stays empty for now). Scheduling notes: the hashtag menu of the composer swallows clicks that land under it, so move the caret off the last hashtag before clicking anything; the file picker is native, Claude attaches the hidden input by script. "Phone" means Mathis posts it himself, because stories with an @-mention or link sticker cannot be scheduled. "Prepare" is a task, not a post; it belongs in Microsoft To-Do with its date.
 
 **Times.** Feed posts and reels at 18:30 on weekdays and 11:00 at weekends (Berlin time). Stories any time, since they live 24 hours.
 
@@ -18,7 +18,7 @@ Four weeks after the Instagram start of @tearoom.one (24 October 2026). Companio
 | Sun 25 | WhatsApp status | Story sequence 2, caption with the Play link | `stories/story-2-en/` | Caption: "My new app, Dahlia. Free on Android: https://play.google.com/store/apps/details?id=one.tearoom.mandala" | Phone |
 | Mon 26 | Instagram story @tearoom.one | Sequence 2 as the account's own story, link sticker on the last image, saved as highlight "Dahlia" | `stories/story-2-en/` | no text besides the images | Phone |
 | Tue 27 | Mastodon | Create the account on fosstodon.org (bio like Instagram, link to tearoom.one/dahlia), first post | `portrait/mandala-2-en.jpg` | "Dahlia draws mandalas from curves, light and symbols. Android, GPL-3.0, no account, no ads, no tracking. The Play Billing part is optional and the free build is in the repo: github.com/morja/mandala-generator #mandala #foss #android" | Phone (Prepare) |
-| Wed 28 | Instagram feed | Mandala: the ribbon | `portrait/mandala-2-en.jpg` | "Curves only: one layer, no symbol, drawn on the phone in Dahlia. Free on Android, link in bio. #mandala #generativeart #sacredgeometry #wallpaper #androidapp" | Suite |
+| Wed 28 | Instagram feed | Mandala: the ribbon | `portrait/mandala-2-en.jpg` | "Curves only: one layer, no symbol, drawn on the phone in Dahlia. Free on Android, link in bio. #mandala #generativeart #sacredgeometry #wallpaper #androidapp" | Suite, scheduled 24 Oct |
 | Fri 30 | Prepare | Record the live wallpaper on the phone, 10 to 15 seconds, screen recording while it turns (MKT-1, point 4.2); hand the file to Claude for the reel | | | Prepare |
 
 ## Week 2 · 31 October to 6 November
@@ -35,7 +35,7 @@ Four weeks after the Instagram start of @tearoom.one (24 October 2026). Companio
 
 | Date | Channel | What | Image | Text | Who |
 |---|---|---|---|---|---|
-| Mon 9 Nov | Instagram feed | A quote with a soft glow | `portrait/portrait-3-en.jpg` (quote screenshot on the phone) | "Add a quote, keep the glow. Rumi, set in Dahlia on the phone. Free on Android, link in bio. #mandala #quotes #wallpaper #androidapp" | Suite |
+| Mon 9 Nov | Instagram feed | A quote with a soft glow | `portrait/portrait-3-en.jpg` (quote screenshot on the phone) | "Add a quote, keep the glow. Rumi, set in Dahlia on the phone. Free on Android, link in bio. #mandala #quotes #wallpaper #androidapp" | Suite, scheduled 24 Oct |
 | Wed 11 Nov | Instagram story @tearoom.one | Sequence 3, link sticker on the last image | `stories/story-3-en/` | | Phone |
 | Fri 13 Nov | Instagram feed | AdvaitaHub: the new site | to build: screenshot in a 4:5 frame | "AdvaitaHub is online: …" (Mathis writes the one sentence about what it is) | Suite (after the image and text exist) |
 | Sat 14 Nov | Threads | Nothing extra: Instagram posts are shared to Threads automatically once that is switched on in the Instagram settings | | | Prepare (once) |
@@ -51,7 +51,7 @@ Four weeks after the Instagram start of @tearoom.one (24 October 2026). Companio
 
 ## What Claude still needs from Mathis
 
-1. The Facebook Page linked to @tearoom.one, so the Suite rows can be scheduled.
+1. ~~The Facebook Page linked to @tearoom.one~~ done 24 October (Page "Tearoom One", business portfolio "Tearoom").
 2. The live wallpaper recording (30 October).
 3. For Mother Mira and AdvaitaHub: which page to screenshot and one sentence each about what the site is.
 
