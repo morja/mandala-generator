@@ -67,7 +67,9 @@ import kotlin.math.roundToInt
 
 /**
  * A foldable group: a heading row (tap to open or close) with an optional summary of the current
- * value and an optional control on the right, such as an on/off switch.
+ * value and an optional control on the right, such as an on/off switch. A nested group has the smaller
+ * heading and no divider; one that sits inside another group's content is also `inset` as a whole,
+ * heading and content, so it reads as part of its parent and not as the next group at the same level.
  */
 @Composable
 internal fun Group(
@@ -75,6 +77,7 @@ internal fun Group(
     summary: String? = null,
     initiallyOpen: Boolean = false,
     nested: Boolean = false,
+    inset: Boolean = false,
     trailing: (@Composable () -> Unit)? = null,
     /** Whether the group is open; passed in when the caller lays out other parts by it. */
     openState: MutableState<Boolean> = rememberSaveable { mutableStateOf(initiallyOpen) },
@@ -84,7 +87,7 @@ internal fun Group(
 ) {
     val t = LocalTokens.current
     var open by openState
-    Column(Modifier.fillMaxWidth()) {
+    Column(Modifier.fillMaxWidth().then(if (inset) Modifier.padding(start = Spacing.lg) else Modifier)) {
         Row(
             Modifier
                 .fillMaxWidth()

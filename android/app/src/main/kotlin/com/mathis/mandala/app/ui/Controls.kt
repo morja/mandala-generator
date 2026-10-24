@@ -439,25 +439,25 @@ private fun EffectsGroup(
                 color = LocalTokens.current.textMuted)
             return@Group
         }
-        Group("Light", nested = true, initiallyOpen = true) {
+        Group("Light", nested = true, inset = true, initiallyOpen = true) {
             ValueSlider("Brightness", fx.brightness, default = EffectsLayerSettings().brightness) { v -> update { it.copy(brightness = v) } }
             ValueSlider("Contrast", fx.contrast, default = EffectsLayerSettings().contrast) { v -> update { it.copy(contrast = v) } }
             ValueSlider("Vignette", fx.vignette, Editing.Ranges.effectsVignette.floats(), default = EffectsLayerSettings().vignette) { v -> update { it.copy(vignette = v) } }
             ValueSlider("Bloom", fx.bloom, Editing.Ranges.effectsBloom.floats(), default = EffectsLayerSettings().bloom) { v -> update { it.copy(bloom = v) } }
         }
-        Group("Tone", nested = true) {
+        Group("Tone", nested = true, inset = true) {
             ValueSlider("Sepia", fx.sepia, default = EffectsLayerSettings().sepia) { v -> update { it.copy(sepia = v) } }
             ValueSlider("Fade", fx.wash, default = EffectsLayerSettings().wash) { v -> update { it.copy(wash = v) } }
         }
-        Group("Texture", nested = true) {
+        Group("Texture", nested = true, inset = true) {
             ValueSlider("Clarity", fx.localContrast, default = EffectsLayerSettings().localContrast) { v -> update { it.copy(localContrast = v) } }
             ValueSlider("Grain", fx.grain, Editing.Ranges.effectsGrain.floats(), default = EffectsLayerSettings().grain) { v -> update { it.copy(grain = v) } }
         }
-        Group("Sparkle", nested = true) {
+        Group("Sparkle", nested = true, inset = true) {
             ValueSlider("Stars", fx.stars, default = EffectsLayerSettings().stars) { v -> update { it.copy(stars = v) } }
             ValueSlider("Glitter", fx.glitter, Editing.Ranges.effectsGlitter.floats(), default = EffectsLayerSettings().glitter) { v -> update { it.copy(glitter = v) } }
         }
-        Group("More", nested = true) {
+        Group("More", nested = true, inset = true) {
             ValueSlider("Highlights", fx.highlights, default = EffectsLayerSettings().highlights) { v -> update { it.copy(highlights = v) } }
             ValueSlider("Dimming", fx.dimming, default = EffectsLayerSettings().dimming) { v -> update { it.copy(dimming = v) } }
             ValueSlider("Erasure", fx.erasure, default = EffectsLayerSettings().erasure) { v -> update { it.copy(erasure = v) } }
@@ -589,7 +589,11 @@ private fun TextTab(text: TextLayerSettings, vm: EditorViewModel, position: Posi
             onDismiss = { choosing = false },
         )
     }
-    if (!text.isEnabled) return
+    if (!text.isEnabled) {
+        Text("A quote or your own words below the mandala, with the author if you like.",
+            style = MaterialTheme.typography.bodySmall, color = LocalTokens.current.textMuted)
+        return
+    }
     if (!position.proOwned) ProNote("Text and quotes come with Pro. Try them as you like; keeping the mandala needs Pro.", position.showPro)
     Row(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
         OutlinedButton(onClick = vm::randomQuote) { Text("Random quote") }
