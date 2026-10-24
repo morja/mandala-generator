@@ -283,6 +283,19 @@ object Editing {
     fun MandalaParameters.newVariation(nextSeed: () -> ULong): MandalaParameters =
         copy(seed = nextSeed(), layers = layers.map { it.copy(seed = nextSeed()) })
 
+    /** Same style, palette and sliders, new arrangement for one layer (the seed die of the Mac's layer card). */
+    fun MandalaParameters.reseedLayer(index: Int, seed: ULong): MandalaParameters {
+        if (index !in layers.indices) return this
+        return copy(layers = layers.mapIndexed { i, layer -> if (i == index) layer.copy(seed = seed) else layer })
+    }
+
+    /** The text layer's look back to the defaults; the words, the author and whether it shows stay. */
+    fun TextLayerSettings.reset(): TextLayerSettings =
+        TextLayerSettings(isEnabled = isEnabled, text = text, customAuthor = customAuthor, showAuthor = showAuthor)
+
+    /** All effects back to the defaults, on or off as before (the reset button of the Mac's effects card). */
+    fun EffectsLayerSettings.reset(): EffectsLayerSettings = EffectsLayerSettings(isEnabled = isEnabled)
+
     /**
      * File name in the scheme of the macOS app: first four letters of the first two styles, palette and
      * symmetry of the first layer, and a short hash of the settings so different settings never collide.

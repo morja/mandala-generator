@@ -78,6 +78,7 @@ import com.mathis.mandala.core.MandalaParameters
 import com.mathis.mandala.core.Quote
 import com.mathis.mandala.core.Quotes
 import com.mathis.mandala.core.ProFeatures
+import com.mathis.mandala.core.MandalaStyle
 import com.mathis.mandala.core.StyleLayer
 import com.mathis.mandala.core.TextLayerSettings
 import kotlin.math.roundToInt
@@ -180,7 +181,7 @@ private fun LayersTab(params: MandalaParameters, selected: Int, vm: EditorViewMo
         Box(Modifier.weight(1f))
         IconButton(onClick = vm::randomizeSelected) { Icon(EditorIcons.DieOne, contentDescription = "Randomize layer ${selected + 1}") }
     }
-    LayerControls(layers[selected], vm::updateSelected, position, onVary = vm::varySelected)
+    LayerControls(layers[selected], vm::updateSelected, position, onVary = vm::varySelected, onReseed = vm::reseedSelected)
 }
 
 /** A muted line saying what comes with Pro, with a link to the Pro sheet. */
@@ -275,7 +276,7 @@ private fun LayerRow(
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun LayerControls(layer: StyleLayer, update: ((StyleLayer) -> StyleLayer) -> Unit, position: PositionInput, onVary: () -> Unit) {
+private fun LayerControls(layer: StyleLayer, update: ((StyleLayer) -> StyleLayer) -> Unit, position: PositionInput, onVary: () -> Unit, onReseed: () -> Unit) {
     val t = LocalTokens.current
     // The second die keeps the style; the one in the layer row picks a new style too.
     Group("Style", summary = layer.style.displayName, trailing = {
@@ -295,10 +296,16 @@ private fun LayerControls(layer: StyleLayer, update: ((StyleLayer) -> StyleLayer
         BlendChips(layer.blendMode) { m -> update { it.copy(blendMode = m) } }
         ValueSlider("Opacity", layer.opacity, default = StyleLayer().opacity) { v -> update { it.copy(opacity = v) } }
     }
-    Group("Shape", initiallyOpen = true) {
+    // The third die keeps style, palette and sliders and only rearranges (the seed die of the Mac's layer card).
+    Group("Shape", initiallyOpen = true, trailing = {
+        IconButton(onClick = onReseed) { Icon(EditorIcons.DieOne, contentDescription = "New arrangement, same style and palette", tint = t.accent) }
+    }) {
         SteppedSlider("Symmetry", layer.symmetry, 1..8, default = StyleLayer().symmetry) { v -> update { it.copy(symmetry = v) } }
         ValueSlider("Scale", layer.scale, Editing.Ranges.layerScale.floats(), default = StyleLayer().scale) { v -> update { it.copy(scale = v) } }
         ValueSlider("Complexity", layer.complexity, Editing.Ranges.layerComplexity(layer.style).floats(), default = StyleLayer().complexity) { v -> update { it.copy(complexity = v) } }
+        if (layer.style == MandalaStyle.RADIAL_MESH) {
+            ValueSlider("Spokes", layer.spokes, default = StyleLayer().spokes) { v -> update { it.copy(spokes = v) } }
+        }
         // Only where the style uses them; hidden values stay as they are.
         if (layer.style in Editing.densityStyles) {
             ValueSlider("Density", layer.density, default = StyleLayer().density) { v -> update { it.copy(density = v) } }
@@ -325,7 +332,7 @@ private fun SceneTab(params: MandalaParameters, vm: EditorViewModel) {
     Group("Background", summary = if (base.isEnabled) backgroundName(base.type) else "Off", initiallyOpen = true) {
         BackgroundControls(base, vm::updateBackground, vm::useBackgroundImage)
     }
-    EffectsGroup(params.effectsLayer, vm::updateEffects, vm::newEffectsPattern)
+    EffectsGroup(params.effectsLayer, vm::updateEffects, vm::newEffectsPattern, vm::resetEffects)
 }
 
 /** Background behind all layers: off or one of the macOS types, with the fitting sliders. */
@@ -417,6 +424,7 @@ private fun EffectsGroup(
     fx: EffectsLayerSettings,
     update: ((EffectsLayerSettings) -> EffectsLayerSettings) -> Unit,
     newPattern: () -> Unit,
+    resetAll: () -> Unit,
 ) {
     // Once shown, the old fade slider stays while this screen is open, so it does not vanish at 0 mid-drag.
     var showOldFade by rememberSaveable { mutableStateOf(false) }
@@ -429,6 +437,7 @@ private fun EffectsGroup(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 if (fx.isEnabled) {
                     IconButton(onClick = newPattern) { Icon(EditorIcons.DieOne, contentDescription = "New pattern of highlights, dimming, stars and glitter", tint = t.accent) }
+                    TextButton(onClick = resetAll) { Text("Reset") }
                 }
                 Switch(checked = fx.isEnabled, onCheckedChange = { on -> update { it.copy(isEnabled = on) } })
             }
@@ -580,7 +589,19 @@ private fun TextTab(text: TextLayerSettings, vm: EditorViewModel, position: Posi
     val update = vm::updateText
     var choosing by remember { mutableStateOf(false) }
     val myQuotes by vm.myQuotes.collectAsStateWithLifecycle()
-    SwitchRow(if (position.proOwned) "Show text" else "Show text · Pro", text.isEnabled) { on -> if (on && text.text.isEmpty()) vm.randomQuote() else update { it.copy(isEnabled = on) } }
+    val switch: (Boolean) -> Unit = { on -> if (on && text.text.isEmpty()) vm.randomQuote() else update { it.copy(isEnabled = on) } }
+    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+        // The label switches too; the die and reset beside it keep their own taps (as in the emblem tab).
+        Text(
+            if (position.proOwned) "Show text" else "Show text · Pro", style = MaterialTheme.typography.bodyMedium,
+            modifier = Modifier.weight(1f).toggleable(value = text.isEnabled, role = Role.Switch, onValueChange = switch),
+        )
+        if (text.isEnabled) {
+            IconButton(onClick = vm::randomizeText) { Icon(EditorIcons.DieOne, contentDescription = "Random text look") }
+            TextButton(onClick = vm::resetText) { Text("Reset") }
+        }
+        Switch(checked = text.isEnabled, onCheckedChange = switch)
+    }
     if (choosing) {
         QuoteDialog(
             myQuotes = myQuotes,

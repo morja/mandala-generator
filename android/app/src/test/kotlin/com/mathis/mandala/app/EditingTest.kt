@@ -28,6 +28,9 @@ import com.mathis.mandala.core.MandalaParameters
 import com.mathis.mandala.core.MandalaRenderer
 import com.mathis.mandala.core.MandalaStyle
 import com.mathis.mandala.core.SettingsJson
+import com.mathis.mandala.core.EffectsLayerSettings
+import com.mathis.mandala.core.TextLayerSettings
+import com.mathis.mandala.core.StyleLayer
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertTrue
@@ -116,6 +119,24 @@ class EditingTest {
         assertEquals(100uL, varied.seed)
         assertEquals(listOf(101uL, 102uL, 103uL), varied.layers.map { it.seed })
         assertEquals(p.layers.map { it.copy(seed = 0uL) }, varied.layers.map { it.copy(seed = 0uL) })
+    }
+
+    @Test
+    fun reseedChangesOnlyTheSeedOfOneLayer() {
+        val p = MandalaParameters().copy(layers = listOf(StyleLayer(seed = 1uL), StyleLayer(seed = 2uL, symmetry = 5)))
+        val r = with(Editing) { p.reseedLayer(1, 99uL) }
+        assertEquals(p.layers[0], r.layers[0])
+        assertEquals(p.layers[1].copy(seed = 99uL), r.layers[1])
+        assertEquals(p.seed, r.seed)
+        assertEquals(p, with(Editing) { p.reseedLayer(7, 99uL) })
+    }
+
+    @Test
+    fun resetsKeepWhatIsSwitchedOnAndTheWords() {
+        val fx = EffectsLayerSettings(isEnabled = true, vignette = 0.9, glitterSeed = 7uL)
+        assertEquals(EffectsLayerSettings(isEnabled = true), with(Editing) { fx.reset() })
+        val text = TextLayerSettings(isEnabled = true, text = "Be still", customAuthor = "Me", showAuthor = false, glow = 2.0, fontName = "serif")
+        assertEquals(TextLayerSettings(isEnabled = true, text = "Be still", customAuthor = "Me", showAuthor = false), with(Editing) { text.reset() })
     }
 
     @Test

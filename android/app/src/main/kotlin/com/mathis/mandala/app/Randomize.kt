@@ -7,9 +7,12 @@ import com.mathis.mandala.core.EmblemGlowMode
 import com.mathis.mandala.core.EmblemLayerSettings
 import com.mathis.mandala.core.EmblemMotif
 import com.mathis.mandala.core.EmblemRendering
+import com.mathis.mandala.core.LayerBlendMode
 import com.mathis.mandala.core.MandalaParameters
 import com.mathis.mandala.core.MandalaStyle
+import com.mathis.mandala.core.Quotes
 import com.mathis.mandala.core.StyleLayer
+import com.mathis.mandala.core.TextLayerSettings
 import kotlin.random.Random
 
 /**
@@ -122,6 +125,27 @@ object Randomize {
     }
 
     /** The dice of the macOS emblem card: same fields and ranges; size, rotation, opacity and blending stay. */
+    /**
+     * A new look for the text (the die of the Mac's text card, same ranges): font, size, tracking, colour,
+     * glow, shadow, blur and opacity. The words, the author and the position stay; the blend mode goes
+     * back to normal.
+     */
+    fun TextLayerSettings.randomized(random: Random): TextLayerSettings = copy(
+        fontName = Quotes.fonts.random(random).first,
+        fontSize = random.nextDouble(0.04, 0.12),
+        tracking = random.nextDouble(-0.1, 0.4),
+        hue = random.nextDouble(),
+        saturation = random.nextDouble(0.0, 0.5),
+        brightness = random.nextDouble(0.75, 1.0),
+        glow = random.nextDouble(0.0, 0.6),
+        shadowOpacity = random.nextDouble(0.0, 0.5),
+        shadowBlur = random.nextDouble(0.2, 0.8),
+        blur = random.nextDouble(0.0, 0.2),
+        opacity = random.nextDouble(0.6, 1.0),
+        blendMode = LayerBlendMode.NORMAL,
+        isEnabled = true,
+    )
+
     fun EmblemLayerSettings.randomized(random: Random): EmblemLayerSettings = copy(
         motif = EmblemMotif.entries.random(random),
         rendering = EmblemRendering.entries.random(random),

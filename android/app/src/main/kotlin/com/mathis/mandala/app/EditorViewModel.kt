@@ -21,6 +21,7 @@ import com.mathis.mandala.app.Editing.duplicateLayer
 import com.mathis.mandala.app.Editing.moveLayer
 import com.mathis.mandala.app.Editing.movedBy
 import com.mathis.mandala.app.Editing.newVariation
+import com.mathis.mandala.app.Editing.reseedLayer
 import com.mathis.mandala.app.Editing.removeLayer
 import com.mathis.mandala.app.Editing.newPattern
 import com.mathis.mandala.app.Editing.updateBackground
@@ -436,13 +437,26 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
 
     fun newVariation() = _params.update { it.newVariation(::randomSeed) }
 
+    /** The selected layer keeps its style, palette and sliders and gets a new arrangement. */
+    fun reseedSelected() = _params.update { it.reseedLayer(_selected.value, randomSeed()) }
+
     fun updateBackground(change: (BaseLayerSettings) -> BaseLayerSettings) = _params.update { it.updateBackground(change) }
 
     fun updateEffects(change: (EffectsLayerSettings) -> EffectsLayerSettings) = _params.update { it.updateEffects(change) }
 
+    fun resetEffects() = updateEffects { it.reset() }
+
     fun newEffectsPattern() = updateEffects { it.newPattern(::randomSeed) }
 
     fun updateText(change: (TextLayerSettings) -> TextLayerSettings) = _params.update { it.updateText(change) }
+
+    /** A new look for the text; with no words yet, a quote comes in too, as on the Mac. */
+    fun randomizeText() {
+        if (_params.value.textLayer.text.isBlank()) randomQuote()
+        updateText { it.randomized(Random) }
+    }
+
+    fun resetText() = updateText { it.reset() }
 
     fun updateEmblem(change: (EmblemLayerSettings) -> EmblemLayerSettings) = _params.update { it.updateEmblem(change) }
 
