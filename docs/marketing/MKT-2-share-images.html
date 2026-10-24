@@ -17,6 +17,10 @@
   --font: "Inter", "Inter Variable", system-ui, sans-serif;
   --radius-phone: 48px;
   --gutter: 72px;
+  /* Story format (1080×1920): Instagram and WhatsApp draw the name and progress bar over the top ~250 px and
+     the reply field, or a caption plus the reply field, over the bottom ~400 px. Text stays inside these. */
+  --safe-top: 270px;
+  --safe-bottom: 420px;
 }
 * { box-sizing: border-box; }
 html, body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--font); }
@@ -58,13 +62,13 @@ html, body { margin: 0; background: var(--bg); color: var(--fg); font-family: va
 .v-portrait .phone { position: absolute; left: 50%; transform: translateX(-50%); top: 690px; width: 470px; }
 
 /* ---------- B · story 1080×1920 ---------- */
-.v-story .text { position: relative; padding: 120px var(--gutter) 0; }
-.v-story .title { font-size: 144px; }
-.v-story .message { font-size: 58px; margin-top: 44px; }
-.v-story .phone { position: relative; margin: 56px auto 0; width: 500px; }
-.v-story .foot { position: absolute; left: var(--gutter); right: var(--gutter); bottom: 100px; text-align: center; }
-.v-story .facts { font-size: 34px; white-space: nowrap; }
-.v-story .link { font-size: 54px; margin-top: 16px; }
+.v-story .text { position: relative; padding: var(--safe-top) var(--gutter) 0; }
+.v-story .title { font-size: 132px; }
+.v-story .message { font-size: 56px; margin-top: 40px; }
+.v-story .phone { position: relative; margin: 56px auto 0; width: 520px; }
+.v-story .foot { margin-top: 28px; }
+.v-story .facts { font-size: 34px; white-space: nowrap; margin-top: 10px; }
+.v-story .link { font-size: 54px; }
 
 /* ---------- C · landscape 1920×1080 ---------- */
 .v-landscape .text { position: absolute; left: var(--gutter); top: 120px; width: 640px; }
@@ -106,12 +110,12 @@ html, body { margin: 0; background: var(--bg); color: var(--fg); font-family: va
 .v-wide .phone { width: 480px; }
 .v-wide .phones.two .phone { width: 420px; }
 /* ---------- G · teaser story 1080×1920: the mandala alone, one quiet line ---------- */
-.v-teaser .fade { position: absolute; left: 0; right: 0; bottom: 0; height: 34%; background: linear-gradient(to bottom, rgba(10,9,8,0), rgba(10,9,8,.9)); }
-.v-teaser .text { position: absolute; left: var(--gutter); right: var(--gutter); bottom: 100px; text-align: center; }
+.v-teaser .fade { position: absolute; left: 0; right: 0; bottom: 0; height: 44%; background: linear-gradient(to bottom, rgba(10,9,8,0), rgba(10,9,8,.85) 60%); }
+.v-teaser .text { position: absolute; left: var(--gutter); right: var(--gutter); bottom: var(--safe-bottom); text-align: center; }
 .v-teaser .message { font-size: 48px; max-width: none; text-wrap: balance; }
 /* ---------- H · wallpaper story 1080×1920: the lock screen on the phone, one quiet line ---------- */
-.v-wallpaper .phone { position: absolute; left: 50%; transform: translateX(-50%); top: 180px; width: 700px; }
-.v-wallpaper .text { position: absolute; left: var(--gutter); right: var(--gutter); bottom: 100px; text-align: center; }
+.v-wallpaper .phone { position: absolute; left: 50%; transform: translateX(-50%); top: var(--safe-top); width: 540px; }
+.v-wallpaper .text { position: absolute; left: var(--gutter); right: var(--gutter); bottom: var(--safe-bottom); text-align: center; }
 .v-wallpaper .message { font-size: 48px; max-width: none; text-wrap: balance; }
 </style>
 </head>
@@ -195,9 +199,8 @@ function card(v, t, set) {
     case "story": return `
       <div class="card v-story">
         <div class="art" style="background-image:url(${art})"></div><div class="scrim"></div>
-        <div class="text">${title()}<p class="message">${t.message}</p></div>
+        <div class="text">${title()}<p class="message">${t.message}</p><div class="foot"><p class="link">${t.link}</p><p class="facts">${t.facts}</p></div></div>
         ${phone(sh[0])}
-        <div class="foot"><p class="facts">${t.facts}</p><p class="link">${t.link}</p></div>
       </div>`;
     case "landscape": return `
       <div class="card v-landscape">

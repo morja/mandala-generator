@@ -23,6 +23,10 @@ Images to share with friends, on WhatsApp and elsewhere (MKT-1 names this folder
 
 New screenshots or backgrounds: change `SETS` in the HTML, new screenshots go to `../store/screenshots/`. English copy: no comma splices (two main clauses need a full stop).
 
+## Safe zones in the story format
+
+Instagram Stories and WhatsApp Status draw their own interface over a 1080 × 1920 image: the name and progress bar over the top (about 250 px), the reply field over the bottom (Instagram about 250 to 340 px) and, on WhatsApp, the caption you type (the clickable link goes there) above the reply field, together about 400 px. The figures are community measurements, not published by Meta, and vary a little by device. The story-format cards (B, G, H) therefore keep all text between `--safe-top` (270 px) and `--safe-bottom` (420 px), set in the HTML: the teaser and wallpaper lines sit just above the bottom band, the app card has its title below the top band and the link above the phone, and the phone may run off the bottom. The quote mandalas are rendered with the quote above the bottom band (`--centre-y 0.42 --text follows`). Check once on a real phone with a caption; if WhatsApp covers more, raise `--safe-bottom`.
+
 | Variant | Size | For |
 |---|---|---|
 | A portrait | 1080 × 1350 | WhatsApp chats, Instagram feed |
