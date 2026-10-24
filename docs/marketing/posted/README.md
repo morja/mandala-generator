@@ -4,3 +4,4 @@ Copy here, by hand, what was actually posted or sent (the rendered images in `..
 
 | Folder | Where | Text set |
 |---|---|---|
+| `2026-10-24-instagram-feed/` | Instagram @tearoom.one, three feed posts (captions.md) | friends-story |
