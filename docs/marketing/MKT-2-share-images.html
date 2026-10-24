@@ -136,7 +136,7 @@ const LABELS = { portrait: "A · Portrait 4:5", story: "B · Story 9:16", landsc
 // Image sets per variant: which screenshots (../store/screenshots/phone-<n>.png) and which background (renders/<art>.jpg).
 const H = "hypocycloid", F = "flower-of-life", R = "ribbon";
 // Teaser mandalas: plain ones take a line, the quote ones carry their own text and never get a line.
-const TEASERS_PLAIN = ["hypocycloid", "flower-of-life", "burst", "ribbon", "star", "torus"], TEASERS_QUOTE = ["rumi-quote", "lotus-quote"];
+const TEASERS_PLAIN = ["hypocycloid", "flower-of-life", "burst", "ribbon", "spiro", "torus"], TEASERS_QUOTE = ["rumi-quote", "lotus-quote"];
 const TEASERS = TEASERS_PLAIN.concat(TEASERS_QUOTE);
 const SETS = {
   portrait:  [["1-layers", H], ["2-om-emblem", F], ["4-quote", R], ["3-wallpaper", H], ["7-new-mandala-preview", F]].map(([s, a]) => ({ shots: [s], art: a + "-portrait" })),
@@ -172,7 +172,12 @@ function storySteps(n) {
   let lineNo = 0, quietNo = 0;
   return plan.steps.map((step, k) => {
     const [kind, arg] = step.split(":");
-    if (kind === "app") return { v: "story", i: (n - 1) % SETS.story.length, seq: n, step: k + 1 };
+    if (kind === "app") {
+      // With a wallpaper step in the plan, the app card does not show the lock screen screenshot again.
+      const hasWallpaper = plan.steps.some(st => st.startsWith("wallpaper"));
+      const choices = SETS.story.map((set, i) => i).filter(i => !hasWallpaper || !SETS.story[i].shots.includes("3-wallpaper"));
+      return { v: "story", i: choices[(n - 1) % choices.length], seq: n, step: k + 1 };
+    }
     if (kind === "wallpaper") return { v: "wallpaper", i: (n - 1) % SETS.wallpaper.length, seq: n, step: k + 1 };
     const text = parseInt(arg || "0", 10);
     const art = text ? pick(TEASERS_PLAIN, (n - 1) + 2 * lineNo++) : (pick(TEASERS_QUOTE, (n - 1) + quietNo++) || pick(TEASERS_PLAIN, n + 1));
