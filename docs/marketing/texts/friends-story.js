@@ -1,7 +1,8 @@
 // Text set "friends-story": the narrative series for WhatsApp and Instagram stories (24 October 2026).
 // The sequence tells it in order: building an app, what it draws, a pause, the lock screen, the reveal.
 // Same structure as friends.js: copy, change the lines, run render-share-images.sh friends-story.
-// Lines in a list are alternatives; story 1 takes the first, story 2 the second, and so on (repeating).
+// Fixed lines since 24 October 2026 (combination 1), so images from different sequences can be mixed freely;
+// a list may still hold alternatives (story 1 takes the first, story 2 the second, and so on).
 window.MKT_TEXT = {
   stories: { count: 5, steps: ["teaser:1", "teaser:2", "teaser:0", "wallpaper", "app"] },
   en: {
@@ -10,10 +11,10 @@ window.MKT_TEXT = {
     link: "tearoom.one/dahlia",
     mandala: "Mandalas from curves, light and symbols. My new Android app, free to try.",
     teaser: [
-      ["I've been building a small app.", "I made a small app.", "I've been building an app on the side."],
-      ["It draws mandalas from curves and light.", "It draws mandalas from curves, light and symbols.", "Every mandala is drawn from curves and light."]
+      ["Look what I've been working on."],
+      ["Another one. Made on my phone."]
     ],
-    wallpaper: ["Decorate your lock screen.", "Or put one on your lock screen.", "Beautify your lock screen."]
+    wallpaper: ["Decorate your lock screen."]
   },
   de: {
     message: "Sie heißt Dahlia, jetzt für Android. Probier sie aus, ich freue mich über Feedback und eine Bewertung.",
@@ -21,9 +22,9 @@ window.MKT_TEXT = {
     link: "tearoom.one/dahlia",
     mandala: "Mandalas aus Kurven, Licht und Symbolen. Meine neue Android-App, kostenlos zum Ausprobieren.",
     teaser: [
-      ["Ich habe eine kleine App gebaut.", "Ich habe eine kleine App gemacht.", "Nebenbei habe ich eine App gebaut."],
-      ["Sie zeichnet Mandalas aus Kurven und Licht.", "Sie zeichnet Mandalas aus Kurven, Licht und Symbolen.", "Jedes Mandala entsteht aus Kurven und Licht."]
+      ["Schau, woran ich gearbeitet habe."],
+      ["Noch eins. Auf dem Handy gemacht."]
     ],
-    wallpaper: ["Verschönere deinen Sperrbildschirm.", "Oder leg eins auf den Sperrbildschirm.", "Schmück deinen Sperrbildschirm."]
+    wallpaper: ["Verschönere deinen Sperrbildschirm."]
   }
 };
