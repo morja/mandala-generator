@@ -67,7 +67,7 @@ html, body { margin: 0; background: var(--bg); color: var(--fg); font-family: va
 .v-story .text { position: relative; padding: var(--safe-top) var(--gutter) 0; }
 .v-story .title { font-size: 132px; }
 .v-story .message { font-size: 56px; margin-top: 40px; }
-.v-story .phone { position: relative; margin: 56px auto 0; width: 520px; }
+.v-story .phone { position: relative; margin: 48px auto 0; width: 420px; }
 .v-story .foot { margin-top: 28px; }
 .v-story .facts { font-size: 34px; white-space: nowrap; margin-top: 10px; }
 .v-story .link { font-size: 54px; }
@@ -116,7 +116,7 @@ html, body { margin: 0; background: var(--bg); color: var(--fg); font-family: va
 .v-teaser .text { position: absolute; left: var(--gutter); right: var(--gutter); bottom: var(--safe-bottom); text-align: center; }
 .v-teaser .message { font-size: 48px; max-width: none; text-wrap: balance; }
 /* ---------- H · wallpaper story 1080×1920: the lock screen on the phone, one quiet line ---------- */
-.v-wallpaper .phone { position: absolute; left: 50%; transform: translateX(-50%); top: calc(var(--safe-top) + 40px); width: 600px; }
+.v-wallpaper .phone { position: absolute; left: 50%; transform: translateX(-50%); top: calc(var(--safe-top) + 100px); width: 600px; }
 .v-wallpaper .text { position: absolute; left: var(--gutter); right: var(--gutter); bottom: var(--safe-bottom); text-align: center; }
 .v-wallpaper .message { font-size: 48px; max-width: none; text-wrap: balance; }
 </style>
@@ -135,7 +135,9 @@ const SIZES = { portrait: [1080, 1350], story: [1080, 1920], landscape: [1920, 1
 const LABELS = { portrait: "A · Portrait 4:5", story: "B · Story 9:16", landscape: "C · Landscape 16:9", square: "D · Square", mandala: "E · Mandala portrait", wide: "F · Wide 16:9, large", teaser: "G · Teaser story", wallpaper: "H · Wallpaper story" };
 // Image sets per variant: which screenshots (../store/screenshots/phone-<n>.png) and which background (renders/<art>.jpg).
 const H = "hypocycloid", F = "flower-of-life", R = "ribbon";
-const TEASERS = ["hypocycloid", "torus", "rumi-quote", "flower-of-life", "ribbon", "lotus-quote"];
+// Teaser mandalas: plain ones take a line, the quote ones carry their own text and never get a line.
+const TEASERS_PLAIN = ["hypocycloid", "torus", "flower-of-life", "ribbon"], TEASERS_QUOTE = ["rumi-quote", "lotus-quote"];
+const TEASERS = TEASERS_PLAIN.concat(TEASERS_QUOTE);
 const SETS = {
   portrait:  [["1-layers", H], ["2-om-emblem", F], ["4-quote", R], ["3-wallpaper", H], ["7-new-mandala-preview", F]].map(([s, a]) => ({ shots: [s], art: a + "-portrait" })),
   story:     [["1-layers", H], ["4-quote", F], ["3-wallpaper", R], ["5-favourites", H], ["7-new-mandala-preview", F]].map(([s, a]) => ({ shots: [s], art: a + "-portrait" })),
@@ -144,8 +146,10 @@ const SETS = {
   mandala:   [H + "-square", R + "-portrait", F + "-square"].map(a => ({ shots: [], art: a })),
   wide:      [[["1-layers"], H], [["2-om-emblem", "4-quote"], F], [["3-wallpaper"], R], [["1-layers", "7-new-mandala-preview"], H]].map(([s, a]) => ({ shots: s, art: a + "-landscape" })),
   // Teaser stories: full-bleed renders from renders/story-*.jpg, posted before the story variant B.
-  // Every mandala three times: with the first teaser line, the second, and without text (name …-0).
-  teaser:    TEASERS.flatMap(a => [1, 2, 0].map(n => ({ shots: [], art: "story-" + a, text: n, name: `${a}-${n}` }))),
+  // Plain mandalas three times: with the first teaser line, the second, and without text (name …-0);
+  // quote mandalas once, without a line.
+  teaser:    TEASERS_PLAIN.flatMap(a => [1, 2, 0].map(n => ({ shots: [], art: "story-" + a, text: n, name: `${a}-${n}` })))
+               .concat(TEASERS_QUOTE.map(a => ({ shots: [], art: "story-" + a, text: 0, name: `${a}-0` }))),
   // Wallpaper story: the lock screen screenshot on the phone over a mandala, with a line from `wallpaper`.
   wallpaper: [H, F, R].map(a => ({ shots: ["3-wallpaper"], art: a + "-portrait" }))
 };
@@ -162,13 +166,18 @@ const TEXT = window.MKT_TEXT; // from texts/<name>.js, loaded in <head>
 // repeats within a sequence and the sequences differ from each other; the app story cycles through its sets.
 function storySteps(n) {
   const plan = (TEXT && TEXT.stories) || { count: 0, steps: [] };
-  let teaserNo = 0;
+  const used = new Set();
+  // A teaser with a line takes a plain mandala; one without text prefers a quote mandala. No repeats.
+  const pick = (list, offset) => { for (let j = 0; j < list.length; j++) { const a = list[(offset + j) % list.length]; if (!used.has(a)) { used.add(a); return a; } } return null; };
+  let lineNo = 0, quietNo = 0;
   return plan.steps.map((step, k) => {
     const [kind, arg] = step.split(":");
     if (kind === "app") return { v: "story", i: (n - 1) % SETS.story.length, seq: n, step: k + 1 };
     if (kind === "wallpaper") return { v: "wallpaper", i: (n - 1) % SETS.wallpaper.length, seq: n, step: k + 1 };
-    const mandala = ((n - 1) + 2 * teaserNo++) % TEASERS.length, text = parseInt(arg || "0", 10);
-    return { v: "teaser", i: mandala * 3 + [1, 2, 0].indexOf(text), seq: n, step: k + 1 };
+    const text = parseInt(arg || "0", 10);
+    const art = text ? pick(TEASERS_PLAIN, (n - 1) + 2 * lineNo++) : (pick(TEASERS_QUOTE, (n - 1) + quietNo++) || pick(TEASERS_PLAIN, n + 1));
+    const i = SETS.teaser.findIndex(set => set.name === `${art}-${text}`);
+    return { v: "teaser", i: Math.max(0, i), seq: n, step: k + 1 };
   });
 }
 const storyCount = () => (TEXT && TEXT.stories && TEXT.stories.count) || 0;
