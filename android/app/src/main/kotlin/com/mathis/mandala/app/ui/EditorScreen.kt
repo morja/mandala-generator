@@ -706,7 +706,7 @@ private fun ProSheet(pro: ProState, request: ProRequest, onBuy: () -> Unit, onWi
                 "Pro adds up to five layers, emblems, text and quotes, and moving layers and the emblem. " +
                     "Save at 2048 pixels wide with the mandala placed by hand and adjusted, and as a line drawing. " +
                     "Wallpapers: home and lock as a pair, a new one every day, and a live wallpaper. " +
-                    "Try everything before you buy. One purchase, no subscription.",
+                    "Try more layers, emblems and quotes in the editor before you buy. One purchase, no subscription.",
                 style = MaterialTheme.typography.bodySmall,
                 color = t.textMuted,
             )

@@ -83,7 +83,7 @@ On 23 October 2026 the pages moved to `/apps/dahlia` and `/apps/privacy/dahlia` 
 
 In the Play Console since 22 October 2026: active. The descriptions above (ADR-0016 as amended for 1.4.1) were written there through the API on 22 October 2026 (`oneTimeProducts:batchUpdate`; the single PATCH answers with an HTML 404), together with both full listing descriptions.
 
-On 23 October 2026 the closing sentence of the full description and of the 1.4.1 release notes changed from "Try every Pro feature before you buy" to "Try more layers, emblems and quotes in the editor before you buy" (German accordingly): only the four editor features of `ProFeatures` can be tried; 2048 px, framing, finish, SVG and the wallpapers are simply behind Pro. The in-app Pro sheet (`EditorScreen.kt`, "Try everything before you buy") still has the old claim and changes with the next release.
+On 23 October 2026 the closing sentence of the full description and of the 1.4.1 release notes changed from "Try every Pro feature before you buy" to "Try more layers, emblems and quotes in the editor before you buy" (German accordingly): only the four editor features of `ProFeatures` can be tried; 2048 px, framing, finish, SVG and the wallpapers are simply behind Pro. The in-app Pro sheet (`EditorScreen.kt`) had the old claim ("Try everything before you buy") until 1.4.1 and says the same as the listing from 1.5.0 on.
 
 Google Play lets you create in-app products only after a build that contains the billing permission has been uploaded (any testing track).
 
@@ -92,6 +92,18 @@ Google Play lets you create in-app products only after a build that contains the
 Since 23 October 2026 the listing exists in seven languages: English (default), German, Spanish (es-ES), Brazilian Portuguese, French, Simplified Chinese and Japanese, each with its own title, short and full description and captioned screenshots; release notes and the Pro product stay English and German (Play falls back to the default language). Texts in `docs/store/play/listings.py`, written through the API. The short descriptions carry the search terms people use: English "Mandala maker and live wallpaper: curves, layers, sacred geometry.", German "Mandala-Maker und Live-Hintergrund: Kurven, Ebenen, heilige Geometrie."; the first line of the full description names "mandala maker", wallpaper and live wallpaper. The listing texts quoted above are the versions before that change, apart from the try-before-you-buy sentence.
 
 The Reddit and launch plan is [MKT-1](../MKT-1-reddit-and-launch-plan.md).
+
+## Release notes for 1.5.0 (code 10)
+
+Prepared 24 October 2026 (not uploaded yet). Favourites keep their Pro features (ADR-0016 amended the same day), the dice move the effect patterns, the effects die and a reset sit in the Effects heading, the effect subgroups are inset, and four controls of the macOS app came over: the seed die per layer, the Spokes slider for Radial Mesh, a die and reset for the text, and tracking, cloud colour and shadow colour in the Text tab. The Pro sheet now ends with the listing's sentence ("Try more layers, emblems and quotes in the editor before you buy").
+
+English:
+
+> Favourites now keep everything you built, including Pro features, and open for everyone. The dice also move the highlights, dimming and glitter to new places. New in the editor: a die that rearranges one layer, a Spokes slider for Radial Mesh, a die and reset for the text, letter spacing, and colours for the text's shadow and cloud. Effects have a reset and clearer groups.
+
+German:
+
+> Favoriten behalten jetzt alles, was du gebaut hast, auch Pro-Funktionen, und öffnen sich für alle. Der Würfel verteilt auch Lichter, Abdunklung und Glitzer neu. Neu im Editor: ein Würfel, der eine Ebene neu anordnet, ein Speichen-Regler für Radial Mesh, Würfel und Zurücksetzen für den Text, Zeichenabstand sowie Farben für Schatten und Wolke des Texts. Effekte haben ein Zurücksetzen und klarere Gruppen.
 
 ## Release notes for 1.4.1 (code 9)
 
