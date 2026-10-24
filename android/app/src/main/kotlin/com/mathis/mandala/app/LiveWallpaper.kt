@@ -12,11 +12,14 @@ import android.graphics.ColorMatrix
 import android.graphics.ColorMatrixColorFilter
 import android.graphics.Paint
 import android.graphics.RectF
+import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.os.SystemClock
 import android.service.wallpaper.WallpaperService
+import android.util.DisplayMetrics
 import android.view.SurfaceHolder
+import android.view.WindowManager
 import com.mathis.mandala.core.BuiltInPalettes
 import com.mathis.mandala.core.Framing
 import com.mathis.mandala.core.MandalaParameters
@@ -79,6 +82,26 @@ object LiveWallpaper {
     /** Android's own screen that previews the live wallpaper and sets it when the user agrees. */
     fun pickIntent(context: Context): Intent = Intent(WallpaperManager.ACTION_CHANGE_LIVE_WALLPAPER)
         .putExtra(WallpaperManager.EXTRA_LIVE_WALLPAPER_COMPONENT, ComponentName(context, LiveWallpaperService::class.java))
+
+    /**
+     * Renders the wallpaper's image ahead, in the app, into the cache the service reads; Android's
+     * preview then shows it at once instead of black while it renders.
+     */
+    suspend fun prepare(context: Context, params: MandalaParameters) {
+        val (w, h) = screenSize(context)
+        LiveWallpaperService.rendered(context, params, w, h)?.recycle()
+    }
+
+    /** The whole display in its natural orientation, as large as the wallpaper's surface. */
+    private fun screenSize(context: Context): Pair<Int, Int> {
+        val wm = context.getSystemService(WindowManager::class.java)
+        val (w, h) = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            wm.maximumWindowMetrics.bounds.let { it.width() to it.height() }
+        } else {
+            DisplayMetrics().also { @Suppress("DEPRECATION") wm.defaultDisplay.getRealMetrics(it) }.let { it.widthPixels to it.heightPixels }
+        }
+        return min(w, h) to max(w, h)
+    }
 
     private fun mandalaFile(context: Context) = File(context.filesDir, "live-mandala.json")
     private fun settingsFile(context: Context) = File(context.filesDir, "live-settings.txt")
@@ -259,7 +282,7 @@ class LiveWallpaperService : WallpaperService() {
         }
     }
 
-    private companion object {
+    internal companion object {
         /** About 30 frames a second, and only while the wallpaper is visible. */
         const val FRAME_MS = 33L
         /** One full turn. */

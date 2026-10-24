@@ -242,7 +242,7 @@ fun EditorScreen(
             onSet = {
                 showLive = false
                 // Android previews it and sets it when the user agrees; once on, it follows by itself.
-                if (!vm.useForLiveWallpaper()) runCatching { context.startActivity(LiveWallpaper.pickIntent(context)) }
+                vm.useForLiveWallpaper { runCatching { context.startActivity(LiveWallpaper.pickIntent(context)) } }
             },
             onDismiss = { showLive = false },
         )

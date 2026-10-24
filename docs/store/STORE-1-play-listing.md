@@ -93,6 +93,18 @@ Since 23 October 2026 the listing exists in seven languages: English (default), 
 
 The Reddit and launch plan is [MKT-1](../MKT-1-reddit-and-launch-plan.md).
 
+## Release notes for 1.5.1 (code 11)
+
+**Released to production on 24 October 2026** through the API (`docs/store/play/play_release.py`). Git tag `android-v1.5.1`. Fix: the live wallpaper's check for a new mandala every three seconds restarted a first render that took longer than that, so the wallpaper could stay black (commit `b5d9f77`). Tested on the phone with an uncached mandala: black for about two seconds, then turning.
+
+English:
+
+> The live wallpaper no longer stays black the first time it is set.
+
+German:
+
+> Der Live-Hintergrund bleibt beim ersten Festlegen nicht mehr schwarz.
+
 ## Release notes for 1.5.0 (code 10)
 
 **Released to production on 24 October 2026** through the API (`docs/store/play/play_release.py`: bundle upload, track with the notes below, status completed); Google's review follows. Git tag `android-v1.5.0`. Favourites keep their Pro features (ADR-0016 amended the same day), the dice move the effect patterns, the effects die and a reset sit in the Effects heading, the effect subgroups are inset, and four controls of the macOS app came over: the seed die per layer, the Spokes slider for Radial Mesh, a die and reset for the text, and tracking, cloud colour and shadow colour in the Text tab. The Pro sheet now ends with the listing's sentence ("Try more layers, emblems and quotes in the editor before you buy").

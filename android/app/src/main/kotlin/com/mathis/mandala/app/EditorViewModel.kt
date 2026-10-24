@@ -903,18 +903,34 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
     }
 
     /**
-     * Gives the live wallpaper the current mandala. Returns true when it is already on the phone (it
-     * then fades over by itself); otherwise the screen opens Android's preview, where it is set.
+     * Gives the live wallpaper the current mandala. When it is already on the phone it fades over by
+     * itself; otherwise its image is rendered first, with the progress showing, and then `openPicker`
+     * opens Android's preview, which shows it at once.
      */
-    fun useForLiveWallpaper(): Boolean {
-        if (!pro.state.value.owned) return false
+    fun useForLiveWallpaper(openPicker: () -> Unit) {
+        if (!pro.state.value.owned) return openPicker()
+        if (_busy.value) return
         val app = getApplication<Application>()
-        LiveWallpaper.setMandala(app, _params.value)
-        val active = LiveWallpaper.isActive(app)
-        if (active) message("The live wallpaper shows this mandala in a moment")
-        return active
+        val params = _params.value
+        LiveWallpaper.setMandala(app, params)
+        if (LiveWallpaper.isActive(app)) {
+            message("The live wallpaper shows this mandala in a moment")
+            return
+        }
+        _busy.value = true
+        _export.value = ExportProgress("Preparing the live wallpaper")
+        viewModelScope.launch {
+            try {
+                withContext(Dispatchers.Default) { LiveWallpaper.prepare(app, params) }
+            } catch (e: OutOfMemoryError) {
+                // The wallpaper then renders it itself, with less memory taken by the app.
+            } finally {
+                _export.value = null
+                _busy.value = false
+            }
+            openPicker()
+        }
     }
-
 
     fun setPairOpen(open: Boolean) {
         _pairOpen.value = open
