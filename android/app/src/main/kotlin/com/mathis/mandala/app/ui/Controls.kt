@@ -649,13 +649,25 @@ private fun TextTab(text: TextLayerSettings, vm: EditorViewModel, position: Posi
     Group("Size and place") {
         ValueSlider("Size", text.fontSize, Editing.Ranges.textSize.floats(), default = TextLayerSettings().fontSize) { v -> update { it.copy(fontSize = v) } }
         ValueSlider("Width", text.fontWidth, Editing.Ranges.textWidth.floats(), default = TextLayerSettings().fontWidth) { v -> update { it.copy(fontWidth = v) } }
+        ValueSlider("Tracking", text.tracking, Editing.Ranges.textTracking.floats(), default = TextLayerSettings().tracking) { v -> update { it.copy(tracking = v) } }
         ValueSlider("Height", text.offsetY, default = TextLayerSettings().offsetY) { v -> update { it.copy(offsetY = v) } }
     }
     Group("Light") {
         ValueSlider("Glow", text.glow, Editing.Ranges.textGlow.floats(), default = TextLayerSettings().glow) { v -> update { it.copy(glow = v) } }
         ValueSlider("Cloud", text.cloudOpacity, default = TextLayerSettings().cloudOpacity) { v -> update { it.copy(cloudOpacity = v) } }
         ValueSlider("Cloud size", text.cloudScale, Editing.Ranges.textCloudSize.floats(), default = TextLayerSettings().cloudScale) { v -> update { it.copy(cloudScale = v) } }
+        // The colours only where the cloud or the shadow shows; the default of both is black.
+        if (text.cloudOpacity > 0) {
+            ColourGroup("Cloud colour", text.cloudHue, text.cloudSaturation, text.cloudBrightness,
+                defaults = Triple(TextLayerSettings().cloudHue, TextLayerSettings().cloudSaturation, TextLayerSettings().cloudBrightness), inset = true,
+            ) { h, sa, b -> update { it.copy(cloudHue = h, cloudSaturation = sa, cloudBrightness = b) } }
+        }
         ValueSlider("Shadow", text.shadowOpacity, default = TextLayerSettings().shadowOpacity) { v -> update { it.copy(shadowOpacity = v) } }
+        if (text.shadowOpacity > 0) {
+            ColourGroup("Shadow colour", text.shadowHue, text.shadowSaturation, text.shadowBrightness,
+                defaults = Triple(TextLayerSettings().shadowHue, TextLayerSettings().shadowSaturation, TextLayerSettings().shadowBrightness), inset = true,
+            ) { h, sa, b -> update { it.copy(shadowHue = h, shadowSaturation = sa, shadowBrightness = b) } }
+        }
     }
     Group("Colour", trailing = { ColourDot(hsbColour(text.hue, text.saturation, text.brightness.coerceAtMost(1.0))) }) {
         ValueSlider("Hue", text.hue, default = TextLayerSettings().hue) { v -> update { it.copy(hue = v) } }

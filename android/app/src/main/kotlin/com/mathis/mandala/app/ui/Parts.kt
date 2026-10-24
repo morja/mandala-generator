@@ -238,10 +238,12 @@ internal fun ColourGroup(
     /** Defaults of hue, saturation and brightness, for the double-tap reset. */
     defaults: Triple<Double, Double, Double>,
     initiallyOpen: Boolean = false,
+    /** Inside another group's content (see [Group]). */
+    inset: Boolean = false,
     brightnessRange: ClosedFloatingPointRange<Float> = 0f..1f,
     onChange: (Double, Double, Double) -> Unit,
 ) {
-    Group(title, nested = true, initiallyOpen = initiallyOpen, trailing = { ColourDot(hsbColour(hue, saturation, brightness)) }) {
+    Group(title, nested = true, inset = inset, initiallyOpen = initiallyOpen, trailing = { ColourDot(hsbColour(hue, saturation, brightness)) }) {
         ValueSlider("Hue", hue, default = defaults.first) { v -> onChange(v, saturation, brightness) }
         ValueSlider("Saturation", saturation, default = defaults.second) { v -> onChange(hue, v, brightness) }
         ValueSlider("Brightness", brightness, brightnessRange, default = defaults.third) { v -> onChange(hue, saturation, v) }

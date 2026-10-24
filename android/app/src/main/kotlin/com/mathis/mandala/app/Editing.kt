@@ -94,6 +94,7 @@ object Editing {
         val emblemWeight = 0.1..1.0
         val textSize = 0.03..0.12
         val textWidth = 0.4..1.0
+        val textTracking = -0.5..1.0
         val textBrightness = 0.0..2.0
         val textCloudSize = 0.0..0.7
         /** Beyond the former maximum of 1: values up to 1 look as they always did (TUNE-1). */
