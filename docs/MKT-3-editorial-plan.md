@@ -26,7 +26,7 @@ Four weeks after the Instagram start of @tearoom.one (24 October 2026). Companio
 | Date | Channel | What | Image | Text | Who |
 |---|---|---|---|---|---|
 | Sat 31 | Reddit r/androidapps | Self Promo Saturday comment (MKT-1, section 3) | `square/square-1-en.jpg` | text from MKT-1 | Phone/Mac |
-| Mon 2 Nov | Instagram feed | Mother Meera: the redesigned booking site | `share/sites/meera-portrait.jpg` (MKT-4) | "A different kind of project: I reworked the booking site for Mother Meera's darshans and meditations. Events by location, a clear calendar, booking on any device. booking.mothermeera.com #webdesign #booking #java" | Suite |
+| Mon 2 Nov | Instagram feed | Mother Meera: the redesigned booking site | `share/sites/meera-portrait.jpg` (MKT-4) | "A different kind of project: the booking site for Mother Meera's darshans and meditations has a new design, live since a few weeks. Calmer and friendlier, the same booking underneath. booking.mothermeera.com #webdesign #redesign" | Suite |
 | Wed 4 Nov | Instagram reel | The live wallpaper turning, one quiet line at the end | from the recording of 30 October | Caption: "Dahlia's live wallpaper, turning slowly all day. Free on Android, link in bio. #livewallpaper #mandala #androidapp" | Suite |
 | Thu 5 Nov | Reddit r/fossdroid | Link post to the repository, first comment from MKT-1 | | | Phone/Mac |
 | Sat 7 Nov | Reddit r/AndroidWallpaper | Image post, OC, title names the style (MKT-1) | to build: 1080×2160 render from a starter favourite | | Phone/Mac |

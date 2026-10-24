@@ -21,14 +21,14 @@ body { width: 1080px; height: 1350px; overflow: hidden; position: relative; }
 .browser .bar { height: 40px; background: var(--frame-edge); display: flex; align-items: center; gap: 10px; padding: 0 18px; }
 .browser .bar i { width: 13px; height: 13px; border-radius: 50%; background: #6b645a; display: block; }
 .browser img { display: block; width: 100%; }
-.phone { position: absolute; right: 48px; top: 760px; width: 300px; background: var(--frame); border: 4px solid var(--frame-edge); border-radius: 44px; padding: 12px; box-shadow: var(--shadow); }
-.phone img { display: block; width: 100%; border-radius: 30px; aspect-ratio: 390 / 740; object-fit: cover; object-position: top; }
+.phone { position: absolute; right: 48px; top: 700px; width: 270px; background: var(--frame); border: 4px solid var(--frame-edge); border-radius: 44px; padding: 12px; box-shadow: var(--shadow); }
+.phone img { display: block; width: 100%; border-radius: 30px; }
 </style>
 </head>
 <body>
 <script>
 const CARDS = {
-  meera: { title: "Mother Meera", sub: "Booking, redesigned", message: "The booking site for darshans and meditations has a new design: events by location, a clear calendar, booking on any device.", link: "booking.mothermeera.com", desktop: "sites/meera-desktop.jpg", mobile: "sites/meera-mobile.jpg" },
+  meera: { title: "Mother Meera", sub: "Booking, redesigned", message: "The booking site for darshans and meditations has a new design: calmer, friendlier, the same booking underneath.", link: "booking.mothermeera.com", desktop: "sites/meera-desktop.jpg", mobile: "sites/meera-mobile.jpg" },
   advaita: { title: "Advaita Hub", sub: "Now online", message: "An independent, bilingual catalogue of teachers of non-dual paths. Every statement in a profile links to its source.", link: "advaitahub.org", desktop: "sites/advaita-desktop.jpg", mobile: "sites/advaita-mobile.jpg" }
 };
 const c = CARDS[new URLSearchParams(location.search).get("c")] || CARDS.meera;
