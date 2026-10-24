@@ -2,7 +2,7 @@
 
 Four weeks after the Instagram start of @tearoom.one (24 October 2026). Companion to [MKT-1](MKT-1-reddit-and-launch-plan.md) (Reddit) and the share images in [docs/marketing](marketing/README.md). Images are in `docs/marketing/share/friends-story/` unless noted; what goes out is copied to `docs/marketing/posted/`.
 
-**How to read it.** "Suite" means Mathis approves the row and Claude schedules it in Meta Business Suite (Instagram only; the Facebook Page stays empty for now). Scheduling notes: the hashtag menu of the composer swallows clicks that land under it, so move the caret off the last hashtag before clicking anything; the file picker is native, Claude attaches the hidden input by script. "Phone" means Mathis posts it himself, because stories with an @-mention or link sticker cannot be scheduled. "Prepare" is a task, not a post; it belongs in Microsoft To-Do with its date.
+**How to read it.** "Suite" means Mathis approves the row and Claude schedules it in Meta Business Suite (Instagram, and since 24 October also the Facebook Page "Tearoom One" with its own captions: full links, no hashtags; what is scheduled there is in `marketing/posted/scheduled-facebook-page/`). Scheduling notes: the hashtag menu of the composer swallows clicks that land under it, so move the caret off the last hashtag before clicking anything; the file picker is native, Claude attaches the hidden input by script. "Phone" means Mathis posts it himself, because stories with an @-mention or link sticker cannot be scheduled. "Prepare" is a task, not a post; it belongs in Microsoft To-Do with its date.
 
 **Times.** Feed posts and reels at 18:30 on weekdays and 11:00 at weekends (Berlin time). Stories any time, since they live 24 hours.
 
