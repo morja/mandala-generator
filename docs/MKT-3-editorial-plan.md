@@ -26,7 +26,7 @@ Four weeks after the Instagram start of @tearoom.one (24 October 2026). Companio
 | Date | Channel | What | Image | Text | Who |
 |---|---|---|---|---|---|
 | Sat 31 | Reddit r/androidapps | Self Promo Saturday comment (MKT-1, section 3) | `square/square-1-en.jpg` | text from MKT-1 | Phone/Mac |
-| Mon 2 Nov | Instagram feed | Mother Mira: the new design | to build: screenshot of the start page in a 4:5 frame | "A different kind of project: the website of Mother Mira has a new design, built with Kirby. Link in bio." | Suite (after the image exists) |
+| Mon 2 Nov | Instagram feed | Mother Meera: the redesigned booking site | `share/sites/meera-portrait.jpg` (MKT-4) | "A different kind of project: I reworked the booking site for Mother Meera's darshans and meditations. Events by location, a clear calendar, booking on any device. booking.mothermeera.com #webdesign #booking #java" | Suite |
 | Wed 4 Nov | Instagram reel | The live wallpaper turning, one quiet line at the end | from the recording of 30 October | Caption: "Dahlia's live wallpaper, turning slowly all day. Free on Android, link in bio. #livewallpaper #mandala #androidapp" | Suite |
 | Thu 5 Nov | Reddit r/fossdroid | Link post to the repository, first comment from MKT-1 | | | Phone/Mac |
 | Sat 7 Nov | Reddit r/AndroidWallpaper | Image post, OC, title names the style (MKT-1) | to build: 1080×2160 render from a starter favourite | | Phone/Mac |
@@ -37,7 +37,7 @@ Four weeks after the Instagram start of @tearoom.one (24 October 2026). Companio
 |---|---|---|---|---|---|
 | Mon 9 Nov | Instagram feed | A quote with a soft glow | `portrait/portrait-3-en.jpg` (quote screenshot on the phone) | "Add a quote, keep the glow. Rumi, set in Dahlia on the phone. Free on Android, link in bio. #mandala #quotes #wallpaper #androidapp" | Suite, scheduled 24 Oct |
 | Wed 11 Nov | Instagram story @tearoom.one | Sequence 3, link sticker on the last image | `stories/story-3-en/` | | Phone |
-| Fri 13 Nov | Instagram feed | AdvaitaHub: the new site | to build: screenshot in a 4:5 frame | "AdvaitaHub is online: …" (Mathis writes the one sentence about what it is) | Suite (after the image and text exist) |
+| Fri 13 Nov | Instagram feed | Advaita Hub: the new site | `share/sites/advaita-portrait.jpg` (MKT-4) | "Advaita Hub is online: an independent, bilingual catalogue of teachers of non-dual paths. Every statement in a profile links to its source, with a calendar of retreats and meetings. advaitahub.org #advaita #nonduality #laravel" | Suite |
 | Sat 14 Nov | Threads | Nothing extra: Instagram posts are shared to Threads automatically once that is switched on in the Instagram settings | | | Prepare (once) |
 
 ## Week 4 · 14 to 20 November
@@ -53,7 +53,7 @@ Four weeks after the Instagram start of @tearoom.one (24 October 2026). Companio
 
 1. ~~The Facebook Page linked to @tearoom.one~~ done 24 October (Page "Tearoom One", business portfolio "Tearoom").
 2. The live wallpaper recording (30 October).
-3. For Mother Mira and AdvaitaHub: which page to screenshot and one sentence each about what the site is.
+3. ~~For Mother Meera and Advaita Hub: which page to screenshot and one sentence each~~ done 24 October from the tearoom.one portfolio (MKT-4).
 
 ## Not in this plan
 
