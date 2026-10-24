@@ -106,6 +106,8 @@ class LiveWallpaperService : WallpaperService() {
         private var paletteShift = 0
         private var lastCycle = 0L
         private var drawnVersion = -1L
+        /** The version being rendered now; the check every few seconds must not restart that render. */
+        private var loadingVersion = -1L
         private var loading: Job? = null
         private var lastCheck = 0L
 
@@ -125,7 +127,8 @@ class LiveWallpaperService : WallpaperService() {
         private fun checkFiles() {
             val context = this@LiveWallpaperService
             settings = LiveWallpaper.settings(context)
-            if (LiveWallpaper.version(context) != drawnVersion) {
+            val version = LiveWallpaper.version(context)
+            if (version != drawnVersion && version != loadingVersion) {
                 paletteShift = 0
                 load()
             }
@@ -163,15 +166,24 @@ class LiveWallpaperService : WallpaperService() {
             val w = width
             val h = height
             loading?.cancel()
+            loadingVersion = version
             loading = scope.launch {
+                val self = coroutineContext.job
                 val bitmap = try {
                     rendered(context, params, w, h)
                 } catch (e: RenderCancelledException) {
                     null
                 } catch (e: OutOfMemoryError) {
                     null
-                } ?: return@launch
+                }
                 handler.post {
+                    // Only the latest render counts; a failed one is tried again at the next check.
+                    if (loading !== self) {
+                        bitmap?.recycle()
+                        return@post
+                    }
+                    loadingVersion = -1L
+                    if (bitmap == null) return@post
                     drawnVersion = version
                     if (shown == null) shown = bitmap else {
                         incoming?.recycle()
