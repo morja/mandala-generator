@@ -28,8 +28,8 @@ body { width: 1080px; height: 1350px; overflow: hidden; position: relative; }
 <body>
 <script>
 const CARDS = {
-  meera: { title: "Mother Meera", sub: "Booking, redesigned", message: "The booking site for darshans and meditations has a new design: calmer, friendlier, the same booking underneath.", link: "booking.mothermeera.com", desktop: "sites/meera-desktop.jpg", mobile: "sites/meera-mobile.jpg" },
-  advaita: { title: "Advaita Hub", sub: "Now online", message: "An independent, bilingual catalogue of teachers of non-dual paths. Every statement in a profile links to its source.", link: "advaitahub.org", desktop: "sites/advaita-desktop.jpg", mobile: "sites/advaita-mobile.jpg" }
+  meera: { title: "Mother Meera", sub: "Booking, redesigned", message: "The booking site for darshans and meditations got a new design.", link: "booking.mothermeera.com", desktop: "sites/meera-desktop.jpg", mobile: "sites/meera-mobile.jpg" },
+  advaita: { title: "Advaita Hub", sub: "Now online", message: "An independent, bilingual catalogue of teachers of non-dual paths.", link: "advaitahub.org", desktop: "sites/advaita-desktop.jpg", mobile: "sites/advaita-mobile.jpg" }
 };
 const c = CARDS[new URLSearchParams(location.search).get("c")] || CARDS.meera;
 document.body.innerHTML = `
