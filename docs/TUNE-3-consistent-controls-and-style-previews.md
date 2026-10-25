@@ -34,3 +34,11 @@ The Android resource mapping is exhaustive over the style enum. A new style requ
 - Debug and Fast APKs build.
 - Emulator button checks confirm Seed changes only the selected layer's seed; Variation changes that layer's look while keeping its style and the rest of the scene. Undo restores each test change.
 - The first Scene visit shows Background closed. Fully visible Style, Palette, Blending and Shape headers measure 126 px at 420 dpi, corresponding to 48 dp.
+
+Visual checks include the inline style selection and Draw in phone portrait, and the two-pane tablet layout. [Style picker, phone dark](images/tune-3/styles-phone-dark.png) and [Draw, phone dark](images/tune-3/draw-phone-dark.png), and [Style picker, phone light](images/tune-3/styles-phone-light.png).
+
+The final Fast APK was installed and opened on Mathis' connected phone.
+
+The light phone and tablet layouts were checked without clipped labels or horizontal scrolling. The save sheet's expanded Adjust section still leaves its frame and bottom actions visible. [Tablet, light](images/tune-3/styles-tablet-light.png) and [Save sheet](images/tune-3/save-adjust-phone-light.png).
+
+The final dark tablet selection also fits without clipping: [Tablet, dark](images/tune-3/styles-tablet-dark.png).
