@@ -28,3 +28,11 @@ The five editing areas still describe useful scopes: individual layers, backgrou
 - Mac build passes with regenerated resources.
 - All 36 preview pairs match; every image is nonempty and stays below full white.
 - Android checks and Debug/Fast builds pass for the final changes, including all 56 core and 53 app unit tests.
+- Phone checks use the S23's actual 1080 × 2340 display and 480 dpi, a 360 dp wide layout.
+- Selected-style outline, action buttons and slider padding were visually checked, along with the Amber Text and Emblem dice. The temporary emblem toggle and style selection were undone.
+
+Screenshots: [Style selection](images/tune-4/styles-phone-dark.png), [Slider padding](images/tune-4/sliders-phone-dark.png), [Text dice](images/tune-4/text-dice-dark.png), [Emblem dice](images/tune-4/emblem-dice-dark.png).
+
+The final Fast APK was installed and opened on Mathis' S23. Light phone selection was also checked: [Phone, light](images/tune-4/styles-phone-light.png).
+
+The tablet layout was checked in both themes, including the selected-style border and the balanced preview grid. [Tablet, light](images/tune-4/styles-tablet-light.png), [Tablet, dark](images/tune-4/styles-tablet-dark.png). The built Mac resource bundle also contains all 36 updated files.
