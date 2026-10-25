@@ -67,7 +67,7 @@ struct ScenePanel: View {
 struct BaseLayerCard: View {
     @Binding var settings: BaseLayerSettings
     let defaults = BaseLayerSettings()   // reset values for double-click
-    @State private var isExpanded = true
+    @State private var isExpanded = false
 
     var body: some View {
         VStack(spacing: 0) {
