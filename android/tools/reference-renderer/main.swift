@@ -26,21 +26,42 @@ if args.count == 3, args[1] == "--style-previews" {
                                       bitmapInfo: CGImageAlphaInfo.noneSkipLast.rawValue) else { exit(1) }
         context.interpolationQuality = .high
         context.draw(source, in: CGRect(x: 0, y: 0, width: 96, height: 96))
-        // Lift faint linework for a 24-point icon while keeping the background black.
-        // This changes only the picker artwork, never a saved mandala or the renderer.
+        // Balance foreground brightness per example. A dense motif gets a quieter target than
+        // sparse linework, so neither a white disc nor an almost black thumbnail dominates the picker.
+        // This affects picker artwork only, never the mandala renderer or saved settings.
         guard let pixels = context.data?.assumingMemoryBound(to: UInt8.self) else { exit(1) }
-        var peak: UInt8 = 0
+        var histogram = [Int](repeating: 0, count: 256)
+        for y in 0..<96 {
+            for x in 0..<96 {
+                histogram[Int(pixels[y * context.bytesPerRow + x * 4])] += 1
+            }
+        }
+        guard let peak = histogram.lastIndex(where: { $0 > 0 }), peak > 0 else {
+            print("Empty style preview: \(style.rawValue)"); exit(1)
+        }
+        let threshold = max(2, Int(Double(peak) * 0.02))
+        let foreground = histogram.enumerated().filter { $0.offset > threshold }.reduce(0) { $0 + $1.element }
+        let coverage = Double(foreground) / (96 * 96)
+        let target = 180.0 * (1 - 0.45 * sqrt(coverage))
+        var accumulated = 0
+        var reference = peak
+        for value in (threshold + 1)...255 {
+            accumulated += histogram[value]
+            if accumulated >= max(1, Int(Double(foreground) * 0.9)) {
+                reference = value
+                break
+            }
+        }
+        let curve = (0...255).map { value -> UInt8 in
+            let adjusted = target * pow(Double(value) / Double(max(1, reference)), 0.65)
+            return UInt8(min(210, adjusted).rounded())
+        }
         for y in 0..<96 {
             for x in 0..<96 {
                 let offset = y * context.bytesPerRow + x * 4
-                for channel in 0..<3 {
-                    let value = pixels[offset + channel]
-                    peak = max(peak, value)
-                    pixels[offset + channel] = UInt8((sqrt(Double(value) / 255) * 255).rounded())
-                }
+                for channel in 0..<3 { pixels[offset + channel] = curve[Int(pixels[offset + channel])] }
             }
         }
-        guard peak > 0 else { print("Empty style preview: \(style.rawValue)"); exit(1) }
         guard let small = context.makeImage(),
               let destination = CGImageDestinationCreateWithURL(
                 directory.appendingPathComponent(style.rawValue + ".png") as CFURL,

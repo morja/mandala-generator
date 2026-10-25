@@ -5,6 +5,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -19,6 +20,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -124,7 +127,7 @@ internal fun Group(
         if (open) {
             if (framed) HorizontalDivider(color = t.outline)
             Column(
-                Modifier.padding(horizontal = Spacing.sm).padding(top = Spacing.sm, bottom = Spacing.md),
+                Modifier.padding(horizontal = if (framed) Spacing.lg else Spacing.sm).padding(top = Spacing.sm, bottom = Spacing.md),
                 content = content,
             )
         }
@@ -134,14 +137,20 @@ internal fun Group(
 /** A direct random action with a visible explanation of what changes. */
 @Composable
 internal fun RandomActionRow(label: String, summary: String, description: String, onClick: () -> Unit) {
-    Row(Modifier.fillMaxWidth().heightIn(min = Sizes.icon * 2), verticalAlignment = Alignment.CenterVertically) {
-        Text(label, style = MaterialTheme.typography.bodyMedium)
-        Text(summary, style = MaterialTheme.typography.bodySmall, color = LocalTokens.current.textMuted,
+    val t = LocalTokens.current
+    FilledTonalButton(
+        onClick = onClick,
+        modifier = Modifier.fillMaxWidth().heightIn(min = Sizes.icon * 2)
+            .semantics { contentDescription = description },
+        shape = RoundedCornerShape(Radius.sm),
+        colors = ButtonDefaults.filledTonalButtonColors(containerColor = t.accentSoft, contentColor = t.accent),
+        contentPadding = PaddingValues(horizontal = Spacing.md),
+    ) {
+        Text(label, style = MaterialTheme.typography.labelLarge)
+        Text(summary, style = MaterialTheme.typography.bodySmall, color = t.textMuted,
             maxLines = 1, overflow = TextOverflow.Ellipsis,
             modifier = Modifier.weight(1f).padding(horizontal = Spacing.sm))
-        IconButton(onClick = onClick) {
-            Icon(EditorIcons.DieOne, contentDescription = description, tint = LocalTokens.current.accent)
-        }
+        Icon(EditorIcons.DieOne, contentDescription = null)
     }
 }
 

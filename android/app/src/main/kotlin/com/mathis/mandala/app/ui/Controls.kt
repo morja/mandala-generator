@@ -4,6 +4,7 @@ import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -27,6 +28,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -181,7 +183,7 @@ private fun LayersTab(params: MandalaParameters, selected: Int, vm: EditorViewMo
         TextButton(onClick = vm::duplicateSelected, enabled = layers.size < Editing.MAX_LAYERS) { Text("Duplicate$proMark") }
         TextButton(onClick = vm::removeSelected, enabled = layers.size > 1) { Text("Delete") }
         Box(Modifier.weight(1f))
-        IconButton(onClick = vm::randomizeSelected) { Icon(EditorIcons.DieOne, contentDescription = "Randomize layer ${selected + 1}") }
+        IconButton(onClick = vm::randomizeSelected) { Icon(EditorIcons.DieOne, contentDescription = "Randomize layer ${selected + 1}", tint = LocalTokens.current.accent) }
     }
     LayerControls(layers[selected], vm::updateSelected, position, onVary = vm::varySelected, onReseed = vm::reseedSelected)
 }
@@ -279,6 +281,7 @@ private fun LayerRow(
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun LayerControls(layer: StyleLayer, update: ((StyleLayer) -> StyleLayer) -> Unit, position: PositionInput, onVary: () -> Unit, onReseed: () -> Unit) {
+    val t = LocalTokens.current
     Group("Style", summary = layer.style.displayName) {
         RandomActionRow("Variation", "Colour & settings", "New colours and settings, same style", onVary)
         FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
@@ -286,6 +289,14 @@ private fun LayerControls(layer: StyleLayer, update: ((StyleLayer) -> StyleLayer
                 FilterChip(
                     selected = layer.style == style,
                     onClick = { update { it.copy(style = style) } },
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = t.accentSoft,
+                        selectedLabelColor = t.accent,
+                    ),
+                    border = BorderStroke(
+                        if (layer.style == style) Sizes.swatchRing else Sizes.swatchRing / 2,
+                        if (layer.style == style) t.accent else t.outline,
+                    ),
                     leadingIcon = {
                         Image(painterResource(stylePreviewResource(style)), contentDescription = null,
                             modifier = Modifier.size(Sizes.swatchSmall).clip(RoundedCornerShape(Radius.sm)))
@@ -498,7 +509,7 @@ private fun EmblemTab(em: EmblemLayerSettings, vm: EditorViewModel, position: Po
             modifier = Modifier.weight(1f).toggleable(value = em.isEnabled, role = Role.Switch) { on -> update { it.switched(on) } },
         )
         if (em.isEnabled) {
-            IconButton(onClick = vm::randomizeEmblem) { Icon(EditorIcons.DieOne, contentDescription = "Random emblem") }
+            IconButton(onClick = vm::randomizeEmblem) { Icon(EditorIcons.DieOne, contentDescription = "Random emblem", tint = t.accent) }
             TextButton(onClick = vm::resetEmblem) { Text("Reset") }
         }
         Switch(checked = em.isEnabled, onCheckedChange = { on -> update { it.switched(on) } })
@@ -601,7 +612,7 @@ private fun TextTab(text: TextLayerSettings, vm: EditorViewModel, position: Posi
             modifier = Modifier.weight(1f).toggleable(value = text.isEnabled, role = Role.Switch, onValueChange = switch),
         )
         if (text.isEnabled) {
-            IconButton(onClick = vm::randomizeText) { Icon(EditorIcons.DieOne, contentDescription = "Random text look") }
+            IconButton(onClick = vm::randomizeText) { Icon(EditorIcons.DieOne, contentDescription = "Random text look", tint = LocalTokens.current.accent) }
             TextButton(onClick = vm::resetText) { Text("Reset") }
         }
         Switch(checked = text.isEnabled, onCheckedChange = switch)

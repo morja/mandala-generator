@@ -318,7 +318,7 @@ fun EditorScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = vm::surprise) { Icon(EditorIcons.DieFive, contentDescription = "Surprise me") }
+                    IconButton(onClick = vm::surprise) { Icon(EditorIcons.DieFive, contentDescription = "Surprise me", tint = LocalTokens.current.accent) }
                     IconButton(onClick = { showSave = true }, enabled = !busy) {
                         if (busy) {
                             CircularProgressIndicator(Modifier.size(Sizes.icon), strokeWidth = Sizes.progress)
