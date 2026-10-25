@@ -22,6 +22,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
@@ -69,50 +70,45 @@ import kotlin.math.roundToInt
 // headings at first and only the open group's sliders take room.
 
 /**
- * A foldable group: a heading row (tap to open or close) with an optional summary of the current
- * value and an optional control on the right, such as an on/off switch. A nested group has the smaller
- * heading and no divider. Inset groups sit inside a parent as separate outlined sections. Their
- * headings and controls share a container, so the next section cannot read as another slider.
+ * One section style across every tab. Headers have the same minimum height, type and right-hand
+ * chevron; only indentation marks a child section. Large actions belong inside the open content.
+ * The save sheet can omit the container because its surrounding dividers already frame Adjust.
  */
 @Composable
 internal fun Group(
     title: String,
     summary: String? = null,
     initiallyOpen: Boolean = false,
-    nested: Boolean = false,
     inset: Boolean = false,
     trailing: (@Composable () -> Unit)? = null,
-    /** Whether the group is open; passed in when the caller lays out other parts by it. */
     openState: MutableState<Boolean> = rememberSaveable { mutableStateOf(initiallyOpen) },
-    /** The line below the group; off where something else already separates it. */
-    divider: Boolean = !nested,
+    framed: Boolean = true,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val t = LocalTokens.current
     var open by openState
     val shape = RoundedCornerShape(Radius.sm)
-    val section = if (inset) Modifier
-        .padding(start = Spacing.lg, top = Spacing.sm)
+    val container = if (framed) Modifier
         .clip(shape)
         .background(t.surface)
         .border(Sizes.swatchRing, t.outline, shape)
-        .padding(horizontal = Spacing.sm)
     else Modifier
-    Column(Modifier.fillMaxWidth().then(section)) {
+
+    Column(
+        Modifier.fillMaxWidth()
+            .then(if (inset) Modifier.padding(start = Spacing.lg) else Modifier)
+            .padding(top = Spacing.sm)
+            .then(container),
+    ) {
         Row(
-            Modifier
-                .fillMaxWidth()
-                .then(if (inset) Modifier.heightIn(min = Sizes.swatch + Spacing.md) else Modifier)
+            Modifier.fillMaxWidth()
+                .heightIn(min = Sizes.icon * 2)
                 .clickable(onClickLabel = if (open) "Close $title" else "Open $title") { open = !open }
                 .semantics { stateDescription = if (open) "Open" else "Closed" }
-                .padding(vertical = if (nested && !inset) Spacing.xs else Spacing.sm),
+                .padding(horizontal = Spacing.sm),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            if (!inset) {
-                Icon(if (open) EditorIcons.Less else EditorIcons.Expand, contentDescription = null, tint = t.textMuted)
-                Spacer(Modifier.width(Spacing.sm))
-            }
-            Text(title, style = if (nested && !inset) MaterialTheme.typography.labelLarge else MaterialTheme.typography.titleSmall)
+            Text(title, style = MaterialTheme.typography.titleSmall)
             Text(
                 summary.orEmpty(),
                 style = MaterialTheme.typography.bodySmall,
@@ -122,19 +118,30 @@ internal fun Group(
                 modifier = Modifier.weight(1f).padding(horizontal = Spacing.sm),
             )
             trailing?.invoke()
-            if (inset) Icon(if (open) EditorIcons.Less else EditorIcons.Expand, contentDescription = null, tint = t.textMuted)
+            Icon(if (open) EditorIcons.Less else EditorIcons.Expand, contentDescription = null,
+                tint = t.textMuted, modifier = Modifier.padding(start = Spacing.sm))
         }
         if (open) {
-            if (inset) HorizontalDivider(color = t.outline)
+            if (framed) HorizontalDivider(color = t.outline)
             Column(
-                Modifier.padding(
-                    top = if (inset) Spacing.sm else Spacing.xs,
-                    bottom = if (inset) Spacing.md else if (divider) Spacing.sm else Spacing.xs,
-                ),
+                Modifier.padding(horizontal = Spacing.sm).padding(top = Spacing.sm, bottom = Spacing.md),
                 content = content,
             )
         }
-        if (divider) HorizontalDivider(color = t.outline)
+    }
+}
+
+/** A direct random action with a visible explanation of what changes. */
+@Composable
+internal fun RandomActionRow(label: String, summary: String, description: String, onClick: () -> Unit) {
+    Row(Modifier.fillMaxWidth().heightIn(min = Sizes.icon * 2), verticalAlignment = Alignment.CenterVertically) {
+        Text(label, style = MaterialTheme.typography.bodyMedium)
+        Text(summary, style = MaterialTheme.typography.bodySmall, color = LocalTokens.current.textMuted,
+            maxLines = 1, overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.weight(1f).padding(horizontal = Spacing.sm))
+        IconButton(onClick = onClick) {
+            Icon(EditorIcons.DieOne, contentDescription = description, tint = LocalTokens.current.accent)
+        }
     }
 }
 
@@ -252,7 +259,7 @@ private fun Modifier.onDoubleTap(action: () -> Unit): Modifier = composed {
     }
 }
 
-/** Hue, saturation and brightness of one colour, as a nested group with the colour as summary dot. */
+/** Hue, saturation and brightness in one section, with the colour as its summary dot. */
 @Composable
 internal fun ColourGroup(
     title: String,
@@ -267,7 +274,7 @@ internal fun ColourGroup(
     brightnessRange: ClosedFloatingPointRange<Float> = 0f..1f,
     onChange: (Double, Double, Double) -> Unit,
 ) {
-    Group(title, nested = true, inset = inset, initiallyOpen = initiallyOpen, trailing = { ColourDot(hsbColour(hue, saturation, brightness)) }) {
+    Group(title, inset = inset, initiallyOpen = initiallyOpen, trailing = { ColourDot(hsbColour(hue, saturation, brightness)) }) {
         ValueSlider("Hue", hue, default = defaults.first) { v -> onChange(v, saturation, brightness) }
         ValueSlider("Saturation", saturation, default = defaults.second) { v -> onChange(hue, v, brightness) }
         ValueSlider("Brightness", brightness, brightnessRange, default = defaults.third) { v -> onChange(hue, saturation, v) }

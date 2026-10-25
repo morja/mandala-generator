@@ -4,6 +4,7 @@ import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.selection.toggleable
@@ -48,6 +49,7 @@ import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.selected
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -277,14 +279,19 @@ private fun LayerRow(
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun LayerControls(layer: StyleLayer, update: ((StyleLayer) -> StyleLayer) -> Unit, position: PositionInput, onVary: () -> Unit, onReseed: () -> Unit) {
-    val t = LocalTokens.current
-    // The second die keeps the style; the one in the layer row picks a new style too.
-    Group("Style", summary = layer.style.displayName, trailing = {
-        IconButton(onClick = onVary) { Icon(EditorIcons.DieOne, contentDescription = "New ${layer.style.displayName} variant", tint = t.accent) }
-    }) {
+    Group("Style", summary = layer.style.displayName) {
+        RandomActionRow("Variation", "Colour & settings", "New colours and settings, same style", onVary)
         FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
             for (style in Editing.stylesByName) {
-                FilterChip(selected = layer.style == style, onClick = { update { it.copy(style = style) } }, label = { Text(style.displayName) })
+                FilterChip(
+                    selected = layer.style == style,
+                    onClick = { update { it.copy(style = style) } },
+                    leadingIcon = {
+                        Image(painterResource(stylePreviewResource(style)), contentDescription = null,
+                            modifier = Modifier.size(Sizes.swatchSmall).clip(RoundedCornerShape(Radius.sm)))
+                    },
+                    label = { Text(style.displayName) },
+                )
             }
         }
     }
@@ -296,10 +303,8 @@ private fun LayerControls(layer: StyleLayer, update: ((StyleLayer) -> StyleLayer
         BlendChips(layer.blendMode) { m -> update { it.copy(blendMode = m) } }
         ValueSlider("Opacity", layer.opacity, default = StyleLayer().opacity) { v -> update { it.copy(opacity = v) } }
     }
-    // The third die keeps style, palette and sliders and only rearranges (the seed die of the Mac's layer card).
-    Group("Shape", initiallyOpen = true, trailing = {
-        IconButton(onClick = onReseed) { Icon(EditorIcons.DieOne, contentDescription = "New arrangement, same style and palette", tint = t.accent) }
-    }) {
+    Group("Shape", initiallyOpen = true) {
+        RandomActionRow("Seed", "Arrangement", "New arrangement, same style, palette and settings", onReseed)
         SteppedSlider("Symmetry", layer.symmetry, 1..8, default = StyleLayer().symmetry) { v -> update { it.copy(symmetry = v) } }
         ValueSlider("Scale", layer.scale, Editing.Ranges.layerScale.floats(), default = StyleLayer().scale) { v -> update { it.copy(scale = v) } }
         ValueSlider("Complexity", layer.complexity, Editing.Ranges.layerComplexity(layer.style).floats(), default = StyleLayer().complexity) { v -> update { it.copy(complexity = v) } }
@@ -329,7 +334,7 @@ private fun LayerControls(layer: StyleLayer, update: ((StyleLayer) -> StyleLayer
 @Composable
 private fun SceneTab(params: MandalaParameters, vm: EditorViewModel) {
     val base = params.baseLayer
-    Group("Background", summary = if (base.isEnabled) backgroundName(base.type) else "Off", initiallyOpen = true) {
+    Group("Background", summary = if (base.isEnabled) backgroundName(base.type) else "Off") {
         BackgroundControls(base, vm::updateBackground, vm::useBackgroundImage)
     }
     EffectsGroup(params.effectsLayer, vm::updateEffects, vm::newEffectsPattern, vm::resetEffects)
@@ -430,44 +435,42 @@ private fun EffectsGroup(
     var showOldFade by rememberSaveable { mutableStateOf(false) }
     LaunchedEffect(fx.fade > 0) { if (fx.fade > 0) showOldFade = true }
     val t = LocalTokens.current
-    Group(
-        "Effects",
-        summary = if (fx.isEnabled) "On" else "Off",
-        trailing = {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                if (fx.isEnabled) {
-                    IconButton(onClick = newPattern) { Icon(EditorIcons.DieOne, contentDescription = "New pattern of highlights, dimming, stars and glitter", tint = t.accent) }
-                    TextButton(onClick = resetAll) { Text("Reset") }
-                }
-                Switch(checked = fx.isEnabled, onCheckedChange = { on -> update { it.copy(isEnabled = on) } })
+    Group("Effects", summary = if (fx.isEnabled) "On" else "Off") {
+        // Keep actions inside the section so its closed header is as compact as every other one.
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            Text("Show effects", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
+            if (fx.isEnabled) {
+                IconButton(onClick = newPattern) { Icon(EditorIcons.DieOne,
+                    contentDescription = "New pattern of highlights, dimming, stars and glitter", tint = t.accent) }
+                TextButton(onClick = resetAll) { Text("Reset") }
             }
-        },
-    ) {
+            Switch(checked = fx.isEnabled, onCheckedChange = { on -> update { it.copy(isEnabled = on) } })
+        }
         if (!fx.isEnabled) {
             Text("Switch on to use vignette, bloom, grain, stars and more.", style = MaterialTheme.typography.bodySmall,
                 color = LocalTokens.current.textMuted)
             return@Group
         }
-        Group("Light", nested = true, inset = true, initiallyOpen = true) {
+        Group("Light", inset = true, initiallyOpen = true) {
             ValueSlider("Brightness", fx.brightness, default = EffectsLayerSettings().brightness) { v -> update { it.copy(brightness = v) } }
             ValueSlider("Contrast", fx.contrast, default = EffectsLayerSettings().contrast) { v -> update { it.copy(contrast = v) } }
             ValueSlider("Vignette", fx.vignette, Editing.Ranges.effectsVignette.floats(), default = EffectsLayerSettings().vignette) { v -> update { it.copy(vignette = v) } }
             ValueSlider("Bloom", fx.bloom, Editing.Ranges.effectsBloom.floats(), default = EffectsLayerSettings().bloom) { v -> update { it.copy(bloom = v) } }
         }
-        Group("Tone", nested = true, inset = true) {
+        Group("Tone", inset = true) {
             ValueSlider("Sepia", fx.sepia, default = EffectsLayerSettings().sepia) { v -> update { it.copy(sepia = v) } }
             ValueSlider("Fade", fx.wash, default = EffectsLayerSettings().wash) { v -> update { it.copy(wash = v) } }
         }
-        Group("Texture", nested = true, inset = true) {
+        Group("Texture", inset = true) {
             ValueSlider("Clarity", fx.localContrast, default = EffectsLayerSettings().localContrast) { v -> update { it.copy(localContrast = v) } }
             ValueSlider("Grain", fx.grain, Editing.Ranges.effectsGrain.floats(), default = EffectsLayerSettings().grain) { v -> update { it.copy(grain = v) } }
             ValueSlider("Smoother", fx.smoother, default = EffectsLayerSettings().smoother) { v -> update { it.copy(smoother = v) } }
         }
-        Group("Sparkle", nested = true, inset = true) {
+        Group("Sparkle", inset = true) {
             ValueSlider("Stars", fx.stars, default = EffectsLayerSettings().stars) { v -> update { it.copy(stars = v) } }
             ValueSlider("Glitter", fx.glitter, Editing.Ranges.effectsGlitter.floats(), default = EffectsLayerSettings().glitter) { v -> update { it.copy(glitter = v) } }
         }
-        Group("More", nested = true, inset = true) {
+        Group("More", inset = true) {
             ValueSlider("Highlights", fx.highlights, default = EffectsLayerSettings().highlights) { v -> update { it.copy(highlights = v) } }
             ValueSlider("Dimming", fx.dimming, default = EffectsLayerSettings().dimming) { v -> update { it.copy(dimming = v) } }
             ValueSlider("Erasure", fx.erasure, default = EffectsLayerSettings().erasure) { v -> update { it.copy(erasure = v) } }
@@ -740,7 +743,7 @@ private fun DrawTab(params: MandalaParameters, vm: EditorViewModel) {
             )
         }
     }
-    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.sm), modifier = Modifier.padding(bottom = Spacing.sm)) {
         if (active == null) {
             Button(onClick = { vm.setDrawTool(tool) }) { Text("Draw on image") }
         } else {
@@ -762,7 +765,7 @@ private fun DrawTab(params: MandalaParameters, vm: EditorViewModel) {
                 DrawingLayerSettings().let { Triple(it.currentHue, it.currentSaturation, it.currentBrightness) }, initiallyOpen = true) { h, s, b ->
                 vm.updateDrawing { it.copy(currentHue = h, currentSaturation = s, currentBrightness = b) }
             }
-            Group("Line and light", nested = true) {
+            Group("Line and light") {
                 ValueSlider("Weight", lines.strokeWeight, default = DrawingLayerSettings().strokeWeight) { v -> vm.updateDrawing { it.copy(strokeWeight = v) } }
                 ValueSlider("Glow", lines.glowIntensity, default = DrawingLayerSettings().glowIntensity) { v -> vm.updateDrawing { it.copy(glowIntensity = v) } }
                 ValueSlider("Opacity", lines.opacity, default = DrawingLayerSettings().opacity) { v -> vm.updateDrawing { it.copy(opacity = v) } }
@@ -777,7 +780,7 @@ private fun DrawTab(params: MandalaParameters, vm: EditorViewModel) {
                 GraffitiLayerSettings().let { Triple(it.currentHue, it.currentSaturation, it.currentBrightness) }, initiallyOpen = true) { h, s, b ->
                 vm.updateGraffiti { it.copy(currentHue = h, currentSaturation = s, currentBrightness = b) }
             }
-            Group("Softness and blending", nested = true) {
+            Group("Softness and blending") {
                 ValueSlider("Softness", spray.softness, default = GraffitiLayerSettings().softness) { v -> vm.updateGraffiti { it.copy(softness = v) } }
                 ValueSlider("Opacity", spray.opacity, default = GraffitiLayerSettings().opacity) { v -> vm.updateGraffiti { it.copy(opacity = v) } }
                 BlendChips(spray.blendMode) { m -> vm.updateGraffiti { it.copy(blendMode = m) } }

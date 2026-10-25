@@ -180,8 +180,8 @@ internal fun SaveSheet(
                             }
                         } else null,
                         openState = adjustOpen,
-                        // The line above the size and buttons already closes it off.
-                        divider = false,
+                        // Adjust uses the sheet's surrounding dividers instead of a second frame.
+                        framed = false,
                     ) {
                         FinishControls(choice.finish, proOwned, enabled = !busy, onFinish = onFinish, onShowPro = onShowPro)
                     }
