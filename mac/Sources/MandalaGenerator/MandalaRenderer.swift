@@ -318,15 +318,16 @@ struct MandalaRenderer {
                                               palettes: palettes, size: bufferSize)
         }
 
-        // ── TEXT LAYER (on top of everything, before effects) ──
-        if params.textLayer.isEnabled && !params.textLayer.text.isEmpty {
-            compositeImage = applyTextLayer(image: compositeImage, settings: params.textLayer, size: bufferSize)
-        }
-
         // ── EFFECTS LAYER ──
         var result = compositeImage
         if params.effectsLayer.isEnabled {
             result = applyEffectsLayer(image: result, settings: params.effectsLayer, bufferSize: bufferSize)
+        }
+
+        // Text is the final layer. Scene effects soften or grade the artwork behind it;
+        // the text keeps its own colour, cloud, shadow, glow and deliberate blur.
+        if params.textLayer.isEnabled && !params.textLayer.text.isEmpty {
+            result = applyTextLayer(image: result, settings: params.textLayer, size: bufferSize)
         }
 
         // ── GLOBAL POST-PROCESS ──
