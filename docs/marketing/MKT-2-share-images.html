@@ -138,6 +138,7 @@ const H = "hypocycloid", F = "flower-of-life", R = "ribbon";
 // Teaser mandalas come from renders/story/ (take a line) and renders/story-quote/ (own text, never a line);
 // render-share-images.sh writes renders/story-list.js from those folders before every run.
 const TEASERS_PLAIN = (window.MKT_TEASERS || {}).plain || [], TEASERS_QUOTE = (window.MKT_TEASERS || {}).quote || [];
+const stem = f => f.replace(/\.(jpe?g|png)$/i, "");
 const TEASERS = TEASERS_PLAIN.concat(TEASERS_QUOTE);
 const SETS = {
   portrait:  [["1-layers", H], ["2-om-emblem", F], ["4-quote", R], ["3-wallpaper", H], ["7-new-mandala-preview", F]].map(([s, a]) => ({ shots: [s], art: a + "-portrait" })),
@@ -149,8 +150,8 @@ const SETS = {
   // Teaser stories: full-bleed renders from renders/story/ and renders/story-quote/, posted before the story variant B.
   // Plain mandalas three times: with the first teaser line, the second, and without text (name …-0);
   // quote mandalas once, without a line.
-  teaser:    TEASERS_PLAIN.flatMap(a => [1, 2, 0].map(n => ({ shots: [], art: "story/" + a, text: n, name: `${a}-${n}` })))
-               .concat(TEASERS_QUOTE.map(a => ({ shots: [], art: "story-quote/" + a, text: 0, name: `${a}-0` }))),
+  teaser:    TEASERS_PLAIN.flatMap(a => [1, 2, 0].map(n => ({ shots: [], art: "story/" + a, text: n, name: `${stem(a)}-${n}` })))
+               .concat(TEASERS_QUOTE.map(a => ({ shots: [], art: "story-quote/" + a, text: 0, name: `${stem(a)}-0` }))),
   // Wallpaper story: the lock screen screenshot on the phone over a mandala, with a line from `wallpaper`.
   wallpaper: [H, F, R].map(a => ({ shots: ["3-wallpaper"], art: a + "-portrait" }))
 };
@@ -182,7 +183,7 @@ function storySteps(n) {
     if (kind === "wallpaper") return { v: "wallpaper", i: (n - 1) % SETS.wallpaper.length, seq: n, step: k + 1 };
     const text = parseInt(arg || "0", 10);
     const art = text ? pick(TEASERS_PLAIN, (n - 1) + 2 * lineNo++) : (pick(TEASERS_QUOTE, (n - 1) + quietNo++) || pick(TEASERS_PLAIN, n + 1));
-    const i = SETS.teaser.findIndex(set => set.name === `${art}-${text}`);
+    const i = SETS.teaser.findIndex(set => set.name === `${stem(art)}-${text}`);
     return { v: "teaser", i: Math.max(0, i), seq: n, step: k + 1 };
   });
 }
@@ -205,7 +206,7 @@ function title() { return `<h1 class="title">Dahlia<small>Mandala Maker</small><
 function phone(n) { return `<div class="phone"><img src="${SHOT(n)}" alt=""></div>`; }
 
 function card(v, t, set) {
-  const art = `renders/${set.art}.jpg`, sh = set.shots;
+  const art = /\.(jpe?g|png)$/i.test(set.art) ? `renders/${set.art}` : `renders/${set.art}.jpg`, sh = set.shots;
   switch (v) {
     case "portrait": return `
       <div class="card v-portrait">

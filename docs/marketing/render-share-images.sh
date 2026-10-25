@@ -1,36 +1,43 @@
 #!/bin/sh
-# Renders every variant and image set of MKT-2-share-images.html in English (LANGS="en de" for German too) to
-# share/<text set>/<folder>/<file>.jpg with headless Google Chrome (the Inter font must be installed)
-# and ImageMagick. Run from anywhere:
-#   render-share-images.sh            # text set "friends" (texts/friends.js)
-#   render-share-images.sh <name>     # text set texts/<name>.js
-#   render-share-images.sh <name> <variant>   # only that variant (portrait, story, landscape, square, mandala, wide, teaser, wallpaper)
-#   render-share-images.sh <name> proof       # proof run: only story sequence 1 in English (five images and its overview)
-# The list of images and their file names comes from the HTML itself (?list=1), so SETS there is the
-# only place to edit. Nothing is deleted: files of renamed or removed sets stay until you remove them.
-# Ready-made story sequences (stories/story-<n>-<lang>/) follow the `stories` plan in the text set; each
-# folder also gets 00-overview.jpg with all its images side by side, for comparing.
+# Renders the share images of MKT-2-share-images.html with headless Google Chrome (the Inter font must be
+# installed) and ImageMagick. Run from anywhere:
+#   render-share-images.sh                     # text set "friends-story": the story sequences into a new dated folder
+#   render-share-images.sh <name>              # same for text set texts/<name>.js
+#   render-share-images.sh <name> proof        # proof run: only sequence 1, into stories/proof/ (overwritten)
+#   render-share-images.sh <name> all          # sequences (dated folder) plus the single images and the story pool
+#   render-share-images.sh <name> <variant>    # only that variant into its usual folder (portrait, story, landscape,
+#                                              # square, mandala, wide, teaser, wallpaper)
+# Every run of the sequences gets its own folder share/<name>/stories/<date-time>/, so earlier runs stay.
+# Single images (portrait/, square/, landscape/, story/) are overwritten in place. Nothing else is deleted.
+# English only; LANGS="en de" adds German. The list of images and file names comes from the HTML (?list=1).
 set -eu
 cd "$(dirname "$0")"
-text="${1:-friends}"
+text="${1:-friends-story}"
 only="${2:-}"
+run="$(date +%Y-%m-%d-%H%M)"
+[ "$only" != "proof" ] || run="proof"
 langs="${LANGS:-en}"
 [ -f "texts/$text.js" ] || { echo "texts/$text.js not found" >&2; exit 1; }
 chrome="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
 timeout="$(command -v gtimeout || command -v timeout)" || { echo "needs GNU timeout (brew install coreutils)" >&2; exit 1; }
 page="file://$(pwd)/MKT-2-share-images.html"
 # Teaser backgrounds come from two folders: renders/story/ (a line goes under the image) and
-# renders/story-quote/ (the image carries its own text, no line). Every JPEG there is used; this
+# renders/story-quote/ (the image carries its own text, no line). Every JPEG or PNG there is used, any size; this
 # writes the list the HTML reads. SHUFFLE=1 puts them in random order for this run.
-names() { ls "$1" 2>/dev/null | sed -n -E 's/\.jpe?g$//p' | { if [ "${SHUFFLE:-}" = 1 ]; then sort -R; else sort; fi; } | sed 's/.*/"&"/' | paste -sd, -; }
+names() { ls "$1" 2>/dev/null | grep -i -E '\.(jpe?g|png)$' | { if [ "${SHUFFLE:-}" = 1 ]; then sort -R; else sort; fi; } | sed 's/.*/"&"/' | paste -sd, -; }
 printf 'window.MKT_TEASERS = { plain: [%s], quote: [%s] };\n' "$(names renders/story)" "$(names renders/story-quote)" > renders/story-list.js
 cat renders/story-list.js
 list=$("$chrome" --headless=new --disable-gpu --dump-dom "$page?list=1" 2>/dev/null | grep -o 'IMG [^<]*' | cut -c5-)
 [ -n "$list" ] || { echo "could not read the image list from the HTML" >&2; exit 1; }
 echo "$list" | while read -r name i w h lang seq file; do
     case " $langs " in *" $lang "*) ;; *) continue ;; esac
-    if [ "$only" = "proof" ]; then case "$file" in stories/story-1-en/*) ;; *) continue ;; esac
-    else [ -z "$only" ] || [ "$name" = "$only" ] || continue; fi
+    case "$only" in
+        proof) case "$file" in stories/story-1-en/*) ;; *) continue ;; esac ;;
+        "") case "$file" in stories/*) ;; *) continue ;; esac ;;
+        all) ;;
+        *) [ "$name" = "$only" ] || continue ;;
+    esac
+    case "$file" in stories/*) file="stories/$run/${file#stories/}" ;; esac
     out="share/$text/${file%.jpg}"
     mkdir -p "$(dirname "$out")"
     # Headless Chrome occasionally hangs; give each image 90 seconds, then skip it and say so.
@@ -45,10 +52,8 @@ echo "$list" | while read -r name i w h lang seq file; do
 done
 
 # Overview sheet per story folder: all images of the sequence side by side.
-for d in "share/$text"/stories/story-*; do
+for d in "share/$text/stories/$run"/story-*; do
     [ -d "$d" ] || continue
-    case " $langs " in *" ${d##*-} "*) ;; *) continue ;; esac
-    [ "$only" != "proof" ] || [ "$d" = "share/$text/stories/story-1-en" ] || continue
     overview="$d/00-overview.jpg"
     rm -f "$overview"
     magick montage "$d"/*.jpg -tile x1 -geometry 540x960+10+10 -background '#0a0908' -quality 88 "$overview"

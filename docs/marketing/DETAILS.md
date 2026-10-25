@@ -8,7 +8,7 @@ One HTML file, two jobs. Opened without parameters it is the viewer with a switc
 
 Variants: A portrait 1080 × 1350 (phone in a mandala halo), B story 1080 × 1920 (app with title and link), C landscape 1920 × 1080 (three phones and a QR code to the Play page), D square 1080 × 1080, E mandala portrait 1080 × 1350 (one large mandala, no screenshot), F wide 1920 × 1080 (one or two phones, large text), G teaser story 1080 × 1920 (the mandala alone with one line or none), H wallpaper story 1080 × 1920 (lock screen on the phone).
 
-Image sets (`SETS`): which screenshots (`../store/screenshots/phone-<n>.png`) and which background (`renders/<art>.jpg`) each variant uses. Teaser mandalas are not listed in the HTML: the script writes `renders/story-list.js` from the folders `renders/story/` (rendered with line 1, line 2 and without text, file names `…-1`, `…-2`, `…-0`) and `renders/story-quote/` (own text, rendered once without a line) before every run, alphabetically or with `SHUFFLE=1` in random order; the HTML reads that list.
+Image sets (`SETS`): which screenshots (`../store/screenshots/phone-<n>.png`) and which background (`renders/<art>.jpg`) each variant uses. Teaser mandalas are not listed in the HTML: the script writes `renders/story-list.js` from the folders `renders/story/` (rendered with line 1, line 2 and without text, file names `…-1`, `…-2`, `…-0`) and `renders/story-quote/` (own text, rendered once without a line) before every run, alphabetically or with `SHUFFLE=1` in random order; JPEG or PNG, any size (the card uses `background-size: cover`, so a taller image is cropped top and bottom); the HTML reads that list.
 
 Story sequences (`stories` in the text set, `count` and `steps`): `teaser:1` and `teaser:2` take a plain mandala with that line, `teaser:0` prefers a quote mandala, `wallpaper` the lock screen card, `app` the app card; nothing repeats within a sequence, the app card skips the lock screen screenshot when the sequence has a wallpaper card, lines with alternatives rotate by sequence number.
 
@@ -21,13 +21,16 @@ Style: ADR-0006 (near-black warm background, Inter, one amber accent). Safe zone
 ## Script `render-share-images.sh`
 
 ```
-render-share-images.sh [text set] [variant | proof]
+render-share-images.sh [text set] [proof | all | variant]
 LANGS="en de" render-share-images.sh friends-story     # German too (default English only)
+SHUFFLE=1 render-share-images.sh friends-story         # teaser backgrounds in random order
 ```
+
+Without a second argument only the story sequences are rendered, into a new folder `share/<text set>/stories/<YYYY-MM-DD-HHMM>/`; `proof` renders sequence 1 into `stories/proof/`; `all` adds the single images and the story pool; a variant name renders just that variant. Single images and the pool are overwritten in place, run folders are never touched.
 
 Renders with headless Google Chrome (Inter font must be installed; the landscape QR code loads a small library from cdnjs, so render online) and converts to JPEG with ImageMagick into `share/<text set>/`. Each image gets 90 seconds; a hung Chrome is reported and skipped, run again. Nothing is deleted: files of renamed or removed sets stay until removed by hand (earlier stands are in `share/archive/`, with a README). After rendering, every story folder gets `00-overview.jpg`. `proof` renders only story sequence 1 in English.
 
-Output layout per text set: `stories/story-<n>-<lang>/` (sequences), `story/` (the whole pool: `1-teaser-<mandala>-<1|2|0>`, `2-wallpaper-<n>`, `3-app-<n>`), `portrait/` (A as `portrait-<n>`, E as `mandala-<n>`), `square/` (D), `landscape/` (C as `landscape-<n>`, F as `wide-<n>`).
+Output layout per text set: `stories/<run>/story-<n>-<lang>/` (sequences), `story/` (the whole pool: `1-teaser-<mandala>-<1|2|0>`, `2-wallpaper-<n>`, `3-app-<n>`), `portrait/` (A as `portrait-<n>`, E as `mandala-<n>`), `square/` (D), `landscape/` (C as `landscape-<n>`, F as `wide-<n>`).
 
 ## Backgrounds `renders/`
 
