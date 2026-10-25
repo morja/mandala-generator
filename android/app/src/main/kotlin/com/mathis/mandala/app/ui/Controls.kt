@@ -429,7 +429,7 @@ private fun backgroundName(type: BaseLayerType) = when (type) {
 }
 
 /**
- * The effects layer over the whole image, switched on in its heading; the quick, reliable sliders in
+ * Scene effects behind the text, switched on inside the section; the quick, reliable sliders in
  * four groups and the rarer ones under "More" (TUNE-1). "Fade" sets the `wash` field; the old `fade`
  * field does almost the same and gets its own slider ("Old fade") only in settings that use it.
  * The die in the heading moves highlights, dimming, erasure, stars and glitter to new places, as the

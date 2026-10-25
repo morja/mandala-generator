@@ -324,6 +324,13 @@ object MandalaRenderer {
                 progress.above(RenderProgress.EMBLEM)
             }
 
+            // Finish the scene before text, so its letters and own effects remain independent.
+            if (params.effectsLayer.isEnabled) {
+                checkpoint()
+                composite = EffectsLayer(par, fx).apply(composite, params.effectsLayer)
+                progress.above(RenderProgress.EFFECTS)
+            }
+
             if (text) {
                 val textRenderer = options.textRenderer
                 if (textRenderer == null) {
@@ -339,11 +346,6 @@ object MandalaRenderer {
                     composite = TextLayer(par, textRenderer).apply(composite, params.textLayer, frame)
                     progress.above(RenderProgress.TEXT)
                 }
-            }
-            if (params.effectsLayer.isEnabled) {
-                checkpoint()
-                composite = EffectsLayer(par, fx).apply(composite, params.effectsLayer)
-                progress.above(RenderProgress.EFFECTS)
             }
 
             checkpoint()

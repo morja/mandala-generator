@@ -22,3 +22,4 @@ ADR-0001 to ADR-0008 were written for the Android repository before both apps mo
 | [0014](0014-pro-wallpapers-and-finish.md) | Pro wallpapers and a finishing step | accepted |
 | [0015](0015-iphone-app.md) | iPhone app on the shared Kotlin core | proposed |
 | [0016](0016-one-pro-line.md) | One line between free and Pro for Android and iPhone | accepted |
+| [0017](0017-text-after-scene-effects.md) | Text above the finished scene | accepted |

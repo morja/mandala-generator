@@ -47,6 +47,42 @@ class TextLayerTest {
     }
 
     @Test
+    fun sceneSmootherLeavesTextOnBlackExactlyAsSharpAsBefore() {
+        val textOnly = MandalaParameters(
+            layers = emptyList(),
+            textLayer = TextLayerSettings(isEnabled = true, text = "Keep this clear.", showAuthor = false,
+                fontSize = 0.15, hue = 0.6, saturation = 0.7, brightness = 0.6),
+            effectsLayer = EffectsLayerSettings(isEnabled = false, vignette = 0.0, smoother = 1.0),
+        )
+        for (supersample in listOf(false, true)) {
+            val options = RenderOptions(outputSize = 256, supersample = supersample, threads = 2, textRenderer = BoxRenderer())
+            val sharp = MandalaRenderer.render(textOnly, options).image
+            val smoothed = MandalaRenderer.render(textOnly.copy(effectsLayer = textOnly.effectsLayer.copy(isEnabled = true)), options).image
+            assertTrue(sharp.data.contentEquals(smoothed.data), "Scene Smoother changed text, supersampling=$supersample")
+        }
+    }
+
+    @Test
+    fun textAndItsOwnEffectsAreCompositedAfterTheFinishedScene() {
+        val scene = params.copy(
+            textLayer = params.textLayer.copy(glow = 0.4, shadowOpacity = 0.5, cloudOpacity = 0.25,
+                cloudBrightness = 0.1, blur = 0.3),
+            effectsLayer = EffectsLayerSettings(isEnabled = true, smoother = 1.0, sepia = 0.7,
+                grain = 0.2, relief = 0.3, chromatic = 0.4, bloom = 0.5, stars = 0.15),
+        )
+        val options = RenderOptions(outputSize = 256, supersample = false, threads = 2, textRenderer = BoxRenderer())
+        val background = MandalaRenderer.render(scene.copy(textLayer = scene.textLayer.copy(isEnabled = false)), options).image
+        val expected = Parallel(2).use { par ->
+            TextLayer(par, BoxRenderer()).apply(background, scene.textLayer, TextFrame(0f, 0f, 256, 256, 256))
+        }
+        val shares = mutableListOf<Double>()
+        val actual = MandalaRenderer.render(scene, options.copy(onProgress = { shares += it })).image
+        assertTrue(expected.data.contentEquals(actual.data), "Scene effects were applied to the text or its own effects")
+        assertEquals(1.0, shares.last())
+        assertTrue(shares.zipWithNext().all { (a, b) -> b > a }, "Render progress went backwards: $shares")
+    }
+
+    @Test
     fun warnsWithoutATextRenderer() {
         val result = MandalaRenderer.render(params, RenderOptions(outputSize = 128, threads = 1))
         assertTrue(result.warnings.any { "text" in it.lowercase() })
