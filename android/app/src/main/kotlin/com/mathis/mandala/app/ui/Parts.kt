@@ -13,10 +13,12 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -53,6 +55,7 @@ import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import com.mathis.mandala.app.ui.theme.LocalTokens
+import com.mathis.mandala.app.ui.theme.Radius
 import com.mathis.mandala.app.ui.theme.Sizes
 import com.mathis.mandala.app.ui.theme.Spacing
 import com.mathis.mandala.app.Editing
@@ -68,8 +71,8 @@ import kotlin.math.roundToInt
 /**
  * A foldable group: a heading row (tap to open or close) with an optional summary of the current
  * value and an optional control on the right, such as an on/off switch. A nested group has the smaller
- * heading and no divider; one that sits inside another group's content is also `inset` as a whole,
- * heading and content, so it reads as part of its parent and not as the next group at the same level.
+ * heading and no divider. Inset groups sit inside a parent as separate outlined sections. Their
+ * headings and controls share a container, so the next section cannot read as another slider.
  */
 @Composable
 internal fun Group(
@@ -87,18 +90,29 @@ internal fun Group(
 ) {
     val t = LocalTokens.current
     var open by openState
-    Column(Modifier.fillMaxWidth().then(if (inset) Modifier.padding(start = Spacing.lg) else Modifier)) {
+    val shape = RoundedCornerShape(Radius.sm)
+    val section = if (inset) Modifier
+        .padding(start = Spacing.lg, top = Spacing.sm)
+        .clip(shape)
+        .background(t.surface)
+        .border(Sizes.swatchRing, t.outline, shape)
+        .padding(horizontal = Spacing.sm)
+    else Modifier
+    Column(Modifier.fillMaxWidth().then(section)) {
         Row(
             Modifier
                 .fillMaxWidth()
+                .then(if (inset) Modifier.heightIn(min = Sizes.swatch + Spacing.md) else Modifier)
                 .clickable(onClickLabel = if (open) "Close $title" else "Open $title") { open = !open }
                 .semantics { stateDescription = if (open) "Open" else "Closed" }
-                .padding(vertical = if (nested) Spacing.xs else Spacing.sm),
+                .padding(vertical = if (nested && !inset) Spacing.xs else Spacing.sm),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Icon(if (open) EditorIcons.Less else EditorIcons.Expand, contentDescription = null, tint = t.textMuted)
-            Spacer(Modifier.width(Spacing.sm))
-            Text(title, style = if (nested) MaterialTheme.typography.labelLarge else MaterialTheme.typography.titleSmall)
+            if (!inset) {
+                Icon(if (open) EditorIcons.Less else EditorIcons.Expand, contentDescription = null, tint = t.textMuted)
+                Spacer(Modifier.width(Spacing.sm))
+            }
+            Text(title, style = if (nested && !inset) MaterialTheme.typography.labelLarge else MaterialTheme.typography.titleSmall)
             Text(
                 summary.orEmpty(),
                 style = MaterialTheme.typography.bodySmall,
@@ -108,8 +122,18 @@ internal fun Group(
                 modifier = Modifier.weight(1f).padding(horizontal = Spacing.sm),
             )
             trailing?.invoke()
+            if (inset) Icon(if (open) EditorIcons.Less else EditorIcons.Expand, contentDescription = null, tint = t.textMuted)
         }
-        if (open) Column(Modifier.padding(bottom = if (divider) Spacing.sm else Spacing.xs), content = content)
+        if (open) {
+            if (inset) HorizontalDivider(color = t.outline)
+            Column(
+                Modifier.padding(
+                    top = if (inset) Spacing.sm else Spacing.xs,
+                    bottom = if (inset) Spacing.md else if (divider) Spacing.sm else Spacing.xs,
+                ),
+                content = content,
+            )
+        }
         if (divider) HorizontalDivider(color = t.outline)
     }
 }

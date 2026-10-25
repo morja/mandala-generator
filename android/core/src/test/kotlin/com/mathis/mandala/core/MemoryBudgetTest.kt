@@ -23,7 +23,7 @@ class MemoryBudgetTest {
         val hand = """"drawingLayer":{"isEnabled":true,"symmetry":16,"glowIntensity":1,"strokeWeight":1,"strokes":[{$stroke}]},""" +
             """"graffitiLayer":{"isEnabled":true,"symmetry":16,"softness":1,"strokes":[{$stroke,"brushSize":0.2}]},""" +
             """"emblemLayer":{"isEnabled":true,"motif":"treeOfLife","branching":1,"organic":1,"frame":"lotus","size":1,"glow":1,"blendMode":"normal"}"""
-        """{"layers":[${layers.joinToString(",")}],"baseLayer":{"isEnabled":true,"type":"gradient"},"effectsLayer":{"isEnabled":true,"vignette":0.3,"bloom":0.5,"localContrast":0.3,"relief":0.4,"grain":0.3,"stars":0.3,"glitter":0.3,"dimming":0.3,"highlights":0.3},$hand}"""
+        """{"layers":[${layers.joinToString(",")}],"baseLayer":{"isEnabled":true,"type":"gradient"},"effectsLayer":{"isEnabled":true,"vignette":0.3,"bloom":0.5,"localContrast":0.3,"smoother":1,"relief":0.4,"grain":0.3,"stars":0.3,"glitter":0.3,"dimming":0.3,"highlights":0.3},$hand}"""
     }
 
     @Test

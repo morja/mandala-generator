@@ -461,6 +461,7 @@ private fun EffectsGroup(
         Group("Texture", nested = true, inset = true) {
             ValueSlider("Clarity", fx.localContrast, default = EffectsLayerSettings().localContrast) { v -> update { it.copy(localContrast = v) } }
             ValueSlider("Grain", fx.grain, Editing.Ranges.effectsGrain.floats(), default = EffectsLayerSettings().grain) { v -> update { it.copy(grain = v) } }
+            ValueSlider("Smoother", fx.smoother, default = EffectsLayerSettings().smoother) { v -> update { it.copy(smoother = v) } }
         }
         Group("Sparkle", nested = true, inset = true) {
             ValueSlider("Stars", fx.stars, default = EffectsLayerSettings().stars) { v -> update { it.copy(stars = v) } }

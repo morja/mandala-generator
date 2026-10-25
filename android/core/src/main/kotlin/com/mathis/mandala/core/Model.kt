@@ -148,6 +148,7 @@ data class EffectsLayerSettings(
     val grain: Double = 0.0,
     val glitter: Double = 0.0,
     val localContrast: Double = 0.0,
+    val smoother: Double = 0.0,
     val dimmingSeed: ULong = 11uL,
     val erasureSeed: ULong = 22uL,
     val highlightsSeed: ULong = 33uL,
