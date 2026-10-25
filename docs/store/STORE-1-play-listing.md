@@ -93,6 +93,18 @@ Since 23 October 2026 the listing exists in seven languages: English (default), 
 
 The Reddit and launch plan is [MKT-1](../MKT-1-reddit-and-launch-plan.md).
 
+## Release notes for 1.6.0 (code 12)
+
+Prepared 25 October 2026 from the tested `codex/effect-sections-smoother` worktree. Changes: consistent editor sections and spacing, inline style previews and clearer selection, labelled Seed/Variation actions, consistent dice colours, Smoother, and text above Scene effects (ADR-0017). Signed release bundle and production submission are prepared through the existing Play API workflow.
+
+English:
+
+> A clearer editor with consistent sections, more space around controls and a small preview for every style. The selected style and dice are easier to spot. New Smoother softens the artwork while text stays clear above scene effects. Seed and Variation buttons now explain what they change.
+
+German:
+
+> Der Editor ist übersichtlicher: einheitliche Abschnitte, mehr Platz an den Reglern und eine kleine Vorschau für jeden Stil. Auswahl und Würfel sind deutlicher markiert. Neu: Smoother zeichnet das Motiv weich, während Text über den Szenen-Effekten klar bleibt. Seed und Variation zeigen verständlicher, was sie verändern.
+
 ## Release notes for 1.5.1 (code 11)
 
 **Released to production on 24 October 2026** through the API (`docs/store/play/play_release.py`). Git tag `android-v1.5.1`. Fix: the live wallpaper's check for a new mandala every three seconds restarted a first render that took longer than that, so the wallpaper could stay black (commit `b5d9f77`). The app now also renders the image first, with its progress showing, and opens Android's preview only then, which shows the mandala at once (`193b8a4`). Tested on the phone with uncached mandalas.

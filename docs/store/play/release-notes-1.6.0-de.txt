@@ -1,0 +1,1 @@
+Der Editor ist übersichtlicher: einheitliche Abschnitte, mehr Platz an den Reglern und eine kleine Vorschau für jeden Stil. Auswahl und Würfel sind deutlicher markiert. Neu: Smoother zeichnet das Motiv weich, während Text über den Szenen-Effekten klar bleibt. Seed und Variation zeigen verständlicher, was sie verändern.
