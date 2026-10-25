@@ -122,8 +122,8 @@ html, body { margin: 0; background: var(--bg); color: var(--fg); font-family: va
 </style>
 </head>
 <script>
-// The texts come from texts/<name>.js (?t=<name>, default "friends"), loaded before the page script runs.
-const TEXT_NAME = (new URLSearchParams(location.search).get("t") || "friends").replace(/[^a-z0-9-]/gi, "");
+// The texts come from texts/<name>.js (?t=<name>, default "default"), loaded before the page script runs.
+const TEXT_NAME = (new URLSearchParams(location.search).get("t") || "default").replace(/[^a-z0-9-]/gi, "");
 document.write(`<script src="texts/${TEXT_NAME}.js"><\/script><script src="renders/story-list.js"><\/script>`);
 </script>
 </head>
@@ -200,7 +200,7 @@ const SHOT = n => `../store/screenshots/phone-${n}.png`;
 const ICON = "../store/play-icon-512.png";
 
 const params = new URLSearchParams(location.search);
-const v = params.get("v"), lang = params.get("lang") || "en", t = params.get("t") || "friends", setIndex = Math.max(0, (parseInt(params.get("s") || "1", 10) || 1) - 1), seq = Math.max(1, parseInt(params.get("seq") || "1", 10) || 1);
+const v = params.get("v"), lang = params.get("lang") || "en", t = params.get("t") || "default", setIndex = Math.max(0, (parseInt(params.get("s") || "1", 10) || 1) - 1), seq = Math.max(1, parseInt(params.get("seq") || "1", 10) || 1);
 
 function title() { return `<h1 class="title">Dahlia<small>Mandala Maker</small></h1>`; }
 function phone(n) { return `<div class="phone"><img src="${SHOT(n)}" alt=""></div>`; }
@@ -334,7 +334,7 @@ if (params.get("list")) {
   variants.addEventListener("click", e => { if (e.target.dataset.v) { cur = e.target.dataset.v; show(); } });
   langs.addEventListener("click", e => { if (e.target.dataset.lang) { curLang = e.target.dataset.lang; show(); } });
   sets.addEventListener("click", e => { if (e.target.dataset.set) { curSet = parseInt(e.target.dataset.set, 10); show(); } });
-  document.getElementById("text").addEventListener("change", e => { curText = e.target.value.replace(/[^a-z0-9-]/gi, "") || "friends"; show(); });
+  document.getElementById("text").addEventListener("change", e => { curText = e.target.value.replace(/[^a-z0-9-]/gi, "") || "default"; show(); });
   addEventListener("resize", show);
   show();
 }

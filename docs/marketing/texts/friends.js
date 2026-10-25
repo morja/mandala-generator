@@ -1,6 +1,6 @@
-// Text set "friends-story": the narrative series for WhatsApp and Instagram stories (24 October 2026).
+// Text set "friends": a second set of lines (Mathis, 25 October 2026) for WhatsApp and Instagram stories (24 October 2026).
 // The sequence tells it in order: building an app, what it draws, a pause, the lock screen, the reveal.
-// Same structure as friends.js: copy, change the lines, run render-share-images.sh friends-story.
+// Render with render-share-images.sh friends.
 // Fixed lines since 24 October 2026 (combination 1), so images from different sequences can be mixed freely;
 // a list may still hold alternatives (story 1 takes the first, story 2 the second, and so on).
 window.MKT_TEXT = {

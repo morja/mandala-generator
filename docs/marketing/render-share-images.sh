@@ -1,19 +1,19 @@
 #!/bin/sh
 # Renders the share images of MKT-2-share-images.html with headless Google Chrome (the Inter font must be
 # installed) and ImageMagick. Run from anywhere:
-#   render-share-images.sh                     # text set "friends-story": the story sequences into a new dated folder
+#   render-share-images.sh                     # text set "default": the story sequences into a new dated folder
 #   render-share-images.sh <name>              # same for text set texts/<name>.js
-#   render-share-images.sh <name> proof        # proof run: only sequence 1, into stories/proof/ (overwritten)
-#   render-share-images.sh <name> all          # sequences (dated folder) plus the single images and the story pool
-#   render-share-images.sh <name> <variant>    # only that variant into its usual folder (portrait, story, landscape,
-#                                              # square, mandala, wide, teaser, wallpaper)
+#   render-share-images.sh proof               # proof run: only sequence 1, into stories/proof/ (overwritten)
+#   render-share-images.sh all                 # sequences (dated folder) plus the single images and the story pool
+#   render-share-images.sh <variant>           # only that variant into its usual folder (portrait, story, landscape,
+#                                              # square, mandala, wide, teaser, wallpaper); put the text set first for another set
 # Every run of the sequences gets its own folder share/<name>/stories/<date-time>/, so earlier runs stay.
 # Single images (portrait/, square/, landscape/, story/) are overwritten in place. Nothing else is deleted.
 # English only; LANGS="en de" adds German. The list of images and file names comes from the HTML (?list=1).
 set -eu
 cd "$(dirname "$0")"
-text="${1:-friends-story}"
-only="${2:-}"
+# Arguments: [text set] [proof | all | variant]; the text set may be left out ("render-share-images.sh proof").
+if [ -n "${1:-}" ] && [ ! -f "texts/$1.js" ] && [ -z "${2:-}" ]; then text="default"; only="$1"; else text="${1:-default}"; only="${2:-}"; fi
 run="$(date +%Y-%m-%d-%H%M)"
 [ "$only" != "proof" ] || run="proof"
 langs="${LANGS:-en}"

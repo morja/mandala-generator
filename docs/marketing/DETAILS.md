@@ -16,14 +16,14 @@ Style: ADR-0006 (near-black warm background, Inter, one amber accent). Safe zone
 
 ## Text sets `texts/<name>.js`
 
-`message`, `facts`, `link`, `mandala` for the single images; `teaser` as two lists (line 1, line 2; several entries are alternatives by sequence number); `wallpaper` for the lock screen card; `stories` as the sequence plan. `friends` holds the plain lines, `friends-story` the fixed narrative series ("Look what I've been working on." · "Another one. Made on my phone." · no text · "Decorate your lock screen." · app card).
+`message`, `facts`, `link`, `mandala` for the single images; `teaser` as two lists (line 1, line 2; several entries are alternatives by sequence number); `wallpaper` for the lock screen card; `stories` as the sequence plan. `default` holds the fixed narrative series ("Look what I've been working on." · "Another one. Made on my phone." · no text · "Decorate your lock screen." · app card).
 
 ## Script `render-share-images.sh`
 
 ```
 render-share-images.sh [text set] [proof | all | variant]
-LANGS="en de" render-share-images.sh friends-story     # German too (default English only)
-SHUFFLE=1 render-share-images.sh friends-story         # teaser backgrounds in random order
+LANGS="en de" render-share-images.sh             # German too (default English only)
+SHUFFLE=1 render-share-images.sh                 # teaser backgrounds in random order
 ```
 
 Without a second argument only the story sequences are rendered, into a new folder `share/<text set>/stories/<YYYY-MM-DD-HHMM>/`; `proof` renders sequence 1 into `stories/proof/`; `all` adds the single images and the story pool; a variant name renders just that variant. Single images and the pool are overwritten in place, run folders are never touched.
