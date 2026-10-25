@@ -20,5 +20,7 @@ The JSON field is `effectsLayer.smoother`, default 0 in both models. Old setting
 - Android `scripts/check` passes, including architecture rules and app unit tests.
 - New tests cover JSON round trips, disabled smoothing, fine detail across strip boundaries, and constant colours at the image edges.
 - All nine memory-budget tests pass under a 256 MB heap with Smoother at 1 in the existing heavy-effects setup, including the large portrait and landscape exports.
-- All Mac parity fixtures pass. New references rendered from the Mac: `fx-smoother` measures 52.09 dB; `fx-smoother-combined`, with Bloom, Clarity and Relief, measures 51.47 dB. Both keep the default 45 dB threshold.
+- All 93 Mac parity fixtures pass. New references rendered from the Mac: `fx-smoother` measures 52.09 dB; `fx-smoother-combined`, with Bloom, Clarity and Relief, measures 51.47 dB. Both keep the default 45 dB threshold.
 - Debug and Fast APKs build. The Fast app is installed on Mathis' phone for review.
+
+The phone layout was visually checked with Light open and the other groups closed, then with Texture open, in dark and light themes. The two-pane tablet layout was also checked in both themes without clipped labels or horizontal scrolling. Screenshots: [Light](images/tune-2/phone-light-section-dark.png), [Texture, dark](images/tune-2/phone-texture-dark.png), [Texture, light](images/tune-2/phone-texture-light.png), [Tablet, light](images/tune-2/tablet-light.png), [Tablet, dark](images/tune-2/tablet-dark.png).
