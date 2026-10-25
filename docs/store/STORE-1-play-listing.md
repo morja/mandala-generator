@@ -95,7 +95,9 @@ The Reddit and launch plan is [MKT-1](../MKT-1-reddit-and-launch-plan.md).
 
 ## Release notes for 1.6.0 (code 12)
 
-Prepared 25 October 2026 from the tested `codex/effect-sections-smoother` worktree. Changes: consistent editor sections and spacing, inline style previews and clearer selection, labelled Seed/Variation actions, consistent dice colours, Smoother, and text above Scene effects (ADR-0017). Signed release bundle and production submission are prepared through the existing Play API workflow.
+**Submitted to production on 25 October 2026** through the API (`docs/store/play/play_release.py`), with a full rollout (`completed`). Google Play accepted and committed the release; a fresh API read verified code 12, both release notes and the uploaded bundle hash. Public store availability remains subject to Google's review and propagation. Public source tag: `android-v1.6.0` at `cbc4321f28ab37854435d637eb568a7413dd8a05`.
+
+Changes: consistent editor sections and spacing, inline style previews and clearer selection, labelled Seed/Variation actions, consistent dice colours, Smoother, and text above Scene effects (ADR-0017). Validation: `android/scripts/check-full` (including parity and release build), signed `bundleRelease`, package/version/debuggability checks and upload-certificate verification. Bundle SHA-256: `9594c41724a5d361a9f1794032e247e787c531664aa0112471ed9e52bffd91e4`.
 
 English:
 
