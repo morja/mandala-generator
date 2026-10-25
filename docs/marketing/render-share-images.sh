@@ -19,6 +19,12 @@ langs="${LANGS:-en}"
 chrome="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
 timeout="$(command -v gtimeout || command -v timeout)" || { echo "needs GNU timeout (brew install coreutils)" >&2; exit 1; }
 page="file://$(pwd)/MKT-2-share-images.html"
+# Teaser backgrounds come from two folders: renders/story/ (a line goes under the image) and
+# renders/story-quote/ (the image carries its own text, no line). Every JPEG there is used; this
+# writes the list the HTML reads. SHUFFLE=1 puts them in random order for this run.
+names() { ls "$1" 2>/dev/null | sed -n -E 's/\.jpe?g$//p' | { if [ "${SHUFFLE:-}" = 1 ]; then sort -R; else sort; fi; } | sed 's/.*/"&"/' | paste -sd, -; }
+printf 'window.MKT_TEASERS = { plain: [%s], quote: [%s] };\n' "$(names renders/story)" "$(names renders/story-quote)" > renders/story-list.js
+cat renders/story-list.js
 list=$("$chrome" --headless=new --disable-gpu --dump-dom "$page?list=1" 2>/dev/null | grep -o 'IMG [^<]*' | cut -c5-)
 [ -n "$list" ] || { echo "could not read the image list from the HTML" >&2; exit 1; }
 echo "$list" | while read -r name i w h lang seq file; do

@@ -8,7 +8,7 @@ One HTML file, two jobs. Opened without parameters it is the viewer with a switc
 
 Variants: A portrait 1080 × 1350 (phone in a mandala halo), B story 1080 × 1920 (app with title and link), C landscape 1920 × 1080 (three phones and a QR code to the Play page), D square 1080 × 1080, E mandala portrait 1080 × 1350 (one large mandala, no screenshot), F wide 1920 × 1080 (one or two phones, large text), G teaser story 1080 × 1920 (the mandala alone with one line or none), H wallpaper story 1080 × 1920 (lock screen on the phone).
 
-Image sets (`SETS`): which screenshots (`../store/screenshots/phone-<n>.png`) and which background (`renders/<art>.jpg`) each variant uses. Teaser mandalas: `TEASERS_PLAIN` are rendered with line 1, line 2 and without text (file name `…-1`, `…-2`, `…-0`); `TEASERS_QUOTE` carry their own quote and are rendered once, without a line.
+Image sets (`SETS`): which screenshots (`../store/screenshots/phone-<n>.png`) and which background (`renders/<art>.jpg`) each variant uses. Teaser mandalas are not listed in the HTML: the script writes `renders/story-list.js` from the folders `renders/story/` (rendered with line 1, line 2 and without text, file names `…-1`, `…-2`, `…-0`) and `renders/story-quote/` (own text, rendered once without a line) before every run, alphabetically or with `SHUFFLE=1` in random order; the HTML reads that list.
 
 Story sequences (`stories` in the text set, `count` and `steps`): `teaser:1` and `teaser:2` take a plain mandala with that line, `teaser:0` prefers a quote mandala, `wallpaper` the lock screen card, `app` the app card; nothing repeats within a sequence, the app card skips the lock screen screenshot when the sequence has a wallpaper card, lines with alternatives rotate by sequence number.
 
@@ -30,6 +30,8 @@ Renders with headless Google Chrome (Inter font must be installed; the landscape
 Output layout per text set: `stories/story-<n>-<lang>/` (sequences), `story/` (the whole pool: `1-teaser-<mandala>-<1|2|0>`, `2-wallpaper-<n>`, `3-app-<n>`), `portrait/` (A as `portrait-<n>`, E as `mandala-<n>`), `square/` (D), `landscape/` (C as `landscape-<n>`, F as `wide-<n>`).
 
 ## Backgrounds `renders/`
+
+Teaser backgrounds live in `renders/story/` and `renders/story-quote/` (any JPEG there is used); the backgrounds of the other variants are the named files `<mandala>-portrait|landscape|square.jpg` referenced in `SETS`.
 
 Rendered from the starter favourites (`android/app/src/main/assets/starter-favorites.json`, the `parameters` of one entry saved as a settings file) with the CLI `android/cli/build/install/mandala/bin/mandala render`: portrait `--width 1080 --height 1920 --zoom 1.15 --centre-y 0.40`, landscape `--width 1920 --height 1080 --zoom 0.52 --centre-x 0.72`, square `--size 1400`, teaser stories `--width 1080 --height 1920` with the centre at 0.5; saved as JPEG quality 92. Favourites with an image or gradient background show hard edges on non-square canvases, even rendered square and cropped (star, spiro, pyramid, maze); hypocycloid, Flower of Life, burst, ribbon, torus and the two quote ones work.
 

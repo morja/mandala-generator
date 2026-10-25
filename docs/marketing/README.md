@@ -29,9 +29,8 @@ Share images for Dahlia and the websites, and the record of what went out. The p
 
 ## Add a mandala as story background
 
-1. Save it as JPEG, 1080 × 1920, to `renders/story-<name>.jpg`.
-2. In `MKT-2-share-images.html`, add `<name>` to `TEASERS_PLAIN` (gets a line under it) or `TEASERS_QUOTE` (has its own quote, never gets a line).
-3. Proof, then full run, as above. The sequences pick the new mandala up by themselves.
+1. Drop it as JPEG, 1080 × 1920, into `renders/story/` (a line goes under it) or `renders/story-quote/` (the image carries its own text, so it never gets a line). The file name becomes part of the image names, so name it something like `lotus.jpg`.
+2. Proof, then full run, as above. Every image in those folders is used; the sequences spread them out by themselves. `SHUFFLE=1 docs/marketing/render-share-images.sh friends-story` puts them in random order for that run.
 
 Or ask Claude to render a starter favourite in that format; that is how the current ones were made.
 

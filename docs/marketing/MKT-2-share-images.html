@@ -124,7 +124,7 @@ html, body { margin: 0; background: var(--bg); color: var(--fg); font-family: va
 <script>
 // The texts come from texts/<name>.js (?t=<name>, default "friends"), loaded before the page script runs.
 const TEXT_NAME = (new URLSearchParams(location.search).get("t") || "friends").replace(/[^a-z0-9-]/gi, "");
-document.write(`<script src="texts/${TEXT_NAME}.js"><\/script>`);
+document.write(`<script src="texts/${TEXT_NAME}.js"><\/script><script src="renders/story-list.js"><\/script>`);
 </script>
 </head>
 <body>
@@ -135,8 +135,9 @@ const SIZES = { portrait: [1080, 1350], story: [1080, 1920], landscape: [1920, 1
 const LABELS = { portrait: "A · Portrait 4:5", story: "B · Story 9:16", landscape: "C · Landscape 16:9", square: "D · Square", mandala: "E · Mandala portrait", wide: "F · Wide 16:9, large", teaser: "G · Teaser story", wallpaper: "H · Wallpaper story" };
 // Image sets per variant: which screenshots (../store/screenshots/phone-<n>.png) and which background (renders/<art>.jpg).
 const H = "hypocycloid", F = "flower-of-life", R = "ribbon";
-// Teaser mandalas: plain ones take a line, the quote ones carry their own text and never get a line.
-const TEASERS_PLAIN = ["hypocycloid", "flower-of-life", "burst", "ribbon", "torus"], TEASERS_QUOTE = ["rumi-quote", "lotus-quote"];
+// Teaser mandalas come from renders/story/ (take a line) and renders/story-quote/ (own text, never a line);
+// render-share-images.sh writes renders/story-list.js from those folders before every run.
+const TEASERS_PLAIN = (window.MKT_TEASERS || {}).plain || [], TEASERS_QUOTE = (window.MKT_TEASERS || {}).quote || [];
 const TEASERS = TEASERS_PLAIN.concat(TEASERS_QUOTE);
 const SETS = {
   portrait:  [["1-layers", H], ["2-om-emblem", F], ["4-quote", R], ["3-wallpaper", H], ["7-new-mandala-preview", F]].map(([s, a]) => ({ shots: [s], art: a + "-portrait" })),
@@ -145,11 +146,11 @@ const SETS = {
   square:    [[["1-layers", "7-new-mandala-preview"], H], [["2-om-emblem", "4-quote"], F], [["3-wallpaper", "5-favourites"], R]].map(([s, a]) => ({ shots: s, art: a + "-square" })),
   mandala:   [H + "-square", R + "-portrait", F + "-square"].map(a => ({ shots: [], art: a })),
   wide:      [[["1-layers"], H], [["2-om-emblem", "4-quote"], F], [["3-wallpaper"], R], [["1-layers", "7-new-mandala-preview"], H]].map(([s, a]) => ({ shots: s, art: a + "-landscape" })),
-  // Teaser stories: full-bleed renders from renders/story-*.jpg, posted before the story variant B.
+  // Teaser stories: full-bleed renders from renders/story/ and renders/story-quote/, posted before the story variant B.
   // Plain mandalas three times: with the first teaser line, the second, and without text (name …-0);
   // quote mandalas once, without a line.
-  teaser:    TEASERS_PLAIN.flatMap(a => [1, 2, 0].map(n => ({ shots: [], art: "story-" + a, text: n, name: `${a}-${n}` })))
-               .concat(TEASERS_QUOTE.map(a => ({ shots: [], art: "story-" + a, text: 0, name: `${a}-0` }))),
+  teaser:    TEASERS_PLAIN.flatMap(a => [1, 2, 0].map(n => ({ shots: [], art: "story/" + a, text: n, name: `${a}-${n}` })))
+               .concat(TEASERS_QUOTE.map(a => ({ shots: [], art: "story-quote/" + a, text: 0, name: `${a}-0` }))),
   // Wallpaper story: the lock screen screenshot on the phone over a mandala, with a line from `wallpaper`.
   wallpaper: [H, F, R].map(a => ({ shots: ["3-wallpaper"], art: a + "-portrait" }))
 };
