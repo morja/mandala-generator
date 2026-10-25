@@ -243,6 +243,7 @@ class AppState: ObservableObject {
             mix(UInt64(Int(fx.contrast    * 1000)))
             mix(UInt64(Int(fx.relief      * 1000)))
             mix(UInt64(Int(fx.reliefAngle * 1000)))
+            mix(UInt64(Int(fx.smoother    * 1000)))
             mix(fx.dimmingSeed)
             mix(fx.erasureSeed)
             mix(fx.highlightsSeed)

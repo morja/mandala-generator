@@ -1209,6 +1209,15 @@ struct MandalaRenderer {
             }
         }
 
+        // Smoother softens detail without adding light. Repeat the edge pixels to avoid a dark rim.
+        // Apply before grain so intentional film texture stays visible over the softened image.
+        if settings.smoother > 0.001, let blur = CIFilter(name: "CIGaussianBlur") {
+            let radius = 12.0 * min(1.0, settings.smoother) * Double(min(ext.width, ext.height)) / 1600.0
+            blur.setValue(ci.clampedToExtent(), forKey: kCIInputImageKey)
+            blur.setValue(radius, forKey: kCIInputRadiusKey)
+            if let out = blur.outputImage?.cropped(to: ext) { ci = out }
+        }
+
         // ── Grain — film grain / analogue noise ──
         // The noise gets alpha 1 before and after the addition: with alpha 0 (as before October 2026)
         // the premultiplied noise was zero and grain did nothing on the Mac. Grain cells grow with
