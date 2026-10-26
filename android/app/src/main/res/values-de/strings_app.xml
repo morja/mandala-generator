@@ -95,4 +95,8 @@
     <string name="pro_unavailable">Pro kann hier gerade nicht gekauft werden. Es wird über Google Play verkauft.</string>
     <string name="pro_unlocked">Danke! Pro ist freigeschaltet.</string>
     <string name="pro_pending">Der Kauf steht noch aus. Pro wird freigeschaltet, sobald er bezahlt ist.</string>
+    <!-- Home screen widget (ADR-0020) -->
+    <string name="widget_label">Mandala des Tages</string>
+    <string name="widget_description">Der Favorit des Tages auf dem Startbildschirm. Quadratisch zeigt das Bild, breit dazu die Worte. Mit Pro jeden Morgen ein neuer.</string>
+    <string name="widget_empty">Füge in der App einen Favoriten hinzu, dann erscheint er hier.</string>
 </resources>

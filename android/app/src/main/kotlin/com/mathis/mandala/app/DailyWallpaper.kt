@@ -29,7 +29,9 @@ import kotlin.math.min
 
 /**
  * A new wallpaper every morning (ADR-0014, Pro): the favourites in turn, filled to the screen and
- * set as the pair, lock screen with the save sheet's finish, home screen darker.
+ * set as the pair, lock screen with the save sheet's finish, home screen darker. The same morning
+ * run moves the home screen widget on to the next favourite (ADR-0020), also while the daily
+ * wallpaper itself is off.
  */
 object DailyWallpaper {
     private const val JOB_ID = 2014
@@ -76,16 +78,49 @@ object DailyWallpaper {
 
     fun setOn(context: Context, on: Boolean) {
         prefs(context).edit().putBoolean(KEY_ON, on).apply()
-        if (on) schedule(context) else context.getSystemService(JobScheduler::class.java).cancel(JOB_ID)
+        if (on) schedule(context) else cancelIfIdle(context)
+    }
+
+    /** The morning run is needed while the daily wallpaper is on or a widget is on the home screen, with Pro. */
+    private fun needed(context: Context): Boolean =
+        ProPurchases.ownedOffline(context) && (isOn(context) || MandalaWidget.isPlaced(context))
+
+    /**
+     * Plans the run again when it is needed but none is waiting: Android drops planned jobs when the
+     * app is force-stopped or reinstalled, and a backup brings the switch back without its job.
+     */
+    fun ensureScheduled(context: Context) {
+        if (needed(context) && context.getSystemService(JobScheduler::class.java).getPendingJob(JOB_ID) == null) schedule(context)
+    }
+
+    /** Stops the morning run once neither the daily wallpaper nor a widget needs it. */
+    fun cancelIfIdle(context: Context) {
+        if (!needed(context)) context.getSystemService(JobScheduler::class.java).cancel(JOB_ID)
     }
 
     /**
-     * Plans the run again when the switch is on but no run is waiting: Android drops planned jobs when
-     * the app is force-stopped or reinstalled, and a backup brings the switch back without its job.
+     * Today's favourite, for the widget: the one whose turn it was last, or the first of the chosen
+     * ones before the first run. Without Pro it stays the first one (ADR-0020).
      */
-    fun ensureScheduled(context: Context) {
-        if (isOn(context) && context.getSystemService(JobScheduler::class.java).getPendingJob(JOB_ID) == null) schedule(context)
+    fun today(context: Context): Favorite? {
+        val favorites = FavoritesStore(File(context.filesDir, "favorites.json")).load()
+        val last = prefs(context).getString(KEY_LAST_ID, null)
+        if (ProPurchases.ownedOffline(context)) favorites.firstOrNull { it.id == last }?.let { return it }
+        return turn(favorites, chosen(context), 0)?.first
     }
+
+    /** Moves the turn on to the next favourite and remembers it; null when there is none. */
+    fun advance(context: Context): Favorite? {
+        val favorites = FavoritesStore(File(context.filesDir, "favorites.json")).load()
+        val prefs = prefs(context)
+        val (favourite, nextTurn) = turn(favorites, chosen(context), prefs.getInt(KEY_NEXT, 0)) ?: return null
+        prefs.edit().putInt(KEY_NEXT, nextTurn).putString(KEY_LAST_NAME, displayName(favourite)).putString(KEY_LAST_ID, favourite.id).apply()
+        return favourite
+    }
+
+    /** Unnamed favourites are called by their styles, as the menu calls the mandala. */
+    private fun displayName(favourite: Favorite): String =
+        favourite.name.ifEmpty { favourite.parameters.layers.filter { it.isEnabled }.joinToString(", ") { it.style.displayName } }
 
     /** Plans the next run for tomorrow morning (or this morning, before 4 o'clock). */
     fun schedule(context: Context, now: LocalDateTime = LocalDateTime.now()) {
@@ -121,17 +156,12 @@ object DailyWallpaper {
      */
     fun setNext(context: Context, threads: Int = Runtime.getRuntime().availableProcessors()): String? {
         if (!ProPurchases.ownedOffline(context)) return null
-        val favorites = FavoritesStore(File(context.filesDir, "favorites.json")).load()
-        if (favorites.isEmpty()) return null
-        val prefs = prefs(context)
-        val (favourite, nextTurn) = turn(favorites, chosen(context), prefs.getInt(KEY_NEXT, 0)) ?: return null
+        val favourite = advance(context) ?: return null
         val params: MandalaParameters = favourite.parameters
-        // Unnamed favourites are called by their styles, as the menu calls the mandala.
-        val name = favourite.name.ifEmpty { params.layers.filter { it.isEnabled }.joinToString(", ") { it.style.displayName } }
+        val name = displayName(favourite)
         if (LiveWallpaper.isActive(context)) {
             // The live wallpaper fades over to the next favourite itself; a still image would replace it.
             LiveWallpaper.setMandala(context, params)
-            prefs.edit().putInt(KEY_NEXT, nextTurn).putString(KEY_LAST_NAME, name).apply()
             return name
         }
         val choice = SaveChoiceStore(context).load()
@@ -148,7 +178,6 @@ object DailyWallpaper {
         ).image
         val home = Finish(brightness = choice.homeBrightness).apply(lock, threads)
         Wallpapers.setPair(context, lock, home)
-        prefs.edit().putInt(KEY_NEXT, nextTurn).putString(KEY_LAST_NAME, name).apply()
         return name
     }
 
@@ -169,18 +198,22 @@ object DailyWallpaper {
     private const val KEY_NEXT = "next"
     private const val KEY_LAST_NAME = "last_name"
     private const val KEY_CHOSEN = "chosen"
+    private const val KEY_LAST_ID = "last_id"
     private const val RETRY_MS = 15 * 60 * 1000L
 }
 
-/** Runs [DailyWallpaper.setNext] in the morning and plans the next day. */
+/** Runs [DailyWallpaper.setNext] (or only moves the turn on, for the widget) in the morning and plans the next day. */
 class DailyWallpaperJob : JobService() {
     private var scope: CoroutineScope? = null
 
     override fun onStartJob(params: JobParameters): Boolean {
-        if (!DailyWallpaper.isOn(this)) return false
+        val wallpaper = DailyWallpaper.isOn(this) && ProPurchases.ownedOffline(this)
+        val widget = MandalaWidget.isPlaced(this) && ProPurchases.ownedOffline(this)
+        if (!wallpaper && !widget) return false
         val s = CoroutineScope(SupervisorJob() + Dispatchers.Default).also { scope = it }
         s.launch {
-            runCatching { DailyWallpaper.setNext(applicationContext) }
+            runCatching { if (wallpaper) DailyWallpaper.setNext(applicationContext) else DailyWallpaper.advance(applicationContext) }
+            runCatching { MandalaWidget.refresh(applicationContext) }
             DailyWallpaper.schedule(applicationContext)
             jobFinished(params, false)
         }

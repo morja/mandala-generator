@@ -99,4 +99,8 @@
     <string name="pro_unavailable">Сейчас Pro здесь купить нельзя. Он продаётся через Google Play.</string>
     <string name="pro_unlocked">Спасибо! Pro разблокирован.</string>
     <string name="pro_pending">Покупка ожидает оплаты. Pro разблокируется после оплаты.</string>
+    <!-- Home screen widget (ADR-0020) -->
+    <string name="widget_label">Мандала дня</string>
+    <string name="widget_description">Мандала дня из избранного на главном экране. Квадратный виджет показывает изображение, широкий — ещё и слова. С Pro каждое утро новая.</string>
+    <string name="widget_empty">Добавьте мандалу в избранное в приложении, и она появится здесь.</string>
 </resources>
