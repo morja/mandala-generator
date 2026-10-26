@@ -496,8 +496,10 @@ private fun EffectsGroup(
         // Rarely changed, so last and closed; the summary says what the effects reach.
         val reach = listOfNotNull("Mandala", "emblem".takeIf { fx.affectsEmblem }, "text".takeIf { fx.affectsText })
         Group("Applies to", summary = reach.joinToString(", "), inset = true) {
-            SwitchRow("Emblem", fx.affectsEmblem) { on -> update { it.withEmblem(on) } }
-            SwitchRow("Text", fx.affectsText) { on -> update { it.withText(on) } }
+            Column(verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+                SwitchRow("Emblem", fx.affectsEmblem) { on -> update { it.withEmblem(on) } }
+                SwitchRow("Text", fx.affectsText) { on -> update { it.withText(on) } }
+            }
         }
     }
 }
