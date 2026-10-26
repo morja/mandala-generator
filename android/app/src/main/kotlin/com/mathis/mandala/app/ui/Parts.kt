@@ -116,7 +116,8 @@ internal fun Group(
     ) {
         Row(
             Modifier.fillMaxWidth()
-                .heightIn(min = Sizes.icon * 2)
+                // Unframed (the save sheet's Adjust) it is a lighter heading and takes less height.
+                .heightIn(min = if (framed) Sizes.icon * 2 else Sizes.icon + Spacing.md)
                 .clickable(onClickLabel = toggleLabel) { open = !open }
                 .semantics { stateDescription = state }
                 // Without a frame the heading lines up with the rows around it.
