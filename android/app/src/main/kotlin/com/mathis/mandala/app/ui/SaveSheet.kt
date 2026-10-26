@@ -62,6 +62,8 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.SubcomposeLayout
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.stateDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Constraints
@@ -230,7 +232,8 @@ internal fun SaveSheet(
                         }
                     }
                     SaveButton(
-                        stringResource(if (proOwned) R.string.save_video else R.string.save_video_pro_label), sizes, chosen, enabled = !busy,
+                        // The tab already says Video; the short label leaves room for the size.
+                        stringResource(if (proOwned) R.string.save_save else R.string.save_save_pro), sizes, chosen, enabled = !busy,
                         onSave = { onSaveVideo(large && proOwned, false) }, onSize = pick, modifier = Modifier.weight(1f),
                     )
                 } else Row(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
@@ -287,13 +290,17 @@ private fun LengthRow(seconds: Int, enabled: Boolean, onSeconds: (Int) -> Unit) 
     }
 }
 
-/** Square, This screen and the fixed ratios as one menu; the button names the chosen format. */
+/**
+ * Square, This screen and the fixed ratios as one menu. The button is titled "Format", not the chosen
+ * one (the frame shows that, the menu ticks it), so it keeps its width and the tabs beside it stay put.
+ */
 @Composable
 private fun FormatMenu(format: SaveFormat, onFormat: (SaveFormat) -> Unit) {
     var open by remember { mutableStateOf(false) }
+    val chosen = stringResource(format.label)
     Box {
-        OutlinedButton(colors = outlinedColors(), onClick = { open = true }) {
-            Text(stringResource(format.label), maxLines = 1)
+        OutlinedButton(colors = outlinedColors(), onClick = { open = true }, modifier = Modifier.semantics { stateDescription = chosen }) {
+            Text(stringResource(R.string.save_format), maxLines = 1)
             Icon(EditorIcons.Expand, contentDescription = null, modifier = Modifier.size(Sizes.icon))
         }
         DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
@@ -330,9 +337,10 @@ private fun SaveButton(label: String, sizes: List<String>, chosen: Int, enabled:
         }
         Box {
             Button(
-                onClick = { open = true }, enabled = enabled, modifier = Modifier.fillMaxHeight(),
+                // Narrower than a button's minimum, so the label beside it keeps its room.
+                onClick = { open = true }, enabled = enabled, modifier = Modifier.fillMaxHeight().width(Sizes.icon + Spacing.lg + Spacing.xs),
                 shape = RoundedCornerShape(topEndPercent = 50, bottomEndPercent = 50),
-                contentPadding = PaddingValues(horizontal = Spacing.sm),
+                contentPadding = PaddingValues(end = Spacing.xs),
             ) { Icon(EditorIcons.Expand, contentDescription = stringResource(R.string.save_choose_size)) }
             DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
                 for ((i, size) in sizes.withIndex()) {
@@ -369,17 +377,13 @@ private fun FrameWithFit(
             return w to (w * aspect).roundToInt()
         }
         // Tall frames (This screen, 9:16, 2:3) always keep the switch beside them, so it does not jump
-        // while "Adjust" opens. The frame stays centred, giving up the room on both sides, unless the
-        // height allows a larger one: then frame and switch are centred together.
+        // while "Adjust" opens; the frame gives up the room on both sides to stay centred.
         val side = if (showFit && aspect >= SIDE_FIT_ASPECT) subcompose("side") { fit(true) }.map { it.measure(Constraints()) } else emptyList()
         val besides = side.isNotEmpty()
-        val switchW = if (besides) side.maxOf { it.width } + gap else 0
-        val centred = frameSize(maxH, maxW - 2 * switchW)
-        val grouped = frameSize(maxH, maxW - switchW)
-        val (sideW, sideH) = if (grouped.second > centred.second) grouped else centred
+        val (sideW, sideH) = frameSize(maxH, if (besides) maxW - 2 * (side.maxOf { it.width } + gap) else maxW)
         if (!showFit || besides) {
             val shown = subcompose("frame", frame).map { it.measure(Constraints.fixed(sideW, sideH)) }
-            val x = if (grouped.second > centred.second) (maxW - sideW - switchW) / 2 else (maxW - sideW) / 2
+            val x = (maxW - sideW) / 2
             val y = (maxH - sideH) / 2
             layout(maxW, maxH) {
                 shown.forEach { it.place(x, y) }

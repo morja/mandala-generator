@@ -106,10 +106,10 @@
     <string name="save_still">画像</string>
     <string name="save_moving">動画</string>
     <string name="save_video_seconds">%1$d 秒</string>
-    <string name="save_video">動画を保存</string>
-    <string name="save_video_pro_label">動画を保存 · Pro</string>
     <string name="save_cancel">キャンセル</string>
     <string name="save_video_pro">回転するマンダラを動画として保存・共有するには Pro が必要です。</string>
     <string name="save_length">長さ</string>
     <string name="save_choose_size">サイズを選択</string>
+    <string name="save_format">形式</string>
+    <string name="save_save_pro">保存 · Pro</string>
 </resources>

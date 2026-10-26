@@ -108,10 +108,10 @@
     <string name="save_still">Picture</string>
     <string name="save_moving">Video</string>
     <string name="save_video_seconds">%1$d s</string>
-    <string name="save_video">Save video</string>
-    <string name="save_video_pro_label">Save video · Pro</string>
     <string name="save_cancel">Cancel</string>
     <string name="save_video_pro">Saving and sharing the turning mandala as a video comes with Pro.</string>
     <string name="save_length">Length</string>
     <string name="save_choose_size">Choose size</string>
+    <string name="save_format">Format</string>
+    <string name="save_save_pro">Save · Pro</string>
 </resources>
