@@ -63,6 +63,8 @@
     <!-- Live wallpaper sheet -->
     <string name="live_title">ライブ壁紙</string>
     <string name="live_intro">このマンダラが画面いっぱいに広がり、4分で1回転のペースでゆっくり回ります。動くのは画面が見えているときだけです。</string>
+    <string name="live_layered">レイヤーを個別に回転</string>
+    <string name="live_layered_note">レイヤーが互いに逆向きに回り、背景・エンブレム・テキスト・手描きは止まったままです。シーン効果は使われません。</string>
     <string name="live_breathing">呼吸: 明るさがゆっくり上下します</string>
     <string name="live_colour_drift">色の移ろい: 色がゆっくり変わります</string>
     <string name="live_palettes_in_turn">パレットの切り替え: 10分ごとに次のパレットへ移ります</string>

@@ -63,6 +63,8 @@
     <!-- Live wallpaper sheet -->
     <string name="live_title">Live wallpaper</string>
     <string name="live_intro">This mandala fills the screen and turns slowly, one turn in four minutes. It only moves while you see it.</string>
+    <string name="live_layered">Layers turn on their own</string>
+    <string name="live_layered_note">The layers turn against each other; background, emblem, text and drawing stay still. Scene effects are left out.</string>
     <string name="live_breathing">Breathing: brightness rises and falls</string>
     <string name="live_colour_drift">Colour drift: the colours turn slowly</string>
     <string name="live_palettes_in_turn">Palettes in turn: the next one fades in every ten minutes</string>

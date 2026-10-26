@@ -63,6 +63,8 @@
     <!-- Live wallpaper sheet -->
     <string name="live_title">动态壁纸</string>
     <string name="live_intro">此曼陀罗铺满屏幕并缓缓旋转，四分钟转一圈。只有在你看得见时才会转动。</string>
+    <string name="live_layered">各图层分别旋转</string>
+    <string name="live_layered_note">各图层相互反向旋转；背景、徽章、文字和手绘保持不动。场景效果不会应用。</string>
     <string name="live_breathing">呼吸：亮度起伏变化</string>
     <string name="live_colour_drift">色彩漂移：颜色缓缓变换</string>
     <string name="live_palettes_in_turn">轮换调色板：每十分钟渐变到下一个</string>

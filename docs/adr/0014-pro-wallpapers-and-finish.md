@@ -21,3 +21,5 @@ Status: accepted, 22 October 2026 (Mathis, [PLAN-3](../PLAN-3-pro-wallpapers.md)
 - Rendering takes seconds, so a live wallpaper can only move a finished image; rotation, brightness and hue are cheap on the graphics chip.
 
 *Since 26 October 2026 (Mathis, UX-1 13):* the daily wallpaper can take turns among chosen favourites only ("Favourites" on its menu page, a grid with ticks; all are ticked at first). The choice is kept by favourite id; a favourite added later joins once ticked, and when every chosen one is deleted, all take turns again.
+
+*Since 26 October 2026 (Mathis, to try):* the live wallpaper can turn its layers on their own ("Layers turn on their own" in its sheet, off by default). Each layer is rendered once on black and turned on the graphics chip with its blend mode (screen, add, lighten for normal, multiply), every second one the other way; background below and drawing, emblem and text above stay still, the top rendered at screen size so the words sit as in a still wallpaper. Scene effects are left out in this mode. Pictures at 0.6 of the diagonal, up to seven at once.

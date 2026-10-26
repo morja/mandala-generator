@@ -63,6 +63,8 @@
     <!-- Live wallpaper sheet -->
     <string name="live_title">Fond d\'écran animé</string>
     <string name="live_intro">Ce mandala remplit l\'écran et tourne lentement, un tour en quatre minutes. Il ne bouge que lorsque vous le voyez.</string>
+    <string name="live_layered">Les calques tournent séparément</string>
+    <string name="live_layered_note">Les calques tournent les uns contre les autres ; le fond, l\'emblème, le texte et le dessin restent immobiles. Les effets de scène sont omis.</string>
     <string name="live_breathing">Respiration : la luminosité monte et descend</string>
     <string name="live_colour_drift">Dérive des couleurs : les couleurs tournent lentement</string>
     <string name="live_palettes_in_turn">Palettes à tour de rôle : la suivante apparaît toutes les dix minutes</string>
