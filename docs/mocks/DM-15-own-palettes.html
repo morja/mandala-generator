@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DM-15 Eigene Paletten</title>
+<style>
+  :root {
+    --bg: #0A0908; --surface: #121110; --raised: #1B1917; --text: #E6E1DB; --muted: #9C948B;
+    --outline: #2E2A26; --accent: #D9A15C; --on-accent: #241605; --accent-soft: #2A2117; --error: #F2A39A; --canvas: #000;
+    --page: #161412;
+    --r-sm: 10px; --r-md: 14px; --s-xs: 4px; --s-sm: 8px; --s-md: 12px; --s-lg: 16px;
+    --swatch: 36px; --swatch-small: 24px;
+  }
+  :root[data-theme="light"] {
+    --bg: #F7F4EF; --surface: #FFFDFA; --raised: #EFEAE3; --text: #221F1C; --muted: #5F5851;
+    --outline: #CFC7BD; --accent: #8A5210; --on-accent: #fff; --accent-soft: #F3E3CF; --error: #B3261E; --page: #E9E4DC;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--page); color: var(--text); font: 15px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  header { padding: 16px; display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; }
+  header h1 { font-size: 17px; margin: 0 8px 0 0; font-weight: 600; }
+  .seg { display: inline-flex; border: 1px solid var(--outline); border-radius: 999px; overflow: hidden; }
+  .seg button { background: transparent; color: var(--text); border: 0; padding: 6px 14px; font: inherit; cursor: pointer; }
+  .seg button[aria-pressed="true"] { background: var(--accent-soft); color: var(--accent); }
+  main { display: flex; flex-wrap: wrap; gap: 24px; padding: 0 16px 32px; justify-content: center; }
+  figure { margin: 0; width: min(360px, 100%); }
+  figcaption { font-size: 14px; color: var(--muted); margin: 0 0 8px; }
+  figcaption b { color: var(--text); font-weight: 600; }
+  .phone { background: var(--bg); border-radius: 22px; padding: 14px 16px 20px; border: 1px solid var(--outline); overflow: hidden; }
+  .canvas { background: var(--canvas); border-radius: var(--r-sm); height: 150px; display: grid; place-items: center; margin-bottom: 10px; }
+  .canvas .m { width: 120px; height: 120px; border-radius: 50%; -webkit-mask: repeating-conic-gradient(#000 0 6deg, transparent 6deg 15deg), radial-gradient(circle, #000 0 30%, transparent 31% 38%, #000 39%); mask-composite: add; opacity: .95; }
+  .tabs { display: flex; justify-content: space-between; border-bottom: 1px solid var(--outline); margin: 0 0 12px; font-size: 14px; }
+  .tabs span { color: var(--accent); padding: 8px 2px 10px; }
+  .tabs .on { border-bottom: 3px solid var(--accent); }
+  .muted { color: var(--muted); font-size: 13px; }
+  .link { color: var(--accent); font-weight: 500; cursor: pointer; }
+  .group { border: 1px solid var(--outline); border-radius: var(--r-sm); background: var(--surface); margin-top: var(--s-sm); }
+  .group > .head { display: flex; align-items: center; gap: var(--s-sm); min-height: 46px; padding: 0 var(--s-sm) 0 var(--s-md); }
+  .group > .head b { font-weight: 600; }
+  .group > .head .chev { margin-left: auto; color: var(--muted); }
+  .group > .body { border-top: 1px solid var(--outline); padding: var(--s-md) var(--s-md) var(--s-md); }
+  .swatches { display: flex; flex-wrap: wrap; gap: var(--s-sm); }
+  .sw { width: var(--swatch); height: var(--swatch); border-radius: 50%; position: relative; cursor: pointer; }
+  .sw.sel { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .sw.add { border: 1.5px dashed var(--outline); display: grid; place-items: center; color: var(--accent); font-size: 22px; line-height: 1; }
+  .sub { display: flex; align-items: center; gap: var(--s-sm); margin: var(--s-md) 0 var(--s-sm); font-size: 13px; color: var(--muted); }
+  .sub::after { content: ""; flex: 1; height: 1px; background: var(--outline); }
+  .selrow { display: flex; align-items: center; gap: var(--s-md); margin-top: var(--s-md); min-height: 36px; }
+  .selrow .name { flex: 1; }
+  .icon { width: 22px; height: 22px; stroke: var(--accent); fill: none; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+  .btn { border: 1px solid var(--outline); border-radius: 999px; padding: 8px 14px; text-align: center; cursor: pointer; background: transparent; color: var(--text); font: inherit; }
+  .btn.main { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+  .btn.danger { color: var(--error); }
+  .hint { font-size: 12px; color: var(--muted); margin-top: 6px; }
+
+  /* sheet */
+  .sheet { background: var(--surface); border: 1px solid var(--outline); border-radius: 18px 18px 0 0; margin: 0 -16px -20px; padding: 8px 16px 18px; }
+  .grab { width: 36px; height: 4px; border-radius: 2px; background: var(--outline); margin: 0 auto 10px; }
+  .sheet h2 { font-size: 17px; font-weight: 600; margin: 0 0 10px; }
+  .field { border: 1px solid var(--outline); border-radius: 6px; padding: 10px 12px; position: relative; margin: 6px 0 14px; }
+  .field small { position: absolute; top: -9px; left: 10px; background: var(--surface); padding: 0 4px; color: var(--muted); font-size: 12px; }
+  .bar { height: 34px; border-radius: var(--r-sm); position: relative; }
+  .stops { position: relative; height: 34px; margin: 4px 0 6px; }
+  .stop { position: absolute; top: 4px; width: 26px; height: 26px; margin-left: -13px; border-radius: 50%; border: 2px solid var(--surface); box-shadow: 0 0 0 1px var(--outline); cursor: pointer; }
+  .stop.sel { box-shadow: 0 0 0 2px var(--accent); }
+  .stop.sel::before { content: ""; position: absolute; left: 50%; top: -10px; margin-left: -5px; border: 5px solid transparent; border-bottom-color: var(--accent); }
+  .sl { display: flex; align-items: center; gap: 10px; min-height: 40px; }
+  .sl .nm { width: 78px; font-size: 14px; }
+  .sl input { flex: 1; -webkit-appearance: none; appearance: none; height: 10px; border-radius: 5px; outline: none; }
+  .sl input::-webkit-slider-thumb { -webkit-appearance: none; width: 22px; height: 22px; border-radius: 50%; background: var(--surface); border: 2px solid var(--text); }
+  .sl input::-moz-range-thumb { width: 18px; height: 18px; border-radius: 50%; background: var(--surface); border: 2px solid var(--text); }
+  .tools { display: flex; gap: 8px; margin: 10px 0 4px; }
+  .tool { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px 4px; border-radius: var(--r-md); background: var(--raised); font-size: 13px; cursor: pointer; text-align: center; }
+  .foot { display: flex; gap: 8px; align-items: center; margin-top: 14px; }
+  .foot .grow { flex: 1; }
+
+  .menu { position: absolute; background: var(--raised); border: 1px solid var(--outline); border-radius: var(--r-sm); padding: 4px 0; min-width: 150px; z-index: 2; }
+  .menu div { padding: 9px 14px; font-size: 14px; }
+  .note { max-width: 760px; margin: 0 auto; padding: 0 16px 40px; color: var(--muted); font-size: 14px; }
+  .note h2 { font-size: 15px; color: var(--text); margin: 18px 0 4px; }
+  .note p, .note li { margin: 6px 0; }
+  .note b { color: var(--text); }
+</style>
+</head>
+<body>
+<header>
+  <h1>DM-15 Eigene Paletten</h1>
+  <div class="seg" id="theme">
+    <button aria-pressed="true" data-v="dark">Dunkel</button>
+    <button aria-pressed="false" data-v="light">Hell</button>
+  </div>
+</header>
+<main>
+  <figure>
+    <figcaption><b>1 · Palette-Gruppe</b> · eigene unter den eingebauten, Plus am Ende</figcaption>
+    <div class="phone">
+      <div class="canvas"><div class="m" id="m1"></div></div>
+      <div class="tabs"><span class="on">Ebenen</span><span>Szene</span><span>Emblem</span><span>Text</span><span>Zeichnen</span></div>
+      <div class="group"><div class="head"><b>Stil</b><span class="muted">Sunburst</span><span class="chev">⌄</span></div></div>
+      <div class="group">
+        <div class="head"><b>Palette</b><span class="muted" id="g1name">Abendrot</span><span class="chev">⌃</span></div>
+        <div class="body">
+          <div class="swatches" id="builtins"></div>
+          <div class="sub">Meine Paletten</div>
+          <div class="swatches" id="mine"></div>
+          <div class="selrow" id="selrow">
+            <span class="name" id="selname">Abendrot</span>
+            <span class="link" id="editlink">Bearbeiten</span>
+          </div>
+        </div>
+      </div>
+      <div class="group"><div class="head"><b>Überblendung</b><span class="muted">Screen · 1.00</span><span class="chev">⌄</span></div></div>
+    </div>
+  </figure>
+
+  <figure>
+    <figcaption><b>2 · Neue Palette</b> · startet mit den Farben der aktuellen Palette, Bild oben zeigt sie sofort</figcaption>
+    <div class="phone">
+      <div class="canvas"><div class="m" id="m2"></div></div>
+      <div class="sheet">
+        <div class="grab"></div>
+        <h2 id="sheettitle">Neue Palette</h2>
+        <div class="field"><small>Name</small><span id="nameval">Abendrot</span></div>
+        <div class="bar" id="bar"></div>
+        <div class="stops" id="stops"></div>
+        <div class="sl"><span class="nm">Farbton</span><input type="range" id="h" min="0" max="360"></div>
+        <div class="sl"><span class="nm">Sättigung</span><input type="range" id="s" min="0" max="100"></div>
+        <div class="sl"><span class="nm">Helligkeit</span><input type="range" id="v" min="0" max="100"></div>
+        <div class="tools">
+          <span class="tool" id="fromPic"><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="M12 4v5M12 15v5M4 12h5M15 12h5"/></svg>Aus dem Bild</span>
+          <span class="tool" id="addStop"><svg class="icon" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Farbe dazu</span>
+          <span class="tool" id="delStop"><svg class="icon" viewBox="0 0 24 24"><path d="M5 7h14M10 7V5h4v2M7 7l1 12h8l1-12"/></svg>Farbe weg</span>
+        </div>
+        <div class="hint">Farbe antippen zum Ändern, ziehen zum Verschieben. Zwei bis acht Farben.</div>
+        <div class="foot">
+          <span class="link" id="deletePal" style="visibility:hidden;color:var(--error)">Löschen</span>
+          <span class="grow"></span>
+          <button class="btn">Abbrechen</button>
+          <button class="btn main">Sichern</button>
+        </div>
+      </div>
+    </div>
+  </figure>
+
+  <figure>
+    <figcaption><b>3 · Favorit von einem anderen Gerät</b> · die Palette reist im Bild mit</figcaption>
+    <div class="phone">
+      <div class="canvas"><div class="m" id="m3"></div></div>
+      <div class="tabs"><span class="on">Ebenen</span><span>Szene</span><span>Emblem</span><span>Text</span><span>Zeichnen</span></div>
+      <div class="group">
+        <div class="head"><b>Palette</b><span class="muted">Meeresgrund</span><span class="chev">⌃</span></div>
+        <div class="body">
+          <div class="swatches" id="builtins3"></div>
+          <div class="sub">In diesem Bild</div>
+          <div class="swatches" id="foreign"></div>
+          <div class="selrow">
+            <span class="name">Meeresgrund</span>
+            <span class="link">Zu meinen Paletten</span>
+          </div>
+          <div class="hint">Gespeichert in einem Favoriten oder einer Datei, aber nicht in deinen Paletten.</div>
+        </div>
+      </div>
+    </div>
+  </figure>
+</main>
+
+<div class="note">
+  <h2>Was der Mock zeigt</h2>
+  <p><b>1</b> In der Gruppe „Palette“ (Ebenen, ebenso Emblem → Farbe) folgen nach den eingebauten Kreisen „Meine Paletten“ mit den eigenen Kreisen und einem gestrichelten Plus. Ist eine eigene gewählt, steht darunter ihr Name und „Bearbeiten“. Eigenen Kreis antippen wählt ihn, wie bei den anderen.</p>
+  <p><b>2</b> Plus öffnet den Editor als Blatt über den Steuerungen; das Bild oben zeigt die Palette sofort auf der Ebene. Start sind die Farben der gerade gewählten Palette (abwandeln ist der häufigste Weg). „Aus dem Bild“ ersetzt sie durch fünf Farben aus dem fertigen Bild, nach Helligkeit geordnet. Name, Farben, Löschen: alles im selben Blatt; „Bearbeiten“ öffnet es mit „Löschen“ links unten. Probier im Mock: Farbpunkt antippen, Regler bewegen, „Aus dem Bild“, „Bearbeiten“ in Bild 1.</p>
+  <p><b>3</b> Ein Favorit oder eine Datei mit fremder eigener Palette zeigt sie unter „In diesem Bild“, mit „Zu meinen Paletten“.</p>
+  <h2>Speicherung</h2>
+  <p>Eigene Paletten in einer eigenen Datei im Mac-Format (<code>palettes.json</code>: id, name, Farbstopps). In den Einstellungen einer Ebene ein neues Feld <code>customPalette</code> mit der vollen Palette; <code>paletteIndex</code> bleibt eine eingebaute Palette als Ersatz. Der Mac kennt das Feld nicht, ignoriert es und malt mit der Ersatzpalette.</p>
+</div>
+
+<script>
+  const seg = document.getElementById('theme');
+  seg.addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    seg.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+    document.documentElement.dataset.theme = b.dataset.v;
+  });
+
+  const BUILTIN = [
+    ["Psychedelic","rgb(255,0,127) 0%,rgb(255,114,0) 17%,rgb(216,255,0) 33%,rgb(0,255,153) 50%,rgb(0,178,255) 67%,rgb(153,0,255) 83%,rgb(255,0,127) 100%"],
+    ["Neon City","rgb(255,12,140) 0%,rgb(255,114,0) 25%,rgb(0,242,242) 50%,rgb(114,0,255) 75%,rgb(255,12,140) 100%"],
+    ["Tropical","rgb(0,127,76) 0%,rgb(0,216,153) 30%,rgb(242,224,12) 55%,rgb(255,102,12) 80%,rgb(255,25,114) 100%"],
+    ["Sunset","rgb(30,0,89) 0%,rgb(153,0,178) 22%,rgb(255,12,114) 45%,rgb(255,102,0) 65%,rgb(255,191,25) 85%,rgb(255,247,191) 100%"],
+    ["Lava","rgb(51,0,89) 0%,rgb(178,0,12) 20%,rgb(255,38,0) 45%,rgb(255,153,0) 70%,rgb(255,229,51) 90%,rgb(255,255,204) 100%"],
+    ["Gold","rgb(45,22,0) 0%,rgb(140,71,0) 20%,rgb(242,165,0) 45%,rgb(255,224,12) 65%,rgb(255,247,114) 82%,rgb(255,255,224) 100%"],
+    ["Earth","rgb(35,25,12) 0%,rgb(147,91,56) 28%,rgb(168,147,76) 52%,rgb(112,137,76) 76%,rgb(178,204,163) 100%"],
+    ["Toxic","rgb(0,10,0) 0%,rgb(0,76,5) 20%,rgb(12,242,0) 50%,rgb(165,255,0) 75%,rgb(234,255,127) 90%,rgb(255,255,216) 100%"],
+    ["Bio Glow","rgb(0,5,51) 0%,rgb(0,102,229) 25%,rgb(0,242,216) 50%,rgb(76,255,76) 75%,rgb(216,255,255) 100%"],
+    ["Ice","rgb(12,0,89) 0%,rgb(12,63,229) 30%,rgb(76,165,255) 60%,rgb(191,229,255) 85%,rgb(255,255,255) 100%"],
+    ["Cosmic","rgb(38,0,89) 0%,rgb(102,0,178) 25%,rgb(12,140,242) 50%,rgb(242,178,12) 75%,rgb(255,247,153) 100%"],
+    ["Aurora","rgb(0,12,51) 0%,rgb(0,216,114) 20%,rgb(0,242,229) 40%,rgb(89,102,255) 60%,rgb(216,0,229) 80%,rgb(255,102,178) 100%"],
+    ["Violet","rgb(51,0,102) 0%,rgb(178,0,216) 35%,rgb(255,38,165) 65%,rgb(255,165,229) 100%"],
+    ["Rose Quartz","rgb(56,15,40) 0%,rgb(204,84,122) 30%,rgb(255,168,158) 60%,rgb(237,198,234) 82%,rgb(255,239,234) 100%"],
+    ["Silver","rgb(15,15,17) 0%,rgb(91,94,102) 30%,rgb(168,173,183) 55%,rgb(219,221,226) 78%,rgb(255,249,239) 100%"],
+  ];
+  // HSB stops like the Mac's CustomPalette.
+  const hsv = (h, s, v) => { s /= 100; v /= 100; const f = n => { const k = (n + h / 60) % 6; return v - v * s * Math.max(0, Math.min(k, 4 - k, 1)); };
+    return `rgb(${Math.round(f(5) * 255)},${Math.round(f(3) * 255)},${Math.round(f(1) * 255)})`; };
+  const grad = stops => stops.slice().sort((a, b) => a.p - b.p).map(s => `${hsv(s.h, s.s, s.v)} ${Math.round(s.p * 100)}%`).join(',');
+  const mine = [
+    { name: "Abendrot", stops: [{p:0,h:265,s:90,v:25},{p:.35,h:330,s:85,v:85},{p:.7,h:20,s:90,v:100},{p:1,h:45,s:30,v:100}] },
+    { name: "Moos", stops: [{p:0,h:100,s:80,v:15},{p:.5,h:85,s:60,v:65},{p:1,h:60,s:25,v:95}] },
+  ];
+  let current = 0, sel = 1;
+  const foreign = { name: "Meeresgrund", stops: [{p:0,h:220,s:95,v:15},{p:.4,h:190,s:90,v:70},{p:.75,h:160,s:60,v:90},{p:1,h:60,s:15,v:100}] };
+
+  const mk = (g, cls = '') => { const d = document.createElement('span'); d.className = 'sw ' + cls; d.style.background = `conic-gradient(${g})`; return d; };
+  function fillBuiltins(id) { const el = document.getElementById(id); BUILTIN.forEach(([n, g]) => { const d = mk(g); d.title = n; el.appendChild(d); }); }
+  fillBuiltins('builtins'); fillBuiltins('builtins3');
+  const fo = mk(grad(foreign.stops), 'sel'); document.getElementById('foreign').appendChild(fo);
+  document.getElementById('m3').style.background = `conic-gradient(${grad(foreign.stops)})`;
+
+  function renderMine() {
+    const el = document.getElementById('mine'); el.innerHTML = '';
+    mine.forEach((p, i) => { const d = mk(grad(p.stops), i === current ? 'sel' : ''); d.title = p.name;
+      d.onclick = () => { current = i; sel = 0; renderAll(); }; el.appendChild(d); });
+    const add = document.createElement('span'); add.className = 'sw add'; add.textContent = '+'; add.title = 'Neue Palette';
+    add.onclick = () => openEditor(true); el.appendChild(add);
+    document.getElementById('selname').textContent = mine[current].name;
+    document.getElementById('g1name').textContent = mine[current].name;
+    document.getElementById('m1').style.background = `conic-gradient(${grad(mine[current].stops)})`;
+  }
+  function renderEditor() {
+    const p = mine[current], g = grad(p.stops);
+    document.getElementById('bar').style.background = `linear-gradient(90deg, ${g})`;
+    document.getElementById('m2').style.background = `conic-gradient(${g})`;
+    document.getElementById('nameval').textContent = p.name;
+    const st = document.getElementById('stops'); st.innerHTML = '';
+    p.stops.forEach((s, i) => { const d = document.createElement('span'); d.className = 'stop' + (i === sel ? ' sel' : '');
+      d.style.left = `calc(13px + ${s.p} * (100% - 26px))`; d.style.background = hsv(s.h, s.s, s.v);
+      d.onclick = () => { sel = i; renderAll(); }; st.appendChild(d); });
+    const s = p.stops[sel];
+    const H = document.getElementById('h'), S = document.getElementById('s'), V = document.getElementById('v');
+    H.value = s.h; S.value = s.s; V.value = s.v;
+    H.style.background = `linear-gradient(90deg, ${[0,60,120,180,240,300,360].map(h => hsv(h, s.s, s.v)).join(',')})`;
+    S.style.background = `linear-gradient(90deg, ${hsv(s.h, 0, s.v)}, ${hsv(s.h, 100, s.v)})`;
+    V.style.background = `linear-gradient(90deg, #000, ${hsv(s.h, s.s, 100)})`;
+  }
+  function renderAll() { renderMine(); renderEditor(); }
+  ['h', 's', 'v'].forEach(k => document.getElementById(k).addEventListener('input', e => { mine[current].stops[sel][k] = +e.target.value; renderAll(); }));
+  document.getElementById('fromPic').onclick = () => {
+    mine[current].stops = [{p:0,h:30,s:70,v:12},{p:.25,h:15,s:85,v:55},{p:.5,h:200,s:70,v:70},{p:.75,h:45,s:80,v:95},{p:1,h:40,s:15,v:100}]; sel = 2; renderAll(); };
+  document.getElementById('addStop').onclick = () => { const st = mine[current].stops; if (st.length >= 8) return;
+    const a = st[sel], b = st[Math.min(sel + 1, st.length - 1)]; st.splice(sel + 1, 0, { p: (a.p + b.p) / 2 || .5, h: a.h, s: a.s, v: a.v }); sel++; renderAll(); };
+  document.getElementById('delStop').onclick = () => { const st = mine[current].stops; if (st.length <= 2) return; st.splice(sel, 1); sel = Math.max(0, sel - 1); renderAll(); };
+  function openEditor(isNew) {
+    document.getElementById('sheettitle').textContent = isNew ? 'Neue Palette' : 'Palette bearbeiten';
+    document.getElementById('deletePal').style.visibility = isNew ? 'hidden' : 'visible';
+    if (isNew) { mine.push({ name: 'Meine Palette ' + (mine.length + 1), stops: JSON.parse(JSON.stringify(mine[current].stops)) }); current = mine.length - 1; sel = 0; }
+    renderAll();
+  }
+  document.getElementById('editlink').onclick = () => openEditor(false);
+  renderAll();
+</script>
+</body>
+</html>
