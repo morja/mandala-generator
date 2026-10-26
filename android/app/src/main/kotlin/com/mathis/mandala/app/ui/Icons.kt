@@ -36,8 +36,9 @@ object EditorIcons {
     val Moon = line("M19.5,14.5A8,8 0 0,1 9.5,4.5a8,8 0 1,0 10,10z", soft = "M19.5,14.5A8,8 0 0,1 9.5,4.5a8,8 0 1,0 10,10z")
     val Info = line("M12,3.5a8.5,8.5 0 1,0 0,17a8.5,8.5 0 1,0 0,-17zM12,11v5.5", soft = "M12,3.5a8.5,8.5 0 1,0 0,17a8.5,8.5 0 1,0 0,-17z",
         dots = dots(12 to 7.8f, radius = 0.9f))
-    /** The line drawing: a circle with two crossing lenses, a mandala in lines. */
-    val LineArt = line("M12,3.5a8.5,8.5 0 1,0 0,17a8.5,8.5 0 1,0 0,-17zM12,3.5C8.8,8 8.8,16 12,20.5C15.2,16 15.2,8 12,3.5zM3.5,12C8,8.8 16,8.8 20.5,12C16,15.2 8,15.2 3.5,12z")
+    /** The line drawing: a pen. */
+    val LineArt = line("M4,20l1.2,-4.6L15.5,5.1a2,2 0 0,1 2.8,0l0.6,0.6a2,2 0 0,1 0,2.8L8.6,18.8zM13.5,7.1l3.4,3.4",
+        soft = "M4,20l1.2,-4.6L15.5,5.1a2,2 0 0,1 2.8,0l0.6,0.6a2,2 0 0,1 0,2.8L8.6,18.8z")
     /** "More": two sliders. */
     val Tune = line("M4,7.5h8.5M17.5,7.5h2.5M4,16.5h2.5M11.5,16.5h8.5M15,5a2.5,2.5 0 1,0 0,5a2.5,2.5 0 1,0 0,-5zM9,14a2.5,2.5 0 1,0 0,5a2.5,2.5 0 1,0 0,-5z")
     val Chevron = line("M9,6l6,6 -6,6")

@@ -236,7 +236,7 @@ private fun NewMandala(onTryNew: (NewKind) -> Unit) {
 
 /** A menu line with an icon, a title, a line below it and a switch; the whole line switches. */
 @Composable
-private fun SwitchMenuRow(icon: ImageVector, title: String, subtitle: String, checked: Boolean, onChange: (Boolean) -> Unit) {
+private fun SwitchMenuRow(icon: ImageVector, title: String, subtitle: String?, checked: Boolean, onChange: (Boolean) -> Unit) {
     val t = LocalTokens.current
     Row(
         Modifier.fillMaxWidth().toggleable(value = checked, role = Role.Switch, onValueChange = onChange).padding(vertical = Spacing.md),
@@ -246,7 +246,7 @@ private fun SwitchMenuRow(icon: ImageVector, title: String, subtitle: String, ch
         Icon(icon, contentDescription = null, tint = t.textMuted)
         Column(Modifier.weight(1f)) {
             Text(title, style = MaterialTheme.typography.bodyLarge)
-            Text(subtitle, style = MaterialTheme.typography.bodySmall, color = t.textMuted)
+            if (subtitle != null) Text(subtitle, style = MaterialTheme.typography.bodySmall, color = t.textMuted)
         }
         Switch(checked = checked, onCheckedChange = null)
     }
@@ -296,7 +296,8 @@ private fun DailyPage(actions: MenuActions, onBack: () -> Unit) {
     PageTop(stringResource(R.string.menu_daily_wallpaper), stringResource(R.string.menu_daily_about), onBack)
     Column(Modifier.padding(top = Spacing.md)) {
         HorizontalDivider(color = t.outline)
-        SwitchMenuRow(EditorIcons.Wallpaper, stringResource(R.string.menu_daily_wallpaper), actions.dailySubtitle, actions.dailyOn, actions.onDaily)
+        // The page title names it already; the line says what is set now.
+        SwitchMenuRow(EditorIcons.Wallpaper, actions.dailySubtitle, null, actions.dailyOn, actions.onDaily)
     }
 }
 
