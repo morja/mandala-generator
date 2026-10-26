@@ -34,6 +34,7 @@ Layout and consistency
 17. **Text around the circle:** a quote set along a ring around the mandala, as a text layout next to the centred one.
 18. **History strip:** the states the editor keeps for undo as small pictures to jump back to, like the dice comparison in the menu.
 19. **Play field (Mathis, 26 October 2026):** a square under the picture where one finger, moved around, changes many of a layer's settings at once (top left one look, bottom right another), as a simpler mode, for example for children. Thoughts: two axes can only carry two values, so each corner would be a set of settings and the field blends between them; the corners could come from the dice (four variations of the current layer), so the field explores around what is there. Needs care that it stays one gesture and does not hide the normal controls.
+20. **Moving the text by touch** (Mathis, 26 October 2026): layers and the emblem can already be dragged, pinched and turned on the image ("Move on image" in their Position group); the text has only sliders, which were made for the Mac. Idea: "Move on image" for the text too. Perhaps also snapping to the centre and the centre lines (with a short guide line while it snaps), and dragging the selected part without first tapping "Move on image".
 
 ## Decisions (Mathis, 26 October 2026)
 
