@@ -159,7 +159,7 @@
 
     <!-- Text tab and quote list -->
     <string name="controls_random_text_look">Случайный вид текста</string>
-    <string name="controls_text_off_note">Цитата или ваши слова под мандалой, при желании с автором.</string>
+    <string name="controls_text_off_note">Цитата или ваши слова на изображении, при желании с автором.</string>
     <string name="controls_pro_note_text">Текст и цитаты доступны в Pro. Пробуйте сколько угодно; чтобы сохранить мандалу, нужен Pro.</string>
     <string name="controls_random_quote">Случайная цитата</string>
     <string name="controls_choose_quote">Выбрать цитату</string>
@@ -201,7 +201,6 @@
     <string name="controls_seed_description">Новое расположение, тот же стиль, палитра и настройки</string>
     <string name="controls_show_effects">Показать эффекты</string>
     <string name="controls_smoother">Сглаживание</string>
-    <string name="controls_seed">Сид</string>
     <string name="controls_applies_to">Применяется к</string>
     <string name="controls_reach_mandala">Мандала</string>
 </resources>

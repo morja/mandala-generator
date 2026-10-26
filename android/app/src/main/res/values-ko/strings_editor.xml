@@ -46,9 +46,11 @@
     <!-- Editor: favourites sheet -->
     <string name="editor_favourites_add">현재 만다라 추가</string>
     <string name="editor_favourites_empty">아직 즐겨찾기가 없습니다. 현재 만다라를 추가하거나, 파일 열기로 Mac 앱의 즐겨찾기 파일(favorites.json)을 여세요.</string>
-    <string name="editor_favourites_hint">탭하여 사용, 길게 눌러 삭제.</string>
+    <string name="editor_favourites_hint">탭하면 사용하고, 길게 누르면 선택해 삭제할 수 있습니다.</string>
     <string name="editor_favourite_description">즐겨찾기: %1$s</string>
     <string name="editor_favourite_delete">삭제</string>
+    <string name="editor_favourites_selected">선택됨: %d</string>
+    <string name="editor_favourites_cancel">취소</string>
 
     <!-- Wallpaper pair sheet -->
     <string name="pair_title">홈 화면 및 잠금 화면</string>

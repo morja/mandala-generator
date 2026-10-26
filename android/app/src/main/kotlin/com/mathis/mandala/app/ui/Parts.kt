@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
@@ -141,23 +142,33 @@ internal fun Group(
 
 /** A direct random action with a visible explanation of what changes. */
 @Composable
-internal fun RandomActionRow(label: String, summary: String, description: String, onClick: () -> Unit) {
+internal fun RandomActionRow(label: String, summary: String?, description: String, onClick: () -> Unit) {
     val t = LocalTokens.current
-    FilledTonalButton(
-        onClick = onClick,
+    // A plain row like the sliders around it, the die on the right where a slider ends.
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.fillMaxWidth().heightIn(min = Sizes.icon * 2)
+            .clip(RoundedCornerShape(Radius.sm))
+            .clickable(role = Role.Button, onClick = onClick)
             .semantics { contentDescription = description },
-        shape = RoundedCornerShape(Radius.sm),
-        colors = ButtonDefaults.filledTonalButtonColors(containerColor = t.accentSoft, contentColor = t.accent),
-        contentPadding = PaddingValues(horizontal = Spacing.md),
     ) {
-        Text(label, style = MaterialTheme.typography.labelLarge)
-        Text(summary, style = MaterialTheme.typography.bodySmall, color = t.textMuted,
+        Text(label, style = MaterialTheme.typography.bodyMedium)
+        Text(summary.orEmpty(), style = MaterialTheme.typography.bodySmall, color = t.textMuted,
             maxLines = 1, overflow = TextOverflow.Ellipsis,
             modifier = Modifier.weight(1f).padding(horizontal = Spacing.sm))
-        Icon(EditorIcons.DieOne, contentDescription = null)
+        Icon(EditorIcons.DieOne, contentDescription = null, tint = t.accent)
     }
 }
+
+/**
+ * Outlined buttons in the normal text colour: Material's default (onSurfaceVariant, our muted text) made
+ * them read as disabled next to a filled button.
+ */
+@Composable
+internal fun outlinedColors() = ButtonDefaults.outlinedButtonColors(contentColor = LocalTokens.current.text)
+
+@Composable
+internal fun outlinedIconColors() = IconButtonDefaults.outlinedIconButtonColors(contentColor = LocalTokens.current.text)
 
 /** A labelled on/off row; the whole row switches. */
 @Composable

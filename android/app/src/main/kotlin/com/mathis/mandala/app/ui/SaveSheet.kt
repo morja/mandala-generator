@@ -141,7 +141,7 @@ internal fun SaveSheet(
                     frame = { Frame(preview, aspect.toFloat(), framing, enabled = proOwned && !busy, saving = busy, onFraming = onFraming, onCentre = { onFill(false) }) },
                     fit = { vertical ->
                         if (aspect == 1.0) {
-                            OutlinedButton(onClick = { onFill(false) }, enabled = !busy) { Text(stringResource(R.string.save_reset)) }
+                            OutlinedButton(colors = outlinedColors(), onClick = { onFill(false) }, enabled = !busy) { Text(stringResource(R.string.save_reset)) }
                         } else {
                             FitToggle(preset, vertical, enabled = !busy, onFill = onFill)
                         }
@@ -465,7 +465,7 @@ private fun WallpaperButton(
 ) {
     var open by remember { mutableStateOf(false) }
     Box(modifier) {
-        OutlinedButton(onClick = { onOpen(); open = true }, enabled = enabled, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.save_wallpaper)) }
+        OutlinedButton(colors = outlinedColors(), onClick = { onOpen(); open = true }, enabled = enabled, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.save_wallpaper)) }
         DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
             for (target in WallpaperTarget.entries) {
                 DropdownMenuItem(text = { Text(stringResource(target.label)) }, onClick = { open = false; onWallpaper(target) })

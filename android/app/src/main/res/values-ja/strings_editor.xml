@@ -46,9 +46,11 @@
     <!-- Editor: favourites sheet -->
     <string name="editor_favourites_add">現在のものを追加</string>
     <string name="editor_favourites_empty">お気に入りはまだありません。現在のマンダラを追加するか、「ファイルを開く」でMacアプリのお気に入りファイル（favorites.json）を開いてください。</string>
-    <string name="editor_favourites_hint">タップで使用、長押しで削除します。</string>
+    <string name="editor_favourites_hint">タップで使用、長押しで選択して削除できます。</string>
     <string name="editor_favourite_description">お気に入り: %1$s</string>
     <string name="editor_favourite_delete">削除</string>
+    <string name="editor_favourites_selected">選択中: %d</string>
+    <string name="editor_favourites_cancel">キャンセル</string>
 
     <!-- Wallpaper pair sheet -->
     <string name="pair_title">ホーム画面とロック画面</string>

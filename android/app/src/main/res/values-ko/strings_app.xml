@@ -68,6 +68,7 @@
     <!-- Favourites, quotes and pictures -->
     <string name="message_favourite_added">즐겨찾기에 추가했습니다</string>
     <string name="message_favourite_deleted">즐겨찾기를 삭제했습니다</string>
+    <string name="message_favourites_deleted">삭제된 즐겨찾기: %d</string>
     <string name="message_quote_saved">내 명언에 저장했습니다</string>
     <string name="message_picture_failed">사진을 열 수 없습니다: %1$s</string>
 

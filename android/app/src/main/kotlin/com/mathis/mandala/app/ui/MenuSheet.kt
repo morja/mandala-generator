@@ -404,7 +404,7 @@ private fun Compare(image: ImageBitmap?, candidate: Candidate, actions: MenuActi
         }
     }
     Row(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
-        OutlinedButton(onClick = { actions.onTryNew(candidate.kind) }, modifier = Modifier.weight(1f)) {
+        OutlinedButton(colors = outlinedColors(), onClick = { actions.onTryNew(candidate.kind) }, modifier = Modifier.weight(1f)) {
             Icon(EditorIcons.DieThree, contentDescription = null, tint = t.accent, modifier = Modifier.padding(end = Spacing.sm))
             Text(stringResource(R.string.menu_try_another))
         }

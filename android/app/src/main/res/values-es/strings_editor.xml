@@ -46,9 +46,11 @@
     <!-- Editor: favourites sheet -->
     <string name="editor_favourites_add">Añadir actual</string>
     <string name="editor_favourites_empty">Aún no hay favoritos. Añade el mandala actual o abre el archivo de favoritos de la app para Mac (favorites.json) con Abrir archivo.</string>
-    <string name="editor_favourites_hint">Toca para usar; mantén pulsado para eliminar.</string>
+    <string name="editor_favourites_hint">Toca para usar, mantén pulsado para seleccionar y borrar.</string>
     <string name="editor_favourite_description">Favorito: %1$s</string>
     <string name="editor_favourite_delete">Eliminar</string>
+    <string name="editor_favourites_selected">Seleccionados: %d</string>
+    <string name="editor_favourites_cancel">Cancelar</string>
 
     <!-- Wallpaper pair sheet -->
     <string name="pair_title">Pantalla de inicio y de bloqueo</string>

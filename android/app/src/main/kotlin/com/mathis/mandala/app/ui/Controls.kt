@@ -351,7 +351,7 @@ private fun LayerControls(layer: StyleLayer, update: ((StyleLayer) -> StyleLayer
         ValueSlider(stringResource(R.string.controls_opacity), layer.opacity, default = StyleLayer().opacity) { v -> update { it.copy(opacity = v) } }
     }
     Group(stringResource(R.string.controls_shape), initiallyOpen = true) {
-        RandomActionRow(stringResource(R.string.controls_seed), stringResource(R.string.controls_seed_detail), stringResource(R.string.controls_seed_description), onReseed)
+        RandomActionRow(stringResource(R.string.controls_seed_detail), null, stringResource(R.string.controls_seed_description), onReseed)
         SteppedSlider(stringResource(R.string.controls_symmetry), layer.symmetry, 1..8, default = StyleLayer().symmetry) { v -> update { it.copy(symmetry = v) } }
         ValueSlider(stringResource(R.string.controls_scale), layer.scale, Editing.Ranges.layerScale.floats(), default = StyleLayer().scale) { v -> update { it.copy(scale = v) } }
         ValueSlider(stringResource(R.string.controls_complexity), layer.complexity, Editing.Ranges.layerComplexity(layer.style).floats(), default = StyleLayer().complexity) { v -> update { it.copy(complexity = v) } }
@@ -419,7 +419,7 @@ private fun BackgroundControls(
             return
         }
         BaseLayerType.IMAGE -> {
-            OutlinedButton(onClick = ::choose) { Text(stringResource(R.string.controls_choose_picture)) }
+            OutlinedButton(colors = outlinedColors(), onClick = ::choose) { Text(stringResource(R.string.controls_choose_picture)) }
             ValueSlider(stringResource(R.string.controls_strength), base.imageBlend, default = BaseLayerSettings().imageBlend) { v -> update { it.copy(imageBlend = v) } }
             ValueSlider(stringResource(R.string.controls_opacity), base.opacity, default = BaseLayerSettings().opacity) { v -> update { it.copy(opacity = v) } }
             return
@@ -683,8 +683,8 @@ private fun TextTab(text: TextLayerSettings, vm: EditorViewModel, position: Posi
     }
     if (!position.proOwned) ProNote(stringResource(R.string.controls_pro_note_text), position.showPro)
     Row(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
-        OutlinedButton(onClick = vm::randomQuote) { Text(stringResource(R.string.controls_random_quote)) }
-        OutlinedButton(onClick = { choosing = true }) { Text(stringResource(R.string.controls_choose_quote)) }
+        OutlinedButton(colors = outlinedColors(), onClick = vm::randomQuote) { Text(stringResource(R.string.controls_random_quote)) }
+        OutlinedButton(colors = outlinedColors(), onClick = { choosing = true }) { Text(stringResource(R.string.controls_choose_quote)) }
     }
     OutlinedTextField(
         value = text.text,
@@ -845,10 +845,10 @@ private fun DrawTab(params: MandalaParameters, vm: EditorViewModel) {
         } else {
             FilledTonalButton(onClick = { vm.setDrawTool(null) }, modifier = Modifier.weight(1f)) { Text(stringResource(R.string.controls_done), maxLines = 1) }
         }
-        OutlinedIconButton(onClick = { vm.removeLastStroke(tool) }, enabled = count > 0) {
+        OutlinedIconButton(colors = outlinedIconColors(), onClick = { vm.removeLastStroke(tool) }, enabled = count > 0) {
             Icon(EditorIcons.Back, contentDescription = stringResource(R.string.controls_undo))
         }
-        OutlinedIconButton(onClick = { vm.clearStrokes(tool) }, enabled = count > 0) {
+        OutlinedIconButton(colors = outlinedIconColors(), onClick = { vm.clearStrokes(tool) }, enabled = count > 0) {
             Icon(EditorIcons.Trash, contentDescription = stringResource(R.string.controls_clear))
         }
     }

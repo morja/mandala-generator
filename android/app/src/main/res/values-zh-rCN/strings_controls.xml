@@ -153,7 +153,7 @@
 
     <!-- Text tab and quote list -->
     <string name="controls_random_text_look">随机文字样式</string>
-    <string name="controls_text_off_note">在曼陀罗下方显示一句名言或你自己的话，也可以附上作者。</string>
+    <string name="controls_text_off_note">在画面中显示一句名言或你自己的话，也可以附上作者。</string>
     <string name="controls_pro_note_text">文字和名言需要 Pro。你可以随意试用，但要保留此曼陀罗需要 Pro。</string>
     <string name="controls_random_quote">随机名言</string>
     <string name="controls_choose_quote">选择名言</string>
@@ -195,7 +195,6 @@
     <string name="controls_seed_description">风格、调色板和设置不变，新的排列</string>
     <string name="controls_show_effects">显示效果</string>
     <string name="controls_smoother">平滑</string>
-    <string name="controls_seed">种子</string>
     <string name="controls_applies_to">应用于</string>
     <string name="controls_reach_mandala">曼陀罗</string>
 </resources>
