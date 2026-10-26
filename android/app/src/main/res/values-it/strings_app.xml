@@ -97,4 +97,8 @@
     <string name="pro_unavailable">Al momento Pro non si può acquistare qui. È in vendita su Google Play.</string>
     <string name="pro_unlocked">Grazie! Pro è sbloccato.</string>
     <string name="pro_pending">L\'acquisto è in sospeso. Pro si sblocca appena è pagato.</string>
+    <!-- Home screen widget (ADR-0020) -->
+    <string name="widget_label">Mandala del giorno</string>
+    <string name="widget_description">Il preferito del giorno sulla schermata Home. Quadrato mostra l\'immagine, largo aggiunge le parole. Con Pro uno nuovo ogni mattina.</string>
+    <string name="widget_empty">Aggiungi un preferito nell\'app per vederlo qui.</string>
 </resources>

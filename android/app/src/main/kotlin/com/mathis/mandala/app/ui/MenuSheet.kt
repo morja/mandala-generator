@@ -320,6 +320,9 @@ private fun DailyPage(actions: MenuActions, onBack: () -> Unit, onChoose: () -> 
                     else stringResource(R.string.menu_daily_some, count, actions.favourites.size),
                 onClick = onChoose) { Chevron() }
         }
+        HorizontalDivider(color = t.outline)
+        Text(stringResource(R.string.menu_daily_widget_note), style = MaterialTheme.typography.bodySmall, color = t.textMuted,
+            modifier = Modifier.padding(top = Spacing.md))
     }
 }
 

@@ -38,6 +38,7 @@
     <string name="menu_daily_some">%1$d von %2$d</string>
     <string name="menu_daily_pick_about">Nur die angehakten Favoriten wechseln sich ab, in der Reihenfolge deiner Favoriten. Ein später hinzugefügter Favorit kommt dazu, sobald du ihn hier anhakst.</string>
     <string name="menu_daily_choose_all">Alle anhaken</string>
+    <string name="menu_daily_widget_note">Das Widget „Mandala des Tages“ für den Startbildschirm zeigt dieselben Favoriten; mit Pro wechselt es jeden Morgen, auch wenn der Tageshintergrund aus ist.</string>
     <string name="menu_open_file_detail">Als Datei gespeicherte Mandala-Einstellungen, aus dieser App oder der macOS-App</string>
     <string name="menu_save_settings_detail">Dieses Mandala als Datei, zum Aufheben oder zum Öffnen auf dem Mac</string>
     <string name="menu_more">Mehr</string>
