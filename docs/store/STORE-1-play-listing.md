@@ -99,7 +99,7 @@ The Reddit and launch plan is [MKT-1](../MKT-1-reddit-and-launch-plan.md).
 
 ## Release notes for 1.7.1 (code 14)
 
-Prepared 26 October 2026 on `main` after `android/scripts/check-full`, on Mathis' release request the same evening. Changes since 1.7.0: the notes on Pro say that trying and keeping as a favourite are free (ADR-0016), and the Pro marks fit a 360 dp phone. Since 1.7.0 may still be in review, the notes repeat its changes. Notes: `docs/store/play/release-notes-1.7.1-en.txt` and `-de.txt`.
+**Submitted to production on 26 October 2026** through the API (`docs/store/play/play_release.py`), full rollout (`completed`), replacing 1.7.0 on the track; a fresh API read verified code 14 on production. Public store availability remains subject to Google's review. Source tag: `android-v1.7.1` at `e59634b`. Validation: `android/scripts/check-full` on `main`, signed `bundleRelease` (upload key CN=Mathis Koblin), package and version checked in the bundle manifest. Bundle SHA-256: `3b95015fd10431510f6e049a92eac2fc290b53432017e61dac4ffe24eafb944c`. Prepared on Mathis' release request the same evening. Changes since 1.7.0: the notes on Pro say that trying and keeping as a favourite are free (ADR-0016), and the Pro marks fit a 360 dp phone. Since 1.7.0 may still be in review, the notes repeat its changes. Notes: `docs/store/play/release-notes-1.7.1-en.txt` and `-de.txt`.
 
 ## Release notes for 1.7.0 (code 13)
 
