@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Texts of the editor screen, the wallpaper pair and the live wallpaper sheets (ADR-0017). -->
+<resources>
+    <!-- Editor: messages and export progress -->
+    <string name="editor_undo">元に戻す</string>
+    <string name="editor_progress_step">%1$s…</string>
+    <string name="editor_percent">%1$d %%</string>
+
+    <!-- Editor: top bar -->
+    <string name="editor_back">戻る</string>
+    <string name="editor_forward">進む</string>
+    <string name="editor_surprise">おまかせ</string>
+    <string name="editor_save_image">画像を保存</string>
+    <string name="editor_favourites">お気に入り</string>
+    <string name="editor_more">その他</string>
+
+    <!-- Editor: menu, daily wallpaper entry -->
+    <string name="editor_daily_pro">毎朝お気に入りを順番に · Pro</string>
+    <string name="editor_daily_today">今日: %1$s</string>
+    <string name="editor_daily_off">お気に入りを順番にロック画面とホーム画面へ</string>
+
+    <!-- Editor: canvas -->
+    <string name="editor_show_large">画像を大きく表示</string>
+    <string name="editor_make_small">画像を小さく表示</string>
+    <string name="editor_larger_image">画像を拡大</string>
+    <string name="editor_smaller_image">画像を縮小</string>
+    <string name="editor_preview">マンダラのプレビュー</string>
+    <string name="editor_pro_mark_action">Proが必要な機能</string>
+    <string name="editor_pro_mark_description">このマンダラはPro機能を使っています</string>
+    <string name="editor_draw_hint">画像上をドラッグして描きます</string>
+    <string name="editor_move_layer_hint">ドラッグでレイヤー%1$dを移動、ピンチで拡大縮小と回転</string>
+    <string name="editor_move_emblem_hint">ドラッグでエンブレムを移動、ピンチで拡大縮小と回転</string>
+
+    <!-- Editor: Pro sheet -->
+    <string name="editor_pro_title">Dahlia Pro</string>
+    <string name="editor_pro_uses_keep">このマンダラはPro機能を使っています。このまま残すにはProを入手してください:</string>
+    <string name="editor_pro_uses">このマンダラが使っているPro機能:</string>
+    <string name="editor_pro_feature_item">· %1$s</string>
+    <string name="editor_pro_summary">Proでは、最大5つのレイヤー、エンブレム、テキストと引用、レイヤーとエンブレムの移動が使えます。幅2048ピクセルでの保存（マンダラの配置と調整は自由）や、線画としての保存も可能です。壁紙は、ホームとロックのペア、毎日新しい壁紙、ライブ壁紙に対応します。購入前にエディタでレイヤーの追加、エンブレム、引用をお試しいただけます。1回の購入のみで、サブスクリプションはありません。</string>
+    <string name="editor_pro_buy_for">%1$sで購入</string>
+    <string name="editor_pro_buy">Proを購入</string>
+    <string name="editor_pro_without">Pro機能を外して%1$s</string>
+    <string name="editor_pro_remove">Pro機能を外す</string>
+    <string name="editor_pro_unavailable">ProはGoogle Playで販売しています。現在このインストールでは利用できません。</string>
+
+    <!-- Editor: favourites sheet -->
+    <string name="editor_favourites_add">現在のものを追加</string>
+    <string name="editor_favourites_empty">お気に入りはまだありません。現在のマンダラを追加するか、「ファイルを開く」でMacアプリのお気に入りファイル（favorites.json）を開いてください。</string>
+    <string name="editor_favourites_hint">タップで使用、長押しで削除します。</string>
+    <string name="editor_favourite_description">お気に入り: %1$s</string>
+    <string name="editor_favourite_delete">削除</string>
+
+    <!-- Wallpaper pair sheet -->
+    <string name="pair_title">ホーム画面とロック画面</string>
+    <string name="pair_lock_screen">ロック画面</string>
+    <string name="pair_home_screen">ホーム画面</string>
+    <string name="pair_screen_preview">%1$sのプレビュー</string>
+    <string name="pair_lock_note">ロック画面には、保存画面で設定した明るさ、コントラスト、彩度が使われます。</string>
+    <string name="pair_set_both">両方に設定</string>
+
+    <!-- Live wallpaper sheet -->
+    <string name="live_title">ライブ壁紙</string>
+    <string name="live_intro">このマンダラが画面いっぱいに広がり、4分で1回転のペースでゆっくり回ります。動くのは画面が見えているときだけです。</string>
+    <string name="live_breathing">呼吸: 明るさがゆっくり上下します</string>
+    <string name="live_colour_drift">色の移ろい: 色がゆっくり変わります</string>
+    <string name="live_palettes_in_turn">パレットの切り替え: 10分ごとに次のパレットへ移ります</string>
+    <string name="live_daily_note">日替わり壁紙がオンのときは、毎朝ライブ壁紙が次のお気に入りへ切り替わります。</string>
+    <string name="live_set">ライブ壁紙を設定</string>
+</resources>

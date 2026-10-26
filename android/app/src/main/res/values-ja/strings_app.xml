@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Texts of the app outside the ui package: save formats, tools, messages, wallpapers, Pro (ADR-0017). -->
+<resources>
+    <!-- Save formats (ADR-0010) -->
+    <string name="format_square">正方形</string>
+    <string name="format_screen">この画面</string>
+    <string name="format_4_5">4:5</string>
+    <string name="format_3_4">3:4</string>
+    <string name="format_2_3">2:3</string>
+    <string name="format_9_16">9:16</string>
+    <string name="format_5_4">5:4</string>
+    <string name="format_4_3">4:3</string>
+    <string name="format_3_2">3:2</string>
+    <string name="format_16_9">16:9</string>
+
+    <!-- Drawing tools -->
+    <string name="draw_tool_lines">線</string>
+    <string name="draw_tool_spray">スプレー</string>
+
+    <!-- How much a new mandala from the menu changes -->
+    <string name="new_kind_variation">バリエーション</string>
+    <string name="new_kind_layers">新しいレイヤー</string>
+    <string name="new_kind_everything">すべて</string>
+
+    <!-- Wallpaper targets and menu entries (ADR-0014) -->
+    <string name="wallpaper_target_home">ホーム画面</string>
+    <string name="wallpaper_target_lock">ロック画面</string>
+    <string name="wallpaper_target_both">ホーム画面とロック画面</string>
+    <string name="wallpaper_live">ライブ壁紙</string>
+    <string name="wallpaper_live_pro">ライブ壁紙 · Pro</string>
+    <string name="wallpaper_pair">ホームとロックをペアで</string>
+    <string name="wallpaper_pair_pro">ホームとロックをペアで · Pro</string>
+    <!-- What the user was about to do when the Pro sheet opened -->
+    <string name="action_save">保存</string>
+    <string name="action_set_wallpaper">壁紙に設定</string>
+    <string name="action_share">共有</string>
+
+    <!-- Export progress, shown with an ellipsis -->
+    <string name="export_creating_image">画像を作成中</string>
+    <string name="export_saving_to_pictures">「Pictures」に保存中</string>
+    <string name="export_creating_wallpaper">壁紙を作成中</string>
+    <string name="export_setting_wallpaper">壁紙を設定中</string>
+    <string name="export_preparing_share">共有の準備中</string>
+    <string name="export_creating_line_drawing">線画を作成中</string>
+    <string name="export_creating_wallpapers">壁紙を作成中</string>
+    <string name="export_setting_both_wallpapers">両方の壁紙を設定中</string>
+    <string name="export_setting_daily">今日の壁紙を設定中</string>
+    <string name="export_preparing_live">ライブ壁紙を準備中</string>
+
+    <!-- Messages after saving, sharing and setting wallpapers; %1$s in the failures is a technical reason -->
+    <string name="message_saved_to_pictures">%1$d × %2$d で Pictures/%3$s に保存しました</string>
+    <string name="message_wallpaper_set">壁紙を設定しました</string>
+    <string name="message_pair_set">ホーム画面とロック画面を設定しました</string>
+    <string name="message_line_drawing_saved">線画を保存しました</string>
+    <string name="message_line_drawing_memory">この線画を作成するにはメモリが足りません。</string>
+    <string name="message_line_drawing_failed">線画を保存できませんでした: %1$s</string>
+    <string name="message_image_memory">この画像を作成するにはメモリが足りません。</string>
+    <string name="message_image_failed">画像を作成できませんでした: %1$s</string>
+    <string name="message_wallpaper_failed">壁紙を設定できませんでした: %1$s</string>
+    <string name="message_preview_memory">プレビューを表示するにはメモリが足りません。</string>
+
+    <!-- Daily and live wallpaper messages; %1$s is the name of a favourite -->
+    <string name="message_daily_needs_favourite">日替わり壁紙はお気に入りを順番に使います。まずお気に入りを追加してください。</string>
+    <string name="message_daily_on">毎朝新しい壁紙に変わります</string>
+    <string name="message_daily_on_today">今日: %1$s。毎朝新しい壁紙に変わります</string>
+    <string name="message_live_updating">まもなくライブ壁紙にこのマンダラが表示されます</string>
+
+    <!-- Favourites, quotes and pictures -->
+    <string name="message_favourite_added">お気に入りに追加しました</string>
+    <string name="message_favourite_deleted">お気に入りを削除しました</string>
+    <string name="message_quote_saved">マイ引用に保存しました</string>
+    <string name="message_picture_failed">画像を開けませんでした: %1$s</string>
+
+    <!-- Opening and saving files of the macOS app -->
+    <string name="message_file_unreadable">ファイルを読み込めませんでした。</string>
+    <string name="message_file_no_layers">このファイルにはレイヤーがありません。</string>
+    <string name="message_file_unknown">Mandalaの設定ファイルまたはお気に入りファイルではありません。</string>
+    <string name="message_settings_saved">設定を保存しました</string>
+    <string name="message_settings_failed">設定を保存できませんでした。</string>
+    <plurals name="message_favourites_imported">
+        <item quantity="other">お気に入りを%d件読み込みました</item>
+    </plurals>
+    <plurals name="message_favourites_already_there">
+        <item quantity="other">%d件は登録済みです</item>
+    </plurals>
+    <!-- %1$s is the import message, %2$s how many were already there -->
+    <string name="message_favourites_imported_note">%1$s（%2$s）</string>
+
+    <!-- Google Play purchase of Pro (ADR-0007); %1$s is Google Play's reason, %1$d its code -->
+    <string name="pro_purchase_failed">購入を完了できませんでした（%1$s）。</string>
+    <string name="pro_purchase_code">コード %1$d</string>
+    <string name="pro_unavailable">現在ここではProを購入できません。ProはGoogle Playで販売しています。</string>
+    <string name="pro_unlocked">ありがとうございます。Proのロックが解除されました。</string>
+    <string name="pro_pending">購入は保留中です。支払いが完了するとProのロックが解除されます。</string>
+</resources>

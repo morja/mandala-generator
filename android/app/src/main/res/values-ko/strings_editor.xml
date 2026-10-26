@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Texts of the editor screen, the wallpaper pair and the live wallpaper sheets (ADR-0017). -->
+<resources>
+    <!-- Editor: messages and export progress -->
+    <string name="editor_undo">실행취소</string>
+    <string name="editor_progress_step">%1$s…</string>
+    <string name="editor_percent">%1$d %%</string>
+
+    <!-- Editor: top bar -->
+    <string name="editor_back">뒤로</string>
+    <string name="editor_forward">앞으로</string>
+    <string name="editor_surprise">깜짝 만다라</string>
+    <string name="editor_save_image">이미지 저장</string>
+    <string name="editor_favourites">즐겨찾기</string>
+    <string name="editor_more">더보기</string>
+
+    <!-- Editor: menu, daily wallpaper entry -->
+    <string name="editor_daily_pro">매일 아침 즐겨찾기를 차례로 · Pro</string>
+    <string name="editor_daily_today">오늘: %1$s</string>
+    <string name="editor_daily_off">즐겨찾기를 차례로 잠금 화면과 홈 화면에</string>
+
+    <!-- Editor: canvas -->
+    <string name="editor_show_large">이미지 크게 보기</string>
+    <string name="editor_make_small">이미지 작게 보기</string>
+    <string name="editor_larger_image">이미지 확대</string>
+    <string name="editor_smaller_image">이미지 축소</string>
+    <string name="editor_preview">만다라 미리보기</string>
+    <string name="editor_pro_mark_action">Pro가 필요한 항목</string>
+    <string name="editor_pro_mark_description">이 만다라는 Pro 기능을 사용합니다</string>
+    <string name="editor_draw_hint">이미지 위를 드래그하여 그리세요</string>
+    <string name="editor_move_layer_hint">드래그하여 레이어 %1$d 이동, 손가락을 모으거나 벌려 크기 조절 및 회전</string>
+    <string name="editor_move_emblem_hint">드래그하여 엠블럼 이동, 손가락을 모으거나 벌려 크기 조절 및 회전</string>
+
+    <!-- Editor: Pro sheet -->
+    <string name="editor_pro_title">Dahlia Pro</string>
+    <string name="editor_pro_uses_keep">이 만다라는 Pro 기능을 사용합니다. 지금 모습 그대로 간직하려면 Pro를 구매하세요:</string>
+    <string name="editor_pro_uses">이 만다라는 다음 Pro 기능을 사용합니다:</string>
+    <string name="editor_pro_feature_item">· %1$s</string>
+    <string name="editor_pro_summary">Pro에서는 레이어를 최대 다섯 개까지 쓸 수 있고, 엠블럼, 텍스트와 명언, 레이어와 엠블럼 이동이 추가됩니다. 너비 2048픽셀로 저장할 수 있으며, 만다라를 직접 배치하고 보정하거나 선화로 저장할 수 있습니다. 배경화면: 홈 화면과 잠금 화면 한 쌍, 매일 새 배경화면, 라이브 배경화면. 구매 전에 편집기에서 더 많은 레이어, 엠블럼, 명언을 사용해 보세요. 한 번 구매로 끝, 구독이 없습니다.</string>
+    <string name="editor_pro_buy_for">%1$s에 구매</string>
+    <string name="editor_pro_buy">Pro 구매</string>
+    <string name="editor_pro_without">Pro 기능 없이 %1$s</string>
+    <string name="editor_pro_remove">Pro 기능 제거</string>
+    <string name="editor_pro_unavailable">Pro는 Google Play에서 판매되며, 지금은 이 설치본에서 구매할 수 없습니다.</string>
+
+    <!-- Editor: favourites sheet -->
+    <string name="editor_favourites_add">현재 만다라 추가</string>
+    <string name="editor_favourites_empty">아직 즐겨찾기가 없습니다. 현재 만다라를 추가하거나, 파일 열기로 Mac 앱의 즐겨찾기 파일(favorites.json)을 여세요.</string>
+    <string name="editor_favourites_hint">탭하여 사용, 길게 눌러 삭제.</string>
+    <string name="editor_favourite_description">즐겨찾기: %1$s</string>
+    <string name="editor_favourite_delete">삭제</string>
+
+    <!-- Wallpaper pair sheet -->
+    <string name="pair_title">홈 화면 및 잠금 화면</string>
+    <string name="pair_lock_screen">잠금 화면</string>
+    <string name="pair_home_screen">홈 화면</string>
+    <string name="pair_screen_preview">%1$s 미리보기</string>
+    <string name="pair_lock_note">잠금 화면에는 저장 화면의 밝기, 대비, 채도가 적용됩니다.</string>
+    <string name="pair_set_both">둘 다 설정</string>
+
+    <!-- Live wallpaper sheet -->
+    <string name="live_title">라이브 배경화면</string>
+    <string name="live_intro">이 만다라가 화면을 가득 채우고 4분에 한 바퀴씩 천천히 돌아갑니다. 화면이 보일 때만 움직입니다.</string>
+    <string name="live_breathing">호흡: 밝기가 올라갔다 내려갑니다</string>
+    <string name="live_colour_drift">색상 흐름: 색이 천천히 바뀝니다</string>
+    <string name="live_palettes_in_turn">팔레트 순환: 10분마다 다음 팔레트로 서서히 바뀝니다</string>
+    <string name="live_daily_note">매일 배경화면을 켜 두면 라이브 배경화면이 매일 아침 다음 즐겨찾기로 서서히 바뀝니다.</string>
+    <string name="live_set">라이브 배경화면 설정</string>
+</resources>

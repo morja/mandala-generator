@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Texts of the control tabs below or beside the canvas (Controls.kt, Parts.kt; ADR-0017). -->
+<resources>
+
+    <!-- Tab row and the header beside the folded image -->
+    <string name="controls_tab_layers">图层</string>
+    <string name="controls_tab_scene">场景</string>
+    <string name="controls_tab_emblem">徽标</string>
+    <string name="controls_tab_text">文字</string>
+    <string name="controls_tab_draw">绘制</string>
+    <string name="controls_header_no_layers">无图层</string>
+    <string name="controls_header_no_background">无背景</string>
+    <string name="controls_header_strokes">%1$s · %2$s</string>
+    <plurals name="controls_header_lines">
+        <item quantity="other">%d 条线</item>
+    </plurals>
+    <plurals name="controls_header_spray">
+        <item quantity="other">%d 处喷绘</item>
+    </plurals>
+
+    <!-- Shared summaries: blend mode with opacity, the Pro mark -->
+    <string name="controls_blend_summary">%1$s · %2$d%%</string>
+    <string name="controls_with_pro">%1$s · Pro</string>
+
+    <!-- Foldable groups and sliders (accessibility) -->
+    <string name="controls_group_open">展开%1$s</string>
+    <string name="controls_group_close">收起%1$s</string>
+    <string name="controls_group_state_open">已展开</string>
+    <string name="controls_group_state_closed">已收起</string>
+    <string name="controls_slider_reset">重置%1$s</string>
+
+    <!-- Layers tab: actions and layer rows -->
+    <string name="controls_layers_add">添加</string>
+    <string name="controls_layers_duplicate">复制</string>
+    <string name="controls_layers_randomize">随机生成图层 %1$d</string>
+    <string name="controls_layer_hide">隐藏图层 %1$d</string>
+    <string name="controls_layer_show">显示图层 %1$d</string>
+    <string name="controls_layer_move_up">上移图层 %1$d</string>
+    <string name="controls_layer_move_down">下移图层 %1$d</string>
+    <string name="controls_style_new_variant">新的%1$s变体</string>
+    <string name="controls_position_centred">居中</string>
+    <string name="controls_position_moved">已移动</string>
+
+    <!-- Scene tab: background types -->
+    <string name="controls_background_auto">自动</string>
+    <string name="controls_background_picture">图片</string>
+    <string name="controls_background_colour">颜色</string>
+    <string name="controls_background_gradient">渐变</string>
+    <string name="controls_background_sunburst">光芒</string>
+    <string name="controls_background_grain">颗粒</string>
+
+    <!-- Emblem and text tabs: on/off rows -->
+    <string name="controls_emblem_show">显示徽标</string>
+    <string name="controls_emblem_shape_seed">形状 %1$s</string>
+    <string name="controls_text_show">显示文字</string>
+    <string name="controls_text_in_my_quotes">已在你的名言中</string>
+    <string name="controls_text_save_to_my_quotes">保存到我的名言</string>
+    <string name="controls_quotes_collection">名言集</string>
+
+    <!-- Draw tab: show switch per tool -->
+    <string name="controls_draw_show_lines">显示线条</string>
+    <string name="controls_draw_show_spray">显示喷绘</string>
+
+    <!-- Layers tab: group titles, sliders and notes (some shared with other tabs) -->
+    <string name="controls_pro_note_layers">三个以上图层需要 Pro。你可以随意试用，但要保留此曼陀罗需要 Pro。</string>
+    <string name="controls_delete">删除</string>
+    <string name="controls_about_pro">关于 Pro</string>
+    <string name="controls_position">位置</string>
+    <string name="controls_pro_note_position">移动图层需要 Pro。你可以随意试用，但要保留此曼陀罗需要 Pro。</string>
+    <string name="controls_position_hidden_note">此图层已隐藏。显示后即可看到它移动到哪里。</string>
+    <string name="controls_across">水平</string>
+    <string name="controls_up_and_down">垂直</string>
+    <string name="controls_centre">居中</string>
+    <string name="controls_done">完成</string>
+    <string name="controls_move_on_image">在图片上移动</string>
+    <string name="controls_style">风格</string>
+    <string name="controls_palette">调色板</string>
+    <string name="controls_blending">混合</string>
+    <string name="controls_opacity">不透明度</string>
+    <string name="controls_shape">形状</string>
+    <string name="controls_shape_new_arrangement">新排列，风格和调色板不变</string>
+    <string name="controls_symmetry">对称</string>
+    <string name="controls_scale">缩放</string>
+    <string name="controls_complexity">复杂度</string>
+    <string name="controls_spokes">辐条</string>
+    <string name="controls_density">密度</string>
+    <string name="controls_ripple">波纹</string>
+    <string name="controls_light_and_colour">光与色彩</string>
+    <string name="controls_glow">光晕</string>
+    <string name="controls_colour_drift">色彩漂移</string>
+    <string name="controls_painted">绘画感</string>
+    <string name="controls_saturation">饱和度</string>
+    <string name="controls_brightness">亮度</string>
+
+    <!-- Scene tab: background and effects -->
+    <string name="controls_background">背景</string>
+    <string name="controls_off">关闭</string>
+    <string name="controls_background_auto_note">深色光晕和细纤维，采用底层图层的颜色。</string>
+    <string name="controls_choose_picture">选择图片</string>
+    <string name="controls_strength">强度</string>
+    <string name="controls_colour_1">颜色 1</string>
+    <string name="controls_colour">颜色</string>
+    <string name="controls_colour_2">颜色 2</string>
+    <string name="controls_radial">径向</string>
+    <string name="controls_angle">角度</string>
+    <string name="controls_rays">光线</string>
+    <string name="controls_sharpness">锐度</string>
+    <string name="controls_grain">颗粒</string>
+    <string name="controls_coloured_grain">彩色颗粒</string>
+    <string name="controls_effects">效果</string>
+    <string name="controls_on">开启</string>
+    <string name="controls_effects_new_pattern">新的高光、暗化、星星和闪粉图案</string>
+    <string name="controls_reset">重置</string>
+    <string name="controls_effects_off_note">开启后可使用暗角、泛光、颗粒、星星等效果。</string>
+    <string name="controls_light">光线</string>
+    <string name="controls_contrast">对比度</string>
+    <string name="controls_vignette">暗角</string>
+    <string name="controls_bloom">泛光</string>
+    <string name="controls_tone">色调</string>
+    <string name="controls_sepia">怀旧</string>
+    <string name="controls_fade">褪色</string>
+    <string name="controls_texture">纹理</string>
+    <string name="controls_clarity">清晰度</string>
+    <string name="controls_sparkle">闪耀</string>
+    <string name="controls_stars">星星</string>
+    <string name="controls_glitter">闪粉</string>
+    <string name="controls_more">更多</string>
+    <string name="controls_highlights">高光</string>
+    <string name="controls_dimming">暗化</string>
+    <string name="controls_erasure">擦除</string>
+    <string name="controls_relief">浮雕</string>
+    <string name="controls_relief_angle">浮雕角度</string>
+    <string name="controls_chromatic">色散</string>
+    <string name="controls_old_fade">旧版褪色</string>
+
+    <!-- Emblem tab -->
+    <string name="controls_random_emblem">随机徽标</string>
+    <string name="controls_emblem_off_note">在中心绘制一个大图案：唵、生命之树、生命之花、莲花等。</string>
+    <string name="controls_pro_note_emblem">徽标需要 Pro。你可以随意试用，但要保留此曼陀罗需要 Pro。</string>
+    <string name="controls_motif">图案</string>
+    <string name="controls_variant">变体</string>
+    <string name="controls_petals">花瓣</string>
+    <string name="controls_organic">自然感</string>
+    <string name="controls_new_shape">新形状</string>
+    <string name="controls_branches">枝条</string>
+    <string name="controls_roots">根系</string>
+    <string name="controls_style_and_frame">风格和边框</string>
+    <string name="controls_frame">边框</string>
+    <string name="controls_size">大小</string>
+    <string name="controls_weight">粗细</string>
+    <string name="controls_rotate">旋转</string>
+    <string name="controls_spread">扩散</string>
+
+    <!-- Text tab and quote list -->
+    <string name="controls_random_text_look">随机文字样式</string>
+    <string name="controls_text_off_note">在曼陀罗下方显示一句名言或你自己的话，也可以附上作者。</string>
+    <string name="controls_pro_note_text">文字和名言需要 Pro。你可以随意试用，但要保留此曼陀罗需要 Pro。</string>
+    <string name="controls_random_quote">随机名言</string>
+    <string name="controls_choose_quote">选择名言</string>
+    <string name="controls_text_field">文字</string>
+    <string name="controls_author">作者</string>
+    <string name="controls_show_author">显示作者</string>
+    <string name="controls_font">字体</string>
+    <string name="controls_size_and_place">大小和位置</string>
+    <string name="controls_width">宽度</string>
+    <string name="controls_tracking">字距</string>
+    <string name="controls_height">高度</string>
+    <string name="controls_cloud">云雾</string>
+    <string name="controls_cloud_size">云雾大小</string>
+    <string name="controls_cloud_colour">云雾颜色</string>
+    <string name="controls_shadow">阴影</string>
+    <string name="controls_shadow_colour">阴影颜色</string>
+    <string name="controls_hue">色相</string>
+    <string name="controls_close">关闭</string>
+    <string name="controls_quotes">名言</string>
+    <string name="controls_your_quotes">你的名言</string>
+    <string name="controls_remove_quote">移除名言</string>
+    <string name="controls_quotes_public_domain">名言集中的所有名言均属于公有领域。</string>
+
+    <!-- Draw tab -->
+    <string name="controls_draw_on_image">在图片上绘制</string>
+    <string name="controls_undo">撤消</string>
+    <string name="controls_clear">清除</string>
+    <string name="controls_line_colour">线条颜色</string>
+    <string name="controls_line_and_light">线条与光线</string>
+    <string name="controls_brush_size">画笔大小</string>
+    <string name="controls_paint">绘制</string>
+    <string name="controls_spray_colour">喷绘颜色</string>
+    <string name="controls_softness_and_blending">柔和度与混合</string>
+    <string name="controls_softness">柔和度</string>
+</resources>

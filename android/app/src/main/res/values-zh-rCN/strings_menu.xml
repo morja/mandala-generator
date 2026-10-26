@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Texts of the menu sheet, the save sheet and the About screen (ADR-0017). -->
+<resources>
+    <!-- Menu: the mandala on screen -->
+    <string name="menu_no_layers">无图层</string>
+    <plurals name="menu_layers_emblem_on">
+        <item quantity="other">%1$d 个图层 · 徽标已开启</item>
+    </plurals>
+    <plurals name="menu_layers_emblem_off">
+        <item quantity="other">%1$d 个图层 · 徽标已关闭</item>
+    </plurals>
+
+    <!-- Menu: what keeps the mandala -->
+    <string name="menu_favourite">收藏</string>
+    <string name="menu_share">分享</string>
+    <string name="menu_wallpaper">壁纸</string>
+
+    <!-- Menu: the three dice for a new mandala -->
+    <string name="menu_new_mandala">新曼陀罗</string>
+    <string name="menu_die_variation">变化</string>
+    <string name="menu_die_variation_detail">新细节</string>
+    <string name="menu_die_layers">新图层</string>
+    <string name="menu_die_layers_detail">新风格</string>
+    <string name="menu_die_everything">随机惊喜</string>
+    <string name="menu_die_everything_detail">全部更换</string>
+
+    <!-- Menu: files and settings -->
+    <string name="menu_open_file">打开文件</string>
+    <string name="menu_save_settings">保存设置</string>
+    <string name="menu_fast_preview">快速预览</string>
+    <string name="menu_fast_preview_detail">保存的图片始终带有完整光晕</string>
+    <string name="menu_daily_wallpaper">每天换新壁纸</string>
+    <string name="menu_theme">主题</string>
+    <string name="menu_theme_dark">深色</string>
+    <string name="menu_theme_light">浅色</string>
+    <string name="menu_about">关于</string>
+
+    <!-- Menu: comparing the new mandala with the current one -->
+    <string name="menu_back">菜单</string>
+    <string name="menu_now">当前</string>
+    <string name="menu_try_another">再试一个</string>
+    <string name="menu_use_new">使用新的</string>
+
+    <!-- Save sheet: title, format and frame -->
+    <string name="save_title">保存图片</string>
+    <string name="save_ratio">比例</string>
+    <string name="save_ratio_landscape">%1$s · 横向</string>
+    <string name="save_ratio_portrait">%1$s · 纵向</string>
+    <string name="save_fit_whole">完整</string>
+    <string name="save_fit_fill">填满</string>
+    <string name="save_frame_hint">拖动可移动，双指捏合可缩放，点按两次可居中。</string>
+    <string name="save_frame_pro">移动和缩放曼陀罗需要 Pro。</string>
+    <string name="save_about_pro">关于 Pro</string>
+    <string name="save_preview_description">保存图片的预览</string>
+
+    <!-- Save sheet: the finish under "Adjust" -->
+    <string name="save_adjust">调整</string>
+    <string name="save_reset">重置</string>
+    <string name="save_adjust_with_pro">需 Pro</string>
+    <string name="save_adjust_unchanged">未更改</string>
+    <string name="save_adjust_summary">亮度 %1$s，对比度 %2$s，饱和度 %3$s</string>
+    <string name="save_adjust_pro">调整图片的亮度、对比度和饱和度需要 Pro。</string>
+    <string name="save_brightness">亮度</string>
+    <string name="save_contrast">对比度</string>
+    <string name="save_saturation">饱和度</string>
+
+    <!-- Save sheet: quote, size and buttons -->
+    <string name="save_quote_follows">名言随曼陀罗移动</string>
+    <string name="save_size">%1$d × %2$d</string>
+    <string name="save_size_pro">%1$d × %2$d · Pro</string>
+    <string name="save_save">保存</string>
+    <string name="save_wallpaper">壁纸</string>
+
+    <!-- Save sheet: the line drawing as SVG -->
+    <string name="save_line_drawing">线稿</string>
+    <string name="save_line_drawing_pro">线稿 · Pro</string>
+    <string name="save_line_drawing_detail">方形 SVG：图层和徽标以线条呈现，不含光晕、效果、背景和名言。</string>
+    <string name="save_line_drawing_points">不包含奇异吸引子图层。</string>
+    <string name="save_line_drawing_colour">黑底彩色</string>
+    <string name="save_line_drawing_lines">白底深色，适合绘图仪和涂色</string>
+
+    <!-- About screen -->
+    <string name="about_title">关于</string>
+    <string name="about_close">关闭</string>
+    <string name="about_version">版本 %1$s (%2$d)</string>
+    <string name="about_licence">许可</string>
+    <string name="about_free_software">Dahlia 是自由软件：你可以根据自由软件基金会发布的 GNU 通用公共许可证第 3 版的条款重新分发和/或修改它。本软件不提供任何担保。</string>
+    <string name="about_source_code">GitHub 上的源代码</string>
+    <string name="about_additional_permission">附加许可</string>
+    <string name="about_gpl_section_7">GPL 第 7 条</string>
+    <string name="about_privacy">隐私</string>
+    <string name="about_privacy_text">无需帐号，没有广告，没有跟踪。你的曼陀罗和设置都保存在你的设备上。</string>
+    <string name="about_privacy_policy">隐私政策</string>
+    <string name="about_libraries">开源库</string>
+    <string name="about_full_text">全文</string>
+</resources>

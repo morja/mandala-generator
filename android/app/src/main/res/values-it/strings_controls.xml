@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Texts of the control tabs below or beside the canvas (Controls.kt, Parts.kt; ADR-0017). -->
+<resources>
+
+    <!-- Tab row and the header beside the folded image -->
+    <string name="controls_tab_layers">Livelli</string>
+    <string name="controls_tab_scene">Scena</string>
+    <string name="controls_tab_emblem">Emblema</string>
+    <string name="controls_tab_text">Testo</string>
+    <string name="controls_tab_draw">Disegna</string>
+    <string name="controls_header_no_layers">Nessun livello</string>
+    <string name="controls_header_no_background">Nessuno sfondo</string>
+    <string name="controls_header_strokes">%1$s · %2$s</string>
+    <plurals name="controls_header_lines">
+        <item quantity="one">%d linea</item>
+        <item quantity="many">%d linee</item>
+        <item quantity="other">%d linee</item>
+    </plurals>
+    <plurals name="controls_header_spray">
+        <item quantity="one">%d spruzzo</item>
+        <item quantity="many">%d spruzzi</item>
+        <item quantity="other">%d spruzzi</item>
+    </plurals>
+
+    <!-- Shared summaries: blend mode with opacity, the Pro mark -->
+    <string name="controls_blend_summary">%1$s · %2$d %%</string>
+    <string name="controls_with_pro">%1$s · Pro</string>
+
+    <!-- Foldable groups and sliders (accessibility) -->
+    <string name="controls_group_open">Apri %1$s</string>
+    <string name="controls_group_close">Chiudi %1$s</string>
+    <string name="controls_group_state_open">Aperto</string>
+    <string name="controls_group_state_closed">Chiuso</string>
+    <string name="controls_slider_reset">Reimposta %1$s</string>
+
+    <!-- Layers tab: actions and layer rows -->
+    <string name="controls_layers_add">Aggiungi</string>
+    <string name="controls_layers_duplicate">Duplica</string>
+    <string name="controls_layers_randomize">Livello %1$d casuale</string>
+    <string name="controls_layer_hide">Nascondi livello %1$d</string>
+    <string name="controls_layer_show">Mostra livello %1$d</string>
+    <string name="controls_layer_move_up">Sposta su il livello %1$d</string>
+    <string name="controls_layer_move_down">Sposta giù il livello %1$d</string>
+    <string name="controls_style_new_variant">Nuova variante di %1$s</string>
+    <string name="controls_position_centred">Centrato</string>
+    <string name="controls_position_moved">Spostato</string>
+
+    <!-- Scene tab: background types -->
+    <string name="controls_background_auto">Auto</string>
+    <string name="controls_background_picture">Immagine</string>
+    <string name="controls_background_colour">Colore</string>
+    <string name="controls_background_gradient">Sfumatura</string>
+    <string name="controls_background_sunburst">Raggiera</string>
+    <string name="controls_background_grain">Grana</string>
+
+    <!-- Emblem and text tabs: on/off rows -->
+    <string name="controls_emblem_show">Mostra emblema</string>
+    <string name="controls_emblem_shape_seed">Forma %1$s</string>
+    <string name="controls_text_show">Mostra testo</string>
+    <string name="controls_text_in_my_quotes">Nelle tue citazioni</string>
+    <string name="controls_text_save_to_my_quotes">Salva nelle mie citazioni</string>
+    <string name="controls_quotes_collection">Raccolta</string>
+
+    <!-- Draw tab: show switch per tool -->
+    <string name="controls_draw_show_lines">Mostra linee</string>
+    <string name="controls_draw_show_spray">Mostra spray</string>
+
+    <!-- Layers tab: group titles, sliders and notes (some shared with other tabs) -->
+    <string name="controls_pro_note_layers">Più di tre livelli sono inclusi in Pro. Provali quanto vuoi; per tenere il mandala serve Pro.</string>
+    <string name="controls_delete">Elimina</string>
+    <string name="controls_about_pro">Info su Pro</string>
+    <string name="controls_position">Posizione</string>
+    <string name="controls_pro_note_position">Spostare i livelli è incluso in Pro. Provalo quanto vuoi; per tenere il mandala serve Pro.</string>
+    <string name="controls_position_hidden_note">Questo livello è nascosto. Mostralo per vedere dove si sposta.</string>
+    <string name="controls_across">Orizzontale</string>
+    <string name="controls_up_and_down">Verticale</string>
+    <string name="controls_centre">Centra</string>
+    <string name="controls_done">Fine</string>
+    <string name="controls_move_on_image">Sposta sull\'immagine</string>
+    <string name="controls_style">Stile</string>
+    <string name="controls_palette">Tavolozza</string>
+    <string name="controls_blending">Fusione</string>
+    <string name="controls_opacity">Opacità</string>
+    <string name="controls_shape">Forma</string>
+    <string name="controls_shape_new_arrangement">Nuova disposizione, stesso stile e tavolozza</string>
+    <string name="controls_symmetry">Simmetria</string>
+    <string name="controls_scale">Scala</string>
+    <string name="controls_complexity">Complessità</string>
+    <string name="controls_spokes">Raggi</string>
+    <string name="controls_density">Densità</string>
+    <string name="controls_ripple">Increspatura</string>
+    <string name="controls_light_and_colour">Luce e colore</string>
+    <string name="controls_glow">Bagliore</string>
+    <string name="controls_colour_drift">Deriva colore</string>
+    <string name="controls_painted">Pittorico</string>
+    <string name="controls_saturation">Saturazione</string>
+    <string name="controls_brightness">Luminosità</string>
+
+    <!-- Scene tab: background and effects -->
+    <string name="controls_background">Sfondo</string>
+    <string name="controls_off">Off</string>
+    <string name="controls_background_auto_note">Un bagliore scuro e fibre sottili nei colori del livello più in basso.</string>
+    <string name="controls_choose_picture">Scegli immagine</string>
+    <string name="controls_strength">Intensità</string>
+    <string name="controls_colour_1">Colore 1</string>
+    <string name="controls_colour">Colore</string>
+    <string name="controls_colour_2">Colore 2</string>
+    <string name="controls_radial">Radiale</string>
+    <string name="controls_angle">Angolo</string>
+    <string name="controls_rays">Raggi</string>
+    <string name="controls_sharpness">Nitidezza</string>
+    <string name="controls_grain">Grana</string>
+    <string name="controls_coloured_grain">Grana colorata</string>
+    <string name="controls_effects">Effetti</string>
+    <string name="controls_on">On</string>
+    <string name="controls_effects_new_pattern">Nuova disposizione di luci, ombreggiature, stelle e glitter</string>
+    <string name="controls_reset">Reimposta</string>
+    <string name="controls_effects_off_note">Attiva per usare vignettatura, bloom, grana, stelle e altro.</string>
+    <string name="controls_light">Luce</string>
+    <string name="controls_contrast">Contrasto</string>
+    <string name="controls_vignette">Vignettatura</string>
+    <string name="controls_bloom">Bloom</string>
+    <string name="controls_tone">Tono</string>
+    <string name="controls_sepia">Seppia</string>
+    <string name="controls_fade">Dissolvenza</string>
+    <string name="controls_texture">Texture</string>
+    <string name="controls_clarity">Chiarezza</string>
+    <string name="controls_sparkle">Scintillio</string>
+    <string name="controls_stars">Stelle</string>
+    <string name="controls_glitter">Glitter</string>
+    <string name="controls_more">Altro</string>
+    <string name="controls_highlights">Luci</string>
+    <string name="controls_dimming">Ombreggiatura</string>
+    <string name="controls_erasure">Cancellatura</string>
+    <string name="controls_relief">Rilievo</string>
+    <string name="controls_relief_angle">Angolo rilievo</string>
+    <string name="controls_chromatic">Cromatico</string>
+    <string name="controls_old_fade">Dissolvenza vecchia</string>
+
+    <!-- Emblem tab -->
+    <string name="controls_random_emblem">Emblema casuale</string>
+    <string name="controls_emblem_off_note">Un motivo disegnato in grande al centro: Om, Albero della vita, Fiore della vita, Loto e altri.</string>
+    <string name="controls_pro_note_emblem">L\'emblema è incluso in Pro. Provalo quanto vuoi; per tenere il mandala serve Pro.</string>
+    <string name="controls_motif">Motivo</string>
+    <string name="controls_variant">Variante</string>
+    <string name="controls_petals">Petali</string>
+    <string name="controls_organic">Organico</string>
+    <string name="controls_new_shape">Nuova forma</string>
+    <string name="controls_branches">Rami</string>
+    <string name="controls_roots">Radici</string>
+    <string name="controls_style_and_frame">Stile e cornice</string>
+    <string name="controls_frame">Cornice</string>
+    <string name="controls_size">Dimensione</string>
+    <string name="controls_weight">Spessore</string>
+    <string name="controls_rotate">Ruota</string>
+    <string name="controls_spread">Diffusione</string>
+
+    <!-- Text tab and quote list -->
+    <string name="controls_random_text_look">Stile testo casuale</string>
+    <string name="controls_text_off_note">Una citazione o parole tue sotto il mandala, con l\'autore se vuoi.</string>
+    <string name="controls_pro_note_text">Testo e citazioni sono inclusi in Pro. Provali quanto vuoi; per tenere il mandala serve Pro.</string>
+    <string name="controls_random_quote">Citazione casuale</string>
+    <string name="controls_choose_quote">Scegli citazione</string>
+    <string name="controls_text_field">Testo</string>
+    <string name="controls_author">Autore</string>
+    <string name="controls_show_author">Mostra autore</string>
+    <string name="controls_font">Carattere</string>
+    <string name="controls_size_and_place">Dimensione e posizione</string>
+    <string name="controls_width">Larghezza</string>
+    <string name="controls_tracking">Spaziatura</string>
+    <string name="controls_height">Altezza</string>
+    <string name="controls_cloud">Nuvola</string>
+    <string name="controls_cloud_size">Dimensione nuvola</string>
+    <string name="controls_cloud_colour">Colore nuvola</string>
+    <string name="controls_shadow">Ombra</string>
+    <string name="controls_shadow_colour">Colore ombra</string>
+    <string name="controls_hue">Tonalità</string>
+    <string name="controls_close">Chiudi</string>
+    <string name="controls_quotes">Citazioni</string>
+    <string name="controls_your_quotes">Le tue citazioni</string>
+    <string name="controls_remove_quote">Rimuovi citazione</string>
+    <string name="controls_quotes_public_domain">Tutte le citazioni della raccolta sono di pubblico dominio.</string>
+
+    <!-- Draw tab -->
+    <string name="controls_draw_on_image">Disegna sull\'immagine</string>
+    <string name="controls_undo">Annulla</string>
+    <string name="controls_clear">Cancella</string>
+    <string name="controls_line_colour">Colore linea</string>
+    <string name="controls_line_and_light">Linea e luce</string>
+    <string name="controls_brush_size">Dimensione pennello</string>
+    <string name="controls_paint">Dipingi</string>
+    <string name="controls_spray_colour">Colore spray</string>
+    <string name="controls_softness_and_blending">Morbidezza e fusione</string>
+    <string name="controls_softness">Morbidezza</string>
+</resources>

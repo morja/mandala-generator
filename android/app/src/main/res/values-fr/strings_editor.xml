@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Texts of the editor screen, the wallpaper pair and the live wallpaper sheets (ADR-0017). -->
+<resources>
+    <!-- Editor: messages and export progress -->
+    <string name="editor_undo">Annuler</string>
+    <string name="editor_progress_step">%1$s…</string>
+    <string name="editor_percent">%1$d %%</string>
+
+    <!-- Editor: top bar -->
+    <string name="editor_back">Retour</string>
+    <string name="editor_forward">Suivant</string>
+    <string name="editor_surprise">Surprenez-moi</string>
+    <string name="editor_save_image">Enregistrer l\'image</string>
+    <string name="editor_favourites">Favoris</string>
+    <string name="editor_more">Plus</string>
+
+    <!-- Editor: menu, daily wallpaper entry -->
+    <string name="editor_daily_pro">Vos favoris à tour de rôle, chaque matin · Pro</string>
+    <string name="editor_daily_today">Aujourd\'hui : %1$s</string>
+    <string name="editor_daily_off">Vos favoris à tour de rôle, sur l\'écran de verrouillage et d\'accueil</string>
+
+    <!-- Editor: canvas -->
+    <string name="editor_show_large">Afficher l\'image en grand</string>
+    <string name="editor_make_small">Réduire l\'image</string>
+    <string name="editor_larger_image">Image plus grande</string>
+    <string name="editor_smaller_image">Image plus petite</string>
+    <string name="editor_preview">Aperçu du mandala</string>
+    <string name="editor_pro_mark_action">Ce qui nécessite Pro</string>
+    <string name="editor_pro_mark_description">Ce mandala utilise des fonctionnalités Pro</string>
+    <string name="editor_draw_hint">Faites glisser sur l\'image pour dessiner</string>
+    <string name="editor_move_layer_hint">Faites glisser pour déplacer le calque %1$d, pincez pour le redimensionner et le faire pivoter</string>
+    <string name="editor_move_emblem_hint">Faites glisser pour déplacer l\'emblème, pincez pour le redimensionner et le faire pivoter</string>
+
+    <!-- Editor: Pro sheet -->
+    <string name="editor_pro_title">Dahlia Pro</string>
+    <string name="editor_pro_uses_keep">Ce mandala utilise des fonctionnalités Pro. Pour le garder tel quel, passez à Pro :</string>
+    <string name="editor_pro_uses">Ce mandala utilise des fonctionnalités Pro :</string>
+    <string name="editor_pro_feature_item">· %1$s</string>
+    <string name="editor_pro_summary">Pro ajoute jusqu\'à cinq calques, des emblèmes, du texte et des citations, ainsi que le déplacement des calques et de l\'emblème. Enregistrez en 2048 pixels de large avec le mandala placé à la main et ajusté, ainsi qu\'en dessin au trait. Fonds d\'écran : accueil et verrouillage en duo, un nouveau chaque jour et un fond d\'écran animé. Essayez plus de calques, des emblèmes et des citations dans l\'éditeur avant d\'acheter. Un seul achat, sans abonnement.</string>
+    <string name="editor_pro_buy_for">Acheter pour %1$s</string>
+    <string name="editor_pro_buy">Acheter Pro</string>
+    <string name="editor_pro_without">%1$s sans elles</string>
+    <string name="editor_pro_remove">Les retirer</string>
+    <string name="editor_pro_unavailable">Pro est vendu via Google Play et n\'est pas disponible dans cette installation pour le moment.</string>
+
+    <!-- Editor: favourites sheet -->
+    <string name="editor_favourites_add">Ajouter l\'actuel</string>
+    <string name="editor_favourites_empty">Aucun favori pour l\'instant. Ajoutez le mandala actuel, ou ouvrez le fichier de favoris de l\'app Mac (favorites.json) avec Ouvrir un fichier.</string>
+    <string name="editor_favourites_hint">Appuyez pour utiliser, appui long pour supprimer.</string>
+    <string name="editor_favourite_description">Favori : %1$s</string>
+    <string name="editor_favourite_delete">Supprimer</string>
+
+    <!-- Wallpaper pair sheet -->
+    <string name="pair_title">Écran d\'accueil et de verrouillage</string>
+    <string name="pair_lock_screen">Écran de verrouillage</string>
+    <string name="pair_home_screen">Écran d\'accueil</string>
+    <string name="pair_screen_preview">Aperçu : %1$s</string>
+    <string name="pair_lock_note">L\'écran de verrouillage reprend la luminosité, le contraste et la saturation de la fenêtre d\'enregistrement.</string>
+    <string name="pair_set_both">Définir les deux</string>
+
+    <!-- Live wallpaper sheet -->
+    <string name="live_title">Fond d\'écran animé</string>
+    <string name="live_intro">Ce mandala remplit l\'écran et tourne lentement, un tour en quatre minutes. Il ne bouge que lorsque vous le voyez.</string>
+    <string name="live_breathing">Respiration : la luminosité monte et descend</string>
+    <string name="live_colour_drift">Dérive des couleurs : les couleurs tournent lentement</string>
+    <string name="live_palettes_in_turn">Palettes à tour de rôle : la suivante apparaît toutes les dix minutes</string>
+    <string name="live_daily_note">Avec le fond d\'écran quotidien activé, le fond d\'écran animé passe en fondu au favori suivant chaque matin.</string>
+    <string name="live_set">Définir le fond d\'écran animé</string>
+</resources>

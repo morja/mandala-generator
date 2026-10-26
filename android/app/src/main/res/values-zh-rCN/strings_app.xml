@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Texts of the app outside the ui package: save formats, tools, messages, wallpapers, Pro (ADR-0017). -->
+<resources>
+    <!-- Save formats (ADR-0010) -->
+    <string name="format_square">方形</string>
+    <string name="format_screen">当前屏幕</string>
+    <string name="format_4_5">4:5</string>
+    <string name="format_3_4">3:4</string>
+    <string name="format_2_3">2:3</string>
+    <string name="format_9_16">9:16</string>
+    <string name="format_5_4">5:4</string>
+    <string name="format_4_3">4:3</string>
+    <string name="format_3_2">3:2</string>
+    <string name="format_16_9">16:9</string>
+
+    <!-- Drawing tools -->
+    <string name="draw_tool_lines">线条</string>
+    <string name="draw_tool_spray">喷绘</string>
+
+    <!-- How much a new mandala from the menu changes -->
+    <string name="new_kind_variation">变化</string>
+    <string name="new_kind_layers">新图层</string>
+    <string name="new_kind_everything">全部</string>
+
+    <!-- Wallpaper targets and menu entries (ADR-0014) -->
+    <string name="wallpaper_target_home">主屏幕</string>
+    <string name="wallpaper_target_lock">锁定屏幕</string>
+    <string name="wallpaper_target_both">主屏幕和锁定屏幕</string>
+    <string name="wallpaper_live">动态壁纸</string>
+    <string name="wallpaper_live_pro">动态壁纸 · Pro</string>
+    <string name="wallpaper_pair">主屏幕和锁屏成对设置</string>
+    <string name="wallpaper_pair_pro">主屏幕和锁屏成对设置 · Pro</string>
+    <!-- What the user was about to do when the Pro sheet opened -->
+    <string name="action_save">保存</string>
+    <string name="action_set_wallpaper">设为壁纸</string>
+    <string name="action_share">分享</string>
+
+    <!-- Export progress, shown with an ellipsis -->
+    <string name="export_creating_image">正在生成图片</string>
+    <string name="export_saving_to_pictures">正在保存到“图片”</string>
+    <string name="export_creating_wallpaper">正在生成壁纸</string>
+    <string name="export_setting_wallpaper">正在设置壁纸</string>
+    <string name="export_preparing_share">正在准备分享</string>
+    <string name="export_creating_line_drawing">正在生成线稿</string>
+    <string name="export_creating_wallpapers">正在生成壁纸</string>
+    <string name="export_setting_both_wallpapers">正在设置两张壁纸</string>
+    <string name="export_setting_daily">正在设置今日壁纸</string>
+    <string name="export_preparing_live">正在准备动态壁纸</string>
+
+    <!-- Messages after saving, sharing and setting wallpapers; %1$s in the failures is a technical reason -->
+    <string name="message_saved_to_pictures">已将 %1$d × %2$d 保存到 Pictures/%3$s</string>
+    <string name="message_wallpaper_set">壁纸已设置</string>
+    <string name="message_pair_set">主屏幕和锁定屏幕已设置</string>
+    <string name="message_line_drawing_saved">线稿已保存</string>
+    <string name="message_line_drawing_memory">内存不足，无法生成此线稿。</string>
+    <string name="message_line_drawing_failed">无法保存线稿：%1$s</string>
+    <string name="message_image_memory">内存不足，无法生成此图片。</string>
+    <string name="message_image_failed">无法生成图片：%1$s</string>
+    <string name="message_wallpaper_failed">无法设置壁纸：%1$s</string>
+    <string name="message_preview_memory">内存不足，无法显示预览。</string>
+
+    <!-- Daily and live wallpaper messages; %1$s is the name of a favourite -->
+    <string name="message_daily_needs_favourite">每日壁纸会轮流使用你的收藏，请先添加一个收藏。</string>
+    <string name="message_daily_on">每天早上换一张新壁纸</string>
+    <string name="message_daily_on_today">今天：%1$s。每天早上换一张新壁纸</string>
+    <string name="message_live_updating">动态壁纸稍后将显示此曼陀罗</string>
+
+    <!-- Favourites, quotes and pictures -->
+    <string name="message_favourite_added">已添加到收藏</string>
+    <string name="message_favourite_deleted">收藏已删除</string>
+    <string name="message_quote_saved">已保存到你的名言</string>
+    <string name="message_picture_failed">无法打开图片：%1$s</string>
+
+    <!-- Opening and saving files of the macOS app -->
+    <string name="message_file_unreadable">无法读取该文件。</string>
+    <string name="message_file_no_layers">该文件没有图层。</string>
+    <string name="message_file_unknown">这不是曼陀罗设置文件或收藏文件。</string>
+    <string name="message_settings_saved">设置已保存</string>
+    <string name="message_settings_failed">无法保存设置。</string>
+    <plurals name="message_favourites_imported">
+        <item quantity="other">已导入 %d 个收藏</item>
+    </plurals>
+    <plurals name="message_favourites_already_there">
+        <item quantity="other">%d 个已存在</item>
+    </plurals>
+    <!-- %1$s is the import message, %2$s how many were already there -->
+    <string name="message_favourites_imported_note">%1$s（%2$s）</string>
+
+    <!-- Google Play purchase of Pro (ADR-0007); %1$s is Google Play's reason, %1$d its code -->
+    <string name="pro_purchase_failed">购买未成功（%1$s）。</string>
+    <string name="pro_purchase_code">代码 %1$d</string>
+    <string name="pro_unavailable">目前无法在此购买 Pro。Pro 通过 Google Play 销售。</string>
+    <string name="pro_unlocked">谢谢！Pro 已解锁。</string>
+    <string name="pro_pending">购买正在处理中。付款完成后即可解锁 Pro。</string>
+</resources>

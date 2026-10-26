@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Texts of the menu sheet, the save sheet and the About screen (ADR-0017). -->
+<resources>
+    <!-- Menu: the mandala on screen -->
+    <string name="menu_no_layers">レイヤーなし</string>
+    <plurals name="menu_layers_emblem_on">
+        <item quantity="other">%1$d個のレイヤー · エンブレムオン</item>
+    </plurals>
+    <plurals name="menu_layers_emblem_off">
+        <item quantity="other">%1$d個のレイヤー · エンブレムオフ</item>
+    </plurals>
+
+    <!-- Menu: what keeps the mandala -->
+    <string name="menu_favourite">お気に入り</string>
+    <string name="menu_share">共有</string>
+    <string name="menu_wallpaper">壁紙</string>
+
+    <!-- Menu: the three dice for a new mandala -->
+    <string name="menu_new_mandala">新しいマンダラ</string>
+    <string name="menu_die_variation">バリエーション</string>
+    <string name="menu_die_variation_detail">細部を変更</string>
+    <string name="menu_die_layers">新しいレイヤー</string>
+    <string name="menu_die_layers_detail">スタイルを変更</string>
+    <string name="menu_die_everything">おまかせ</string>
+    <string name="menu_die_everything_detail">すべてを変更</string>
+
+    <!-- Menu: files and settings -->
+    <string name="menu_open_file">ファイルを開く</string>
+    <string name="menu_save_settings">設定を保存</string>
+    <string name="menu_fast_preview">高速プレビュー</string>
+    <string name="menu_fast_preview_detail">保存する画像には常にグローが完全に適用されます</string>
+    <string name="menu_daily_wallpaper">毎日新しい壁紙</string>
+    <string name="menu_theme">テーマ</string>
+    <string name="menu_theme_dark">ダーク</string>
+    <string name="menu_theme_light">ライト</string>
+    <string name="menu_about">このアプリについて</string>
+
+    <!-- Menu: comparing the new mandala with the current one -->
+    <string name="menu_back">メニュー</string>
+    <string name="menu_now">現在</string>
+    <string name="menu_try_another">別のものを試す</string>
+    <string name="menu_use_new">新しいものを使う</string>
+
+    <!-- Save sheet: title, format and frame -->
+    <string name="save_title">画像を保存</string>
+    <string name="save_ratio">比率</string>
+    <string name="save_ratio_landscape">%1$s · 横</string>
+    <string name="save_ratio_portrait">%1$s · 縦</string>
+    <string name="save_fit_whole">全体</string>
+    <string name="save_fit_fill">全面</string>
+    <string name="save_frame_hint">ドラッグで移動、ピンチでズーム、ダブルタップで中央に戻します。</string>
+    <string name="save_frame_pro">マンダラの移動とズームはPro機能です。</string>
+    <string name="save_about_pro">Proについて</string>
+    <string name="save_preview_description">保存する画像のプレビュー</string>
+
+    <!-- Save sheet: the finish under "Adjust" -->
+    <string name="save_adjust">調整</string>
+    <string name="save_reset">リセット</string>
+    <string name="save_adjust_with_pro">Proで利用可能</string>
+    <string name="save_adjust_unchanged">変更なし</string>
+    <string name="save_adjust_summary">明るさ%1$s、コントラスト%2$s、彩度%3$s</string>
+    <string name="save_adjust_pro">画像の明るさ、コントラスト、彩度の調整はPro機能です。</string>
+    <string name="save_brightness">明るさ</string>
+    <string name="save_contrast">コントラスト</string>
+    <string name="save_saturation">彩度</string>
+
+    <!-- Save sheet: quote, size and buttons -->
+    <string name="save_quote_follows">引用もマンダラと一緒に移動</string>
+    <string name="save_size">%1$d × %2$d</string>
+    <string name="save_size_pro">%1$d × %2$d · Pro</string>
+    <string name="save_save">保存</string>
+    <string name="save_wallpaper">壁紙</string>
+
+    <!-- Save sheet: the line drawing as SVG -->
+    <string name="save_line_drawing">線画</string>
+    <string name="save_line_drawing_pro">線画 · Pro</string>
+    <string name="save_line_drawing_detail">正方形のSVG: レイヤーとエンブレムを線で描きます。グロー、エフェクト、背景、引用は含みません。</string>
+    <string name="save_line_drawing_points">ストレンジアトラクターのレイヤーは含まれません。</string>
+    <string name="save_line_drawing_colour">黒地にカラー</string>
+    <string name="save_line_drawing_lines">白地に黒、プロッターや塗り絵向け</string>
+
+    <!-- About screen -->
+    <string name="about_title">このアプリについて</string>
+    <string name="about_close">閉じる</string>
+    <string name="about_version">バージョン %1$s（%2$d）</string>
+    <string name="about_licence">ライセンス</string>
+    <string name="about_free_software">Dahliaはフリーソフトウェアです。Free Software Foundationが公表したGNU General Public License第3版の条件に従って、再頒布や改変ができます。保証は一切ありません。</string>
+    <string name="about_source_code">GitHubのソースコード</string>
+    <string name="about_additional_permission">追加の許可</string>
+    <string name="about_gpl_section_7">GPL第7条</string>
+    <string name="about_privacy">プライバシー</string>
+    <string name="about_privacy_text">アカウント不要、広告なし、トラッキングなし。マンダラと設定はお使いのデバイス内にのみ保存されます。</string>
+    <string name="about_privacy_policy">プライバシーポリシー</string>
+    <string name="about_libraries">オープンソースライブラリ</string>
+    <string name="about_full_text">全文</string>
+</resources>

@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Texts of the app outside the ui package: save formats, tools, messages, wallpapers, Pro (ADR-0017). -->
+<resources>
+    <!-- Save formats (ADR-0010) -->
+    <string name="format_square">Квадрат</string>
+    <string name="format_screen">Этот экран</string>
+    <string name="format_4_5">4:5</string>
+    <string name="format_3_4">3:4</string>
+    <string name="format_2_3">2:3</string>
+    <string name="format_9_16">9:16</string>
+    <string name="format_5_4">5:4</string>
+    <string name="format_4_3">4:3</string>
+    <string name="format_3_2">3:2</string>
+    <string name="format_16_9">16:9</string>
+
+    <!-- Drawing tools -->
+    <string name="draw_tool_lines">Линии</string>
+    <string name="draw_tool_spray">Спрей</string>
+
+    <!-- How much a new mandala from the menu changes -->
+    <string name="new_kind_variation">Вариация</string>
+    <string name="new_kind_layers">Новые слои</string>
+    <string name="new_kind_everything">Всё</string>
+
+    <!-- Wallpaper targets and menu entries (ADR-0014) -->
+    <string name="wallpaper_target_home">Главный экран</string>
+    <string name="wallpaper_target_lock">Экран блокировки</string>
+    <string name="wallpaper_target_both">Главный экран и экран блокировки</string>
+    <string name="wallpaper_live">Живые обои</string>
+    <string name="wallpaper_live_pro">Живые обои · Pro</string>
+    <string name="wallpaper_pair">Пара для главного экрана и блокировки</string>
+    <string name="wallpaper_pair_pro">Пара для главного экрана и блокировки · Pro</string>
+    <!-- What the user was about to do when the Pro sheet opened -->
+    <string name="action_save">Сохранить</string>
+    <string name="action_set_wallpaper">Установить как обои</string>
+    <string name="action_share">Поделиться</string>
+
+    <!-- Export progress, shown with an ellipsis -->
+    <string name="export_creating_image">Создание изображения</string>
+    <string name="export_saving_to_pictures">Сохранение в папку Pictures</string>
+    <string name="export_creating_wallpaper">Создание обоев</string>
+    <string name="export_setting_wallpaper">Установка обоев</string>
+    <string name="export_preparing_share">Подготовка к отправке</string>
+    <string name="export_creating_line_drawing">Создание контурного рисунка</string>
+    <string name="export_creating_wallpapers">Создание обоев для двух экранов</string>
+    <string name="export_setting_both_wallpapers">Установка обоев на оба экрана</string>
+    <string name="export_setting_daily">Установка обоев на сегодня</string>
+    <string name="export_preparing_live">Подготовка живых обоев</string>
+
+    <!-- Messages after saving, sharing and setting wallpapers; %1$s in the failures is a technical reason -->
+    <string name="message_saved_to_pictures">Сохранено %1$d × %2$d в Pictures/%3$s</string>
+    <string name="message_wallpaper_set">Обои установлены</string>
+    <string name="message_pair_set">Обои для главного экрана и экрана блокировки установлены</string>
+    <string name="message_line_drawing_saved">Контурный рисунок сохранён</string>
+    <string name="message_line_drawing_memory">Недостаточно памяти для этого контурного рисунка.</string>
+    <string name="message_line_drawing_failed">Не удалось сохранить контурный рисунок: %1$s</string>
+    <string name="message_image_memory">Недостаточно памяти для этого изображения.</string>
+    <string name="message_image_failed">Не удалось создать изображение: %1$s</string>
+    <string name="message_wallpaper_failed">Не удалось установить обои: %1$s</string>
+    <string name="message_preview_memory">Недостаточно памяти для предпросмотра.</string>
+
+    <!-- Daily and live wallpaper messages; %1$s is the name of a favourite -->
+    <string name="message_daily_needs_favourite">Ежедневные обои берут мандалы из избранного по очереди; сначала добавьте одну.</string>
+    <string name="message_daily_on">Новые обои каждое утро</string>
+    <string name="message_daily_on_today">Сегодня: %1$s. Новые обои каждое утро</string>
+    <string name="message_live_updating">Живые обои покажут эту мандалу через мгновение</string>
+
+    <!-- Favourites, quotes and pictures -->
+    <string name="message_favourite_added">Добавлено в избранное</string>
+    <string name="message_favourite_deleted">Удалено из избранного</string>
+    <string name="message_quote_saved">Сохранено в ваши цитаты</string>
+    <string name="message_picture_failed">Не удалось открыть изображение: %1$s</string>
+
+    <!-- Opening and saving files of the macOS app -->
+    <string name="message_file_unreadable">Не удалось прочитать файл.</string>
+    <string name="message_file_no_layers">В файле нет слоёв.</string>
+    <string name="message_file_unknown">Это не файл настроек или избранного Mandala.</string>
+    <string name="message_settings_saved">Настройки сохранены</string>
+    <string name="message_settings_failed">Не удалось сохранить настройки.</string>
+    <plurals name="message_favourites_imported">
+        <item quantity="one">Импортирована %d мандала в избранное</item>
+        <item quantity="few">Импортировано %d мандалы в избранное</item>
+        <item quantity="many">Импортировано %d мандал в избранное</item>
+        <item quantity="other">Импортировано %d мандалы в избранное</item>
+    </plurals>
+    <plurals name="message_favourites_already_there">
+        <item quantity="one">%d уже была</item>
+        <item quantity="few">%d уже были</item>
+        <item quantity="many">%d уже было</item>
+        <item quantity="other">%d уже было</item>
+    </plurals>
+    <!-- %1$s is the import message, %2$s how many were already there -->
+    <string name="message_favourites_imported_note">%1$s (%2$s)</string>
+
+    <!-- Google Play purchase of Pro (ADR-0007); %1$s is Google Play's reason, %1$d its code -->
+    <string name="pro_purchase_failed">Покупка не прошла (%1$s).</string>
+    <string name="pro_purchase_code">код %1$d</string>
+    <string name="pro_unavailable">Сейчас Pro здесь купить нельзя. Он продаётся через Google Play.</string>
+    <string name="pro_unlocked">Спасибо! Pro разблокирован.</string>
+    <string name="pro_pending">Покупка ожидает оплаты. Pro разблокируется после оплаты.</string>
+</resources>

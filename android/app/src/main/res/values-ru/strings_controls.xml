@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Texts of the control tabs below or beside the canvas (Controls.kt, Parts.kt; ADR-0017). -->
+<resources>
+
+    <!-- Tab row and the header beside the folded image -->
+    <string name="controls_tab_layers">Слои</string>
+    <string name="controls_tab_scene">Сцена</string>
+    <string name="controls_tab_emblem">Эмблема</string>
+    <string name="controls_tab_text">Текст</string>
+    <string name="controls_tab_draw">Рисунок</string>
+    <string name="controls_header_no_layers">Нет слоёв</string>
+    <string name="controls_header_no_background">Без фона</string>
+    <string name="controls_header_strokes">%1$s · %2$s</string>
+    <plurals name="controls_header_lines">
+        <item quantity="one">%d линия</item>
+        <item quantity="few">%d линии</item>
+        <item quantity="many">%d линий</item>
+        <item quantity="other">%d линии</item>
+    </plurals>
+    <plurals name="controls_header_spray">
+        <item quantity="one">%d спрей</item>
+        <item quantity="few">%d спрея</item>
+        <item quantity="many">%d спреев</item>
+        <item quantity="other">%d спрея</item>
+    </plurals>
+
+    <!-- Shared summaries: blend mode with opacity, the Pro mark -->
+    <string name="controls_blend_summary">%1$s · %2$d %%</string>
+    <string name="controls_with_pro">%1$s · Pro</string>
+
+    <!-- Foldable groups and sliders (accessibility) -->
+    <string name="controls_group_open">Развернуть: %1$s</string>
+    <string name="controls_group_close">Свернуть: %1$s</string>
+    <string name="controls_group_state_open">Развёрнуто</string>
+    <string name="controls_group_state_closed">Свёрнуто</string>
+    <string name="controls_slider_reset">Сбросить: %1$s</string>
+
+    <!-- Layers tab: actions and layer rows -->
+    <string name="controls_layers_add">Добавить</string>
+    <string name="controls_layers_duplicate">Дублировать</string>
+    <string name="controls_layers_randomize">Случайно изменить слой %1$d</string>
+    <string name="controls_layer_hide">Скрыть слой %1$d</string>
+    <string name="controls_layer_show">Показать слой %1$d</string>
+    <string name="controls_layer_move_up">Переместить слой %1$d вверх</string>
+    <string name="controls_layer_move_down">Переместить слой %1$d вниз</string>
+    <string name="controls_style_new_variant">Новый вариант: %1$s</string>
+    <string name="controls_position_centred">По центру</string>
+    <string name="controls_position_moved">Смещён</string>
+
+    <!-- Scene tab: background types -->
+    <string name="controls_background_auto">Авто</string>
+    <string name="controls_background_picture">Фото</string>
+    <string name="controls_background_colour">Цвет</string>
+    <string name="controls_background_gradient">Градиент</string>
+    <string name="controls_background_sunburst">Лучи</string>
+    <string name="controls_background_grain">Зерно</string>
+
+    <!-- Emblem and text tabs: on/off rows -->
+    <string name="controls_emblem_show">Показать эмблему</string>
+    <string name="controls_emblem_shape_seed">Форма %1$s</string>
+    <string name="controls_text_show">Показать текст</string>
+    <string name="controls_text_in_my_quotes">В ваших цитатах</string>
+    <string name="controls_text_save_to_my_quotes">Сохранить в мои цитаты</string>
+    <string name="controls_quotes_collection">Коллекция</string>
+
+    <!-- Draw tab: show switch per tool -->
+    <string name="controls_draw_show_lines">Показать линии</string>
+    <string name="controls_draw_show_spray">Показать спрей</string>
+
+    <!-- Layers tab: group titles, sliders and notes (some shared with other tabs) -->
+    <string name="controls_pro_note_layers">Больше трёх слоёв доступно в Pro. Пробуйте сколько угодно; чтобы сохранить мандалу, нужен Pro.</string>
+    <string name="controls_delete">Удалить</string>
+    <string name="controls_about_pro">О Pro</string>
+    <string name="controls_position">Положение</string>
+    <string name="controls_pro_note_position">Перемещение слоёв доступно в Pro. Пробуйте сколько угодно; чтобы сохранить мандалу, нужен Pro.</string>
+    <string name="controls_position_hidden_note">Этот слой скрыт. Покажите его, чтобы видеть, куда он смещается.</string>
+    <string name="controls_across">По горизонтали</string>
+    <string name="controls_up_and_down">По вертикали</string>
+    <string name="controls_centre">В центр</string>
+    <string name="controls_done">Готово</string>
+    <string name="controls_move_on_image">Двигать на изображении</string>
+    <string name="controls_style">Стиль</string>
+    <string name="controls_palette">Палитра</string>
+    <string name="controls_blending">Наложение</string>
+    <string name="controls_opacity">Непрозрачность</string>
+    <string name="controls_shape">Форма</string>
+    <string name="controls_shape_new_arrangement">Новое расположение, тот же стиль и палитра</string>
+    <string name="controls_symmetry">Симметрия</string>
+    <string name="controls_scale">Масштаб</string>
+    <string name="controls_complexity">Сложность</string>
+    <string name="controls_spokes">Спицы</string>
+    <string name="controls_density">Плотность</string>
+    <string name="controls_ripple">Рябь</string>
+    <string name="controls_light_and_colour">Свет и цвет</string>
+    <string name="controls_glow">Свечение</string>
+    <string name="controls_colour_drift">Дрейф цвета</string>
+    <string name="controls_painted">Живописность</string>
+    <string name="controls_saturation">Насыщенность</string>
+    <string name="controls_brightness">Яркость</string>
+
+    <!-- Scene tab: background and effects -->
+    <string name="controls_background">Фон</string>
+    <string name="controls_off">Выкл.</string>
+    <string name="controls_background_auto_note">Тёмное свечение и тонкие волокна в цветах нижнего слоя.</string>
+    <string name="controls_choose_picture">Выбрать фото</string>
+    <string name="controls_strength">Сила</string>
+    <string name="controls_colour_1">Цвет 1</string>
+    <string name="controls_colour">Цвет</string>
+    <string name="controls_colour_2">Цвет 2</string>
+    <string name="controls_radial">Радиальный</string>
+    <string name="controls_angle">Угол</string>
+    <string name="controls_rays">Лучи</string>
+    <string name="controls_sharpness">Резкость</string>
+    <string name="controls_grain">Зерно</string>
+    <string name="controls_coloured_grain">Цветное зерно</string>
+    <string name="controls_effects">Эффекты</string>
+    <string name="controls_on">Вкл.</string>
+    <string name="controls_effects_new_pattern">Новый узор бликов, затемнения, звёзд и блёсток</string>
+    <string name="controls_reset">Сбросить</string>
+    <string name="controls_effects_off_note">Включите, чтобы использовать виньетку, ореол, зерно, звёзды и многое другое.</string>
+    <string name="controls_light">Свет</string>
+    <string name="controls_contrast">Контраст</string>
+    <string name="controls_vignette">Виньетка</string>
+    <string name="controls_bloom">Ореол</string>
+    <string name="controls_tone">Тон</string>
+    <string name="controls_sepia">Сепия</string>
+    <string name="controls_fade">Выцветание</string>
+    <string name="controls_texture">Текстура</string>
+    <string name="controls_clarity">Чёткость</string>
+    <string name="controls_sparkle">Сияние</string>
+    <string name="controls_stars">Звёзды</string>
+    <string name="controls_glitter">Блёстки</string>
+    <string name="controls_more">Ещё</string>
+    <string name="controls_highlights">Блики</string>
+    <string name="controls_dimming">Затемнение</string>
+    <string name="controls_erasure">Стирание</string>
+    <string name="controls_relief">Рельеф</string>
+    <string name="controls_relief_angle">Угол рельефа</string>
+    <string name="controls_chromatic">Хроматизм</string>
+    <string name="controls_old_fade">Старое выцветание</string>
+
+    <!-- Emblem tab -->
+    <string name="controls_random_emblem">Случайная эмблема</string>
+    <string name="controls_emblem_off_note">Один крупный мотив в центре: Ом, Древо жизни, Цветок жизни, Лотос и другие.</string>
+    <string name="controls_pro_note_emblem">Эмблема доступна в Pro. Пробуйте сколько угодно; чтобы сохранить мандалу, нужен Pro.</string>
+    <string name="controls_motif">Мотив</string>
+    <string name="controls_variant">Вариант</string>
+    <string name="controls_petals">Лепестки</string>
+    <string name="controls_organic">Органичность</string>
+    <string name="controls_new_shape">Новая форма</string>
+    <string name="controls_branches">Ветви</string>
+    <string name="controls_roots">Корни</string>
+    <string name="controls_style_and_frame">Стиль и рамка</string>
+    <string name="controls_frame">Рамка</string>
+    <string name="controls_size">Размер</string>
+    <string name="controls_weight">Толщина</string>
+    <string name="controls_rotate">Поворот</string>
+    <string name="controls_spread">Разброс</string>
+
+    <!-- Text tab and quote list -->
+    <string name="controls_random_text_look">Случайный вид текста</string>
+    <string name="controls_text_off_note">Цитата или ваши слова под мандалой, при желании с автором.</string>
+    <string name="controls_pro_note_text">Текст и цитаты доступны в Pro. Пробуйте сколько угодно; чтобы сохранить мандалу, нужен Pro.</string>
+    <string name="controls_random_quote">Случайная цитата</string>
+    <string name="controls_choose_quote">Выбрать цитату</string>
+    <string name="controls_text_field">Текст</string>
+    <string name="controls_author">Автор</string>
+    <string name="controls_show_author">Показать автора</string>
+    <string name="controls_font">Шрифт</string>
+    <string name="controls_size_and_place">Размер и место</string>
+    <string name="controls_width">Ширина</string>
+    <string name="controls_tracking">Интервал</string>
+    <string name="controls_height">Высота</string>
+    <string name="controls_cloud">Облако</string>
+    <string name="controls_cloud_size">Размер облака</string>
+    <string name="controls_cloud_colour">Цвет облака</string>
+    <string name="controls_shadow">Тень</string>
+    <string name="controls_shadow_colour">Цвет тени</string>
+    <string name="controls_hue">Оттенок</string>
+    <string name="controls_close">Закрыть</string>
+    <string name="controls_quotes">Цитаты</string>
+    <string name="controls_your_quotes">Ваши цитаты</string>
+    <string name="controls_remove_quote">Удалить цитату</string>
+    <string name="controls_quotes_public_domain">Все цитаты коллекции находятся в общественном достоянии.</string>
+
+    <!-- Draw tab -->
+    <string name="controls_draw_on_image">Рисовать на изображении</string>
+    <string name="controls_undo">Отменить</string>
+    <string name="controls_clear">Очистить</string>
+    <string name="controls_line_colour">Цвет линии</string>
+    <string name="controls_line_and_light">Линия и свет</string>
+    <string name="controls_brush_size">Размер кисти</string>
+    <string name="controls_paint">Краска</string>
+    <string name="controls_spray_colour">Цвет спрея</string>
+    <string name="controls_softness_and_blending">Мягкость и наложение</string>
+    <string name="controls_softness">Мягкость</string>
+</resources>

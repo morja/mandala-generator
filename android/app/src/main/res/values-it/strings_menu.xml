@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Texts of the menu sheet, the save sheet and the About screen (ADR-0017). -->
+<resources>
+    <!-- Menu: the mandala on screen -->
+    <string name="menu_no_layers">Nessun livello</string>
+    <plurals name="menu_layers_emblem_on">
+        <item quantity="one">%1$d livello · emblema attivo</item>
+        <item quantity="many">%1$d livelli · emblema attivo</item>
+        <item quantity="other">%1$d livelli · emblema attivo</item>
+    </plurals>
+    <plurals name="menu_layers_emblem_off">
+        <item quantity="one">%1$d livello · emblema disattivato</item>
+        <item quantity="many">%1$d livelli · emblema disattivato</item>
+        <item quantity="other">%1$d livelli · emblema disattivato</item>
+    </plurals>
+
+    <!-- Menu: what keeps the mandala -->
+    <string name="menu_favourite">Preferito</string>
+    <string name="menu_share">Condividi</string>
+    <string name="menu_wallpaper">Sfondo</string>
+
+    <!-- Menu: the three dice for a new mandala -->
+    <string name="menu_new_mandala">Nuovo mandala</string>
+    <string name="menu_die_variation">Variazione</string>
+    <string name="menu_die_variation_detail">nuovi dettagli</string>
+    <string name="menu_die_layers">Nuovi livelli</string>
+    <string name="menu_die_layers_detail">nuovi stili</string>
+    <string name="menu_die_everything">Sorprendimi</string>
+    <string name="menu_die_everything_detail">tutto</string>
+
+    <!-- Menu: files and settings -->
+    <string name="menu_open_file">Apri file</string>
+    <string name="menu_save_settings">Salva impostazioni</string>
+    <string name="menu_fast_preview">Anteprima rapida</string>
+    <string name="menu_fast_preview_detail">Le immagini salvate hanno sempre il bagliore completo</string>
+    <string name="menu_daily_wallpaper">Nuovo sfondo ogni giorno</string>
+    <string name="menu_theme">Tema</string>
+    <string name="menu_theme_dark">Scuro</string>
+    <string name="menu_theme_light">Chiaro</string>
+    <string name="menu_about">Info</string>
+
+    <!-- Menu: comparing the new mandala with the current one -->
+    <string name="menu_back">Menu</string>
+    <string name="menu_now">Ora</string>
+    <string name="menu_try_another">Prova un altro</string>
+    <string name="menu_use_new">Usa il nuovo</string>
+
+    <!-- Save sheet: title, format and frame -->
+    <string name="save_title">Salva immagine</string>
+    <string name="save_ratio">Proporzioni</string>
+    <string name="save_ratio_landscape">%1$s · orizzontale</string>
+    <string name="save_ratio_portrait">%1$s · verticale</string>
+    <string name="save_fit_whole">Intero</string>
+    <string name="save_fit_fill">Riempi</string>
+    <string name="save_frame_hint">Trascina per spostare, pizzica per lo zoom, tocca due volte per centrare.</string>
+    <string name="save_frame_pro">Spostare e ingrandire il mandala è incluso in Pro.</string>
+    <string name="save_about_pro">Info su Pro</string>
+    <string name="save_preview_description">Anteprima dell\'immagine salvata</string>
+
+    <!-- Save sheet: the finish under "Adjust" -->
+    <string name="save_adjust">Regola</string>
+    <string name="save_reset">Reimposta</string>
+    <string name="save_adjust_with_pro">Con Pro</string>
+    <string name="save_adjust_unchanged">Invariato</string>
+    <string name="save_adjust_summary">Luminosità %1$s, contrasto %2$s, saturazione %3$s</string>
+    <string name="save_adjust_pro">Luminosità, contrasto e saturazione dell\'immagine sono inclusi in Pro.</string>
+    <string name="save_brightness">Luminosità</string>
+    <string name="save_contrast">Contrasto</string>
+    <string name="save_saturation">Saturazione</string>
+
+    <!-- Save sheet: quote, size and buttons -->
+    <string name="save_quote_follows">La citazione si sposta con il mandala</string>
+    <string name="save_size">%1$d × %2$d</string>
+    <string name="save_size_pro">%1$d × %2$d · Pro</string>
+    <string name="save_save">Salva</string>
+    <string name="save_wallpaper">Sfondo</string>
+
+    <!-- Save sheet: the line drawing as SVG -->
+    <string name="save_line_drawing">Disegno al tratto</string>
+    <string name="save_line_drawing_pro">Disegno al tratto · Pro</string>
+    <string name="save_line_drawing_detail">Un SVG quadrato: i livelli e l\'emblema come linee, senza bagliore, effetti, sfondo e citazione.</string>
+    <string name="save_line_drawing_points">I livelli Attrattore strano vengono esclusi.</string>
+    <string name="save_line_drawing_colour">Colore su nero</string>
+    <string name="save_line_drawing_lines">Scuro su bianco, per plotter e da colorare</string>
+
+    <!-- About screen -->
+    <string name="about_title">Info</string>
+    <string name="about_close">Chiudi</string>
+    <string name="about_version">Versione %1$s (%2$d)</string>
+    <string name="about_licence">Licenza</string>
+    <string name="about_free_software">Dahlia è software libero: puoi ridistribuirlo e/o modificarlo secondo i termini della GNU General Public License pubblicata dalla Free Software Foundation, versione 3. È fornito senza alcuna garanzia.</string>
+    <string name="about_source_code">Codice sorgente su GitHub</string>
+    <string name="about_additional_permission">Permesso aggiuntivo</string>
+    <string name="about_gpl_section_7">GPL, sezione 7</string>
+    <string name="about_privacy">Privacy</string>
+    <string name="about_privacy_text">Nessun account, nessuna pubblicità, nessun tracciamento. I tuoi mandala e le impostazioni restano sul tuo dispositivo.</string>
+    <string name="about_privacy_policy">Informativa sulla privacy</string>
+    <string name="about_libraries">Librerie open source</string>
+    <string name="about_full_text">Testo completo</string>
+</resources>
