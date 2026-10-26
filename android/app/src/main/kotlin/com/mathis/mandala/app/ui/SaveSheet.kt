@@ -127,7 +127,8 @@ internal fun SaveSheet(
         // the frame takes the height the other parts leave, and shrinks while "Adjust" is open.
         Column(Modifier.fillMaxHeight()) {
             Column(
-                Modifier.weight(1f).padding(horizontal = Spacing.lg),
+                // The bottom padding keeps the last switch off the divider below.
+                Modifier.weight(1f).padding(horizontal = Spacing.lg).padding(bottom = Spacing.sm),
                 verticalArrangement = Arrangement.spacedBy(Spacing.md),
             ) {
                 Text(stringResource(R.string.save_title), style = MaterialTheme.typography.titleMedium)

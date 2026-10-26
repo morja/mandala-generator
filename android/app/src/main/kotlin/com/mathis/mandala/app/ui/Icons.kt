@@ -41,6 +41,8 @@ object EditorIcons {
         soft = "M4,20l1.2,-4.6L15.5,5.1a2,2 0 0,1 2.8,0l0.6,0.6a2,2 0 0,1 0,2.8L8.6,18.8z")
     /** "More": two sliders. */
     val Tune = line("M4,7.5h8.5M17.5,7.5h2.5M4,16.5h2.5M11.5,16.5h8.5M15,5a2.5,2.5 0 1,0 0,5a2.5,2.5 0 1,0 0,-5zM9,14a2.5,2.5 0 1,0 0,5a2.5,2.5 0 1,0 0,-5z")
+    /** Clear: a bin. */
+    val Trash = line("M4.5,7h15M9.5,7V4.5h5V7M6.5,7l1,13h9l1,-13M10.5,10.5v6M13.5,10.5v6")
     val Chevron = line("M9,6l6,6 -6,6")
     val ChevronBack = line("M15,6l-6,6 6,6")
     val Arrow = line("M5,12h14M14,7l5,5 -5,5")
