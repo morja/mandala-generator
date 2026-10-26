@@ -63,6 +63,8 @@
     <!-- Live wallpaper sheet -->
     <string name="live_title">Live-Hintergrund</string>
     <string name="live_intro">Dieses Mandala füllt den Bildschirm und dreht sich langsam, eine Umdrehung in vier Minuten. Es bewegt sich nur, während du es siehst.</string>
+    <string name="live_layered">Ebenen drehen sich einzeln</string>
+    <string name="live_layered_note">Die Ebenen drehen sich gegeneinander; Hintergrund, Emblem, Text und Zeichnung bleiben stehen. Die Szene-Effekte fallen dabei weg.</string>
     <string name="live_breathing">Atmen: Die Helligkeit steigt und fällt</string>
     <string name="live_colour_drift">Farbwandel: Die Farben ändern sich langsam</string>
     <string name="live_palettes_in_turn">Paletten im Wechsel: Alle zehn Minuten blendet die nächste ein</string>

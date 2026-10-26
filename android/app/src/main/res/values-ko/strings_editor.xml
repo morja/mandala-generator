@@ -63,6 +63,8 @@
     <!-- Live wallpaper sheet -->
     <string name="live_title">라이브 배경화면</string>
     <string name="live_intro">이 만다라가 화면을 가득 채우고 4분에 한 바퀴씩 천천히 돌아갑니다. 화면이 보일 때만 움직입니다.</string>
+    <string name="live_layered">레이어가 따로 회전</string>
+    <string name="live_layered_note">레이어가 서로 반대로 돌고, 배경·엠블럼·글·그림은 그대로 있습니다. 장면 효과는 빠집니다.</string>
     <string name="live_breathing">호흡: 밝기가 올라갔다 내려갑니다</string>
     <string name="live_colour_drift">색상 흐름: 색이 천천히 바뀝니다</string>
     <string name="live_palettes_in_turn">팔레트 순환: 10분마다 다음 팔레트로 서서히 바뀝니다</string>

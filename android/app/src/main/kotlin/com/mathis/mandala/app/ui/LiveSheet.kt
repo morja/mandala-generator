@@ -21,8 +21,8 @@ import com.mathis.mandala.app.ui.theme.LocalTokens
 import com.mathis.mandala.app.ui.theme.Spacing
 
 /**
- * The live wallpaper (ADR-0014, Pro): the mandala turns slowly; breathing, colour drift and the
- * palettes in turn can be added. Android shows a preview before it is set.
+ * The live wallpaper (ADR-0014, Pro): the mandala turns slowly, as a whole or with its layers on their
+ * own; breathing, colour drift and the palettes in turn can be added. Android shows a preview before it is set.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -39,6 +39,10 @@ internal fun LiveSheet(settings: LiveSettings, onSettings: (LiveSettings) -> Uni
                 style = MaterialTheme.typography.bodyMedium,
                 color = t.textMuted,
             )
+            SwitchRow(stringResource(R.string.live_layered), settings.layered) { onSettings(settings.copy(layered = it)) }
+            if (settings.layered) {
+                Text(stringResource(R.string.live_layered_note), style = MaterialTheme.typography.bodySmall, color = t.textMuted)
+            }
             SwitchRow(stringResource(R.string.live_breathing), settings.breathing) { onSettings(settings.copy(breathing = it)) }
             SwitchRow(stringResource(R.string.live_colour_drift), settings.colourDrift) { onSettings(settings.copy(colourDrift = it)) }
             SwitchRow(stringResource(R.string.live_palettes_in_turn), settings.palettesInTurn) { onSettings(settings.copy(palettesInTurn = it)) }

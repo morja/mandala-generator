@@ -63,6 +63,8 @@
     <!-- Live wallpaper sheet -->
     <string name="live_title">Живые обои</string>
     <string name="live_intro">Эта мандала заполняет экран и медленно вращается: один оборот за четыре минуты. Она движется, только когда вы её видите.</string>
+    <string name="live_layered">Слои вращаются по отдельности</string>
+    <string name="live_layered_note">Слои вращаются навстречу друг другу; фон, эмблема, текст и рисунок остаются на месте. Эффекты сцены не применяются.</string>
     <string name="live_breathing">Дыхание: яркость то нарастает, то спадает</string>
     <string name="live_colour_drift">Дрейф цвета: цвета медленно меняются</string>
     <string name="live_palettes_in_turn">Палитры по очереди: каждые десять минут плавно появляется следующая</string>
