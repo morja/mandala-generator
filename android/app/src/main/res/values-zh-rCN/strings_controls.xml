@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Texts of the control tabs below or beside the canvas (Controls.kt, Parts.kt; ADR-0017). -->
+<!-- Texts of the control tabs below or beside the canvas (Controls.kt, Parts.kt; ADR-0018). -->
 <resources>
 
     <!-- Tab row and the header beside the folded image -->
@@ -188,4 +188,12 @@
     <string name="controls_spray_colour">喷绘颜色</string>
     <string name="controls_softness_and_blending">柔和度与混合</string>
     <string name="controls_softness">柔和度</string>
+    <!-- Added with main's variation/seed rows and Smoother -->
+    <string name="controls_variation_detail">颜色和设置</string>
+    <string name="controls_variation_description">同一风格，新的颜色和设置</string>
+    <string name="controls_seed_detail">排列</string>
+    <string name="controls_seed_description">风格、调色板和设置不变，新的排列</string>
+    <string name="controls_show_effects">显示效果</string>
+    <string name="controls_smoother">平滑</string>
+    <string name="controls_seed">种子</string>
 </resources>

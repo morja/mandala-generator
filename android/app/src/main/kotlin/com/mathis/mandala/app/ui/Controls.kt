@@ -4,6 +4,8 @@ import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.selection.toggleable
@@ -26,6 +28,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -53,6 +56,7 @@ import com.mathis.mandala.app.R
 import com.mathis.mandala.core.LayerBlendMode
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.selected
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -208,7 +212,7 @@ private fun LayersTab(params: MandalaParameters, selected: Int, vm: EditorViewMo
         TextButton(onClick = vm::duplicateSelected, enabled = layers.size < Editing.MAX_LAYERS) { Text(stringResource(R.string.controls_layers_duplicate).let { if (proMark) withPro(it) else it }) }
         TextButton(onClick = vm::removeSelected, enabled = layers.size > 1) { Text(stringResource(R.string.controls_delete)) }
         Box(Modifier.weight(1f))
-        IconButton(onClick = vm::randomizeSelected) { Icon(EditorIcons.DieOne, contentDescription = stringResource(R.string.controls_layers_randomize, selected + 1)) }
+        IconButton(onClick = vm::randomizeSelected) { Icon(EditorIcons.DieOne, contentDescription = stringResource(R.string.controls_layers_randomize, selected + 1), tint = LocalTokens.current.accent) }
     }
     LayerControls(layers[selected], vm::updateSelected, position, onVary = vm::varySelected, onReseed = vm::reseedSelected)
 }
@@ -311,14 +315,27 @@ private fun LayerRow(
 @Composable
 private fun LayerControls(layer: StyleLayer, update: ((StyleLayer) -> StyleLayer) -> Unit, position: PositionInput, onVary: () -> Unit, onReseed: () -> Unit) {
     val t = LocalTokens.current
-    // The second die keeps the style; the one in the layer row picks a new style too.
-    val styleName = stringResource(layer.style.labelRes)
-    Group(stringResource(R.string.controls_style), summary = styleName, trailing = {
-        IconButton(onClick = onVary) { Icon(EditorIcons.DieOne, contentDescription = stringResource(R.string.controls_style_new_variant, styleName), tint = t.accent) }
-    }) {
+    Group(stringResource(R.string.controls_style), summary = stringResource(layer.style.labelRes)) {
+        RandomActionRow(stringResource(R.string.menu_die_variation), stringResource(R.string.controls_variation_detail), stringResource(R.string.controls_variation_description), onVary)
         FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
             for (style in Editing.stylesByName) {
-                FilterChip(selected = layer.style == style, onClick = { update { it.copy(style = style) } }, label = { Text(stringResource(style.labelRes)) })
+                FilterChip(
+                    selected = layer.style == style,
+                    onClick = { update { it.copy(style = style) } },
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = t.accentSoft,
+                        selectedLabelColor = t.accent,
+                    ),
+                    border = BorderStroke(
+                        if (layer.style == style) Sizes.swatchRing else Sizes.swatchRing / 2,
+                        if (layer.style == style) t.accent else t.outline,
+                    ),
+                    leadingIcon = {
+                        Image(painterResource(stylePreviewResource(style)), contentDescription = null,
+                            modifier = Modifier.size(Sizes.swatchSmall).clip(RoundedCornerShape(Radius.sm)))
+                    },
+                    label = { Text(stringResource(style.labelRes)) },
+                )
             }
         }
     }
@@ -330,10 +347,8 @@ private fun LayerControls(layer: StyleLayer, update: ((StyleLayer) -> StyleLayer
         BlendChips(layer.blendMode) { m -> update { it.copy(blendMode = m) } }
         ValueSlider(stringResource(R.string.controls_opacity), layer.opacity, default = StyleLayer().opacity) { v -> update { it.copy(opacity = v) } }
     }
-    // The third die keeps style, palette and sliders and only rearranges (the seed die of the Mac's layer card).
-    Group(stringResource(R.string.controls_shape), initiallyOpen = true, trailing = {
-        IconButton(onClick = onReseed) { Icon(EditorIcons.DieOne, contentDescription = stringResource(R.string.controls_shape_new_arrangement), tint = t.accent) }
-    }) {
+    Group(stringResource(R.string.controls_shape), initiallyOpen = true) {
+        RandomActionRow(stringResource(R.string.controls_seed), stringResource(R.string.controls_seed_detail), stringResource(R.string.controls_seed_description), onReseed)
         SteppedSlider(stringResource(R.string.controls_symmetry), layer.symmetry, 1..8, default = StyleLayer().symmetry) { v -> update { it.copy(symmetry = v) } }
         ValueSlider(stringResource(R.string.controls_scale), layer.scale, Editing.Ranges.layerScale.floats(), default = StyleLayer().scale) { v -> update { it.copy(scale = v) } }
         ValueSlider(stringResource(R.string.controls_complexity), layer.complexity, Editing.Ranges.layerComplexity(layer.style).floats(), default = StyleLayer().complexity) { v -> update { it.copy(complexity = v) } }
@@ -363,7 +378,7 @@ private fun LayerControls(layer: StyleLayer, update: ((StyleLayer) -> StyleLayer
 @Composable
 private fun SceneTab(params: MandalaParameters, vm: EditorViewModel) {
     val base = params.baseLayer
-    Group(stringResource(R.string.controls_background), summary = if (base.isEnabled) backgroundName(base.type) else stringResource(R.string.controls_off), initiallyOpen = true) {
+    Group(stringResource(R.string.controls_background), summary = if (base.isEnabled) backgroundName(base.type) else stringResource(R.string.controls_off)) {
         BackgroundControls(base, vm::updateBackground, vm::useBackgroundImage)
     }
     EffectsGroup(params.effectsLayer, vm::updateEffects, vm::newEffectsPattern, vm::resetEffects)
@@ -448,7 +463,7 @@ private fun backgroundName(type: BaseLayerType) = stringResource(when (type) {
 })
 
 /**
- * The effects layer over the whole image, switched on in its heading; the quick, reliable sliders in
+ * Scene effects behind the text, switched on inside the section; the quick, reliable sliders in
  * four groups and the rarer ones under "More" (TUNE-1). "Fade" sets the `wash` field; the old `fade`
  * field does almost the same and gets its own slider ("Old fade") only in settings that use it.
  * The die in the heading moves highlights, dimming, erasure, stars and glitter to new places, as the
@@ -465,43 +480,42 @@ private fun EffectsGroup(
     var showOldFade by rememberSaveable { mutableStateOf(false) }
     LaunchedEffect(fx.fade > 0) { if (fx.fade > 0) showOldFade = true }
     val t = LocalTokens.current
-    Group(
-        stringResource(R.string.controls_effects),
-        summary = if (fx.isEnabled) stringResource(R.string.controls_on) else stringResource(R.string.controls_off),
-        trailing = {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                if (fx.isEnabled) {
-                    IconButton(onClick = newPattern) { Icon(EditorIcons.DieOne, contentDescription = stringResource(R.string.controls_effects_new_pattern), tint = t.accent) }
-                    TextButton(onClick = resetAll) { Text(stringResource(R.string.controls_reset)) }
-                }
-                Switch(checked = fx.isEnabled, onCheckedChange = { on -> update { it.copy(isEnabled = on) } })
+    Group(stringResource(R.string.controls_effects), summary = if (fx.isEnabled) stringResource(R.string.controls_on) else stringResource(R.string.controls_off)) {
+        // Keep actions inside the section so its closed header is as compact as every other one.
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            Text(stringResource(R.string.controls_show_effects), style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
+            if (fx.isEnabled) {
+                IconButton(onClick = newPattern) { Icon(EditorIcons.DieOne,
+                    contentDescription = stringResource(R.string.controls_effects_new_pattern), tint = t.accent) }
+                TextButton(onClick = resetAll) { Text(stringResource(R.string.save_reset)) }
             }
-        },
-    ) {
+            Switch(checked = fx.isEnabled, onCheckedChange = { on -> update { it.copy(isEnabled = on) } })
+        }
         if (!fx.isEnabled) {
             Text(stringResource(R.string.controls_effects_off_note), style = MaterialTheme.typography.bodySmall,
                 color = LocalTokens.current.textMuted)
             return@Group
         }
-        Group(stringResource(R.string.controls_light), nested = true, inset = true, initiallyOpen = true) {
-            ValueSlider(stringResource(R.string.controls_brightness), fx.brightness, default = EffectsLayerSettings().brightness) { v -> update { it.copy(brightness = v) } }
-            ValueSlider(stringResource(R.string.controls_contrast), fx.contrast, default = EffectsLayerSettings().contrast) { v -> update { it.copy(contrast = v) } }
+        Group(stringResource(R.string.glow_light), inset = true, initiallyOpen = true) {
+            ValueSlider(stringResource(R.string.save_brightness), fx.brightness, default = EffectsLayerSettings().brightness) { v -> update { it.copy(brightness = v) } }
+            ValueSlider(stringResource(R.string.save_contrast), fx.contrast, default = EffectsLayerSettings().contrast) { v -> update { it.copy(contrast = v) } }
             ValueSlider(stringResource(R.string.controls_vignette), fx.vignette, Editing.Ranges.effectsVignette.floats(), default = EffectsLayerSettings().vignette) { v -> update { it.copy(vignette = v) } }
             ValueSlider(stringResource(R.string.controls_bloom), fx.bloom, Editing.Ranges.effectsBloom.floats(), default = EffectsLayerSettings().bloom) { v -> update { it.copy(bloom = v) } }
         }
-        Group(stringResource(R.string.controls_tone), nested = true, inset = true) {
+        Group(stringResource(R.string.controls_tone), inset = true) {
             ValueSlider(stringResource(R.string.controls_sepia), fx.sepia, default = EffectsLayerSettings().sepia) { v -> update { it.copy(sepia = v) } }
             ValueSlider(stringResource(R.string.controls_fade), fx.wash, default = EffectsLayerSettings().wash) { v -> update { it.copy(wash = v) } }
         }
-        Group(stringResource(R.string.controls_texture), nested = true, inset = true) {
+        Group(stringResource(R.string.controls_texture), inset = true) {
             ValueSlider(stringResource(R.string.controls_clarity), fx.localContrast, default = EffectsLayerSettings().localContrast) { v -> update { it.copy(localContrast = v) } }
-            ValueSlider(stringResource(R.string.controls_grain), fx.grain, Editing.Ranges.effectsGrain.floats(), default = EffectsLayerSettings().grain) { v -> update { it.copy(grain = v) } }
+            ValueSlider(stringResource(R.string.controls_background_grain), fx.grain, Editing.Ranges.effectsGrain.floats(), default = EffectsLayerSettings().grain) { v -> update { it.copy(grain = v) } }
+            ValueSlider(stringResource(R.string.controls_smoother), fx.smoother, default = EffectsLayerSettings().smoother) { v -> update { it.copy(smoother = v) } }
         }
-        Group(stringResource(R.string.controls_sparkle), nested = true, inset = true) {
+        Group(stringResource(R.string.controls_sparkle), inset = true) {
             ValueSlider(stringResource(R.string.controls_stars), fx.stars, default = EffectsLayerSettings().stars) { v -> update { it.copy(stars = v) } }
             ValueSlider(stringResource(R.string.controls_glitter), fx.glitter, Editing.Ranges.effectsGlitter.floats(), default = EffectsLayerSettings().glitter) { v -> update { it.copy(glitter = v) } }
         }
-        Group(stringResource(R.string.controls_more), nested = true, inset = true) {
+        Group(stringResource(R.string.editor_more), inset = true) {
             ValueSlider(stringResource(R.string.controls_highlights), fx.highlights, default = EffectsLayerSettings().highlights) { v -> update { it.copy(highlights = v) } }
             ValueSlider(stringResource(R.string.controls_dimming), fx.dimming, default = EffectsLayerSettings().dimming) { v -> update { it.copy(dimming = v) } }
             ValueSlider(stringResource(R.string.controls_erasure), fx.erasure, default = EffectsLayerSettings().erasure) { v -> update { it.copy(erasure = v) } }
@@ -529,8 +543,8 @@ private fun EmblemTab(em: EmblemLayerSettings, vm: EditorViewModel, position: Po
             modifier = Modifier.weight(1f).toggleable(value = em.isEnabled, role = Role.Switch) { on -> update { it.switched(on) } },
         )
         if (em.isEnabled) {
-            IconButton(onClick = vm::randomizeEmblem) { Icon(EditorIcons.DieOne, contentDescription = stringResource(R.string.controls_random_emblem)) }
-            TextButton(onClick = vm::resetEmblem) { Text(stringResource(R.string.controls_reset)) }
+            IconButton(onClick = vm::randomizeEmblem) { Icon(EditorIcons.DieOne, contentDescription = stringResource(R.string.controls_random_emblem), tint = t.accent) }
+            TextButton(onClick = vm::resetEmblem) { Text(stringResource(R.string.save_reset)) }
         }
         Switch(checked = em.isEnabled, onCheckedChange = { on -> update { it.switched(on) } })
     }
@@ -633,8 +647,8 @@ private fun TextTab(text: TextLayerSettings, vm: EditorViewModel, position: Posi
             modifier = Modifier.weight(1f).toggleable(value = text.isEnabled, role = Role.Switch, onValueChange = switch),
         )
         if (text.isEnabled) {
-            IconButton(onClick = vm::randomizeText) { Icon(EditorIcons.DieOne, contentDescription = stringResource(R.string.controls_random_text_look)) }
-            TextButton(onClick = vm::resetText) { Text(stringResource(R.string.controls_reset)) }
+            IconButton(onClick = vm::randomizeText) { Icon(EditorIcons.DieOne, contentDescription = stringResource(R.string.controls_random_text_look), tint = LocalTokens.current.accent) }
+            TextButton(onClick = vm::resetText) { Text(stringResource(R.string.save_reset)) }
         }
         Switch(checked = text.isEnabled, onCheckedChange = switch)
     }
@@ -716,7 +730,7 @@ private fun TextTab(text: TextLayerSettings, vm: EditorViewModel, position: Posi
 
 /**
  * Language chips (only with more than one collection), then your own quotes (with a remove button), then
- * the built-in public-domain collections of the languages switched on (ADR-0017).
+ * the built-in public-domain collections of the languages switched on (ADR-0018).
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -805,7 +819,7 @@ private fun DrawTab(params: MandalaParameters, vm: EditorViewModel) {
             )
         }
     }
-    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.sm), modifier = Modifier.padding(bottom = Spacing.sm)) {
         if (active == null) {
             Button(onClick = { vm.setDrawTool(tool) }) { Text(stringResource(R.string.controls_draw_on_image)) }
         } else {
@@ -827,7 +841,7 @@ private fun DrawTab(params: MandalaParameters, vm: EditorViewModel) {
                 DrawingLayerSettings().let { Triple(it.currentHue, it.currentSaturation, it.currentBrightness) }, initiallyOpen = true) { h, s, b ->
                 vm.updateDrawing { it.copy(currentHue = h, currentSaturation = s, currentBrightness = b) }
             }
-            Group(stringResource(R.string.controls_line_and_light), nested = true) {
+            Group(stringResource(R.string.controls_line_and_light)) {
                 ValueSlider(stringResource(R.string.controls_weight), lines.strokeWeight, default = DrawingLayerSettings().strokeWeight) { v -> vm.updateDrawing { it.copy(strokeWeight = v) } }
                 ValueSlider(stringResource(R.string.controls_glow), lines.glowIntensity, default = DrawingLayerSettings().glowIntensity) { v -> vm.updateDrawing { it.copy(glowIntensity = v) } }
                 ValueSlider(stringResource(R.string.controls_opacity), lines.opacity, default = DrawingLayerSettings().opacity) { v -> vm.updateDrawing { it.copy(opacity = v) } }
@@ -842,7 +856,7 @@ private fun DrawTab(params: MandalaParameters, vm: EditorViewModel) {
                 GraffitiLayerSettings().let { Triple(it.currentHue, it.currentSaturation, it.currentBrightness) }, initiallyOpen = true) { h, s, b ->
                 vm.updateGraffiti { it.copy(currentHue = h, currentSaturation = s, currentBrightness = b) }
             }
-            Group(stringResource(R.string.controls_softness_and_blending), nested = true) {
+            Group(stringResource(R.string.controls_softness_and_blending)) {
                 ValueSlider(stringResource(R.string.controls_softness), spray.softness, default = GraffitiLayerSettings().softness) { v -> vm.updateGraffiti { it.copy(softness = v) } }
                 ValueSlider(stringResource(R.string.controls_opacity), spray.opacity, default = GraffitiLayerSettings().opacity) { v -> vm.updateGraffiti { it.copy(opacity = v) } }
                 BlendChips(spray.blendMode) { m -> vm.updateGraffiti { it.copy(blendMode = m) } }

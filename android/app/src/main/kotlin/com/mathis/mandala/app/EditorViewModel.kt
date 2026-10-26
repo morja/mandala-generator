@@ -476,7 +476,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
     private val quoteLanguageStore = QuoteLanguages(application)
     private val _quoteLanguages = MutableStateFlow(quoteLanguageStore.chosen)
 
-    /** The quote languages switched on, in the order the list shows them (ADR-0017). */
+    /** The quote languages switched on, in the order the list shows them (ADR-0018). */
     val quoteLanguages: StateFlow<List<String>> = _quoteLanguages.asStateFlow()
 
     /** Switches a quote language on or off; the last one stays on. */
@@ -1050,7 +1050,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         _events.trySend(EditorEvent.Message(text, undo))
     }
 
-    /** A user-visible text in the device's language (ADR-0017). */
+    /** A user-visible text in the device's language (ADR-0018). */
     private fun string(@StringRes id: Int, vararg args: Any): String = getApplication<Application>().getString(id, *args)
 
     private fun plural(@PluralsRes id: Int, count: Int): String = getApplication<Application>().resources.getQuantityString(id, count, count)

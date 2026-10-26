@@ -17,6 +17,7 @@ mkdir -p "$APP/Contents/Resources"
 cp .build/release/$BUNDLE_NAME "$APP/Contents/MacOS/$BUNDLE_NAME"
 cp Info.plist "$APP/Contents/Info.plist"
 cp AppIcon.icns "$APP/Contents/Resources/AppIcon.icns"
+cp -R Sources/MandalaGenerator/Resources/StylePreviews "$APP/Contents/Resources/StylePreviews"
 
 echo "✅ Done: $APP"
 echo "👉 Double-click '$APP' to launch, or:"

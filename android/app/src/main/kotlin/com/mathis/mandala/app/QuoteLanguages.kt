@@ -6,7 +6,7 @@ import com.mathis.mandala.core.Quotes
 
 /**
  * The quote languages switched on in the quote list, kept across starts. Until the user chooses, the
- * device's preferred languages that have quotes, then English (ADR-0017).
+ * device's preferred languages that have quotes, then English (ADR-0018).
  */
 class QuoteLanguages(context: Context) {
     private val prefs = context.getSharedPreferences("quotes", Context.MODE_PRIVATE)

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Texts of the menu sheet, the save sheet and the About screen (ADR-0017). -->
+<!-- Texts of the menu sheet, the save sheet and the About screen (ADR-0018). -->
 <resources>
     <!-- Menu: the mandala on screen -->
     <string name="menu_no_layers">Nessun livello</string>

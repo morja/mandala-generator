@@ -110,6 +110,7 @@ struct EffectsLayerSettings: Equatable, Codable {
     var sepia: Double       = 0.0   // warm sepia tone
     var fade: Double        = 0.0   // fade to flat gray / matte finish
     var bloom: Double       = 0.0   // soft wide glow bleed
+    var smoother: Double    = 0.0   // Gaussian softening, scaled with the image
     var grain: Double       = 0.0   // film grain / noise
     var glitter: Double     = 0.0   // dense tiny rainbow sparkles
     var localContrast: Double = 0.0 // mid-range clarity / local contrast enhancement
@@ -123,7 +124,7 @@ struct EffectsLayerSettings: Equatable, Codable {
     enum CodingKeys: String, CodingKey {
         case isEnabled, dimming, erasure, highlights, stars, vignette, chromatic
         case brightness, contrast, relief, reliefAngle
-        case wash, sepia, fade, bloom, grain, glitter, localContrast
+        case wash, sepia, fade, bloom, grain, glitter, localContrast, smoother
         case dimmingSeed, erasureSeed, highlightsSeed, starsSeed, glitterSeed
     }
 
@@ -148,6 +149,7 @@ struct EffectsLayerSettings: Equatable, Codable {
         sepia          = c.decodeSafe(Double.self,  forKey: .sepia,          default: 0.0)
         fade           = c.decodeSafe(Double.self,  forKey: .fade,           default: 0.0)
         bloom          = c.decodeSafe(Double.self,  forKey: .bloom,          default: 0.0)
+        smoother       = c.decodeSafe(Double.self,  forKey: .smoother,       default: 0.0)
         grain          = c.decodeSafe(Double.self,  forKey: .grain,          default: 0.0)
         glitter        = c.decodeSafe(Double.self,  forKey: .glitter,        default: 0.0)
         localContrast  = c.decodeSafe(Double.self,  forKey: .localContrast,  default: 0.0)

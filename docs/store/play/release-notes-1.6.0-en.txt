@@ -1,0 +1,1 @@
+A clearer editor with consistent sections, more space around controls and a small preview for every style. The selected style and dice are easier to spot. New Smoother softens the artwork while text stays clear above scene effects. Seed and Variation buttons now explain what they change.

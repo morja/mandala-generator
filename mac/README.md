@@ -245,9 +245,11 @@ Each layer has its own palette grid. You can select from the 18 built-in palette
 3. **Blend composite** — each layer blended onto the running composite using the chosen blend mode (Screen, Add, Normal/Lighten, or Multiply); optional 2D rotation via `CIAffineTransform`; optional opacity via `CIColorMatrix`
 4. **Graffiti layer** — airbrush strokes rendered into a CGContext with Gaussian blur for softness, composited via CISourceOverCompositing
 5. **Drawing layer** — freehand strokes with per-stroke color, composited with a chosen blend mode and symmetry
-5. **Solid background** (when type = Color) — merged in after all layers using `CILightenBlendMode`; dark areas become the background colour, bright mandala content is unaffected
-6. **Effects layer** — wash → sepia → fade → bloom → local contrast → grain applied as CIFilter passes; brightness/contrast, 3D relief (hard-light emboss), vignette, chromatic aberration; dimming, erasure, highlights, stars, glitter drawn into PixelBuffers and screen-composited
-7. **Downscale** — Lanczos downscale from 2× render buffer to output size
+6. **Solid background** (when type = Color) — merged in after all layers using `CILightenBlendMode`; dark areas become the background colour, bright mandala content is unaffected
+7. **Emblem layer** above the mandala and background.
+8. **Scene effects** on the assembled artwork, including the emblem and drawing: wash, sepia, fade, bloom, local contrast, Smoother, grain, brightness/contrast, relief, vignette, chromatic aberration, dimming, erasure, highlights, stars and glitter.
+9. **Text layer** above the finished scene, with its own colour, cloud, shadow, glow and deliberate blur. Scene effects do not process the letters or these text effects.
+10. **Downscale** — Lanczos downscale from 2× render buffer to output size
 
 ### Animation export
 

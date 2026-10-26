@@ -295,25 +295,30 @@ private struct LayerCard: View {
             // ── Body (expanded) ──────────────────────────────────────
             if isExpanded {
                 VStack(spacing: 8) {
+                    HStack(spacing: 6) {
+                        Text("Variation").font(.system(size: 10))
+                        Text("Colour & settings").font(.system(size: 10)).foregroundColor(.secondary)
+                        Spacer()
+                        Button(action: { appState.randomizeLayer(at: index, keepStyle: true) }) {
+                            Image(systemName: "dice").font(.system(size: 11)).foregroundColor(.blue)
+                        }
+                        .buttonStyle(.cardIcon)
+                        .help("New colours and settings, same style")
+                    }
+
                     // Style + blend mode row
                     HStack(spacing: 6) {
+                        StylePreview(style: layer.style)
                         Picker("", selection: $layer.style) {
                             ForEach(appState.styleOptions(including: layer.style)) { s in
                                 let isEnabled = appState.isStyleEnabled(s)
-                                Label(isEnabled ? s.displayName : "\(s.displayName) (Disabled)",
-                                      systemImage: s.sfSymbol).tag(s)
+                                HStack {
+                                    StylePreview(style: s)
+                                    Text(isEnabled ? s.displayName : "\(s.displayName) (Disabled)")
+                                }.tag(s)
                             }
                         }
                         .pickerStyle(.menu).labelsHidden()
-
-                        // The header's die picks a new style too; this one keeps it.
-                        Button(action: { appState.randomizeLayer(at: index, keepStyle: true) }) {
-                            Image(systemName: "dice")
-                                .font(.system(size: 11))
-                                .foregroundColor(.blue)
-                        }
-                        .buttonStyle(.cardIcon)
-                        .help("New \(layer.style.displayName) variant")
 
                         Picker("", selection: $layer.blendMode) {
                             ForEach(LayerBlendMode.allCases) { m in
@@ -399,6 +404,7 @@ private struct LayerCard: View {
                             .font(.system(size: 10))
                             .foregroundColor(.secondary)
                             .frame(width: 70, alignment: .leading)
+                        Text("Arrangement").font(.system(size: 10)).foregroundColor(.secondary)
                         TextField("", value: $layer.seed, format: .number)
                             .textFieldStyle(.roundedBorder)
                             .font(.system(size: 10, design: .monospaced))

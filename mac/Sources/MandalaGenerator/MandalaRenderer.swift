@@ -318,15 +318,16 @@ struct MandalaRenderer {
                                               palettes: palettes, size: bufferSize)
         }
 
-        // ── TEXT LAYER (on top of everything, before effects) ──
-        if params.textLayer.isEnabled && !params.textLayer.text.isEmpty {
-            compositeImage = applyTextLayer(image: compositeImage, settings: params.textLayer, size: bufferSize)
-        }
-
         // ── EFFECTS LAYER ──
         var result = compositeImage
         if params.effectsLayer.isEnabled {
             result = applyEffectsLayer(image: result, settings: params.effectsLayer, bufferSize: bufferSize)
+        }
+
+        // Text is the final layer. Scene effects soften or grade the artwork behind it;
+        // the text keeps its own colour, cloud, shadow, glow and deliberate blur.
+        if params.textLayer.isEnabled && !params.textLayer.text.isEmpty {
+            result = applyTextLayer(image: result, settings: params.textLayer, size: bufferSize)
         }
 
         // ── GLOBAL POST-PROCESS ──
@@ -1207,6 +1208,15 @@ struct MandalaRenderer {
                     if let out = softLight.outputImage?.cropped(to: ext) { ci = out }
                 }
             }
+        }
+
+        // Smoother softens detail without adding light. Repeat the edge pixels to avoid a dark rim.
+        // Apply before grain so intentional film texture stays visible over the softened image.
+        if settings.smoother > 0.001, let blur = CIFilter(name: "CIGaussianBlur") {
+            let radius = 12.0 * min(1.0, settings.smoother) * Double(min(ext.width, ext.height)) / 1600.0
+            blur.setValue(ci.clampedToExtent(), forKey: kCIInputImageKey)
+            blur.setValue(radius, forKey: kCIInputRadiusKey)
+            if let out = blur.outputImage?.cropped(to: ext) { ci = out }
         }
 
         // ── Grain — film grain / analogue noise ──

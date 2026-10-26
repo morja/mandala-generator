@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Texts of the control tabs below or beside the canvas (Controls.kt, Parts.kt; ADR-0017). -->
+<!-- Texts of the control tabs below or beside the canvas (Controls.kt, Parts.kt; ADR-0018). -->
 <resources>
 
     <!-- Tab row and the header beside the folded image -->
@@ -192,4 +192,12 @@
     <string name="controls_spray_colour">Colore spray</string>
     <string name="controls_softness_and_blending">Morbidezza e fusione</string>
     <string name="controls_softness">Morbidezza</string>
+    <!-- Added with main's variation/seed rows and Smoother -->
+    <string name="controls_variation_detail">Colori e impostazioni</string>
+    <string name="controls_variation_description">Nuovi colori e impostazioni, stesso stile</string>
+    <string name="controls_seed_detail">Disposizione</string>
+    <string name="controls_seed_description">Nuova disposizione, stesso stile, tavolozza e impostazioni</string>
+    <string name="controls_show_effects">Mostra effetti</string>
+    <string name="controls_smoother">Ammorbidisci</string>
+    <string name="controls_seed">Seme</string>
 </resources>

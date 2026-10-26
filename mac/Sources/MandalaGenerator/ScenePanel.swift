@@ -67,7 +67,7 @@ struct ScenePanel: View {
 struct BaseLayerCard: View {
     @Binding var settings: BaseLayerSettings
     let defaults = BaseLayerSettings()   // reset values for double-click
-    @State private var isExpanded = true
+    @State private var isExpanded = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -233,6 +233,7 @@ struct EffectsLayerCard: View {
 
     @ViewBuilder
     private func sectionLabel(_ title: String) -> some View {
+        Divider().padding(.top, 4)
         Text(title)
             .font(.system(size: 9, weight: .semibold))
             .foregroundColor(.secondary).kerning(1.1)
@@ -296,6 +297,7 @@ struct EffectsLayerCard: View {
                     sectionLabel("TEXTURE")
                     SceneSlider(label: "Clarity",   value: $settings.localContrast, color: .teal, reset: defaults.localContrast)
                     SceneSlider(label: "Grain",     value: $settings.grain,      range: 0...2, color: Color(red: 0.6, green: 0.55, blue: 0.5), reset: defaults.grain)
+                    SceneSlider(label: "Smoother", value: $settings.smoother, color: .teal, reset: defaults.smoother)
                     sectionLabel("SPARKLE")
                     EffectRow(label: "Stars",      value: $settings.stars,      seed: $settings.starsSeed,      color: .yellow, reset: defaults.stars)
                     // Glitter above about 0.6 is garish confetti.
@@ -582,6 +584,7 @@ struct TextLayerCard: View {
 
     @ViewBuilder
     private func sectionLabel(_ title: String) -> some View {
+        Divider().padding(.top, 4)
         Text(title)
             .font(.system(size: 9, weight: .semibold))
             .foregroundColor(.secondary).kerning(1.1)

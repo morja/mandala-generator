@@ -9,7 +9,8 @@ let package = Package(
     targets: [
         .executableTarget(
             name: "MandalaGenerator",
-            path: "Sources/MandalaGenerator"
+            path: "Sources/MandalaGenerator",
+            resources: [.copy("Resources/StylePreviews")]
         )
     ]
 )

@@ -47,7 +47,7 @@ internal class EffectsLayer(private val par: Parallel, private val fx: LayerEffe
     private fun hasChain(s: EffectsLayerSettings) =
         s.vignette > 0 || s.dimming > 0 || s.erasure > 0 || s.highlights > 0 || s.chromatic > 0 ||
             s.wash > 0.001 || s.sepia > 0.001 || s.fade > 0.001 || s.bloom > 0.001 || s.localContrast > 0.001 ||
-            s.grain > 0.001 || s.brightness != 0.5 || s.contrast != 0.5 || s.relief > 0
+            s.smoother > 0.001 || s.grain > 0.001 || s.brightness != 0.5 || s.contrast != 0.5 || s.relief > 0
 
     // ── The Core Image chain ─────────────────────────────────────────────
     // Computed in strips of rows, so only one strip is held as floats. Everything before bloom works
@@ -76,6 +76,8 @@ internal class EffectsLayer(private val par: Parallel, private val fx: LayerEffe
             null
         }
         val contrastReach = if (s.localContrast > 0.001) Filters.blurReach(LOCAL_CONTRAST_SIGMA) else 0
+        val smoothSigma = if (s.smoother > 0.001) 12.0 * s.smoother.coerceAtMost(1.0) * min(width, height) / 1600.0 else 0.0
+        val smoothReach = Filters.blurReach(smoothSigma)
         val reliefReach = if (s.relief > 0) 1 else 0
         val core = max(PixelBuffer.STRIP_ROWS, 2 * contrastReach)
         val adjust = s.brightness != 0.5 || s.contrast != 0.5
@@ -91,8 +93,10 @@ internal class EffectsLayer(private val par: Parallel, private val fx: LayerEffe
             // Rows relief reads, and around them the rows the local contrast blur reads.
             val top = max(0, y0 - reliefReach)
             val bottom = min(height, y1 + reliefReach)
-            val lo = max(0, top - contrastReach)
-            val hi = min(height, bottom + contrastReach)
+            val smoothTop = max(0, top - smoothReach)
+            val smoothBottom = min(height, bottom + smoothReach)
+            val lo = max(0, smoothTop - contrastReach)
+            val hi = min(height, smoothBottom + contrastReach)
             var w = FloatImage(width, hi - lo)
             par.forRange(hi - lo) { from, until ->
                 val row = FloatArray(n)
@@ -110,8 +114,9 @@ internal class EffectsLayer(private val par: Parallel, private val fx: LayerEffe
                     }
                 }
             }
-            // From here on only rows [top, bottom) are needed.
-            w = if (contrastReach > 0) localContrast(w, top - lo, bottom - lo, s.localContrast.toFloat()) else w.rows(top - lo, bottom - lo)
+            // Clarity first, then Smoother, then grain, matching the Mac's filter order.
+            w = if (contrastReach > 0) localContrast(w, smoothTop - lo, smoothBottom - lo, s.localContrast.toFloat()) else w.rows(smoothTop - lo, smoothBottom - lo)
+            w = if (smoothReach > 0) smoother(w, top - smoothTop, bottom - smoothTop, smoothSigma) else w
             par.forRange(bottom - top) { from, until ->
                 for (r in from until until) {
                     if (s.grain > 0.001) grainRow(w, r, top + r, s.grain, grainSize)
@@ -131,6 +136,29 @@ internal class EffectsLayer(private val par: Parallel, private val fx: LayerEffe
 
     private fun FloatImage.rows(from: Int, until: Int): FloatImage =
         if (from == 0 && until == height) this else FloatImage(width, until - from, data.copyOfRange(from * width * 3, until * width * 3))
+
+    /** Pad with repeated edge pixels, blur one strip, then keep only its output rows. */
+    private fun smoother(source: FloatImage, from: Int, until: Int, sigma: Double): FloatImage {
+        val reach = Filters.blurReach(sigma)
+        val padded = FloatImage(source.width + 2 * reach, source.height + 2 * reach)
+        par.forRange(padded.height) { first, last ->
+            for (y in first until last) {
+                val sy = (y - reach).coerceIn(0, source.height - 1)
+                for (x in 0 until padded.width) {
+                    val sx = (x - reach).coerceIn(0, source.width - 1)
+                    val src = (sy * source.width + sx) * 3
+                    val dst = (y * padded.width + x) * 3
+                    for (c in 0..2) padded.data[dst + c] = source.data[src + c]
+                }
+            }
+        }
+        Filters.blurInPlace(padded, sigma, par)
+        val out = FloatImage(source.width, until - from)
+        for (y in from until until) {
+            System.arraycopy(padded.data, ((y + reach) * padded.width + reach) * 3, out.data, (y - from) * source.width * 3, source.width * 3)
+        }
+        return out
+    }
 
     private fun saturate(c: FloatArray, s: Float) {
         val l = 0.2125f * c[0] + 0.7154f * c[1] + 0.0721f * c[2]

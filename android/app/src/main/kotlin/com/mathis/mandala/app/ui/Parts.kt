@@ -5,6 +5,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -13,13 +14,18 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
@@ -54,6 +60,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import com.mathis.mandala.app.ui.theme.LocalTokens
+import com.mathis.mandala.app.ui.theme.Radius
 import com.mathis.mandala.app.ui.theme.Sizes
 import com.mathis.mandala.app.ui.theme.Spacing
 import com.mathis.mandala.app.Editing
@@ -68,41 +75,47 @@ import kotlin.math.roundToInt
 // headings at first and only the open group's sliders take room.
 
 /**
- * A foldable group: a heading row (tap to open or close) with an optional summary of the current
- * value and an optional control on the right, such as an on/off switch. A nested group has the smaller
- * heading and no divider; one that sits inside another group's content is also `inset` as a whole,
- * heading and content, so it reads as part of its parent and not as the next group at the same level.
+ * One section style across every tab. Headers have the same minimum height, type and right-hand
+ * chevron; only indentation marks a child section. Large actions belong inside the open content.
+ * The save sheet can omit the container because its surrounding dividers already frame Adjust.
  */
 @Composable
 internal fun Group(
     title: String,
     summary: String? = null,
     initiallyOpen: Boolean = false,
-    nested: Boolean = false,
     inset: Boolean = false,
     trailing: (@Composable () -> Unit)? = null,
-    /** Whether the group is open; passed in when the caller lays out other parts by it. */
     openState: MutableState<Boolean> = rememberSaveable { mutableStateOf(initiallyOpen) },
-    /** The line below the group; off where something else already separates it. */
-    divider: Boolean = !nested,
+    framed: Boolean = true,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val t = LocalTokens.current
     var open by openState
     val toggleLabel = stringResource(if (open) R.string.controls_group_close else R.string.controls_group_open, title)
     val state = stringResource(if (open) R.string.controls_group_state_open else R.string.controls_group_state_closed)
-    Column(Modifier.fillMaxWidth().then(if (inset) Modifier.padding(start = Spacing.lg) else Modifier)) {
+    val shape = RoundedCornerShape(Radius.sm)
+    val container = if (framed) Modifier
+        .clip(shape)
+        .background(t.surface)
+        .border(Sizes.swatchRing, t.outline, shape)
+    else Modifier
+
+    Column(
+        Modifier.fillMaxWidth()
+            .then(if (inset) Modifier.padding(start = Spacing.lg) else Modifier)
+            .padding(top = Spacing.sm)
+            .then(container),
+    ) {
         Row(
-            Modifier
-                .fillMaxWidth()
+            Modifier.fillMaxWidth()
+                .heightIn(min = Sizes.icon * 2)
                 .clickable(onClickLabel = toggleLabel) { open = !open }
                 .semantics { stateDescription = state }
-                .padding(vertical = if (nested) Spacing.xs else Spacing.sm),
+                .padding(horizontal = Spacing.sm),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Icon(if (open) EditorIcons.Less else EditorIcons.Expand, contentDescription = null, tint = t.textMuted)
-            Spacer(Modifier.width(Spacing.sm))
-            Text(title, style = if (nested) MaterialTheme.typography.labelLarge else MaterialTheme.typography.titleSmall)
+            Text(title, style = MaterialTheme.typography.titleSmall)
             Text(
                 summary.orEmpty(),
                 style = MaterialTheme.typography.bodySmall,
@@ -112,9 +125,36 @@ internal fun Group(
                 modifier = Modifier.weight(1f).padding(horizontal = Spacing.sm),
             )
             trailing?.invoke()
+            Icon(if (open) EditorIcons.Less else EditorIcons.Expand, contentDescription = null,
+                tint = t.textMuted, modifier = Modifier.padding(start = Spacing.sm))
         }
-        if (open) Column(Modifier.padding(bottom = if (divider) Spacing.sm else Spacing.xs), content = content)
-        if (divider) HorizontalDivider(color = t.outline)
+        if (open) {
+            if (framed) HorizontalDivider(color = t.outline)
+            Column(
+                Modifier.padding(horizontal = if (framed) Spacing.lg else Spacing.sm).padding(top = Spacing.sm, bottom = Spacing.md),
+                content = content,
+            )
+        }
+    }
+}
+
+/** A direct random action with a visible explanation of what changes. */
+@Composable
+internal fun RandomActionRow(label: String, summary: String, description: String, onClick: () -> Unit) {
+    val t = LocalTokens.current
+    FilledTonalButton(
+        onClick = onClick,
+        modifier = Modifier.fillMaxWidth().heightIn(min = Sizes.icon * 2)
+            .semantics { contentDescription = description },
+        shape = RoundedCornerShape(Radius.sm),
+        colors = ButtonDefaults.filledTonalButtonColors(containerColor = t.accentSoft, contentColor = t.accent),
+        contentPadding = PaddingValues(horizontal = Spacing.md),
+    ) {
+        Text(label, style = MaterialTheme.typography.labelLarge)
+        Text(summary, style = MaterialTheme.typography.bodySmall, color = t.textMuted,
+            maxLines = 1, overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.weight(1f).padding(horizontal = Spacing.sm))
+        Icon(EditorIcons.DieOne, contentDescription = null)
     }
 }
 
@@ -233,7 +273,7 @@ private fun Modifier.onDoubleTap(action: () -> Unit): Modifier = composed {
     }
 }
 
-/** Hue, saturation and brightness of one colour, as a nested group with the colour as summary dot. */
+/** Hue, saturation and brightness in one section, with the colour as its summary dot. */
 @Composable
 internal fun ColourGroup(
     title: String,
@@ -248,10 +288,10 @@ internal fun ColourGroup(
     brightnessRange: ClosedFloatingPointRange<Float> = 0f..1f,
     onChange: (Double, Double, Double) -> Unit,
 ) {
-    Group(title, nested = true, inset = inset, initiallyOpen = initiallyOpen, trailing = { ColourDot(hsbColour(hue, saturation, brightness)) }) {
+    Group(title, inset = inset, initiallyOpen = initiallyOpen, trailing = { ColourDot(hsbColour(hue, saturation, brightness)) }) {
         ValueSlider(stringResource(R.string.controls_hue), hue, default = defaults.first) { v -> onChange(v, saturation, brightness) }
-        ValueSlider(stringResource(R.string.controls_saturation), saturation, default = defaults.second) { v -> onChange(hue, v, brightness) }
-        ValueSlider(stringResource(R.string.controls_brightness), brightness, brightnessRange, default = defaults.third) { v -> onChange(hue, saturation, v) }
+        ValueSlider(stringResource(R.string.save_saturation), saturation, default = defaults.second) { v -> onChange(hue, v, brightness) }
+        ValueSlider(stringResource(R.string.save_brightness), brightness, brightnessRange, default = defaults.third) { v -> onChange(hue, saturation, v) }
     }
 }
 

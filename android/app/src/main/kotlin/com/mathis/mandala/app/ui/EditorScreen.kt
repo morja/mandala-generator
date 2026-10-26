@@ -321,7 +321,7 @@ fun EditorScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = vm::surprise) { Icon(EditorIcons.DieFive, contentDescription = stringResource(R.string.editor_surprise)) }
+                    IconButton(onClick = vm::surprise) { Icon(EditorIcons.DieFive, contentDescription = stringResource(R.string.menu_die_everything), tint = LocalTokens.current.accent) }
                     IconButton(onClick = { showSave = true }, enabled = !busy) {
                         if (busy) {
                             CircularProgressIndicator(Modifier.size(Sizes.icon), strokeWidth = Sizes.progress)

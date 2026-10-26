@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Texts of the control tabs below or beside the canvas (Controls.kt, Parts.kt; ADR-0017). -->
+<!-- Texts of the control tabs below or beside the canvas (Controls.kt, Parts.kt; ADR-0018). -->
 <resources>
 
     <!-- Tab row and the header beside the folded image -->
@@ -188,4 +188,12 @@
     <string name="controls_spray_colour">スプレーの色</string>
     <string name="controls_softness_and_blending">柔らかさと合成</string>
     <string name="controls_softness">柔らかさ</string>
+    <!-- Added with main's variation/seed rows and Smoother -->
+    <string name="controls_variation_detail">色と設定</string>
+    <string name="controls_variation_description">同じスタイルで色と設定を変更</string>
+    <string name="controls_seed_detail">配置</string>
+    <string name="controls_seed_description">スタイル・パレット・設定はそのままで配置を変更</string>
+    <string name="controls_show_effects">エフェクトを表示</string>
+    <string name="controls_smoother">スムーズ</string>
+    <string name="controls_seed">シード</string>
 </resources>

@@ -11,7 +11,7 @@ import com.mathis.mandala.core.EmblemFrame
 import com.mathis.mandala.core.EmblemGlowMode
 import com.mathis.mandala.core.ProFeature
 
-// The localized names of core enums; core keeps the macOS names for files and the JVM tool (ADR-0017).
+// The localized names of core enums; core keeps the macOS names for files and the JVM tool (ADR-0018).
 
 @get:StringRes
 val MandalaStyle.labelRes: Int

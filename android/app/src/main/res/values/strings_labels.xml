@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Names of styles, blend modes, emblem parts and Pro features from core (ADR-0017). -->
+<!-- Names of styles, blend modes, emblem parts and Pro features from core (ADR-0018). -->
 <resources>
     <string name="style_spirograph">Spirograph</string>
     <string name="style_rose_curves">Rose Curves</string>
