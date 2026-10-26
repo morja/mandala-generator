@@ -19,3 +19,5 @@ Status: accepted, 22 October 2026 (Mathis, [PLAN-3](../PLAN-3-pro-wallpapers.md)
 - Wallpapers are the app's main use on a phone (ADR-0010), so Pro features there are the ones people use every day.
 - Limiting layers, styles or favourites would hold back what the app is about and lock files from the Mac; a watermark would spoil shared images, the best advertising (ADR-0007).
 - Rendering takes seconds, so a live wallpaper can only move a finished image; rotation, brightness and hue are cheap on the graphics chip.
+
+*Since 26 October 2026 (Mathis, UX-1 13):* the daily wallpaper can take turns among chosen favourites only ("Favourites" on its menu page, a grid with ticks; all are ticked at first). The choice is kept by favourite id; a favourite added later joins once ticked, and when every chosen one is deleted, all take turns again.

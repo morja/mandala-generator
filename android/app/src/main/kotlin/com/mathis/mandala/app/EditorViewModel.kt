@@ -110,7 +110,7 @@ data class FramePreviewState(
 data class ExportProgress(val label: String, val share: Float? = null)
 
 /** Whether the daily wallpaper is on, and the favourite it set last. */
-data class DailyState(val on: Boolean, val lastName: String?)
+data class DailyState(val on: Boolean, val lastName: String?, val chosen: Set<String>? = null)
 
 /** The pair sheet's lock and home screen (ADR-0014). */
 data class PairPreview(val lock: ImageBitmap? = null, val home: ImageBitmap? = null, val rendering: Boolean = true)
@@ -888,7 +888,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
     }
 
     /** The daily wallpaper (ADR-0014, Pro): on or off, and the favourite it set last. */
-    private val _daily = MutableStateFlow(DailyState(DailyWallpaper.isOn(application), DailyWallpaper.lastName(application)))
+    private val _daily = MutableStateFlow(DailyState(DailyWallpaper.isOn(application), DailyWallpaper.lastName(application), DailyWallpaper.chosen(application)))
     val daily: StateFlow<DailyState> = _daily.asStateFlow()
 
     init {
@@ -896,6 +896,19 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
     }
 
     /** Switching it on sets the first one right away, so it shows at once; then every morning. */
+    /** Ticks or unticks one favourite for the daily wallpaper (see [DailyWallpaper.toggled]). */
+    fun toggleDailyFavourite(id: String) {
+        val app = getApplication<Application>()
+        val chosen = DailyWallpaper.toggled(_daily.value.chosen, _favorites.value.map { it.id }, id)
+        DailyWallpaper.setChosen(app, chosen)
+        _daily.update { it.copy(chosen = chosen) }
+    }
+
+    fun chooseAllDailyFavourites() {
+        DailyWallpaper.setChosen(getApplication(), null)
+        _daily.update { it.copy(chosen = null) }
+    }
+
     fun setDaily(on: Boolean) {
         val app = getApplication<Application>()
         if (!on) {

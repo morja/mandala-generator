@@ -33,6 +33,11 @@
     <string name="menu_fast_preview_detail">Only the preview in the editor is drawn simpler and faster. Saved images and wallpapers keep the full quality.</string>
     <string name="menu_daily_wallpaper">New wallpaper every day</string>
     <string name="menu_daily_about">Switched on, the next of your favourites becomes the wallpaper right away: on the lock screen, and a little darker on the home screen. Then the next one follows every morning between 4 and 8 o\'clock, preferably while the phone charges. With the live wallpaper on, it fades over to the next favourite instead.</string>
+    <string name="menu_daily_favourites">Favourites</string>
+    <string name="menu_daily_all">All</string>
+    <string name="menu_daily_some">%1$d of %2$d</string>
+    <string name="menu_daily_pick_about">Only the ticked favourites take turns, in the order of your favourites. A favourite added later joins once you tick it here.</string>
+    <string name="menu_daily_choose_all">Tick all</string>
     <string name="menu_open_file_detail">Mandala settings saved as a file, here or in the macOS app</string>
     <string name="menu_save_settings_detail">This mandala as a file, to keep or to open on the Mac</string>
     <string name="menu_more">More</string>

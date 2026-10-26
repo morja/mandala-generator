@@ -37,6 +37,11 @@
     <string name="menu_fast_preview_detail">Упрощённо и быстрее рисуется только предпросмотр в редакторе. Сохранённые изображения и обои всегда в полном качестве.</string>
     <string name="menu_daily_wallpaper">Новые обои каждый день</string>
     <string name="menu_daily_about">После включения следующий из ваших избранных сразу становится обоями: на экране блокировки и чуть темнее на главном экране. Затем каждое утро между 4 и 8 часами, лучше всего во время зарядки, появляется следующий. Если включены живые обои, они плавно переходят к следующему избранному.</string>
+    <string name="menu_daily_favourites">Избранное</string>
+    <string name="menu_daily_all">Все</string>
+    <string name="menu_daily_some">%1$d из %2$d</string>
+    <string name="menu_daily_pick_about">Чередуются только отмеченные мандалы из избранного, в его порядке. Добавленная позже войдёт в смену, когда вы отметите её здесь.</string>
+    <string name="menu_daily_choose_all">Отметить все</string>
     <string name="menu_open_file_detail">Настройки мандалы, сохранённые в файл в этом приложении или в приложении для macOS</string>
     <string name="menu_save_settings_detail">Эта мандала в виде файла, чтобы сохранить её или открыть на Mac</string>
     <string name="menu_more">Ещё</string>

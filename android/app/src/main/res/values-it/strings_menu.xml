@@ -35,6 +35,11 @@
     <string name="menu_fast_preview_detail">Solo l\'anteprima nell\'editor viene disegnata in modo più semplice e veloce. Le immagini salvate e gli sfondi mantengono la piena qualità.</string>
     <string name="menu_daily_wallpaper">Nuovo sfondo ogni giorno</string>
     <string name="menu_daily_about">Quando lo attivi, il prossimo dei tuoi preferiti diventa subito lo sfondo: sulla schermata di blocco e, un po\' più scuro, sulla schermata Home. Poi arriva il successivo ogni mattina tra le 4 e le 8, preferibilmente mentre il telefono è in carica. Con lo sfondo animato attivo, sfuma invece al preferito successivo.</string>
+    <string name="menu_daily_favourites">Preferiti</string>
+    <string name="menu_daily_all">Tutti</string>
+    <string name="menu_daily_some">%1$d di %2$d</string>
+    <string name="menu_daily_pick_about">Si alternano solo i preferiti spuntati, nell\'ordine dei tuoi preferiti. Un preferito aggiunto dopo entra quando lo spunti qui.</string>
+    <string name="menu_daily_choose_all">Spunta tutti</string>
     <string name="menu_open_file_detail">Impostazioni di mandala salvate come file, da questa app o dall\'app per macOS</string>
     <string name="menu_save_settings_detail">Questo mandala come file, da conservare o da aprire sul Mac</string>
     <string name="menu_more">Altro</string>
