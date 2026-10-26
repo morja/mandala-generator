@@ -63,6 +63,7 @@
     <string name="save_fit_whole">Inteira</string>
     <string name="save_fit_fill">Preencher</string>
     <string name="save_frame_hint">Arraste para mover, faça o gesto de pinça para ampliar, toque duas vezes para centralizar.</string>
+    <string name="save_placed_by_hand">Posicionado à mão</string>
     <string name="save_frame_pro">Mover e ampliar a mandala vêm com o Pro.</string>
     <string name="save_about_pro">Sobre o Pro</string>
     <string name="save_preview_description">Prévia da imagem salva</string>

@@ -59,6 +59,7 @@
     <string name="save_fit_whole">全体</string>
     <string name="save_fit_fill">全面</string>
     <string name="save_frame_hint">ドラッグで移動、ピンチでズーム、ダブルタップで中央に戻します。</string>
+    <string name="save_placed_by_hand">手動で配置</string>
     <string name="save_frame_pro">マンダラの移動とズームはPro機能です。</string>
     <string name="save_about_pro">Proについて</string>
     <string name="save_preview_description">保存する画像のプレビュー</string>

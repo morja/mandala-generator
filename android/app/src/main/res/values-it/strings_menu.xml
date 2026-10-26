@@ -63,6 +63,7 @@
     <string name="save_fit_whole">Intero</string>
     <string name="save_fit_fill">Riempi</string>
     <string name="save_frame_hint">Trascina per spostare, pizzica per lo zoom, tocca due volte per centrare.</string>
+    <string name="save_placed_by_hand">Posizionato a mano</string>
     <string name="save_frame_pro">Spostare e ingrandire il mandala è incluso in Pro.</string>
     <string name="save_about_pro">Info su Pro</string>
     <string name="save_preview_description">Anteprima dell\'immagine salvata</string>

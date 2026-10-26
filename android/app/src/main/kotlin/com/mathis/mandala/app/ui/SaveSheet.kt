@@ -17,11 +17,13 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.BottomSheetDefaults
@@ -155,28 +157,31 @@ internal fun SaveSheet(
                 FrameWithFit(
                     aspect = aspect.toFloat(),
                     modifier = Modifier.weight(1f),
-                    // A square frame looks the same either way; once placed by hand it offers the way back.
-                    showFit = aspect != 1.0 || preset == null,
+                    // A square frame looks the same either way; the line below the frame offers the way back.
+                    showFit = aspect != 1.0,
                     frame = { Frame(preview, aspect.toFloat(), framing, enabled = proOwned && !busy, saving = busy, onFraming = onFraming, onCentre = { onFill(false) }) },
-                    fit = { vertical ->
-                        if (aspect == 1.0) {
-                            OutlinedButton(colors = outlinedColors(), onClick = { onFill(false) }, enabled = !busy) { Text(stringResource(R.string.save_reset)) }
-                        } else {
-                            FitToggle(preset, vertical, enabled = !busy, onFill = onFill)
-                        }
-                    },
+                    fit = { vertical -> FitToggle(preset, vertical, enabled = !busy, onFill = onFill) },
                 )
                 val adjustOpen = rememberSaveable { mutableStateOf(false) }
-                // The hint shows until the mandala has once been placed by hand, and gives its line to the
-                // frame while the sliders are open.
-                if (proOwned && !choice.framedByHand && !adjustOpen.value) {
-                    Text(
-                        stringResource(R.string.save_frame_hint),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = t.textMuted,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.fillMaxWidth(),
-                    )
+                // One line under the frame: how to place by hand, or, once placed, that it is and the way back.
+                // It gives its line to the frame while the sliders are open.
+                // Both lines are as high as the button, so the frame keeps its size when one replaces the other.
+                val lineHeight = Modifier.fillMaxWidth().heightIn(min = Sizes.icon * 2)
+                if (proOwned && preset == null && !adjustOpen.value) {
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center, modifier = lineHeight) {
+                        Text(stringResource(R.string.save_placed_by_hand), style = MaterialTheme.typography.bodySmall, color = t.textMuted)
+                        TextButton(onClick = { onFill(false) }, enabled = !busy) { Text(stringResource(R.string.save_reset)) }
+                    }
+                } else if (proOwned && !adjustOpen.value) {
+                    Box(lineHeight, contentAlignment = Alignment.Center) {
+                        Text(
+                            stringResource(R.string.save_frame_hint),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = t.textMuted,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                    }
                 } else if (!proOwned) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(stringResource(R.string.save_frame_pro), style = MaterialTheme.typography.bodySmall, color = t.textMuted, modifier = Modifier.weight(1f))
@@ -357,9 +362,9 @@ private fun SaveButton(label: String, sizes: List<String>, chosen: Int, enabled:
 }
 
 /**
- * The frame, as large as the given room allows and centred in it, with Whole or Fill at its bottom
- * right when it is tall; otherwise (4:5, 3:4, landscape)
- * the switch sits centred below.
+ * The frame, as large as the given room allows and centred in it. Tall frames (This screen, 9:16, 2:3)
+ * have Whole and Fill as two icons beside their lower right corner, in the room the frame leaves; the
+ * others (4:5, 3:4, landscape) have them in a row below.
  */
 @Composable
 private fun FrameWithFit(
@@ -372,25 +377,27 @@ private fun FrameWithFit(
     SubcomposeLayout(modifier.fillMaxWidth()) { constraints ->
         val maxW = constraints.maxWidth
         val maxH = constraints.maxHeight
-                fun frameSize(height: Int, width: Int = maxW): Pair<Int, Int> {
+        fun frameSize(height: Int, width: Int = maxW): Pair<Int, Int> {
             val w = minOf(width.toFloat(), height / aspect).roundToInt().coerceAtLeast(0)
             return w to (w * aspect).roundToInt()
         }
-        // Tall frames (This screen, 9:16, 2:3) keep the switch in their lower right corner, over the
-        // picture (DM-18, Mathis): the frame stays centred and takes the whole height, and the switch
-        // does not jump while "Adjust" opens.
-        val side = if (showFit && aspect >= SIDE_FIT_ASPECT) subcompose("side") { fit(true) }.map { it.measure(Constraints()) } else emptyList()
-        val besides = side.isNotEmpty()
-        val (sideW, sideH) = frameSize(maxH)
-        if (!showFit || besides) {
-            val shown = subcompose("frame", frame).map { it.measure(Constraints.fixed(sideW, sideH)) }
-            val x = (maxW - sideW) / 2
-            val y = (maxH - sideH) / 2
-            val inset = Spacing.sm.roundToPx()
+        val gap = Spacing.sm.roundToPx()
+        if (showFit && aspect >= SIDE_FIT_ASPECT) {
+            val side = subcompose("side") { fit(true) }.map { it.measure(Constraints()) }
+            val sideW = side.maxOf { it.width }
+            // Centred, and narrower only when the room at its right is too small for the icons.
+            val (w, h) = frameSize(maxH, maxW - 2 * (sideW + gap))
+            val shown = subcompose("frame", frame).map { it.measure(Constraints.fixed(w, h)) }
+            val x = (maxW - w) / 2
+            val y = (maxH - h) / 2
             layout(maxW, maxH) {
                 shown.forEach { it.place(x, y) }
-                side.takeIf { besides }?.forEach { it.place(x + sideW - it.width - inset, y + sideH - it.height - inset) }
+                side.forEach { it.place(x + w + gap, y + h - it.height) }
             }
+        } else if (!showFit) {
+            val (w, h) = frameSize(maxH)
+            val shown = subcompose("frame", frame).map { it.measure(Constraints.fixed(w, h)) }
+            layout(maxW, maxH) { shown.forEach { it.place((maxW - w) / 2, (maxH - h) / 2) } }
         } else {
             val below = subcompose("below") { fit(false) }.map { it.measure(Constraints(maxWidth = maxW)) }
             val belowH = below.maxOf { it.height }
@@ -406,47 +413,31 @@ private fun FrameWithFit(
     }
 }
 
-/** How much of the picture shows through the Whole and Fill switch lying over it. */
-private const val OVER_PICTURE_ALPHA = 0.85f
-
-/** From this height over width on, Whole and Fill sit in the frame's corner instead of below it. */
+/** From this height over width on, Whole and Fill sit beside the frame instead of below it. */
 private const val SIDE_FIT_ASPECT = 1.5f
 
-/** Whole or Fill as a small two-part switch, stacked beside a portrait frame or in a row below. */
-@OptIn(ExperimentalMaterial3Api::class)
+/** Whole or Fill as two round icon buttons, stacked beside a tall frame or in a row below the others. */
 @Composable
 private fun FitToggle(preset: Boolean?, vertical: Boolean, enabled: Boolean, onFill: (Boolean) -> Unit) {
-    // Stacked, it lies over the picture's corner, so it gets the sheet's colour behind it, a little see-through.
-    val over = vertical
     val t = LocalTokens.current
-    val pill = RoundedCornerShape(percent = 50)
-    val outer = if (vertical) RoundedCornerShape(Radius.md + Spacing.xs) else pill
-    val parts = @Composable { itemModifier: Modifier ->
-        for ((label, fill) in listOf(R.string.save_fit_whole to false, R.string.save_fit_fill to true)) {
+    val parts = @Composable {
+        for ((icon, label, fill) in listOf(Triple(EditorIcons.FitWhole, R.string.save_fit_whole, false), Triple(EditorIcons.FitFill, R.string.save_fit_fill, true))) {
             val on = preset == fill
-            Text(
-                stringResource(label),
-                style = MaterialTheme.typography.labelLarge,
-                color = if (on) t.accent else t.text,
-                textAlign = TextAlign.Center,
-                maxLines = 1,
-                modifier = itemModifier
-                    .clip(if (vertical) RoundedCornerShape(Radius.md) else pill)
+            Box(
+                Modifier.size(Sizes.icon * 2).clip(CircleShape)
                     .background(if (on) t.accentSoft else Color.Transparent)
-                    .selectable(selected = on, enabled = enabled, role = Role.RadioButton) { onFill(fill) }
-                    .padding(horizontal = Spacing.md, vertical = Spacing.sm),
-            )
+                    .border(BorderStroke(OutlinedTextFieldDefaults.UnfocusedBorderThickness, if (on) t.accentSoft else t.outline), CircleShape)
+                    .selectable(selected = on, enabled = enabled, role = Role.RadioButton) { onFill(fill) },
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(icon, contentDescription = stringResource(label), tint = if (on) t.accent else t.text)
+            }
         }
     }
-    val box = Modifier
-        .then(if (over) Modifier.clip(outer).background(BottomSheetDefaults.ContainerColor.copy(alpha = OVER_PICTURE_ALPHA)) else Modifier)
-        .border(BorderStroke(OutlinedTextFieldDefaults.UnfocusedBorderThickness, t.outline), outer)
-        .padding(Spacing.xs)
-        .selectableGroup()
     if (vertical) {
-        Column(box.width(IntrinsicSize.Max), verticalArrangement = Arrangement.spacedBy(Spacing.xs)) { parts(Modifier.fillMaxWidth()) }
+        Column(Modifier.selectableGroup(), verticalArrangement = Arrangement.spacedBy(Spacing.sm)) { parts() }
     } else {
-        Row(box, horizontalArrangement = Arrangement.spacedBy(Spacing.xs)) { parts(Modifier) }
+        Row(Modifier.selectableGroup(), horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) { parts() }
     }
 }
 

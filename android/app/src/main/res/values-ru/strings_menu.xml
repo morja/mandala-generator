@@ -65,6 +65,7 @@
     <string name="save_fit_whole">Целиком</string>
     <string name="save_fit_fill">Заполнить</string>
     <string name="save_frame_hint">Перетащите, чтобы сдвинуть; сведите пальцы для масштаба; нажмите дважды, чтобы отцентровать.</string>
+    <string name="save_placed_by_hand">Размещено вручную</string>
     <string name="save_frame_pro">Перемещение и масштабирование мандалы доступны в Pro.</string>
     <string name="save_about_pro">О Pro</string>
     <string name="save_preview_description">Предпросмотр сохраняемого изображения</string>

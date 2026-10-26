@@ -59,6 +59,7 @@
     <string name="save_fit_whole">전체</string>
     <string name="save_fit_fill">채우기</string>
     <string name="save_frame_hint">드래그하여 이동, 손가락을 벌려 확대, 두 번 탭하여 가운데 정렬.</string>
+    <string name="save_placed_by_hand">직접 배치함</string>
     <string name="save_frame_pro">만다라 이동과 확대는 Pro 기능입니다.</string>
     <string name="save_about_pro">Pro 정보</string>
     <string name="save_preview_description">저장할 이미지 미리보기</string>
