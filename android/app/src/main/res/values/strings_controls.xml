@@ -29,6 +29,7 @@
     <string name="controls_group_close">Close %1$s</string>
     <string name="controls_group_state_open">Open</string>
     <string name="controls_group_state_closed">Closed</string>
+    <string name="controls_group_changed">Changed</string>
     <string name="controls_slider_reset">Reset %1$s</string>
 
     <!-- Layers tab: actions and layer rows -->

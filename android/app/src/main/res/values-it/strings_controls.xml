@@ -31,6 +31,7 @@
     <string name="controls_group_close">Chiudi %1$s</string>
     <string name="controls_group_state_open">Aperto</string>
     <string name="controls_group_state_closed">Chiuso</string>
+    <string name="controls_group_changed">Modificato</string>
     <string name="controls_slider_reset">Reimposta %1$s</string>
 
     <!-- Layers tab: actions and layer rows -->

@@ -27,6 +27,7 @@
     <string name="controls_group_close">收起%1$s</string>
     <string name="controls_group_state_open">已展开</string>
     <string name="controls_group_state_closed">已收起</string>
+    <string name="controls_group_changed">已更改</string>
     <string name="controls_slider_reset">重置%1$s</string>
 
     <!-- Layers tab: actions and layer rows -->

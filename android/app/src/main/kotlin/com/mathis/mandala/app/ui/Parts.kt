@@ -93,6 +93,8 @@ internal fun Group(
     trailing: (@Composable () -> Unit)? = null,
     openState: MutableState<Boolean> = rememberSaveable { mutableStateOf(initiallyOpen) },
     framed: Boolean = true,
+    /** Something inside differs from its default: a dot beside the title shows it while folded too. */
+    changed: Boolean = false,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val t = LocalTokens.current
@@ -122,6 +124,11 @@ internal fun Group(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(title, style = MaterialTheme.typography.titleSmall)
+            if (changed) {
+                val note = stringResource(R.string.controls_group_changed)
+                Box(Modifier.padding(start = Spacing.sm).size(Spacing.sm).clip(CircleShape).background(t.accent)
+                    .semantics { contentDescription = note })
+            }
             Text(
                 summary.orEmpty(),
                 style = MaterialTheme.typography.bodySmall,
@@ -173,6 +180,9 @@ internal fun outlinedColors() = ButtonDefaults.outlinedButtonColors(contentColor
 
 @Composable
 internal fun outlinedIconColors() = IconButtonDefaults.outlinedIconButtonColors(contentColor = LocalTokens.current.text)
+
+/** Whether any value differs from its default, pairs of (value, default). */
+internal fun differs(vararg values: Pair<Double, Double>): Boolean = values.any { (v, d) -> kotlin.math.abs(v - d) > 1e-6 }
 
 /** A labelled on/off row; the whole row switches. */
 @Composable
@@ -304,7 +314,8 @@ internal fun ColourGroup(
     brightnessRange: ClosedFloatingPointRange<Float> = 0f..1f,
     onChange: (Double, Double, Double) -> Unit,
 ) {
-    Group(title, inset = inset, initiallyOpen = initiallyOpen, trailing = { ColourDot(hsbColour(hue, saturation, brightness)) }) {
+    Group(title, inset = inset, initiallyOpen = initiallyOpen, trailing = { ColourDot(hsbColour(hue, saturation, brightness)) },
+        changed = differs(hue to defaults.first, saturation to defaults.second, brightness to defaults.third)) {
         ValueSlider(stringResource(R.string.controls_hue), hue, default = defaults.first) { v -> onChange(v, saturation, brightness) }
         ValueSlider(stringResource(R.string.save_saturation), saturation, default = defaults.second) { v -> onChange(hue, v, brightness) }
         ValueSlider(stringResource(R.string.save_brightness), brightness, brightnessRange, default = defaults.third) { v -> onChange(hue, saturation, v) }
