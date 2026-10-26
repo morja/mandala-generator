@@ -55,8 +55,6 @@
     <string name="controls_emblem_show">Show emblem</string>
     <string name="controls_emblem_shape_seed">Shape %1$s</string>
     <string name="controls_text_show">Show text</string>
-    <string name="controls_text_in_my_quotes">In your quotes</string>
-    <string name="controls_text_save_to_my_quotes">Save to my quotes</string>
     <string name="controls_quotes_collection">Collection</string>
 
     <!-- Draw tab: show switch per tool -->
@@ -156,9 +154,13 @@
     <!-- Text tab and quote list -->
     <string name="controls_random_text_look">Random text look</string>
     <string name="controls_text_off_note">A quote or your own words in the picture, with the author if you like.</string>
+    <string name="controls_words">Words</string>
+    <string name="controls_tap_to_edit">Tap to edit</string>
+    <string name="controls_collection">Collection</string>
+    <string name="controls_new_quote">New quote</string>
+    <string name="controls_keep">Keep</string>
+    <string name="controls_kept">Kept</string>
     <string name="controls_pro_note_text">Text and quotes come with Pro. Try them as you like; keeping the mandala needs Pro.</string>
-    <string name="controls_random_quote">Random quote</string>
-    <string name="controls_choose_quote">Choose quote</string>
     <string name="controls_text_field">Text</string>
     <string name="controls_author">Author</string>
     <string name="controls_show_author">Show author</string>

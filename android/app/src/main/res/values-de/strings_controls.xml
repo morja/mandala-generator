@@ -55,8 +55,6 @@
     <string name="controls_emblem_show">Emblem anzeigen</string>
     <string name="controls_emblem_shape_seed">Form %1$s</string>
     <string name="controls_text_show">Text anzeigen</string>
-    <string name="controls_text_in_my_quotes">In deinen Zitaten</string>
-    <string name="controls_text_save_to_my_quotes">In meinen Zitaten speichern</string>
     <string name="controls_quotes_collection">Sammlung</string>
 
     <!-- Draw tab: show switch per tool -->
@@ -156,9 +154,13 @@
     <!-- Text tab and quote list -->
     <string name="controls_random_text_look">Zufälliger Textstil</string>
     <string name="controls_text_off_note">Ein Zitat oder deine eigenen Worte im Bild, auf Wunsch mit Autor.</string>
+    <string name="controls_words">Worte</string>
+    <string name="controls_tap_to_edit">Antippen zum Bearbeiten</string>
+    <string name="controls_collection">Sammlung</string>
+    <string name="controls_new_quote">Neues Zitat</string>
+    <string name="controls_keep">Merken</string>
+    <string name="controls_kept">Gemerkt</string>
     <string name="controls_pro_note_text">Text und Zitate gibt es mit Pro. Probier sie nach Belieben aus; um das Mandala zu behalten, brauchst du Pro.</string>
-    <string name="controls_random_quote">Zufälliges Zitat</string>
-    <string name="controls_choose_quote">Zitat auswählen</string>
     <string name="controls_text_field">Text</string>
     <string name="controls_author">Autor</string>
     <string name="controls_show_author">Autor anzeigen</string>

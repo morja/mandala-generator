@@ -14,15 +14,23 @@ import com.mathis.mandala.core.TextRenderer
  */
 class AndroidTextRenderer : TextRenderer {
 
-    private fun paint(font: TextFont): Paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        val family = when {
-            font.name.startsWith("Copperplate") -> Typeface.create("serif", Typeface.NORMAL)
-            font.name.startsWith("Papyrus") -> Typeface.create("casual", Typeface.NORMAL)
-            font.family == TextFont.Family.SCRIPT -> Typeface.create("cursive", Typeface.NORMAL)
-            font.family == TextFont.Family.SANS -> Typeface.SANS_SERIF
-            font.family == TextFont.Family.MONO -> Typeface.MONOSPACE
-            else -> Typeface.SERIF
+    companion object {
+        /** The system family standing in for a macOS font name; the text tab shows the words in it too. */
+        fun typeface(fontName: String): Typeface {
+            val font = TextFont(fontName, 0f, false, 0f)
+            return when {
+                fontName.startsWith("Copperplate") -> Typeface.create("serif", Typeface.NORMAL)
+                fontName.startsWith("Papyrus") -> Typeface.create("casual", Typeface.NORMAL)
+                font.family == TextFont.Family.SCRIPT -> Typeface.create("cursive", Typeface.NORMAL)
+                font.family == TextFont.Family.SANS -> Typeface.SANS_SERIF
+                font.family == TextFont.Family.MONO -> Typeface.MONOSPACE
+                else -> Typeface.SERIF
+            }
         }
+    }
+
+    private fun paint(font: TextFont): Paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        val family = typeface(font.name)
         typeface = if (font.italic) Typeface.create(family, Typeface.ITALIC) else family
         textSize = font.sizePx
         letterSpacing = if (font.sizePx > 0f) font.trackingPx / font.sizePx else 0f
