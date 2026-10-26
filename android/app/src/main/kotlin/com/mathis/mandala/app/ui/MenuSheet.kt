@@ -95,9 +95,9 @@ private enum class MenuPage { MAIN, LINE_DRAWING, DAILY, MORE }
 
 /**
  * The menu as a sheet from below (DM-7 B): the mandala on screen with what keeps it, three dice for a
- * new one, then the line drawing, "More" and About. A die shows its new mandala next to the current one
+ * new one, then the line drawing, "More", the theme and About. A die shows its new mandala next to the current one
  * in the same sheet; only "Use new" replaces it. The die in the top bar stays the quick way, without
- * asking. The rarer entries (files, fast preview, theme) and the daily wallpaper have pages of their
+ * asking. The rarer entries (files, fast preview) and the daily wallpaper have pages of their
  * own, each with a few lines on what it does, so the main page stays short.
  */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -120,12 +120,12 @@ internal fun MenuSheet(
                 candidate != null -> Compare(image, candidate, actions)
                 page == MenuPage.LINE_DRAWING -> LineDrawingPage(busy, actions, back)
                 page == MenuPage.DAILY -> DailyPage(actions, back)
-                page == MenuPage.MORE -> MorePage(fastPreview, lightTheme, actions, back)
+                page == MenuPage.MORE -> MorePage(fastPreview, actions, back)
                 else -> {
                     Current(params, image)
                     KeepRow(busy, actions, onDailyPage = { page = MenuPage.DAILY })
                     NewMandala(actions.onTryNew)
-                    MainRows(actions, onPage = { page = it })
+                    MainRows(lightTheme, actions, onPage = { page = it })
                 }
             }
         }
@@ -253,7 +253,7 @@ private fun SwitchMenuRow(icon: ImageVector, title: String, subtitle: String?, c
 }
 
 @Composable
-private fun MainRows(actions: MenuActions, onPage: (MenuPage) -> Unit) {
+private fun MainRows(lightTheme: Boolean, actions: MenuActions, onPage: (MenuPage) -> Unit) {
     val t = LocalTokens.current
     Column(Modifier.padding(top = Spacing.md)) {
         HorizontalDivider(color = t.outline)
@@ -261,6 +261,11 @@ private fun MainRows(actions: MenuActions, onPage: (MenuPage) -> Unit) {
             onClick = { onPage(MenuPage.LINE_DRAWING) }) { Chevron() }
         HorizontalDivider(color = t.outline)
         MenuRow(EditorIcons.Tune, stringResource(R.string.menu_more), onClick = { onPage(MenuPage.MORE) }) { Chevron() }
+        HorizontalDivider(color = t.outline)
+        // On the main page, since it is switched often, e.g. outdoors or at night.
+        MenuRow(EditorIcons.Moon, stringResource(R.string.menu_theme), onClick = null) {
+            ThemeChoice(lightTheme, actions.onLightTheme)
+        }
         HorizontalDivider(color = t.outline)
         MenuRow(EditorIcons.Info, stringResource(R.string.menu_about), onClick = actions.onAbout) { Chevron() }
     }
@@ -302,7 +307,7 @@ private fun DailyPage(actions: MenuActions, onBack: () -> Unit) {
 }
 
 @Composable
-private fun MorePage(fastPreview: Boolean, lightTheme: Boolean, actions: MenuActions, onBack: () -> Unit) {
+private fun MorePage(fastPreview: Boolean, actions: MenuActions, onBack: () -> Unit) {
     val t = LocalTokens.current
     PageTop(stringResource(R.string.menu_more), null, onBack)
     Column(Modifier.padding(top = Spacing.sm)) {
@@ -312,10 +317,6 @@ private fun MorePage(fastPreview: Boolean, lightTheme: Boolean, actions: MenuAct
         MenuRow(EditorIcons.FileSave, stringResource(R.string.menu_save_settings), stringResource(R.string.menu_save_settings_detail), onClick = actions.onSaveSettings) { Chevron() }
         HorizontalDivider(color = t.outline)
         SwitchMenuRow(EditorIcons.Bolt, stringResource(R.string.menu_fast_preview), stringResource(R.string.menu_fast_preview_detail), fastPreview, actions.onFastPreview)
-        HorizontalDivider(color = t.outline)
-        MenuRow(EditorIcons.Moon, stringResource(R.string.menu_theme), onClick = null) {
-            ThemeChoice(lightTheme, actions.onLightTheme)
-        }
     }
 }
 

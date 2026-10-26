@@ -112,7 +112,8 @@ internal fun Group(
                 .heightIn(min = Sizes.icon * 2)
                 .clickable(onClickLabel = toggleLabel) { open = !open }
                 .semantics { stateDescription = state }
-                .padding(horizontal = Spacing.sm),
+                // Without a frame the heading lines up with the rows around it.
+                .then(if (framed) Modifier.padding(horizontal = Spacing.sm) else Modifier),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(title, style = MaterialTheme.typography.titleSmall)
@@ -131,7 +132,7 @@ internal fun Group(
         if (open) {
             if (framed) HorizontalDivider(color = t.outline)
             Column(
-                Modifier.padding(horizontal = if (framed) Spacing.lg else Spacing.sm).padding(top = Spacing.sm, bottom = Spacing.md),
+                Modifier.then(if (framed) Modifier.padding(horizontal = Spacing.lg) else Modifier).padding(top = Spacing.sm, bottom = Spacing.md),
                 content = content,
             )
         }

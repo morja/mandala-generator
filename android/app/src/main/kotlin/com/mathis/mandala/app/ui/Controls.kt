@@ -34,6 +34,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Switch
@@ -833,19 +834,23 @@ private fun DrawTab(params: MandalaParameters, vm: EditorViewModel) {
             )
         }
     }
-    // Wraps instead of squeezing a button, since the labels are much longer in some languages.
-    FlowRow(
+    // One wide action and two small icon buttons, so the row fits in every language without wrapping.
+    Row(
         horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
-        verticalArrangement = Arrangement.spacedBy(Spacing.sm),
+        verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.padding(bottom = Spacing.sm),
     ) {
         if (active == null) {
-            Button(onClick = { vm.setDrawTool(tool) }) { Text(stringResource(R.string.controls_draw_on_image)) }
+            Button(onClick = { vm.setDrawTool(tool) }, modifier = Modifier.weight(1f)) { Text(stringResource(R.string.controls_draw_on_image), maxLines = 1) }
         } else {
-            FilledTonalButton(onClick = { vm.setDrawTool(null) }) { Text(stringResource(R.string.controls_done)) }
+            FilledTonalButton(onClick = { vm.setDrawTool(null) }, modifier = Modifier.weight(1f)) { Text(stringResource(R.string.controls_done), maxLines = 1) }
         }
-        OutlinedButton(onClick = { vm.removeLastStroke(tool) }, enabled = count > 0) { Text(stringResource(R.string.controls_undo)) }
-        OutlinedButton(onClick = { vm.clearStrokes(tool) }, enabled = count > 0) { Text(stringResource(R.string.controls_clear)) }
+        OutlinedIconButton(onClick = { vm.removeLastStroke(tool) }, enabled = count > 0) {
+            Icon(EditorIcons.Back, contentDescription = stringResource(R.string.controls_undo))
+        }
+        OutlinedIconButton(onClick = { vm.clearStrokes(tool) }, enabled = count > 0) {
+            Icon(EditorIcons.Trash, contentDescription = stringResource(R.string.controls_clear))
+        }
     }
     if (count > 0) {
         val shown = if (tool == DrawTool.LINES) lines.isEnabled else spray.isEnabled
