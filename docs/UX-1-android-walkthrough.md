@@ -33,6 +33,7 @@ Layout and consistency
 16. **Compare:** press and hold the preview to see it without scene effects, to judge how much they add.
 17. **Text around the circle:** a quote set along a ring around the mandala, as a text layout next to the centred one.
 18. **History strip:** the states the editor keeps for undo as small pictures to jump back to, like the dice comparison in the menu.
+19. **Placing by touch** (Mathis, 26 October 2026): the position sliders were made for the Mac, which has no touch. On the phone placing by dragging is more comfortable. Today layers and the emblem can already be dragged, pinched and turned, but only after "Move on image" in their Position group; the text has sliders only. Ideas: drag the selected part straight on the image (the sliders stay for fine tuning), the same for the text, and snapping to the centre and to the centre lines (perhaps also the thirds) with a short guide line while it snaps.
 
 ## Decisions (Mathis, 26 October 2026)
 
