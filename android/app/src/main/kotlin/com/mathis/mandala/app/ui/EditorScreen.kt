@@ -544,8 +544,10 @@ private fun FoldingCanvas(
                     move,
                     compare = compare,
                     showStatus = fraction > towardsMiddle,
+                    // The small image is too small for the labels on it; the controls still carry their marks.
+                    showLabels = fraction > towardsSmall,
                     onTap = if (size != PreviewSize.FULL && !pinned) ({ onSize(PreviewSize.FULL) }) else null,
-                    proMark = proMark.takeIf { fraction > towardsSmall },
+                    proMark = proMark,
                 ) {
                     // Bottom right, where the thumb reaches it.
                     if (!pinned) {
@@ -593,6 +595,7 @@ private fun Canvas(
     move: MoveInput? = null,
     compare: Compare? = null,
     showStatus: Boolean = true,
+    showLabels: Boolean = true,
     onTap: (() -> Unit)? = null,
     /** Shown while the mandala uses Pro features the user does not own (ADR-0016); opens the Pro sheet. */
     proMark: (() -> Unit)? = null,
@@ -637,7 +640,7 @@ private fun Canvas(
             }
             if (drawing != null) DrawingOverlay(drawing, t.accent)
             if (move != null) MoveOverlay(move, t.accent, t.canvas)
-            if (proMark != null) {
+            if (proMark != null && showLabels) {
                 Text(
                     "Pro",
                     style = MaterialTheme.typography.labelLarge,
@@ -652,7 +655,7 @@ private fun Canvas(
                         .semantics { contentDescription = proMarkDescription },
                 )
             }
-            if (comparing) {
+            if (comparing && showLabels) {
                 Text(
                     stringResource(R.string.editor_without_effects),
                     style = MaterialTheme.typography.labelLarge,
