@@ -12,7 +12,7 @@ object LayerAnimation {
     const val FPS = 24
 
     /** Lengths the app offers, in seconds; a longer loop turns more calmly. */
-    val SECONDS = listOf(5, 10, 15)
+    val SECONDS = listOf(5, 10, 15, 30)
     const val DEFAULT_SECONDS = 10
 
     fun frameCount(seconds: Int): Int = seconds * FPS

@@ -112,10 +112,10 @@
     <string name="save_still">Картинка</string>
     <string name="save_moving">Видео</string>
     <string name="save_video_seconds">%1$d с</string>
-    <string name="save_video">Сохранить видео</string>
-    <string name="save_video_pro_label">Сохранить видео · Pro</string>
     <string name="save_cancel">Отмена</string>
     <string name="save_video_pro">Сохранять и отправлять вращающуюся мандалу как видео можно с Pro.</string>
     <string name="save_length">Длина</string>
     <string name="save_choose_size">Выбрать размер</string>
+    <string name="save_format">Формат</string>
+    <string name="save_save_pro">Сохранить · Pro</string>
 </resources>

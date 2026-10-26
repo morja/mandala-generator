@@ -110,10 +110,10 @@
     <string name="save_still">Immagine</string>
     <string name="save_moving">Video</string>
     <string name="save_video_seconds">%1$d s</string>
-    <string name="save_video">Salva video</string>
-    <string name="save_video_pro_label">Salva video · Pro</string>
     <string name="save_cancel">Annulla</string>
     <string name="save_video_pro">Salvare e condividere il mandala che ruota come video è incluso in Pro.</string>
     <string name="save_length">Durata</string>
     <string name="save_choose_size">Scegli dimensione</string>
+    <string name="save_format">Formato</string>
+    <string name="save_save_pro">Salva · Pro</string>
 </resources>
