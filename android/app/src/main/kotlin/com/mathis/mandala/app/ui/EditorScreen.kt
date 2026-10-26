@@ -218,8 +218,6 @@ fun EditorScreen(
             onFinish = vm::setFinish,
             onPair = { showSave = false; openPair() },
             onLive = { showSave = false; openLive() },
-            hasPointLayers = VectorExport.hasPointLayers(params),
-            onLineDrawing = { look -> lineDrawingLook = look; saveLineDrawing.launch(vm.suggestedLineDrawingName(look)) },
             onShowPro = vm::showPro,
             onDismiss = { showSave = false },
             snackbar = snackbar,
@@ -280,6 +278,17 @@ fun EditorScreen(
                     else -> stringResource(R.string.editor_daily_off)
                 },
                 onDaily = { on -> if (pro.owned) vm.setDaily(on) else vm.showPro() },
+                lineDrawingPro = pro.owned,
+                hasPointLayers = VectorExport.hasPointLayers(params),
+                onLineDrawing = { look ->
+                    if (pro.owned) {
+                        showMenu = false
+                        lineDrawingLook = look
+                        saveLineDrawing.launch(vm.suggestedLineDrawingName(look))
+                    } else {
+                        vm.showPro()
+                    }
+                },
                 onTryNew = vm::tryNew,
                 onUseNew = { showMenu = false; vm.useCandidate() },
                 onBackToMenu = vm::closeCandidate,

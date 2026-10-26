@@ -79,14 +79,14 @@ import com.mathis.mandala.app.ui.theme.Sizes
 import com.mathis.mandala.app.ui.theme.Spacing
 import com.mathis.mandala.core.Finish
 import com.mathis.mandala.core.Framing
-import com.mathis.mandala.core.VectorExport
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
 /**
  * Saving in a format (ADR-0010, laid out as DM-11 A, without scrolling): format, the mandala placed in the frame (Pro)
- * with Whole or Fill beside it, the finish folded into "Adjust", whether the quote follows, and the
- * line drawing as SVG (Pro, ADR-0013). Size, Save and Wallpaper stay at the bottom while the rest scrolls.
+ * with Whole or Fill beside it, the finish folded into "Adjust", and whether the quote follows. Size, Save
+ * and Wallpaper stay at the bottom. The line drawing (ADR-0013) has its own page in the menu, since none of
+ * this applies to it. Each format keeps its own placement.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -109,8 +109,6 @@ internal fun SaveSheet(
     onFinish: (Finish) -> Unit,
     onPair: () -> Unit,
     onLive: () -> Unit,
-    hasPointLayers: Boolean,
-    onLineDrawing: (VectorExport.Look) -> Unit,
     onShowPro: () -> Unit,
     onDismiss: () -> Unit,
     snackbar: SnackbarHostState,
@@ -132,18 +130,21 @@ internal fun SaveSheet(
                 Modifier.weight(1f).padding(horizontal = Spacing.lg),
                 verticalArrangement = Arrangement.spacedBy(Spacing.md),
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(stringResource(R.string.save_title), style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
-                    LineDrawingButton(proOwned, hasPointLayers, enabled = !busy, onLineDrawing = onLineDrawing, onShowPro = onShowPro)
-                }
+                Text(stringResource(R.string.save_title), style = MaterialTheme.typography.titleMedium)
                 FormatRow(choice.format, onFormat)
                 FrameWithFit(
                     aspect = aspect.toFloat(),
                     modifier = Modifier.weight(1f),
-                    // A square frame looks the same either way.
-                    showFit = aspect != 1.0,
+                    // A square frame looks the same either way; once placed by hand it offers the way back.
+                    showFit = aspect != 1.0 || preset == null,
                     frame = { Frame(preview, aspect.toFloat(), framing, enabled = proOwned && !busy, saving = busy, onFraming = onFraming, onCentre = { onFill(false) }) },
-                    fit = { vertical -> FitToggle(preset, vertical, enabled = !busy, onFill = onFill) },
+                    fit = { vertical ->
+                        if (aspect == 1.0) {
+                            OutlinedButton(onClick = { onFill(false) }, enabled = !busy) { Text(stringResource(R.string.save_reset)) }
+                        } else {
+                            FitToggle(preset, vertical, enabled = !busy, onFill = onFill)
+                        }
+                    },
                 )
                 val adjustOpen = rememberSaveable { mutableStateOf(false) }
                 // While the sliders are open the hint gives its line to the frame.
@@ -446,32 +447,6 @@ private fun FinishControls(finish: Finish, proOwned: Boolean, enabled: Boolean, 
         }
         ValueSlider(stringResource(R.string.save_saturation), finish.saturation, 0f..Finish.MAX_SATURATION.toFloat(), default = 1.0, display = ::percent) {
             if (enabled) onFinish(finish.copy(saturation = it))
-        }
-    }
-}
-
-/**
- * The line drawing as SVG, a quiet button beside the title: a list explains it and offers its two
- * looks. Without Pro it opens the Pro sheet.
- */
-@Composable
-private fun LineDrawingButton(proOwned: Boolean, hasPointLayers: Boolean, enabled: Boolean, onLineDrawing: (VectorExport.Look) -> Unit, onShowPro: () -> Unit) {
-    val t = LocalTokens.current
-    var open by remember { mutableStateOf(false) }
-    Box {
-        TextButton(onClick = { if (proOwned) open = true else onShowPro() }, enabled = enabled) {
-            Text(stringResource(if (proOwned) R.string.save_line_drawing else R.string.save_line_drawing_pro))
-        }
-        DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
-            Text(
-                stringResource(R.string.save_line_drawing_detail) +
-                    if (hasPointLayers) " " + stringResource(R.string.save_line_drawing_points) else "",
-                style = MaterialTheme.typography.bodySmall,
-                color = t.textMuted,
-                modifier = Modifier.padding(horizontal = Spacing.lg, vertical = Spacing.sm),
-            )
-            DropdownMenuItem(text = { Text(stringResource(R.string.save_line_drawing_colour)) }, onClick = { open = false; onLineDrawing(VectorExport.Look.COLOUR) })
-            DropdownMenuItem(text = { Text(stringResource(R.string.save_line_drawing_lines)) }, onClick = { open = false; onLineDrawing(VectorExport.Look.LINES) })
         }
     }
 }

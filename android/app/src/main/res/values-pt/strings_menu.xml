@@ -32,8 +32,12 @@
     <string name="menu_open_file">Abrir arquivo</string>
     <string name="menu_save_settings">Salvar configurações</string>
     <string name="menu_fast_preview">Prévia rápida</string>
-    <string name="menu_fast_preview_detail">Imagens salvas sempre recebem o brilho completo</string>
+    <string name="menu_fast_preview_detail">Só a prévia do editor é desenhada de forma mais simples e rápida. Imagens salvas e papéis de parede mantêm a qualidade total.</string>
     <string name="menu_daily_wallpaper">Novo plano de fundo todo dia</string>
+    <string name="menu_daily_about">Ao ativar, o próximo dos seus favoritos vira o papel de parede na hora: na tela de bloqueio e, um pouco mais escuro, na tela inicial. Depois, o seguinte chega toda manhã entre 4 e 8 horas, de preferência enquanto o telefone carrega. Com o papel de parede animado ativo, ele faz a transição para o próximo favorito.</string>
+    <string name="menu_open_file_detail">Configurações de mandala salvas em arquivo, neste app ou no app para macOS</string>
+    <string name="menu_save_settings_detail">Esta mandala como arquivo, para guardar ou abrir no Mac</string>
+    <string name="menu_more">Mais</string>
     <string name="menu_theme">Tema</string>
     <string name="menu_theme_dark">Escuro</string>
     <string name="menu_theme_light">Claro</string>
@@ -76,8 +80,8 @@
     <string name="save_wallpaper">Plano de fundo</string>
 
     <!-- Save sheet: the line drawing as SVG -->
-    <string name="save_line_drawing">Desenho em linhas</string>
-    <string name="save_line_drawing_pro">Desenho em linhas · Pro</string>
+    <string name="save_line_drawing">Desenho em linhas (SVG)</string>
+    <string name="save_line_drawing_pro">Desenho em linhas (SVG) · Pro</string>
     <string name="save_line_drawing_detail">Um SVG quadrado: as camadas e o emblema como linhas, sem brilho, efeitos, fundo e citação.</string>
     <string name="save_line_drawing_points">Camadas de Atrator estranho ficam de fora.</string>
     <string name="save_line_drawing_colour">Cor sobre preto</string>

@@ -28,8 +28,12 @@
     <string name="menu_open_file">打开文件</string>
     <string name="menu_save_settings">保存设置</string>
     <string name="menu_fast_preview">快速预览</string>
-    <string name="menu_fast_preview_detail">保存的图片始终带有完整光晕</string>
+    <string name="menu_fast_preview_detail">只简化并加快编辑器中的预览绘制。保存的图片和壁纸始终保持完整质量。</string>
     <string name="menu_daily_wallpaper">每天换新壁纸</string>
+    <string name="menu_daily_about">开启后，你的下一个收藏会立即成为壁纸：设为锁屏，并以稍暗的效果设为主屏幕。之后每天早上 4 点到 8 点之间（最好在充电时）换成下一个收藏。若动态壁纸已开启，则改由动态壁纸渐变到下一个收藏。</string>
+    <string name="menu_open_file_detail">在本应用或 macOS 应用中保存为文件的曼陀罗设置</string>
+    <string name="menu_save_settings_detail">将这个曼陀罗保存为文件，留作备份或在 Mac 上打开</string>
+    <string name="menu_more">更多</string>
     <string name="menu_theme">主题</string>
     <string name="menu_theme_dark">深色</string>
     <string name="menu_theme_light">浅色</string>
@@ -72,8 +76,8 @@
     <string name="save_wallpaper">壁纸</string>
 
     <!-- Save sheet: the line drawing as SVG -->
-    <string name="save_line_drawing">线稿</string>
-    <string name="save_line_drawing_pro">线稿 · Pro</string>
+    <string name="save_line_drawing">线稿 (SVG)</string>
+    <string name="save_line_drawing_pro">线稿 (SVG) · Pro</string>
     <string name="save_line_drawing_detail">方形 SVG：图层和徽标以线条呈现，不含光晕、效果、背景和名言。</string>
     <string name="save_line_drawing_points">不包含奇异吸引子图层。</string>
     <string name="save_line_drawing_colour">黑底彩色</string>

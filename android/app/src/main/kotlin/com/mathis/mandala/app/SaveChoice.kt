@@ -26,13 +26,26 @@ data class SaveChoice(
     val finish: Finish = Finish(),
     /** Pro, the wallpaper pair: the home screen's brightness relative to the lock screen (ADR-0014). */
     val homeBrightness: Double = DEFAULT_HOME_BRIGHTNESS,
+    /** How the mandala sat in the other formats, so each keeps its own; `fit` and `framing` are this format's. */
+    val placements: Map<SaveFormat, Placement> = emptyMap(),
 ) {
+    /** The same choice in another format, with the placement that format had last ("Whole" the first time). */
+    fun withFormat(next: SaveFormat): SaveChoice {
+        if (next == format) return this
+        val kept = placements + (format to Placement(fit, framing))
+        val placement = kept[next] ?: Placement()
+        return copy(format = next, fit = placement.fit, framing = placement.framing, placements = kept - next)
+    }
+
     companion object {
         /** Darker than the lock screen, so the icons on the home screen stay readable. */
         const val DEFAULT_HOME_BRIGHTNESS = 0.6
         const val MIN_HOME_BRIGHTNESS = 0.2
     }
 }
+
+/** How the mandala sits in one format: a preset, or placed by hand. */
+data class Placement(val fit: Fit = Fit.WHOLE, val framing: Framing = Framing())
 
 /** How the mandala sits in the frame (ADR-0010): free presets, or placed by hand with Pro. */
 enum class Fit {
@@ -64,10 +77,29 @@ class SaveChoiceStore(context: Context) {
             prefs.getFloat(KEY_SATURATION, 1f).toDouble(),
         ).clamped()
         val home = prefs.getFloat(KEY_HOME_BRIGHTNESS, SaveChoice.DEFAULT_HOME_BRIGHTNESS.toFloat()).toDouble().coerceIn(SaveChoice.MIN_HOME_BRIGHTNESS, 1.0)
-        return SaveChoice(format, framing, prefs.getBoolean(KEY_TEXT_FOLLOWS, false), fit, finish, home)
+        val placements = SaveFormat.entries.filter { it != format && prefs.contains(KEY_FIT + "_" + it.name) }.associateWith { f ->
+            val name = prefs.getString(KEY_FIT + "_" + f.name, null)
+            Placement(
+                Fit.entries.firstOrNull { it.name == name } ?: Fit.WHOLE,
+                Framing(
+                    prefs.getFloat(KEY_CENTRE_X + "_" + f.name, 0.5f).toDouble(),
+                    prefs.getFloat(KEY_CENTRE_Y + "_" + f.name, 0.5f).toDouble(),
+                    prefs.getFloat(KEY_ZOOM + "_" + f.name, 1f).toDouble(),
+                ).clamped(),
+            )
+        }
+        return SaveChoice(format, framing, prefs.getBoolean(KEY_TEXT_FOLLOWS, false), fit, finish, home, placements)
     }
 
     fun save(choice: SaveChoice) = prefs.edit()
+        .apply {
+            for ((f, p) in choice.placements) {
+                putString(KEY_FIT + "_" + f.name, p.fit.name)
+                putFloat(KEY_CENTRE_X + "_" + f.name, p.framing.centreX.toFloat())
+                putFloat(KEY_CENTRE_Y + "_" + f.name, p.framing.centreY.toFloat())
+                putFloat(KEY_ZOOM + "_" + f.name, p.framing.zoom.toFloat())
+            }
+        }
         .putString(KEY_FORMAT, choice.format.name)
         .putFloat(KEY_CENTRE_X, choice.framing.centreX.toFloat())
         .putFloat(KEY_CENTRE_Y, choice.framing.centreY.toFloat())

@@ -38,6 +38,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -59,6 +60,7 @@ import com.mathis.mandala.app.ui.theme.Radius
 import com.mathis.mandala.app.ui.theme.Sizes
 import com.mathis.mandala.app.ui.theme.Spacing
 import com.mathis.mandala.core.MandalaParameters
+import com.mathis.mandala.core.VectorExport
 
 /** What the menu sheet can do; the screen wires each to the view model or a system dialog. */
 internal class MenuActions(
@@ -74,6 +76,10 @@ internal class MenuActions(
     val dailyOn: Boolean,
     val dailySubtitle: String,
     val onDaily: (Boolean) -> Unit,
+    /** The line drawing as SVG (ADR-0013, Pro): without Pro its looks open the Pro sheet. */
+    val lineDrawingPro: Boolean,
+    val hasPointLayers: Boolean,
+    val onLineDrawing: (VectorExport.Look) -> Unit,
     val onTryNew: (NewKind) -> Unit,
     val onUseNew: () -> Unit,
     val onBackToMenu: () -> Unit,
@@ -84,10 +90,15 @@ internal class MenuActions(
     val onAbout: () -> Unit,
 )
 
+/** The pages of the menu: the main one, and those with room to explain what an entry does. */
+private enum class MenuPage { MAIN, LINE_DRAWING, DAILY, MORE }
+
 /**
  * The menu as a sheet from below (DM-7 B): the mandala on screen with what keeps it, three dice for a
- * new one, then files and settings. A die shows its new mandala next to the current one in the same
- * sheet; only "Use new" replaces it. The die in the top bar stays the quick way, without asking.
+ * new one, then the line drawing, "More" and About. A die shows its new mandala next to the current one
+ * in the same sheet; only "Use new" replaces it. The die in the top bar stays the quick way, without
+ * asking. The rarer entries (files, fast preview, theme) and the daily wallpaper have pages of their
+ * own, each with a few lines on what it does, so the main page stays short.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -101,15 +112,21 @@ internal fun MenuSheet(
     actions: MenuActions,
     onDismiss: () -> Unit,
 ) {
+    var page by rememberSaveable { mutableStateOf(MenuPage.MAIN) }
+    val back = { page = MenuPage.MAIN }
     ModalBottomSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
         Column(Modifier.verticalScroll(rememberScrollState()).padding(horizontal = Spacing.lg).padding(bottom = Spacing.xl)) {
-            if (candidate == null) {
-                Current(params, image)
-                KeepRow(busy, actions)
-                NewMandala(actions.onTryNew)
-                Settings(fastPreview, lightTheme, actions)
-            } else {
-                Compare(image, candidate, actions)
+            when {
+                candidate != null -> Compare(image, candidate, actions)
+                page == MenuPage.LINE_DRAWING -> LineDrawingPage(busy, actions, back)
+                page == MenuPage.DAILY -> DailyPage(actions, back)
+                page == MenuPage.MORE -> MorePage(fastPreview, lightTheme, actions, back)
+                else -> {
+                    Current(params, image)
+                    KeepRow(busy, actions, onDailyPage = { page = MenuPage.DAILY })
+                    NewMandala(actions.onTryNew)
+                    MainRows(actions, onPage = { page = it })
+                }
             }
         }
     }
@@ -139,7 +156,7 @@ private fun Current(params: MandalaParameters, image: ImageBitmap?) {
 }
 
 @Composable
-private fun KeepRow(busy: Boolean, actions: MenuActions) {
+private fun KeepRow(busy: Boolean, actions: MenuActions, onDailyPage: () -> Unit) {
     Row(Modifier.padding(top = Spacing.md), horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
         Pill(EditorIcons.StarLine, stringResource(R.string.menu_favourite), onClick = actions.onFavourite)
         Pill(EditorIcons.Share, stringResource(R.string.menu_share), enabled = !busy, onClick = actions.onShare)
@@ -152,6 +169,11 @@ private fun KeepRow(busy: Boolean, actions: MenuActions) {
                 }
                 DropdownMenuItem(text = { Text(actions.pairLabel) }, onClick = { open = false; actions.onPair() })
                 DropdownMenuItem(text = { Text(actions.liveLabel) }, onClick = { open = false; actions.onLive() })
+                DropdownMenuItem(
+                    text = { Text(stringResource(R.string.menu_daily_wallpaper)) },
+                    trailingIcon = { if (actions.dailyOn) Icon(EditorIcons.Check, contentDescription = null, tint = LocalTokens.current.accent) },
+                    onClick = { open = false; onDailyPage() },
+                )
             }
         }
     }
@@ -231,28 +253,73 @@ private fun SwitchMenuRow(icon: ImageVector, title: String, subtitle: String, ch
 }
 
 @Composable
-private fun Settings(fastPreview: Boolean, lightTheme: Boolean, actions: MenuActions) {
+private fun MainRows(actions: MenuActions, onPage: (MenuPage) -> Unit) {
     val t = LocalTokens.current
     Column(Modifier.padding(top = Spacing.md)) {
         HorizontalDivider(color = t.outline)
-        MenuRow(EditorIcons.Folder, stringResource(R.string.menu_open_file), onClick = actions.onOpen) { Chevron() }
+        MenuRow(EditorIcons.LineArt, stringResource(if (actions.lineDrawingPro) R.string.save_line_drawing else R.string.save_line_drawing_pro),
+            onClick = { onPage(MenuPage.LINE_DRAWING) }) { Chevron() }
         HorizontalDivider(color = t.outline)
-        MenuRow(EditorIcons.FileSave, stringResource(R.string.menu_save_settings), onClick = actions.onSaveSettings) { Chevron() }
-        HorizontalDivider(color = t.outline)
-        SwitchMenuRow(EditorIcons.Bolt, stringResource(R.string.menu_fast_preview), stringResource(R.string.menu_fast_preview_detail), fastPreview, actions.onFastPreview)
-        HorizontalDivider(color = t.outline)
-        SwitchMenuRow(EditorIcons.Wallpaper, stringResource(R.string.menu_daily_wallpaper), actions.dailySubtitle, actions.dailyOn, actions.onDaily)
-        HorizontalDivider(color = t.outline)
-        MenuRow(EditorIcons.Moon, stringResource(R.string.menu_theme), onClick = null) {
-            ThemeChoice(lightTheme, actions.onLightTheme)
-        }
+        MenuRow(EditorIcons.Tune, stringResource(R.string.menu_more), onClick = { onPage(MenuPage.MORE) }) { Chevron() }
         HorizontalDivider(color = t.outline)
         MenuRow(EditorIcons.Info, stringResource(R.string.menu_about), onClick = actions.onAbout) { Chevron() }
     }
 }
 
+/** A page's top: back to the menu, its title, and a few lines on what it is for. */
 @Composable
-private fun MenuRow(icon: ImageVector, label: String, onClick: (() -> Unit)?, trailing: @Composable () -> Unit) {
+private fun PageTop(title: String, about: String?, onBack: () -> Unit) {
+    BackRow(onBack)
+    Text(title, style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = Spacing.sm))
+    if (about != null) {
+        Text(about, style = MaterialTheme.typography.bodyMedium, color = LocalTokens.current.textMuted, modifier = Modifier.padding(top = Spacing.xs))
+    }
+}
+
+@Composable
+private fun LineDrawingPage(busy: Boolean, actions: MenuActions, onBack: () -> Unit) {
+    val t = LocalTokens.current
+    val about = stringResource(R.string.save_line_drawing_detail) +
+        if (actions.hasPointLayers) " " + stringResource(R.string.save_line_drawing_points) else ""
+    PageTop(stringResource(if (actions.lineDrawingPro) R.string.save_line_drawing else R.string.save_line_drawing_pro), about, onBack)
+    Column(Modifier.padding(top = Spacing.md)) {
+        for ((label, look) in listOf(R.string.save_line_drawing_colour to VectorExport.Look.COLOUR, R.string.save_line_drawing_lines to VectorExport.Look.LINES)) {
+            HorizontalDivider(color = t.outline)
+            MenuRow(EditorIcons.FileSave, stringResource(label), onClick = if (busy) null else ({ actions.onLineDrawing(look) })) { Chevron() }
+        }
+    }
+}
+
+@Composable
+private fun DailyPage(actions: MenuActions, onBack: () -> Unit) {
+    val t = LocalTokens.current
+    PageTop(stringResource(R.string.menu_daily_wallpaper), stringResource(R.string.menu_daily_about), onBack)
+    Column(Modifier.padding(top = Spacing.md)) {
+        HorizontalDivider(color = t.outline)
+        SwitchMenuRow(EditorIcons.Wallpaper, stringResource(R.string.menu_daily_wallpaper), actions.dailySubtitle, actions.dailyOn, actions.onDaily)
+    }
+}
+
+@Composable
+private fun MorePage(fastPreview: Boolean, lightTheme: Boolean, actions: MenuActions, onBack: () -> Unit) {
+    val t = LocalTokens.current
+    PageTop(stringResource(R.string.menu_more), null, onBack)
+    Column(Modifier.padding(top = Spacing.sm)) {
+        HorizontalDivider(color = t.outline)
+        MenuRow(EditorIcons.Folder, stringResource(R.string.menu_open_file), stringResource(R.string.menu_open_file_detail), onClick = actions.onOpen) { Chevron() }
+        HorizontalDivider(color = t.outline)
+        MenuRow(EditorIcons.FileSave, stringResource(R.string.menu_save_settings), stringResource(R.string.menu_save_settings_detail), onClick = actions.onSaveSettings) { Chevron() }
+        HorizontalDivider(color = t.outline)
+        SwitchMenuRow(EditorIcons.Bolt, stringResource(R.string.menu_fast_preview), stringResource(R.string.menu_fast_preview_detail), fastPreview, actions.onFastPreview)
+        HorizontalDivider(color = t.outline)
+        MenuRow(EditorIcons.Moon, stringResource(R.string.menu_theme), onClick = null) {
+            ThemeChoice(lightTheme, actions.onLightTheme)
+        }
+    }
+}
+
+@Composable
+private fun MenuRow(icon: ImageVector, label: String, detail: String? = null, onClick: (() -> Unit)?, trailing: @Composable () -> Unit) {
     val t = LocalTokens.current
     Row(
         Modifier.fillMaxWidth().then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier).padding(vertical = Spacing.md),
@@ -260,8 +327,23 @@ private fun MenuRow(icon: ImageVector, label: String, onClick: (() -> Unit)?, tr
         horizontalArrangement = Arrangement.spacedBy(Spacing.md),
     ) {
         Icon(icon, contentDescription = null, tint = t.textMuted)
-        Text(label, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
+        Column(Modifier.weight(1f)) {
+            Text(label, style = MaterialTheme.typography.bodyLarge)
+            if (detail != null) Text(detail, style = MaterialTheme.typography.bodySmall, color = t.textMuted)
+        }
         trailing()
+    }
+}
+
+@Composable
+private fun BackRow(onBack: () -> Unit) {
+    val t = LocalTokens.current
+    Row(
+        Modifier.clip(RoundedCornerShape(Radius.sm)).clickable(onClick = onBack).padding(vertical = Spacing.xs),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Icon(EditorIcons.ChevronBack, contentDescription = null, tint = t.textMuted)
+        Text(stringResource(R.string.menu_back), style = MaterialTheme.typography.bodyMedium, color = t.textMuted)
     }
 }
 
@@ -292,13 +374,7 @@ private fun ThemeChoice(light: Boolean, onLight: (Boolean) -> Unit) {
 @Composable
 private fun Compare(image: ImageBitmap?, candidate: Candidate, actions: MenuActions) {
     val t = LocalTokens.current
-    Row(
-        Modifier.clip(RoundedCornerShape(Radius.sm)).clickable(onClick = actions.onBackToMenu).padding(vertical = Spacing.xs),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Icon(EditorIcons.ChevronBack, contentDescription = null, tint = t.textMuted)
-        Text(stringResource(R.string.menu_back), style = MaterialTheme.typography.bodyMedium, color = t.textMuted)
-    }
+    BackRow(actions.onBackToMenu)
     Row(Modifier.padding(top = Spacing.sm), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
         Captioned(stringResource(R.string.menu_now), Modifier.weight(1f)) { Thumb(image, Modifier.fillMaxWidth()) }
         Icon(EditorIcons.Arrow, contentDescription = null, tint = t.textMuted)

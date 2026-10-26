@@ -28,8 +28,12 @@
     <string name="menu_open_file">ファイルを開く</string>
     <string name="menu_save_settings">設定を保存</string>
     <string name="menu_fast_preview">高速プレビュー</string>
-    <string name="menu_fast_preview_detail">保存する画像には常にグローが完全に適用されます</string>
+    <string name="menu_fast_preview_detail">エディタのプレビューだけを簡略化して速く描画します。保存する画像と壁紙は常にフル品質です。</string>
     <string name="menu_daily_wallpaper">毎日新しい壁紙</string>
+    <string name="menu_daily_about">オンにすると、お気に入りの次の1枚がすぐに壁紙になります。ロック画面に、ホーム画面には少し暗くして設定します。その後は毎朝4時から8時の間に、できれば充電中に、次のお気に入りに替わります。ライブ壁紙がオンのときは、代わりにライブ壁紙が次のお気に入りへフェードします。</string>
+    <string name="menu_open_file_detail">このアプリやmacOSアプリでファイルに保存したマンダラの設定</string>
+    <string name="menu_save_settings_detail">このマンダラをファイルとして保存し、残したりMacで開いたりできます</string>
+    <string name="menu_more">その他</string>
     <string name="menu_theme">テーマ</string>
     <string name="menu_theme_dark">ダーク</string>
     <string name="menu_theme_light">ライト</string>
@@ -72,8 +76,8 @@
     <string name="save_wallpaper">壁紙</string>
 
     <!-- Save sheet: the line drawing as SVG -->
-    <string name="save_line_drawing">線画</string>
-    <string name="save_line_drawing_pro">線画 · Pro</string>
+    <string name="save_line_drawing">線画 (SVG)</string>
+    <string name="save_line_drawing_pro">線画 (SVG) · Pro</string>
     <string name="save_line_drawing_detail">正方形のSVG: レイヤーとエンブレムを線で描きます。グロー、エフェクト、背景、引用は含みません。</string>
     <string name="save_line_drawing_points">ストレンジアトラクターのレイヤーは含まれません。</string>
     <string name="save_line_drawing_colour">黒地にカラー</string>

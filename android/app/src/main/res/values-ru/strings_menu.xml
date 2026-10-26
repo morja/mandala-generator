@@ -34,8 +34,12 @@
     <string name="menu_open_file">Открыть файл</string>
     <string name="menu_save_settings">Сохранить настройки</string>
     <string name="menu_fast_preview">Быстрый предпросмотр</string>
-    <string name="menu_fast_preview_detail">Сохранённые изображения всегда получают полное свечение</string>
+    <string name="menu_fast_preview_detail">Упрощённо и быстрее рисуется только предпросмотр в редакторе. Сохранённые изображения и обои всегда в полном качестве.</string>
     <string name="menu_daily_wallpaper">Новые обои каждый день</string>
+    <string name="menu_daily_about">После включения следующий из ваших избранных сразу становится обоями: на экране блокировки и чуть темнее на главном экране. Затем каждое утро между 4 и 8 часами, лучше всего во время зарядки, появляется следующий. Если включены живые обои, они плавно переходят к следующему избранному.</string>
+    <string name="menu_open_file_detail">Настройки мандалы, сохранённые в файл в этом приложении или в приложении для macOS</string>
+    <string name="menu_save_settings_detail">Эта мандала в виде файла, чтобы сохранить её или открыть на Mac</string>
+    <string name="menu_more">Ещё</string>
     <string name="menu_theme">Тема</string>
     <string name="menu_theme_dark">Тёмная</string>
     <string name="menu_theme_light">Светлая</string>
@@ -78,8 +82,8 @@
     <string name="save_wallpaper">Обои</string>
 
     <!-- Save sheet: the line drawing as SVG -->
-    <string name="save_line_drawing">Контурный рисунок</string>
-    <string name="save_line_drawing_pro">Контурный рисунок · Pro</string>
+    <string name="save_line_drawing">Контурный рисунок (SVG)</string>
+    <string name="save_line_drawing_pro">Контурный рисунок (SVG) · Pro</string>
     <string name="save_line_drawing_detail">SVG, квадратный: слои и эмблема в виде линий, без свечения, эффектов, фона и цитаты.</string>
     <string name="save_line_drawing_points">Слои «Странный аттрактор» не включаются.</string>
     <string name="save_line_drawing_colour">Цвет на чёрном</string>

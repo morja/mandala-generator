@@ -270,7 +270,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
     )
     private var lastExport: Pair<ExportKey, Image8>? = null
 
-    fun setSaveFormat(format: Editing.SaveFormat) = _saveChoice.update { it.copy(format = format) }
+    fun setSaveFormat(format: Editing.SaveFormat) = _saveChoice.update { it.withFormat(format) }
 
     /** "Fill" or "Show whole", free in every format; with Pro it ends placing by hand. */
     fun setFill(fill: Boolean) = _saveChoice.update { it.copy(fit = if (fill) Fit.FILL else Fit.WHOLE) }
@@ -797,7 +797,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         val screen = aspectOf(Editing.SaveFormat.SCREEN)
         val params = _params.value
         // A wallpaper is always in the screen format, even when the sheet was last left on the square.
-        val shown = choice.copy(format = Editing.SaveFormat.SCREEN)
+        val shown = choice.withFormat(Editing.SaveFormat.SCREEN)
         val framing: suspend () -> Framing = { framingFor(if (filled) shown.copy(fit = Fit.FILL) else shown, params, screen, large) }
         val reuse = { k: ExportKey, f: Framing ->
             k.params == params && k.framing == f && k.textFollows == choice.textFollowsMandala && k.finish == effectiveFinish() &&
