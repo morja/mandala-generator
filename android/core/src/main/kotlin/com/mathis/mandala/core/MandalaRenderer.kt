@@ -165,7 +165,7 @@ object MandalaRenderer {
                 // Reaching a layer also completes the one before, whichever way that one ended.
                 val n = layerNo++
                 progress.layer(n, 0.0)
-                val palette = palettes[layer.paletteIndex.coerceIn(0, palettes.size - 1)]
+                val palette = OwnPalettes.resolve(layer.paletteIndex, layer.customPalette, palettes)
                 val op = when (layer.blendMode) {
                     LayerBlendMode.SCREEN -> BlendOp.SCREEN
                     LayerBlendMode.ADD -> BlendOp.ADD

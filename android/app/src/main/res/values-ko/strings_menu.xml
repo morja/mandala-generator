@@ -36,6 +36,7 @@
     <string name="menu_daily_some">%2$d개 중 %1$d개</string>
     <string name="menu_daily_pick_about">체크한 즐겨찾기만 즐겨찾기 순서대로 번갈아 나옵니다. 나중에 추가한 즐겨찾기는 여기서 체크하면 포함됩니다.</string>
     <string name="menu_daily_choose_all">모두 체크</string>
+    <string name="menu_daily_widget_note">홈 화면 위젯 ‘오늘의 만다라’도 같은 즐겨찾기를 보여 줍니다. Pro는 매일 배경화면이 꺼져 있어도 매일 아침 바뀝니다.</string>
     <string name="menu_open_file_detail">이 앱이나 macOS 앱에서 파일로 저장한 만다라 설정</string>
     <string name="menu_save_settings_detail">이 만다라를 파일로 저장해 보관하거나 Mac에서 열 수 있습니다</string>
     <string name="menu_more">더 보기</string>

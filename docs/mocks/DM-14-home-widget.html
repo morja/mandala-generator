@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DM-14 Widget</title>
+<style>
+  :root {
+    --bg: #0A0908; --surface: #121110; --raised: #1B1917; --text: #E6E1DB; --muted: #9C948B;
+    --outline: #2E2A26; --accent: #D9A15C; --on-accent: #241605; --accent-soft: #2A2117; --page: #161412;
+    --home: radial-gradient(120% 80% at 50% 20%, #2b2340 0%, #120f1c 55%, #07060a 100%);
+  }
+  :root[data-theme="light"] {
+    --bg: #F7F4EF; --surface: #FFFDFA; --raised: #EFEAE3; --text: #221F1C; --muted: #5F5851;
+    --outline: #CFC7BD; --accent: #8A5210; --on-accent: #fff; --accent-soft: #F3E3CF; --page: #E9E4DC;
+    --home: radial-gradient(120% 80% at 50% 20%, #e9dcc8 0%, #cdbba3 60%, #b8a385 100%);
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--page); color: var(--text); font: 15px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  header { padding: 16px; display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; }
+  header h1 { font-size: 17px; margin: 0 8px 0 0; font-weight: 600; }
+  .seg { display: inline-flex; border: 1px solid var(--outline); border-radius: 999px; overflow: hidden; }
+  .seg button { background: transparent; color: var(--text); border: 0; padding: 6px 14px; font: inherit; cursor: pointer; }
+  .seg button[aria-pressed="true"] { background: var(--accent-soft); color: var(--accent); }
+  main { display: flex; flex-wrap: wrap; gap: 28px; padding: 0 16px 24px; justify-content: center; align-items: flex-start; }
+  .home { width: min(340px, 100%); aspect-ratio: 9 / 19; border-radius: 30px; background: var(--home); padding: 46px 18px 18px; position: relative; overflow: hidden; border: 1px solid var(--outline); }
+  .clock { text-align: center; color: #f1ece6; font-size: 44px; font-weight: 300; letter-spacing: 1px; margin-bottom: 18px; }
+  :root[data-theme="light"] .clock { color: #2a221a; }
+  .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px 10px; }
+  .app { aspect-ratio: 1; border-radius: 16px; background: rgba(255,255,255,.12); }
+  :root[data-theme="light"] .app { background: rgba(0,0,0,.10); }
+  .w { border-radius: 22px; overflow: hidden; position: relative; background: #000; }
+  .w img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .w2 { grid-column: span 2; grid-row: span 2; aspect-ratio: 1; }
+  .w4x2 { grid-column: span 4; grid-row: span 2; display: flex; background: var(--surface); }
+  .w4x2 .img { width: 50%; aspect-ratio: 1; }
+  .w4x2 .img img { width: 100%; height: 100%; object-fit: cover; }
+  .w4x2 .txt { flex: 1; padding: 14px; display: flex; flex-direction: column; justify-content: center; gap: 6px; }
+  .w4x2 .q { font-family: Georgia, serif; font-size: 14px; line-height: 1.35; }
+  .w4x2 .a { font-family: Georgia, serif; font-style: italic; color: var(--muted); font-size: 12px; }
+  .die { position: absolute; right: 10px; bottom: 10px; width: 34px; height: 34px; border-radius: 50%; background: rgba(0,0,0,.55); display: grid; place-items: center; }
+  .die span { width: 18px; height: 18px; border: 2px solid #e8c38f; border-radius: 5px; position: relative; }
+  .die span::after { content: ""; position: absolute; left: 50%; top: 50%; width: 4px; height: 4px; margin: -2px; border-radius: 50%; background: #e8c38f; }
+  .side { max-width: 360px; }
+  .side h2 { font-size: 16px; margin: 0 0 6px; }
+  .side p { margin: 6px 0; color: var(--muted); }
+  .side b { color: var(--text); font-weight: 600; }
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+<header>
+  <h1>DM-14</h1>
+  <div class="seg" id="variant">
+    <button aria-pressed="true" data-v="a">A · Bild</button>
+    <button aria-pressed="false" data-v="b">B · Bild und Worte</button>
+    <button aria-pressed="false" data-v="c">C · mit Würfel</button>
+  </div>
+  <div class="seg" id="theme">
+    <button aria-pressed="true" data-v="dark">Dunkel</button>
+    <button aria-pressed="false" data-v="light">Hell</button>
+  </div>
+</header>
+
+<main data-variant="a">
+  <div class="home">
+    <div class="clock">7:42</div>
+    <div class="grid">
+      <div class="w w2"><img src="../marketing/renders/flower-of-life-square.jpg" alt="Mandala des Tages"></div>
+      <div class="app"></div><div class="app"></div><div class="app"></div><div class="app"></div>
+      <div class="app"></div><div class="app"></div><div class="app"></div><div class="app"></div>
+    </div>
+  </div>
+  <div class="side">
+    <h2>A · Mandala des Tages, nur das Bild</h2>
+    <p><b>Was es zeigt:</b> den Favoriten des Tages, randlos in einer abgerundeten Kachel. Größe 2×2, frei bis 4×4 ziehbar; das Bild bleibt quadratisch und füllt die Kachel.</p>
+    <p><b>Antippen</b> öffnet die App mit genau diesem Mandala im Editor.</p>
+    <p><b>Wechsel</b> jeden Morgen zusammen mit dem Tageshintergrund, aus denselben angehakten Favoriten; ist der Tageshintergrund aus, wechselt das Widget trotzdem.</p>
+  </div>
+</main>
+
+<main data-variant="b" class="hidden">
+  <div class="home">
+    <div class="clock">7:42</div>
+    <div class="grid">
+      <div class="w w4x2"><div class="img"><img src="../marketing/renders/hypocycloid-square.jpg" alt=""></div>
+        <div class="txt"><div class="q">Eine Reise von tausend Meilen beginnt mit dem ersten Schritt.</div><div class="a">— Laotse</div></div></div>
+      <div class="app"></div><div class="app"></div><div class="app"></div><div class="app"></div>
+    </div>
+  </div>
+  <div class="side">
+    <h2>B · Bild und Worte</h2>
+    <p>Breit (4×2): links das Mandala, rechts ein Zitat in der Schrift des Bildes. Das Zitat ist das des Favoriten, sonst ein zufälliges in der App-Sprache.</p>
+    <p>Lesbarer als ein Zitat im kleinen Bild, braucht aber eine ganze Zeile des Startbildschirms.</p>
+  </div>
+</main>
+
+<main data-variant="c" class="hidden">
+  <div class="home">
+    <div class="clock">7:42</div>
+    <div class="grid">
+      <div class="w w2"><img src="../marketing/renders/ribbon-square.jpg" alt=""><span class="die"><span></span></span></div>
+      <div class="app"></div><div class="app"></div><div class="app"></div><div class="app"></div>
+      <div class="app"></div><div class="app"></div><div class="app"></div><div class="app"></div>
+    </div>
+  </div>
+  <div class="side">
+    <h2>C · mit Würfel</h2>
+    <p>Wie A, dazu ein kleiner Würfel in der Ecke: er zeigt sofort den nächsten Favoriten, ohne die App zu öffnen.</p>
+    <p>Spielerischer; das neue Bild braucht ein bis zwei Sekunden, bis es erscheint.</p>
+  </div>
+</main>
+
+<script>
+  function bind(id, apply) {
+    const seg = document.getElementById(id);
+    seg.addEventListener('click', e => {
+      const b = e.target.closest('button'); if (!b) return;
+      seg.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+      apply(b.dataset.v);
+    });
+  }
+  bind('variant', v => document.querySelectorAll('main').forEach(m => m.classList.toggle('hidden', m.dataset.variant !== v)));
+  bind('theme', v => document.documentElement.dataset.theme = v);
+</script>
+</body>
+</html>

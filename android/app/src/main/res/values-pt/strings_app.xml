@@ -104,4 +104,8 @@
     <string name="message_video_failed">Não foi possível criar o vídeo: %1$s</string>
     <string name="export_video_minutes">Criando o vídeo, faltam cerca de %1$d min</string>
     <string name="export_video_under_minute">Criando o vídeo, falta menos de um minuto</string>
+    <!-- Home screen widget (ADR-0020) -->
+    <string name="widget_label">Mandala do dia</string>
+    <string name="widget_description">O favorito do dia na sua tela inicial. Quadrado mostra a imagem; largo acrescenta as palavras. Com Pro, um novo a cada manhã.</string>
+    <string name="widget_empty">Adicione um favorito no app para vê-lo aqui.</string>
 </resources>

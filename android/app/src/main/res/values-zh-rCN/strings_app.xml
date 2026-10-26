@@ -100,4 +100,8 @@
     <string name="message_video_failed">无法创建视频：%1$s</string>
     <string name="export_video_minutes">正在创建视频，约剩 %1$d 分钟</string>
     <string name="export_video_under_minute">正在创建视频，剩余不到 1 分钟</string>
+    <!-- Home screen widget (ADR-0020) -->
+    <string name="widget_label">今日曼陀罗</string>
+    <string name="widget_description">把今天的收藏放到主屏幕。方形只显示图片，宽版同时显示文字。Pro 每天早上换一个。</string>
+    <string name="widget_empty">在应用中添加收藏后，会显示在这里。</string>
 </resources>

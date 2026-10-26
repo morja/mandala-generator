@@ -102,4 +102,8 @@
     <string name="message_video_failed">Could not create the video: %1$s</string>
     <string name="export_video_minutes">Creating the video, about %1$d min left</string>
     <string name="export_video_under_minute">Creating the video, less than a minute left</string>
+    <!-- Home screen widget (ADR-0020) -->
+    <string name="widget_label">Mandala of the day</string>
+    <string name="widget_description">Today\'s favourite on your home screen. Square shows the picture, wide adds the words. With Pro a new one every morning.</string>
+    <string name="widget_empty">Add a favourite in the app to see it here.</string>
 </resources>

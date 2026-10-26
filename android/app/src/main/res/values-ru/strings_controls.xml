@@ -205,4 +205,22 @@
     <string name="controls_smoother">Сглаживание</string>
     <string name="controls_applies_to">Применяется к</string>
     <string name="controls_reach_mandala">Мандала</string>
+    <string name="controls_effects_hold_hint">Удерживайте превью, чтобы увидеть его без эффектов.</string>
+
+    <!-- Own palettes (ADR-0021) -->
+    <string name="controls_my_palettes">Мои палитры</string>
+    <string name="controls_in_this_picture">В этом изображении</string>
+    <string name="controls_palette_new">Новая палитра</string>
+    <string name="controls_palette_edit">Изменить палитру</string>
+    <string name="controls_edit">Изменить</string>
+    <string name="controls_palette_keep">Добавить в мои палитры</string>
+    <string name="controls_palette_name">Название</string>
+    <string name="controls_palette_default_name">Моя палитра %1$d</string>
+    <string name="controls_palette_from_picture">Из картинки</string>
+    <string name="controls_palette_add_colour">Добавить цвет</string>
+    <string name="controls_palette_remove_colour">Убрать цвет</string>
+    <string name="controls_palette_hint">Коснитесь цвета, чтобы изменить его, перетащите, чтобы сдвинуть.</string>
+    <string name="controls_palette_colour">Цвет %1$d</string>
+    <string name="controls_cancel">Отмена</string>
+    <string name="controls_palette_save">Сохранить</string>
 </resources>

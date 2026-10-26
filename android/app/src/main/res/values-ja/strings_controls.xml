@@ -199,4 +199,22 @@
     <string name="controls_smoother">スムーズ</string>
     <string name="controls_applies_to">適用先</string>
     <string name="controls_reach_mandala">曼荼羅</string>
+    <string name="controls_effects_hold_hint">プレビューを長押しすると、エフェクトなしで表示されます。</string>
+
+    <!-- Own palettes (ADR-0021) -->
+    <string name="controls_my_palettes">マイパレット</string>
+    <string name="controls_in_this_picture">この画像の中</string>
+    <string name="controls_palette_new">新しいパレット</string>
+    <string name="controls_palette_edit">パレットを編集</string>
+    <string name="controls_edit">編集</string>
+    <string name="controls_palette_keep">マイパレットに追加</string>
+    <string name="controls_palette_name">名前</string>
+    <string name="controls_palette_default_name">マイパレット %1$d</string>
+    <string name="controls_palette_from_picture">画像から</string>
+    <string name="controls_palette_add_colour">色を追加</string>
+    <string name="controls_palette_remove_colour">色を削除</string>
+    <string name="controls_palette_hint">色をタップして変更、ドラッグして移動します。</string>
+    <string name="controls_palette_colour">色 %1$d</string>
+    <string name="controls_cancel">キャンセル</string>
+    <string name="controls_palette_save">保存</string>
 </resources>

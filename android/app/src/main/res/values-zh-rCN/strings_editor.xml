@@ -68,4 +68,5 @@
     <string name="live_palettes_in_turn">轮换调色板：每十分钟渐变到下一个</string>
     <string name="live_daily_note">开启每日壁纸后，动态壁纸每天早上会渐变到下一个收藏。</string>
     <string name="live_set">设置动态壁纸</string>
+    <string name="editor_without_effects">无效果</string>
 </resources>

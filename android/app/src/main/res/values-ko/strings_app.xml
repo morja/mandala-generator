@@ -100,4 +100,8 @@
     <string name="message_video_failed">동영상을 만들 수 없습니다: %1$s</string>
     <string name="export_video_minutes">동영상 만드는 중, 약 %1$d분 남음</string>
     <string name="export_video_under_minute">동영상 만드는 중, 1분 미만 남음</string>
+    <!-- Home screen widget (ADR-0020) -->
+    <string name="widget_label">오늘의 만다라</string>
+    <string name="widget_description">오늘의 즐겨찾기를 홈 화면에. 정사각형은 그림만, 넓게 하면 글도 함께 보여 줍니다. Pro는 매일 아침 새로 바뀝니다.</string>
+    <string name="widget_empty">앱에서 즐겨찾기를 추가하면 여기에 나타납니다.</string>
 </resources>

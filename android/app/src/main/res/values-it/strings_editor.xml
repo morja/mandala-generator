@@ -68,4 +68,5 @@
     <string name="live_palettes_in_turn">Tavolozze a turno: ogni dieci minuti sfuma nella successiva</string>
     <string name="live_daily_note">Con lo sfondo del giorno attivo, ogni mattina lo sfondo animato sfuma nel preferito successivo.</string>
     <string name="live_set">Imposta sfondo animato</string>
+    <string name="editor_without_effects">Senza effetti</string>
 </resources>

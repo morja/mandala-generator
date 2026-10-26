@@ -106,4 +106,8 @@
     <string name="message_video_failed">Не удалось создать видео: %1$s</string>
     <string name="export_video_minutes">Создание видео, осталось около %1$d мин</string>
     <string name="export_video_under_minute">Создание видео, осталось меньше минуты</string>
+    <!-- Home screen widget (ADR-0020) -->
+    <string name="widget_label">Мандала дня</string>
+    <string name="widget_description">Мандала дня из избранного на главном экране. Квадратный виджет показывает изображение, широкий — ещё и слова. С Pro каждое утро новая.</string>
+    <string name="widget_empty">Добавьте мандалу в избранное в приложении, и она появится здесь.</string>
 </resources>

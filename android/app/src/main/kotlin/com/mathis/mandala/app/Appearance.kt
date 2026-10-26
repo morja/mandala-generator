@@ -4,7 +4,8 @@ import android.content.Context
 
 /**
  * Dark is the default (the mandala glows most on it); the light theme is a choice kept across starts.
- * So is the fast preview, on by default: its glow is blurred at a smaller size (ADR-0004).
+ * So is the fast preview, on by default: its glow is blurred at a smaller size (ADR-0004), and the
+ * size of the phone preview above the controls.
  */
 class Appearance(context: Context) {
     private val prefs = context.getSharedPreferences("appearance", Context.MODE_PRIVATE)
@@ -17,8 +18,13 @@ class Appearance(context: Context) {
         get() = prefs.getBoolean(KEY_FAST_PREVIEW, true)
         set(value) = prefs.edit().putBoolean(KEY_FAST_PREVIEW, value).apply()
 
+    var previewSize: PreviewSize
+        get() = PreviewSize.entries.firstOrNull { it.name == prefs.getString(KEY_PREVIEW_SIZE, null) } ?: PreviewSize.FULL
+        set(value) = prefs.edit().putString(KEY_PREVIEW_SIZE, value.name).apply()
+
     private companion object {
         const val KEY_LIGHT = "light_theme"
         const val KEY_FAST_PREVIEW = "fast_preview"
+        const val KEY_PREVIEW_SIZE = "preview_size"
     }
 }

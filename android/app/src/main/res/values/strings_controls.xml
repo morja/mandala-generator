@@ -201,4 +201,22 @@
     <string name="controls_smoother">Smoother</string>
     <string name="controls_applies_to">Applies to</string>
     <string name="controls_reach_mandala">Mandala</string>
+    <string name="controls_effects_hold_hint">Hold the preview to see it without effects.</string>
+
+    <!-- Own palettes (ADR-0021) -->
+    <string name="controls_my_palettes">My palettes</string>
+    <string name="controls_in_this_picture">In this picture</string>
+    <string name="controls_palette_new">New palette</string>
+    <string name="controls_palette_edit">Edit palette</string>
+    <string name="controls_edit">Edit</string>
+    <string name="controls_palette_keep">Add to my palettes</string>
+    <string name="controls_palette_name">Name</string>
+    <string name="controls_palette_default_name">My palette %1$d</string>
+    <string name="controls_palette_from_picture">From picture</string>
+    <string name="controls_palette_add_colour">Add colour</string>
+    <string name="controls_palette_remove_colour">Remove colour</string>
+    <string name="controls_palette_hint">Tap a colour to change it, drag it to move it.</string>
+    <string name="controls_palette_colour">Colour %1$d</string>
+    <string name="controls_cancel">Cancel</string>
+    <string name="controls_palette_save">Save</string>
 </resources>

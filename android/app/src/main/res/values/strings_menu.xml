@@ -38,6 +38,7 @@
     <string name="menu_daily_some">%1$d of %2$d</string>
     <string name="menu_daily_pick_about">Only the ticked favourites take turns, in the order of your favourites. A favourite added later joins once you tick it here.</string>
     <string name="menu_daily_choose_all">Tick all</string>
+    <string name="menu_daily_widget_note">The home screen widget “Mandala of the day” shows the same favourites; with Pro it changes every morning, even while the daily wallpaper is off.</string>
     <string name="menu_open_file_detail">Mandala settings saved as a file, here or in the macOS app</string>
     <string name="menu_save_settings_detail">This mandala as a file, to keep or to open on the Mac</string>
     <string name="menu_more">More</string>

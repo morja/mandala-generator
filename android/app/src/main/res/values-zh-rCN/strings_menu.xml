@@ -36,6 +36,7 @@
     <string name="menu_daily_some">%2$d 个中的 %1$d 个</string>
     <string name="menu_daily_pick_about">只有勾选的收藏会按收藏顺序轮换。之后新增的收藏在这里勾选后才会加入。</string>
     <string name="menu_daily_choose_all">全部勾选</string>
+    <string name="menu_daily_widget_note">主屏幕小组件“今日曼陀罗”显示同样的收藏；有 Pro 时即使每日壁纸关闭，它也会每天早上更换。</string>
     <string name="menu_open_file_detail">在本应用或 macOS 应用中保存为文件的曼陀罗设置</string>
     <string name="menu_save_settings_detail">将这个曼陀罗保存为文件，留作备份或在 Mac 上打开</string>
     <string name="menu_more">更多</string>

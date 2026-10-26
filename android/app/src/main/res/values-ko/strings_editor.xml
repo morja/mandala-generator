@@ -68,4 +68,5 @@
     <string name="live_palettes_in_turn">팔레트 순환: 10분마다 다음 팔레트로 서서히 바뀝니다</string>
     <string name="live_daily_note">매일 배경화면을 켜 두면 라이브 배경화면이 매일 아침 다음 즐겨찾기로 서서히 바뀝니다.</string>
     <string name="live_set">라이브 배경화면 설정</string>
+    <string name="editor_without_effects">효과 없이</string>
 </resources>

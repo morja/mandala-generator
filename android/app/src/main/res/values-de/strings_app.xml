@@ -102,4 +102,8 @@
     <string name="message_video_failed">Video konnte nicht erstellt werden: %1$s</string>
     <string name="export_video_minutes">Video wird erstellt, noch etwa %1$d min</string>
     <string name="export_video_under_minute">Video wird erstellt, noch knapp eine Minute</string>
+    <!-- Home screen widget (ADR-0020) -->
+    <string name="widget_label">Mandala des Tages</string>
+    <string name="widget_description">Der Favorit des Tages auf dem Startbildschirm. Quadratisch zeigt das Bild, breit dazu die Worte. Mit Pro jeden Morgen ein neuer.</string>
+    <string name="widget_empty">Füge in der App einen Favoriten hinzu, dann erscheint er hier.</string>
 </resources>

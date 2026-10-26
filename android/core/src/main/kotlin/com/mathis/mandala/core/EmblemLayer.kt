@@ -53,7 +53,7 @@ internal class EmblemLayer(private val par: Parallel, private val fx: LayerEffec
         val ecy = centreY - area[1]
         val mask = EmblemMask(w, h, ecx, ecy, unit, s.rotation).draw(geometry, s.rendering, s.weight, par)
 
-        val palette = palettes[s.paletteIndex.coerceIn(0, palettes.size - 1)]
+        val palette = OwnPalettes.resolve(s.paletteIndex, s.customPalette, palettes)
         val colour = ColourSource(mask, w, h, ecx, ecy, lut(palette), s.colorPosition, s.colorSpread, unit)
         val op = s.blendMode
         // Alpha only matters where the overlay covers the image: source-over and multiply.

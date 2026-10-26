@@ -40,6 +40,7 @@
     <string name="menu_daily_some">%1$d sur %2$d</string>
     <string name="menu_daily_pick_about">Seuls les favoris cochés se relaient, dans l\'ordre de vos favoris. Un favori ajouté plus tard en fait partie une fois coché ici.</string>
     <string name="menu_daily_choose_all">Tout cocher</string>
+    <string name="menu_daily_widget_note">Le widget « Mandala du jour » montre les mêmes favoris ; avec Pro il change chaque matin, même si le fond d\'écran du jour est désactivé.</string>
     <string name="menu_open_file_detail">Réglages de mandala enregistrés dans un fichier, depuis cette app ou l\'app macOS</string>
     <string name="menu_save_settings_detail">Ce mandala dans un fichier, à garder ou à ouvrir sur le Mac</string>
     <string name="menu_more">Plus</string>

@@ -81,7 +81,7 @@ object VectorExport {
         val blend = if (colour) "plus-lighter" else "multiply"
         for ((li, layer) in params.layers.withIndex()) {
             if (!layer.isEnabled) continue
-            val palette = palettes[layer.paletteIndex.coerceIn(0, palettes.size - 1)]
+            val palette = OwnPalettes.resolve(layer.paletteIndex, layer.customPalette, palettes)
             // Seed, symmetry, radius and count exactly as MandalaRenderer.render, so the geometry matches the image.
             val layerSeed = if (layer.seed == 0uL) params.seed + (li + 1).toULong() * 0x9e3779b97f4a7c15uL else layer.seed
             val rng = SeededRng(layerSeed)
@@ -172,7 +172,7 @@ object VectorExport {
         out.append("</mask>\n")
         if (look != Look.COLOUR) return
         // As EmblemLayer: the colour reaches position + spread at 1.45 units, then stays; the palette runs there and back.
-        val palette = palettes[s.paletteIndex.coerceIn(0, palettes.size - 1)]
+        val palette = OwnPalettes.resolve(s.paletteIndex, s.customPalette, palettes)
         out.append("""<radialGradient id="emblem-colour" gradientUnits="userSpaceOnUse" cx="${svgNumber(place.centreX)}" cy="${svgNumber(place.centreY)}" r="${svgNumber(place.unit * 1.45)}">""")
         val col = FloatArray(3)
         val stops = 16
