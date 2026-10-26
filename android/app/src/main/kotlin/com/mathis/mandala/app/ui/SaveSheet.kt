@@ -62,6 +62,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.SubcomposeLayout
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.stateDescription
@@ -147,7 +148,7 @@ internal fun SaveSheet(
             Column(
                 // The bottom padding keeps the last switch off the divider below.
                 Modifier.weight(1f).padding(horizontal = Spacing.lg).padding(bottom = Spacing.sm),
-                verticalArrangement = Arrangement.spacedBy(Spacing.md),
+                verticalArrangement = Arrangement.spacedBy(Spacing.sm),
             ) {
                 // DM-18 A3: Picture or Video as tabs in place of a title, the format as a menu beside them.
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -165,12 +166,19 @@ internal fun SaveSheet(
                 val adjustOpen = rememberSaveable { mutableStateOf(false) }
                 // One line under the frame: how to place by hand, or, once placed, that it is and the way back.
                 // It gives its line to the frame while the sliders are open.
-                // Both lines are as high as the button, so the frame keeps its size when one replaces the other.
-                val lineHeight = Modifier.fillMaxWidth().heightIn(min = Sizes.icon * 2)
+                // Both lines are two small lines high, so the frame keeps its size when one replaces the other.
+                val lineHeight = Modifier.fillMaxWidth().heightIn(min = Spacing.xl + Spacing.sm)
                 if (proOwned && preset == null && !adjustOpen.value) {
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center, modifier = lineHeight) {
                         Text(stringResource(R.string.save_placed_by_hand), style = MaterialTheme.typography.bodySmall, color = t.textMuted)
-                        TextButton(onClick = { onFill(false) }, enabled = !busy) { Text(stringResource(R.string.save_reset)) }
+                        Text(
+                            stringResource(R.string.save_reset),
+                            style = MaterialTheme.typography.labelLarge,
+                            color = t.accent,
+                            modifier = Modifier.padding(start = Spacing.sm).clip(RoundedCornerShape(Radius.sm))
+                                .clickable(enabled = !busy, role = Role.Button) { onFill(false) }
+                                .padding(horizontal = Spacing.sm, vertical = Spacing.xs),
+                        )
                     }
                 } else if (proOwned && !adjustOpen.value) {
                     Box(lineHeight, contentAlignment = Alignment.Center) {
@@ -189,7 +197,8 @@ internal fun SaveSheet(
                     }
                 }
                 Column {
-                    HorizontalDivider(color = t.outline)
+                    // One line across the whole sheet: the picture above, what is set and saved below it.
+                    HorizontalDivider(color = t.outline, modifier = Modifier.fullBleed(Spacing.lg))
                     Group(
                         stringResource(R.string.save_adjust),
                         summary = finishSummary(choice.finish, proOwned, quoteMoves = hasQuote && choice.textFollowsMandala),
@@ -209,7 +218,7 @@ internal fun SaveSheet(
                             }
                         } else null,
                         openState = adjustOpen,
-                        // Adjust uses the sheet's surrounding dividers instead of a second frame.
+                        // Adjust uses the line above it instead of a second frame.
                         framed = false,
                     ) {
                         FinishControls(choice.finish, proOwned, enabled = !busy, onFinish = onFinish, onShowPro = onShowPro, hasQuote = hasQuote)
@@ -219,7 +228,6 @@ internal fun SaveSheet(
                 }
                 if (moving) LengthRow(choice.videoSeconds, enabled = !busy, onVideoSeconds)
             }
-            HorizontalDivider(color = t.outline)
             Column(
                 Modifier.padding(horizontal = Spacing.lg).padding(top = Spacing.md, bottom = Spacing.lg),
                 verticalArrangement = Arrangement.spacedBy(Spacing.md),
@@ -392,7 +400,8 @@ private fun FrameWithFit(
             val y = (maxH - h) / 2
             layout(maxW, maxH) {
                 shown.forEach { it.place(x, y) }
-                side.forEach { it.place(x + w + gap, y + h - it.height) }
+                // Centred in the strip at the frame's right, level with its bottom.
+                side.forEach { it.place(x + w + (maxW - x - w - it.width) / 2, y + h - it.height) }
             }
         } else if (!showFit) {
             val (w, h) = frameSize(maxH)
@@ -568,4 +577,11 @@ private fun WallpaperButton(
             DropdownMenuItem(text = { Text(liveLabel) }, onClick = { open = false; onLive() })
         }
     }
+}
+
+/** Reaches past the sheet's side padding of `padding`, so a line can run across the whole sheet. */
+private fun Modifier.fullBleed(padding: androidx.compose.ui.unit.Dp) = layout { measurable, constraints ->
+    val extra = padding.roundToPx() * 2
+    val placeable = measurable.measure(constraints.copy(minWidth = constraints.maxWidth + extra, maxWidth = constraints.maxWidth + extra))
+    layout(constraints.maxWidth, placeable.height) { placeable.place(-extra / 2, 0) }
 }
