@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -23,6 +24,9 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.BottomSheetDefaults
+import androidx.compose.material3.Tab
+import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -87,8 +91,10 @@ import kotlin.math.roundToInt
  * Saving in a format (ADR-0010, laid out as DM-11 A, without scrolling): format, the mandala placed in the frame (Pro)
  * with Whole or Fill beside it, the finish folded into "Adjust", and whether the quote follows. Size, Save
  * and Wallpaper stay at the bottom. The line drawing (ADR-0013) has its own page in the menu, since none of
- * this applies to it. Each format keeps its own placement. "Moving" (UX-1 12, DM-16 A) keeps all of this,
+ * this applies to it. Each format keeps its own placement. "Video" (UX-1 12, DM-16 A) keeps all of this,
  * turns the layers in the frame as the video will, and offers the length, Share and Save video instead.
+ * Laid out as DM-18 A3 (26 October 2026): Picture | Video as tabs with the format menu beside them in
+ * place of a title, the size in the save button, so the frame keeps most of the height.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -139,9 +145,11 @@ internal fun SaveSheet(
                 Modifier.weight(1f).padding(horizontal = Spacing.lg).padding(bottom = Spacing.sm),
                 verticalArrangement = Arrangement.spacedBy(Spacing.md),
             ) {
-                Text(stringResource(R.string.save_title), style = MaterialTheme.typography.titleMedium)
-                MovingRow(moving, enabled = !busy, onMoving)
-                FormatRow(choice.format, onFormat)
+                // DM-18 A3: Picture or Video as tabs in place of a title, the format as a menu beside them.
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    ModeTabs(moving, enabled = !busy, onMoving, Modifier.weight(1f))
+                    FormatMenu(choice.format, onFormat)
+                }
                 FrameWithFit(
                     aspect = aspect.toFloat(),
                     modifier = Modifier.weight(1f),
@@ -157,8 +165,9 @@ internal fun SaveSheet(
                     },
                 )
                 val adjustOpen = rememberSaveable { mutableStateOf(false) }
-                // While the sliders are open the hint gives its line to the frame.
-                if (proOwned && !adjustOpen.value) {
+                // The hint shows until the mandala has once been placed by hand, and gives its line to the
+                // frame while the sliders are open.
+                if (proOwned && !choice.framedByHand && !adjustOpen.value) {
                     Text(
                         stringResource(R.string.save_frame_hint),
                         style = MaterialTheme.typography.bodySmall,
@@ -207,22 +216,10 @@ internal fun SaveSheet(
                 Modifier.padding(horizontal = Spacing.lg).padding(top = Spacing.md, bottom = Spacing.lg),
                 verticalArrangement = Arrangement.spacedBy(Spacing.md),
             ) {
-                SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
-                    SegmentedButton(
-                        selected = !large || !proOwned,
-                        onClick = { large = false },
-                        shape = SegmentedButtonDefaults.itemShape(0, 2),
-                        enabled = !busy,
-                        icon = {},
-                    ) { Text(stringResource(R.string.save_size, w, h), maxLines = 1) }
-                    SegmentedButton(
-                        selected = large && proOwned,
-                        onClick = { if (proOwned) large = true else onShowPro() },
-                        shape = SegmentedButtonDefaults.itemShape(1, 2),
-                        enabled = !busy,
-                        icon = {},
-                    ) { Text(stringResource(if (proOwned) R.string.save_size else R.string.save_size_pro, lw, lh), maxLines = 1, overflow = TextOverflow.Ellipsis) }
-                }
+                // The size sits in the save button; its arrow offers the large one (Pro).
+                val sizes = listOf(stringResource(R.string.save_size, w, h), stringResource(if (proOwned) R.string.save_size else R.string.save_size_pro, lw, lh))
+                val chosen = if (large && proOwned) 1 else 0
+                val pick = { i: Int -> if (i == 0) large = false else if (proOwned) large = true else onShowPro() }
                 if (moving) Row(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
                     // A video goes mostly straight to a story or status, so Share takes the wallpaper's place.
                     if (makingVideo) {
@@ -232,9 +229,10 @@ internal fun SaveSheet(
                             Text(stringResource(R.string.action_share), maxLines = 1)
                         }
                     }
-                    Button(onClick = { onSaveVideo(large && proOwned, false) }, enabled = !busy, modifier = Modifier.weight(1f)) {
-                        Text(stringResource(if (proOwned) R.string.save_video else R.string.save_video_pro_label), maxLines = 1, overflow = TextOverflow.Ellipsis)
-                    }
+                    SaveButton(
+                        stringResource(if (proOwned) R.string.save_video else R.string.save_video_pro_label), sizes, chosen, enabled = !busy,
+                        onSave = { onSaveVideo(large && proOwned, false) }, onSize = pick, modifier = Modifier.weight(1f),
+                    )
                 } else Row(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
                     // A wallpaper fills the screen, so it is set in the phone screen format; the frame shows it first.
                     WallpaperButton(
@@ -247,7 +245,10 @@ internal fun SaveSheet(
                         onLive = onLive,
                         modifier = Modifier.weight(1f),
                     )
-                    Button(onClick = { onSave(large && proOwned) }, enabled = !busy, modifier = Modifier.weight(1f)) { Text(stringResource(R.string.save_save)) }
+                    SaveButton(
+                        stringResource(R.string.save_save), sizes, chosen, enabled = !busy,
+                        onSave = { onSave(large && proOwned) }, onSize = pick, modifier = Modifier.weight(1f),
+                    )
                 }
             }
         }
@@ -257,14 +258,14 @@ internal fun SaveSheet(
     }
 }
 
-/** A picture, or the layers turning as a video (UX-1 12). */
+/** A picture, or the layers turning as a video (UX-1 12): tabs like the editor's, in place of a title. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun MovingRow(moving: Boolean, enabled: Boolean, onMoving: (Boolean) -> Unit) {
-    SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
-        for ((i, pair) in listOf(R.string.save_still to false, R.string.save_moving to true).withIndex()) {
-            SegmentedButton(selected = moving == pair.second, onClick = { onMoving(pair.second) }, shape = SegmentedButtonDefaults.itemShape(i, 2), enabled = enabled, icon = {}) {
-                Text(stringResource(pair.first), maxLines = 1)
+private fun ModeTabs(moving: Boolean, enabled: Boolean, onMoving: (Boolean) -> Unit, modifier: Modifier) {
+    PrimaryTabRow(selectedTabIndex = if (moving) 1 else 0, modifier = modifier, containerColor = BottomSheetDefaults.ContainerColor, divider = {}) {
+        for ((label, video) in listOf(R.string.save_still to false, R.string.save_moving to true)) {
+            Tab(selected = moving == video, onClick = { onMoving(video) }, enabled = enabled) {
+                Text(stringResource(label), style = MaterialTheme.typography.titleSmall, maxLines = 1, modifier = Modifier.padding(vertical = Spacing.md))
             }
         }
     }
@@ -274,39 +275,72 @@ private fun MovingRow(moving: Boolean, enabled: Boolean, onMoving: (Boolean) -> 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun LengthRow(seconds: Int, enabled: Boolean, onSeconds: (Int) -> Unit) {
-    SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
-        for ((i, s) in LayerAnimation.SECONDS.withIndex()) {
-            SegmentedButton(selected = seconds == s, onClick = { onSeconds(s) }, shape = SegmentedButtonDefaults.itemShape(i, LayerAnimation.SECONDS.size), enabled = enabled, icon = {}) {
-                Text(stringResource(R.string.save_video_seconds, s), maxLines = 1)
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Text(stringResource(R.string.save_length), style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
+        SingleChoiceSegmentedButtonRow {
+            for ((i, s) in LayerAnimation.SECONDS.withIndex()) {
+                SegmentedButton(selected = seconds == s, onClick = { onSeconds(s) }, shape = SegmentedButtonDefaults.itemShape(i, LayerAnimation.SECONDS.size), enabled = enabled, icon = {}) {
+                    Text(stringResource(R.string.save_video_seconds, s), maxLines = 1)
+                }
             }
         }
     }
 }
 
-/** Square, This screen and the fixed ratios (in a list) as one segmented row. */
-@OptIn(ExperimentalMaterial3Api::class)
+/** Square, This screen and the fixed ratios as one menu; the button names the chosen format. */
 @Composable
-private fun FormatRow(format: SaveFormat, onFormat: (SaveFormat) -> Unit) {
+private fun FormatMenu(format: SaveFormat, onFormat: (SaveFormat) -> Unit) {
     var open by remember { mutableStateOf(false) }
-    SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
-        for ((i, f) in listOf(SaveFormat.SQUARE, SaveFormat.SCREEN).withIndex()) {
-            SegmentedButton(selected = format == f, onClick = { onFormat(f) }, shape = SegmentedButtonDefaults.itemShape(i, 3), icon = {}) {
-                Text(stringResource(f.label), maxLines = 1, overflow = TextOverflow.Ellipsis)
+    Box {
+        OutlinedButton(colors = outlinedColors(), onClick = { open = true }) {
+            Text(stringResource(format.label), maxLines = 1)
+            Icon(EditorIcons.Expand, contentDescription = null, modifier = Modifier.size(Sizes.icon))
+        }
+        DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
+            for (f in SaveFormat.entries) {
+                val label = when {
+                    !f.isRatio -> stringResource(f.label)
+                    f.isLandscape -> stringResource(R.string.save_ratio_landscape, stringResource(f.label))
+                    else -> stringResource(R.string.save_ratio_portrait, stringResource(f.label))
+                }
+                DropdownMenuItem(
+                    text = { Text(label) },
+                    trailingIcon = if (f == format) ({ Icon(EditorIcons.Check, contentDescription = null) }) else null,
+                    onClick = { open = false; onFormat(f) },
+                )
             }
         }
-        SegmentedButton(selected = format.isRatio, onClick = { open = true }, shape = SegmentedButtonDefaults.itemShape(2, 3), icon = {}) {
-            Box {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(if (format.isRatio) stringResource(format.label) else stringResource(R.string.save_ratio), maxLines = 1)
-                    Icon(EditorIcons.Expand, contentDescription = null, modifier = Modifier.size(Sizes.icon))
-                }
-                DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
-                    for (f in SaveFormat.entries.filter { it.isRatio }) {
-                        DropdownMenuItem(
-                            text = { Text(stringResource(if (f.isLandscape) R.string.save_ratio_landscape else R.string.save_ratio_portrait, stringResource(f.label))) },
-                            onClick = { open = false; onFormat(f) },
-                        )
-                    }
+    }
+}
+
+/** Save with the size in a second line, and an arrow beside it that picks the size. */
+@Composable
+private fun SaveButton(label: String, sizes: List<String>, chosen: Int, enabled: Boolean, onSave: () -> Unit, onSize: (Int) -> Unit, modifier: Modifier) {
+    var open by remember { mutableStateOf(false) }
+    Row(modifier.height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(Spacing.xs)) {
+        Button(
+            onClick = onSave, enabled = enabled, modifier = Modifier.weight(1f).fillMaxHeight(),
+            shape = RoundedCornerShape(topStartPercent = 50, bottomStartPercent = 50),
+            contentPadding = PaddingValues(horizontal = Spacing.md, vertical = Spacing.xs),
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(label, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(sizes[chosen], style = MaterialTheme.typography.labelSmall, maxLines = 1)
+            }
+        }
+        Box {
+            Button(
+                onClick = { open = true }, enabled = enabled, modifier = Modifier.fillMaxHeight(),
+                shape = RoundedCornerShape(topEndPercent = 50, bottomEndPercent = 50),
+                contentPadding = PaddingValues(horizontal = Spacing.sm),
+            ) { Icon(EditorIcons.Expand, contentDescription = stringResource(R.string.save_choose_size)) }
+            DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
+                for ((i, size) in sizes.withIndex()) {
+                    DropdownMenuItem(
+                        text = { Text(size) },
+                        trailingIcon = if (i == chosen) ({ Icon(EditorIcons.Check, contentDescription = null) }) else null,
+                        onClick = { open = false; onSize(i) },
+                    )
                 }
             }
         }
@@ -335,13 +369,17 @@ private fun FrameWithFit(
             return w to (w * aspect).roundToInt()
         }
         // Tall frames (This screen, 9:16, 2:3) always keep the switch beside them, so it does not jump
-        // while "Adjust" opens; the frame gives up the room on both sides to stay centred.
+        // while "Adjust" opens. The frame stays centred, giving up the room on both sides, unless the
+        // height allows a larger one: then frame and switch are centred together.
         val side = if (showFit && aspect >= SIDE_FIT_ASPECT) subcompose("side") { fit(true) }.map { it.measure(Constraints()) } else emptyList()
         val besides = side.isNotEmpty()
-        val (sideW, sideH) = frameSize(maxH, if (besides) maxW - 2 * (side.maxOf { it.width } + gap) else maxW)
+        val switchW = if (besides) side.maxOf { it.width } + gap else 0
+        val centred = frameSize(maxH, maxW - 2 * switchW)
+        val grouped = frameSize(maxH, maxW - switchW)
+        val (sideW, sideH) = if (grouped.second > centred.second) grouped else centred
         if (!showFit || besides) {
             val shown = subcompose("frame", frame).map { it.measure(Constraints.fixed(sideW, sideH)) }
-            val x = (maxW - sideW) / 2
+            val x = if (grouped.second > centred.second) (maxW - sideW - switchW) / 2 else (maxW - sideW) / 2
             val y = (maxH - sideH) / 2
             layout(maxW, maxH) {
                 shown.forEach { it.place(x, y) }

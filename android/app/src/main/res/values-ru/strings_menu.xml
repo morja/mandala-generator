@@ -110,10 +110,12 @@
     <string name="about_libraries">Библиотеки с открытым исходным кодом</string>
     <string name="about_full_text">Полный текст</string>
     <string name="save_still">Картинка</string>
-    <string name="save_moving">В движении</string>
+    <string name="save_moving">Видео</string>
     <string name="save_video_seconds">%1$d с</string>
     <string name="save_video">Сохранить видео</string>
     <string name="save_video_pro_label">Сохранить видео · Pro</string>
     <string name="save_cancel">Отмена</string>
     <string name="save_video_pro">Сохранять и отправлять вращающуюся мандалу как видео можно с Pro.</string>
+    <string name="save_length">Длина</string>
+    <string name="save_choose_size">Выбрать размер</string>
 </resources>

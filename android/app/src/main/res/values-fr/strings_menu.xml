@@ -108,10 +108,12 @@
     <string name="about_libraries">Bibliothèques open source</string>
     <string name="about_full_text">Texte intégral</string>
     <string name="save_still">Image</string>
-    <string name="save_moving">Animé</string>
+    <string name="save_moving">Vidéo</string>
     <string name="save_video_seconds">%1$d s</string>
     <string name="save_video">Enregistrer la vidéo</string>
     <string name="save_video_pro_label">Enregistrer la vidéo · Pro</string>
     <string name="save_cancel">Annuler</string>
     <string name="save_video_pro">Enregistrer et partager le mandala qui tourne en vidéo fait partie de Pro.</string>
+    <string name="save_length">Durée</string>
+    <string name="save_choose_size">Choisir la taille</string>
 </resources>
