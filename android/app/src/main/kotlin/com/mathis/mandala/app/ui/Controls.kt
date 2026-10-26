@@ -812,6 +812,7 @@ private fun QuoteRow(q: Quote, onPick: (Quote) -> Unit, trailing: (@Composable (
  * Drawing by hand, as on the Mac: glowing lines (drawing layer) or soft spray paint (graffiti layer),
  * each repeated around the centre. "Draw on image" turns drags on the canvas into strokes.
  */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun DrawTab(params: MandalaParameters, vm: EditorViewModel) {
     val active by vm.drawTool.collectAsStateWithLifecycle()
@@ -832,7 +833,12 @@ private fun DrawTab(params: MandalaParameters, vm: EditorViewModel) {
             )
         }
     }
-    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.sm), modifier = Modifier.padding(bottom = Spacing.sm)) {
+    // Wraps instead of squeezing a button, since the labels are much longer in some languages.
+    FlowRow(
+        horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
+        verticalArrangement = Arrangement.spacedBy(Spacing.sm),
+        modifier = Modifier.padding(bottom = Spacing.sm),
+    ) {
         if (active == null) {
             Button(onClick = { vm.setDrawTool(tool) }) { Text(stringResource(R.string.controls_draw_on_image)) }
         } else {
