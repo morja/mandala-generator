@@ -47,6 +47,14 @@ object DailyWallpaper {
         if (on) schedule(context) else context.getSystemService(JobScheduler::class.java).cancel(JOB_ID)
     }
 
+    /**
+     * Plans the run again when the switch is on but no run is waiting: Android drops planned jobs when
+     * the app is force-stopped or reinstalled, and a backup brings the switch back without its job.
+     */
+    fun ensureScheduled(context: Context) {
+        if (isOn(context) && context.getSystemService(JobScheduler::class.java).getPendingJob(JOB_ID) == null) schedule(context)
+    }
+
     /** Plans the next run for tomorrow morning (or this morning, before 4 o'clock). */
     fun schedule(context: Context, now: LocalDateTime = LocalDateTime.now()) {
         val (earliest, latest) = nextWindow(now).let { (a, b) -> a.toMillis() to b.toMillis() }

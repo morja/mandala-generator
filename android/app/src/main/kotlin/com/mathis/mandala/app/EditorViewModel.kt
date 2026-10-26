@@ -877,6 +877,10 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
     private val _daily = MutableStateFlow(DailyState(DailyWallpaper.isOn(application), DailyWallpaper.lastName(application)))
     val daily: StateFlow<DailyState> = _daily.asStateFlow()
 
+    init {
+        DailyWallpaper.ensureScheduled(application)
+    }
+
     /** Switching it on sets the first one right away, so it shows at once; then every morning. */
     fun setDaily(on: Boolean) {
         val app = getApplication<Application>()
