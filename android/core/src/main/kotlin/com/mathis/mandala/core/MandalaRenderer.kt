@@ -317,6 +317,18 @@ object MandalaRenderer {
                 composite = fx.compositeSolid(composite, solidBackground[0], solidBackground[1], solidBackground[2], BlendOp.LIGHTEN)
             }
 
+            // Scene effects go in below the lowest layer they leave out (ADR-0017, ADR-0018).
+            val effects = params.effectsLayer
+            val effectsOverEmblem = effects.affectsEmblem
+            val effectsOverText = effects.affectsEmblem && effects.affectsText
+            fun applyEffects() {
+                if (!effects.isEnabled) return
+                checkpoint()
+                composite = EffectsLayer(par, fx).apply(composite, effects)
+                progress.above(RenderProgress.EFFECTS)
+            }
+            if (!effectsOverEmblem) applyEffects()
+
             // Emblem above the mandala and background, below the text.
             if (params.emblemLayer.isEnabled) {
                 checkpoint()
@@ -324,12 +336,7 @@ object MandalaRenderer {
                 progress.above(RenderProgress.EMBLEM)
             }
 
-            // Finish the scene before text, so its letters and own effects remain independent.
-            if (params.effectsLayer.isEnabled) {
-                checkpoint()
-                composite = EffectsLayer(par, fx).apply(composite, params.effectsLayer)
-                progress.above(RenderProgress.EFFECTS)
-            }
+            if (effectsOverEmblem && !effectsOverText) applyEffects()
 
             if (text) {
                 val textRenderer = options.textRenderer
@@ -347,6 +354,7 @@ object MandalaRenderer {
                     progress.above(RenderProgress.TEXT)
                 }
             }
+            if (effectsOverText) applyEffects()
 
             checkpoint()
             val result = when {

@@ -294,8 +294,19 @@ object Editing {
     fun TextLayerSettings.reset(): TextLayerSettings =
         TextLayerSettings(isEnabled = isEnabled, text = text, customAuthor = customAuthor, showAuthor = showAuthor)
 
-    /** All effects back to the defaults, on or off as before (the reset button of the Mac's effects card). */
-    fun EffectsLayerSettings.reset(): EffectsLayerSettings = EffectsLayerSettings(isEnabled = isEnabled)
+    /**
+     * All effects back to the defaults, on or off as before (the reset button of the Mac's effects card).
+     * Which layers they reach stays: that is a choice about the picture, not an effect value.
+     */
+    fun EffectsLayerSettings.reset(): EffectsLayerSettings =
+        EffectsLayerSettings(isEnabled = isEnabled, affectsEmblem = affectsEmblem, affectsText = affectsText)
+
+    /** Effects reach the text only over the emblem below it (ADR-0018), so the two switches move together. */
+    fun EffectsLayerSettings.withEmblem(on: Boolean): EffectsLayerSettings =
+        copy(affectsEmblem = on, affectsText = affectsText && on)
+
+    fun EffectsLayerSettings.withText(on: Boolean): EffectsLayerSettings =
+        copy(affectsText = on, affectsEmblem = affectsEmblem || on)
 
     /**
      * File name in the scheme of the macOS app: first four letters of the first two styles, palette and
