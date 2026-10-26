@@ -24,6 +24,8 @@ internal val quotesEn = QuoteCollection("en", "English", listOf(
         Quote("I laugh when I hear that the fish in the water is thirsty.", "Kabir"),
         Quote("The flute of the Infinite is played without ceasing, and its sound is love.", "Kabir"),
         Quote("Between the poles of the conscious and the unconscious, there has the mind made a swing.", "Kabir"),
+        Quote("The moon is within me, and so is the sun.", "Kabir"),
+        Quote("Dance, my heart! dance to-day with joy.", "Kabir"),
     )),
     QuoteGroup("The Prophet, 1923", listOf(
         Quote("Your joy is your sorrow unmasked.", "Kahlil Gibran"),
@@ -39,12 +41,19 @@ internal val quotesEn = QuoteCollection("en", "English", listOf(
         Quote("The highest excellence is like water.", "Lao Tzu"),
         Quote("The journey of a thousand li commenced with a single step.", "Lao Tzu"),
         Quote("The softest thing in the world dashes against and overcomes the hardest.", "Lao Tzu"),
+        Quote("Gravity is the root of lightness; stillness, the ruler of movement.", "Lao Tzu"),
+        Quote("Purity and stillness give the correct law to all under heaven.", "Lao Tzu"),
     )),
     QuoteGroup("Divani Shamsi Tabriz, translated by R. A. Nicholson, 1898, as quoted in The Persian Mystics: Jal\u00e1lu'd-d\u00edn R\u00fam\u00ed, 1907", listOf(
         Quote("Every moment the voice of Love is coming from left and right.", "Rumi"),
         Quote("This is the House of Love, which has no bound or end.", "Rumi"),
         Quote("Embrace the Soul which is embraced by nothing.", "Rumi"),
         Quote("Do not think of the Water failing, for this Water is without end.", "Rumi"),
+    )),
+    QuoteGroup("Selected Poems from the Divani Shamsi Tabriz, translated by R. A. Nicholson, 1898 (archive.org scan)", listOf(
+        Quote("Every form you see has its archetype in the placeless world", "Rumi"),
+        Quote("My place is the Placeless, my trace is the Traceless", "Rumi"),
+        Quote("Make a journey out of self into self, O master", "Rumi"),
     )),
     QuoteGroup("Dhammapada, translated by F. Max M\u00fcller, 1881", listOf(
         Quote("All that we are is the result of what we have thought.", "Dhammapada"),
