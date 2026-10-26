@@ -33,6 +33,7 @@
     <string name="controls_group_close">Свернуть: %1$s</string>
     <string name="controls_group_state_open">Развёрнуто</string>
     <string name="controls_group_state_closed">Свёрнуто</string>
+    <string name="controls_group_changed">Изменено</string>
     <string name="controls_slider_reset">Сбросить: %1$s</string>
 
     <!-- Layers tab: actions and layer rows -->

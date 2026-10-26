@@ -27,6 +27,7 @@
     <string name="controls_group_close">%1$sを閉じる</string>
     <string name="controls_group_state_open">展開</string>
     <string name="controls_group_state_closed">折りたたみ</string>
+    <string name="controls_group_changed">変更あり</string>
     <string name="controls_slider_reset">%1$sをリセット</string>
 
     <!-- Layers tab: actions and layer rows -->
