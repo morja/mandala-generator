@@ -27,6 +27,7 @@
     <string name="controls_group_close">%1$s 접기</string>
     <string name="controls_group_state_open">펼쳐짐</string>
     <string name="controls_group_state_closed">접힘</string>
+    <string name="controls_group_changed">변경됨</string>
     <string name="controls_slider_reset">%1$s 초기화</string>
 
     <!-- Layers tab: actions and layer rows -->

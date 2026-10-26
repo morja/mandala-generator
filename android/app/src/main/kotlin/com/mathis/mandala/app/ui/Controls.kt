@@ -529,26 +529,29 @@ private fun Effects(
         }
         Text(stringResource(R.string.controls_effects_hold_hint), style = MaterialTheme.typography.bodySmall,
             color = LocalTokens.current.textMuted)
-        Group(stringResource(R.string.glow_light), initiallyOpen = true) {
+        val d = EffectsLayerSettings()
+        Group(stringResource(R.string.glow_light), initiallyOpen = true,
+            changed = differs(fx.brightness to d.brightness, fx.contrast to d.contrast, fx.vignette to d.vignette, fx.bloom to d.bloom)) {
             ValueSlider(stringResource(R.string.save_brightness), fx.brightness, default = EffectsLayerSettings().brightness) { v -> update { it.copy(brightness = v) } }
             ValueSlider(stringResource(R.string.save_contrast), fx.contrast, default = EffectsLayerSettings().contrast) { v -> update { it.copy(contrast = v) } }
             ValueSlider(stringResource(R.string.controls_vignette), fx.vignette, Editing.Ranges.effectsVignette.floats(), default = EffectsLayerSettings().vignette) { v -> update { it.copy(vignette = v) } }
             ValueSlider(stringResource(R.string.controls_bloom), fx.bloom, Editing.Ranges.effectsBloom.floats(), default = EffectsLayerSettings().bloom) { v -> update { it.copy(bloom = v) } }
         }
-        Group(stringResource(R.string.controls_tone)) {
+        Group(stringResource(R.string.controls_tone), changed = differs(fx.sepia to d.sepia, fx.wash to d.wash)) {
             ValueSlider(stringResource(R.string.controls_sepia), fx.sepia, default = EffectsLayerSettings().sepia) { v -> update { it.copy(sepia = v) } }
             ValueSlider(stringResource(R.string.controls_fade), fx.wash, default = EffectsLayerSettings().wash) { v -> update { it.copy(wash = v) } }
         }
-        Group(stringResource(R.string.controls_texture)) {
+        Group(stringResource(R.string.controls_texture), changed = differs(fx.localContrast to d.localContrast, fx.grain to d.grain, fx.smoother to d.smoother)) {
             ValueSlider(stringResource(R.string.controls_clarity), fx.localContrast, default = EffectsLayerSettings().localContrast) { v -> update { it.copy(localContrast = v) } }
             ValueSlider(stringResource(R.string.controls_background_grain), fx.grain, Editing.Ranges.effectsGrain.floats(), default = EffectsLayerSettings().grain) { v -> update { it.copy(grain = v) } }
             ValueSlider(stringResource(R.string.controls_smoother), fx.smoother, default = EffectsLayerSettings().smoother) { v -> update { it.copy(smoother = v) } }
         }
-        Group(stringResource(R.string.controls_sparkle)) {
+        Group(stringResource(R.string.controls_sparkle), changed = differs(fx.stars to d.stars, fx.glitter to d.glitter)) {
             ValueSlider(stringResource(R.string.controls_stars), fx.stars, default = EffectsLayerSettings().stars) { v -> update { it.copy(stars = v) } }
             ValueSlider(stringResource(R.string.controls_glitter), fx.glitter, Editing.Ranges.effectsGlitter.floats(), default = EffectsLayerSettings().glitter) { v -> update { it.copy(glitter = v) } }
         }
-        Group(stringResource(R.string.editor_more)) {
+        Group(stringResource(R.string.editor_more), changed = differs(fx.highlights to d.highlights, fx.dimming to d.dimming,
+            fx.erasure to d.erasure, fx.relief to d.relief, fx.chromatic to d.chromatic, fx.fade to d.fade)) {
             ValueSlider(stringResource(R.string.controls_highlights), fx.highlights, default = EffectsLayerSettings().highlights) { v -> update { it.copy(highlights = v) } }
             ValueSlider(stringResource(R.string.controls_dimming), fx.dimming, default = EffectsLayerSettings().dimming) { v -> update { it.copy(dimming = v) } }
             ValueSlider(stringResource(R.string.controls_erasure), fx.erasure, default = EffectsLayerSettings().erasure) { v -> update { it.copy(erasure = v) } }
@@ -561,7 +564,8 @@ private fun Effects(
         val emblem = stringResource(R.string.controls_tab_emblem)
         val text = stringResource(R.string.controls_tab_text)
         val reach = listOfNotNull(stringResource(R.string.controls_reach_mandala), emblem.takeIf { fx.affectsEmblem }, text.takeIf { fx.affectsText })
-        Group(stringResource(R.string.controls_applies_to), summary = reach.joinToString(", ")) {
+        Group(stringResource(R.string.controls_applies_to), summary = reach.joinToString(", "),
+            changed = fx.affectsEmblem != d.affectsEmblem || fx.affectsText != d.affectsText) {
             Column(verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
                 SwitchRow(emblem, fx.affectsEmblem) { on -> update { it.withEmblem(on) } }
                 SwitchRow(text, fx.affectsText) { on -> update { it.withText(on) } }
@@ -638,7 +642,7 @@ private fun EmblemTab(em: EmblemLayerSettings, vm: EditorViewModel, position: Po
             }
         }
     }
-    Group(stringResource(R.string.controls_shape)) {
+    Group(stringResource(R.string.controls_shape), changed = differs(em.size to defaults.size, em.weight to defaults.weight, em.rotation to defaults.rotation)) {
         ValueSlider(stringResource(R.string.controls_size), em.size, Editing.Ranges.emblemSize.floats(), default = defaults.size) { v -> update { it.copy(size = v) } }
         ValueSlider(stringResource(R.string.controls_weight), em.weight, Editing.Ranges.emblemWeight.floats(), default = defaults.weight) { v -> update { it.copy(weight = v) } }
         ValueSlider(stringResource(R.string.controls_rotate), em.rotation, -180f..180f, default = defaults.rotation, display = { "${it.roundToInt()}°" }) { v ->
@@ -659,7 +663,8 @@ private fun EmblemTab(em: EmblemLayerSettings, vm: EditorViewModel, position: Po
             }
         }
     }
-    Group(stringResource(R.string.controls_blending), summary = blendSummary(em.blendMode, em.opacity)) {
+    Group(stringResource(R.string.controls_blending), summary = blendSummary(em.blendMode, em.opacity),
+        changed = em.blendMode != defaults.blendMode || differs(em.opacity to defaults.opacity)) {
         BlendChips(em.blendMode) { m -> update { it.copy(blendMode = m) } }
         ValueSlider(stringResource(R.string.controls_opacity), em.opacity, default = defaults.opacity) { v -> update { it.copy(opacity = v) } }
     }
@@ -714,20 +719,23 @@ private fun TextTab(text: TextLayerSettings, vm: EditorViewModel, position: Posi
     if (!position.proOwned) ProNote(stringResource(R.string.controls_pro_note_text), position.showPro)
     Words(text, saved = myQuotes.any { it.text == text.text.trim() && it.author == text.customAuthor.trim() },
         update = update, onChoose = { choosing = true }, onNewQuote = vm::randomQuote, onKeep = vm::saveTextAsMyQuote)
-    Group(stringResource(R.string.controls_font), summary = Quotes.fonts.firstOrNull { it.first == text.fontName }?.second ?: text.fontName) {
+    val td = TextLayerSettings()
+    Group(stringResource(R.string.controls_font), changed = text.fontName != td.fontName, summary = Quotes.fonts.firstOrNull { it.first == text.fontName }?.second ?: text.fontName) {
         FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
             for ((name, display) in Quotes.fonts) {
                 FilterChip(selected = text.fontName == name, onClick = { update { it.copy(fontName = name) } }, label = { Text(display) })
             }
         }
     }
-    Group(stringResource(R.string.controls_size_and_place)) {
+    Group(stringResource(R.string.controls_size_and_place), changed = differs(text.fontSize to td.fontSize, text.fontWidth to td.fontWidth,
+        text.tracking to td.tracking, text.offsetY to td.offsetY)) {
         ValueSlider(stringResource(R.string.controls_size), text.fontSize, Editing.Ranges.textSize.floats(), default = TextLayerSettings().fontSize) { v -> update { it.copy(fontSize = v) } }
         ValueSlider(stringResource(R.string.controls_width), text.fontWidth, Editing.Ranges.textWidth.floats(), default = TextLayerSettings().fontWidth) { v -> update { it.copy(fontWidth = v) } }
         ValueSlider(stringResource(R.string.controls_tracking), text.tracking, Editing.Ranges.textTracking.floats(), default = TextLayerSettings().tracking) { v -> update { it.copy(tracking = v) } }
         ValueSlider(stringResource(R.string.controls_height), text.offsetY, default = TextLayerSettings().offsetY) { v -> update { it.copy(offsetY = v) } }
     }
-    Group(stringResource(R.string.controls_light)) {
+    Group(stringResource(R.string.controls_light), changed = differs(text.glow to td.glow, text.cloudOpacity to td.cloudOpacity,
+        text.cloudScale to td.cloudScale, text.shadowOpacity to td.shadowOpacity)) {
         ValueSlider(stringResource(R.string.controls_glow), text.glow, Editing.Ranges.textGlow.floats(), default = TextLayerSettings().glow) { v -> update { it.copy(glow = v) } }
         ValueSlider(stringResource(R.string.controls_cloud), text.cloudOpacity, default = TextLayerSettings().cloudOpacity) { v -> update { it.copy(cloudOpacity = v) } }
         ValueSlider(stringResource(R.string.controls_cloud_size), text.cloudScale, Editing.Ranges.textCloudSize.floats(), default = TextLayerSettings().cloudScale) { v -> update { it.copy(cloudScale = v) } }
@@ -744,7 +752,8 @@ private fun TextTab(text: TextLayerSettings, vm: EditorViewModel, position: Posi
             ) { h, sa, b -> update { it.copy(shadowHue = h, shadowSaturation = sa, shadowBrightness = b) } }
         }
     }
-    Group(stringResource(R.string.controls_colour), trailing = { ColourDot(hsbColour(text.hue, text.saturation, text.brightness.coerceAtMost(1.0))) }) {
+    Group(stringResource(R.string.controls_colour), trailing = { ColourDot(hsbColour(text.hue, text.saturation, text.brightness.coerceAtMost(1.0))) },
+        changed = differs(text.hue to td.hue, text.saturation to td.saturation, text.brightness to td.brightness)) {
         ValueSlider(stringResource(R.string.controls_hue), text.hue, default = TextLayerSettings().hue) { v -> update { it.copy(hue = v) } }
         ValueSlider(stringResource(R.string.controls_saturation), text.saturation, default = TextLayerSettings().saturation) { v -> update { it.copy(saturation = v) } }
         ValueSlider(stringResource(R.string.controls_brightness), text.brightness, Editing.Ranges.textBrightness.floats(), default = TextLayerSettings().brightness) { v -> update { it.copy(brightness = v) } }
@@ -938,7 +947,9 @@ private fun DrawTab(params: MandalaParameters, vm: EditorViewModel) {
                 DrawingLayerSettings().let { Triple(it.currentHue, it.currentSaturation, it.currentBrightness) }, initiallyOpen = true) { h, s, b ->
                 vm.updateDrawing { it.copy(currentHue = h, currentSaturation = s, currentBrightness = b) }
             }
-            Group(stringResource(R.string.controls_line_and_light)) {
+            val ld = DrawingLayerSettings()
+            Group(stringResource(R.string.controls_line_and_light), changed = lines.blendMode != ld.blendMode ||
+                differs(lines.strokeWeight to ld.strokeWeight, lines.glowIntensity to ld.glowIntensity, lines.opacity to ld.opacity)) {
                 ValueSlider(stringResource(R.string.controls_weight), lines.strokeWeight, default = DrawingLayerSettings().strokeWeight) { v -> vm.updateDrawing { it.copy(strokeWeight = v) } }
                 ValueSlider(stringResource(R.string.controls_glow), lines.glowIntensity, default = DrawingLayerSettings().glowIntensity) { v -> vm.updateDrawing { it.copy(glowIntensity = v) } }
                 ValueSlider(stringResource(R.string.controls_opacity), lines.opacity, default = DrawingLayerSettings().opacity) { v -> vm.updateDrawing { it.copy(opacity = v) } }
@@ -953,7 +964,9 @@ private fun DrawTab(params: MandalaParameters, vm: EditorViewModel) {
                 GraffitiLayerSettings().let { Triple(it.currentHue, it.currentSaturation, it.currentBrightness) }, initiallyOpen = true) { h, s, b ->
                 vm.updateGraffiti { it.copy(currentHue = h, currentSaturation = s, currentBrightness = b) }
             }
-            Group(stringResource(R.string.controls_softness_and_blending)) {
+            val sd = GraffitiLayerSettings()
+            Group(stringResource(R.string.controls_softness_and_blending), changed = spray.blendMode != sd.blendMode ||
+                differs(spray.softness to sd.softness, spray.opacity to sd.opacity)) {
                 ValueSlider(stringResource(R.string.controls_softness), spray.softness, default = GraffitiLayerSettings().softness) { v -> vm.updateGraffiti { it.copy(softness = v) } }
                 ValueSlider(stringResource(R.string.controls_opacity), spray.opacity, default = GraffitiLayerSettings().opacity) { v -> vm.updateGraffiti { it.copy(opacity = v) } }
                 BlendChips(spray.blendMode) { m -> vm.updateGraffiti { it.copy(blendMode = m) } }

@@ -63,6 +63,8 @@
     <!-- Live wallpaper sheet -->
     <string name="live_title">Fondo animado</string>
     <string name="live_intro">Este mandala llena la pantalla y gira despacio, una vuelta cada cuatro minutos. Solo se mueve mientras lo ves.</string>
+    <string name="live_layered">Las capas giran por separado</string>
+    <string name="live_layered_note">Las capas giran unas contra otras; el fondo, el emblema, el texto y el dibujo se quedan quietos. Los efectos de escena se omiten.</string>
     <string name="live_breathing">Respiración: la luminosidad sube y baja</string>
     <string name="live_colour_drift">Deriva de color: los colores cambian despacio</string>
     <string name="live_palettes_in_turn">Paletas por turnos: cada diez minutos aparece la siguiente</string>
