@@ -4,6 +4,7 @@ import androidx.annotation.StringRes
 import com.mathis.mandala.core.BaseLayerSettings
 import com.mathis.mandala.core.BaseLayerType
 import com.mathis.mandala.core.BuiltInPalettes
+import com.mathis.mandala.core.CustomPalette
 import com.mathis.mandala.core.DrawStroke
 import com.mathis.mandala.core.DrawingLayerSettings
 import com.mathis.mandala.core.EffectsLayerSettings
@@ -14,6 +15,7 @@ import com.mathis.mandala.core.Framing
 import com.mathis.mandala.core.MandalaParameters
 import com.mathis.mandala.core.MandalaRenderer
 import com.mathis.mandala.core.MandalaStyle
+import com.mathis.mandala.core.OwnPalettes
 import com.mathis.mandala.core.SettingsJson
 import com.mathis.mandala.core.SprayStroke
 import com.mathis.mandala.core.Quote
@@ -49,6 +51,35 @@ object Editing {
     /** The palettes a picker shows: the offered ones, plus `current` at the end if it is a hidden built-in one. */
     fun paletteChoices(current: Int): List<Int> =
         if (current in BuiltInPalettes.all.indices && current !in offeredPalettes) offeredPalettes + current else offeredPalettes
+
+    // ── Own palettes (ADR-0021) ──
+
+    /** The built-in palette an app without own palettes draws instead of `own`: the one that looks most like it. */
+    fun fallbackPalette(own: CustomPalette): Int =
+        OwnPalettes.nearestBuiltIn(own.toColorPalette(), BuiltInPalettes.all.indices.toList())
+
+    fun StyleLayer.withOwnPalette(own: CustomPalette): StyleLayer = copy(paletteIndex = fallbackPalette(own), customPalette = own)
+
+    fun EmblemLayerSettings.withOwnPalette(own: CustomPalette): EmblemLayerSettings = copy(paletteIndex = fallbackPalette(own), customPalette = own)
+
+    /**
+     * Every layer and the emblem whose own palette `change` maps: to a new version (saved again), or to
+     * null (deleted), which leaves the built-in fallback the index already holds.
+     */
+    fun MandalaParameters.changeOwnPalettes(change: (CustomPalette) -> CustomPalette?): MandalaParameters {
+        fun pick(own: CustomPalette?): Pair<Boolean, CustomPalette?> =
+            if (own == null) false to null else change(own).let { (it != own) to it }
+        return copy(
+            layers = layers.map { l ->
+                val (changed, next) = pick(l.customPalette)
+                if (!changed) l else if (next == null) l.copy(customPalette = null) else l.withOwnPalette(next)
+            },
+            emblemLayer = emblemLayer.let { e ->
+                val (changed, next) = pick(e.customPalette)
+                if (!changed) e else if (next == null) e.copy(customPalette = null) else e.withOwnPalette(next)
+            },
+        )
+    }
 
     /** Palette of a new layer above one with palette `last`: three steps on in the offered order, like the Mac's `+ 3`. */
     fun nextPalette(last: Int?): Int {

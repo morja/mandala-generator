@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
@@ -51,6 +52,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.colorspace.ColorSpaces
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
@@ -69,6 +72,7 @@ import com.mathis.mandala.app.R
 import com.mathis.mandala.core.BuiltInPalettes
 import com.mathis.mandala.core.ColorPalette
 import com.mathis.mandala.core.LayerBlendMode
+import com.mathis.mandala.core.Rgb
 import java.util.Locale
 import kotlin.math.roundToInt
 
@@ -343,16 +347,28 @@ internal fun Swatch(palette: ColorPalette, selected: Boolean, onClick: () -> Uni
     )
 }
 
-/** The palettes a picker offers (TUNE-1), with a hidden one the setting uses still shown as selected. */
-@OptIn(ExperimentalLayoutApi::class)
+internal fun paletteBrush(palette: ColorPalette): Brush =
+    if (palette.stops.size < 2) SolidColor(palette.stops.firstOrNull()?.let { p3Colour(it.color) } ?: Color.White)
+    else Brush.sweepGradient(*palette.stops.map { it.position.toFloat() to p3Colour(it.color) }.toTypedArray())
+
+/** The palette from left to right, at its stops' positions (the own-palette editor's bar). */
+internal fun paletteBar(palette: ColorPalette): Brush =
+    if (palette.stops.size < 2) SolidColor(palette.stops.firstOrNull()?.let { p3Colour(it.color) } ?: Color.White)
+    else Brush.horizontalGradient(*palette.stops.map { it.position.toFloat() to p3Colour(it.color) }.toTypedArray())
+
+internal fun p3Colour(c: Rgb): Color = Color(c.r.toFloat(), c.g.toFloat(), c.b.toFloat(), 1f, ColorSpaces.DisplayP3)
+
+/** A large action with its icon above the label, several side by side (DM-13 A). */
 @Composable
-internal fun PaletteSwatches(current: Int, onPick: (Int) -> Unit) {
-    FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.sm), verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
-        for (index in Editing.paletteChoices(current)) {
-            Swatch(BuiltInPalettes.all[index], selected = current == index) { onPick(index) }
-        }
+internal fun RowScope.ActionTile(icon: ImageVector, label: String, enabled: Boolean, onClick: () -> Unit) {
+    val t = LocalTokens.current
+    Column(
+        Modifier.weight(1f).clip(RoundedCornerShape(Radius.md)).background(t.surfaceRaised)
+            .clickable(enabled = enabled, role = Role.Button, onClick = onClick).padding(vertical = Spacing.md),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(Spacing.xs),
+    ) {
+        Icon(icon, contentDescription = null, tint = if (enabled) t.accent else t.textMuted)
+        Text(label, style = MaterialTheme.typography.labelMedium, color = if (enabled) t.text else t.textMuted, maxLines = 1)
     }
 }
-
-internal fun paletteBrush(palette: ColorPalette): Brush =
-    Brush.sweepGradient(palette.stops.map { Color(it.color.r.toFloat(), it.color.g.toFloat(), it.color.b.toFloat(), 1f, ColorSpaces.DisplayP3) })

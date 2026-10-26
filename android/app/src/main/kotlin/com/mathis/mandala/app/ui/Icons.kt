@@ -47,6 +47,8 @@ object EditorIcons {
     val Keep = line("M7,4h10v16l-5,-4 -5,4z")
     val Kept = line("M7,4h10v16l-5,-4 -5,4z", soft = "M7,4h10v16l-5,-4 -5,4z")
     /** Clear: a bin. */
+    val Plus = line("M12,5v14M5,12h14")
+    val FromPicture = line("M12,4a8,8 0 1,0 0,16a8,8 0 1,0 0,-16zM12,4v5M12,15v5M4,12h5M15,12h5")
     val Trash = line("M4.5,7h15M9.5,7V4.5h5V7M6.5,7l1,13h9l1,-13M10.5,10.5v6M13.5,10.5v6")
     val Chevron = line("M9,6l6,6 -6,6")
     val ChevronBack = line("M15,6l-6,6 6,6")

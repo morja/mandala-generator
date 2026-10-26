@@ -3,7 +3,8 @@ package com.mathis.mandala.core
 /** One gradient stop. `color` holds Display P3 components, like the macOS palettes after conversion. */
 data class PaletteStop(val position: Double, val color: Rgb)
 
-class ColorPalette(val id: String, val name: String, val stops: List<PaletteStop>) {
+/** Compared by value, so the layer cache recognises an own palette rebuilt from the same stops. */
+data class ColorPalette(val id: String, val name: String, val stops: List<PaletteStop>) {
 
     /** Writes the P3 colour at `t` (clamped to [0, 1]) into `out[0..2]`. */
     fun colorAt(t: Double, out: FloatArray) {

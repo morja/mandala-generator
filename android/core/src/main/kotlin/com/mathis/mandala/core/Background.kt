@@ -90,7 +90,7 @@ internal object Background {
         centreX: Double, centreY: Double, side: Int, par: Parallel,
     ): Image8 {
         val first = params.layers.firstOrNull()
-        val palette = palettes[(first?.paletteIndex ?: 0).coerceIn(0, palettes.size - 1)]
+        val palette = OwnPalettes.resolve(first?.paletteIndex ?: 0, first?.customPalette, palettes)
         val col0 = FloatArray(3).also { palette.colorAt(0.0, it) }
         val col1 = FloatArray(3).also { palette.colorAt(0.5, it) }
 

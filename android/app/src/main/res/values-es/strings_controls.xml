@@ -204,4 +204,21 @@
     <string name="controls_applies_to">Se aplica a</string>
     <string name="controls_reach_mandala">Mandala</string>
     <string name="controls_effects_hold_hint">Mantén pulsada la vista previa para verla sin efectos.</string>
+
+    <!-- Own palettes (ADR-0021) -->
+    <string name="controls_my_palettes">Mis paletas</string>
+    <string name="controls_in_this_picture">En esta imagen</string>
+    <string name="controls_palette_new">Nueva paleta</string>
+    <string name="controls_palette_edit">Editar paleta</string>
+    <string name="controls_edit">Editar</string>
+    <string name="controls_palette_keep">Añadir a mis paletas</string>
+    <string name="controls_palette_name">Nombre</string>
+    <string name="controls_palette_default_name">Mi paleta %1$d</string>
+    <string name="controls_palette_from_picture">De la imagen</string>
+    <string name="controls_palette_add_colour">Añadir color</string>
+    <string name="controls_palette_remove_colour">Quitar color</string>
+    <string name="controls_palette_hint">Toca un color para cambiarlo, arrástralo para moverlo.</string>
+    <string name="controls_palette_colour">Color %1$d</string>
+    <string name="controls_cancel">Cancelar</string>
+    <string name="controls_palette_save">Guardar</string>
 </resources>
