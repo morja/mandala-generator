@@ -9,6 +9,7 @@ import android.content.Context
 import android.os.Build
 import android.util.DisplayMetrics
 import android.view.WindowManager
+import com.mathis.mandala.core.Favorite
 import com.mathis.mandala.core.Finish
 import com.mathis.mandala.core.Framing
 import com.mathis.mandala.core.MandalaParameters
@@ -38,6 +39,37 @@ object DailyWallpaper {
     private val LATEST: LocalTime = LocalTime.of(8, 0)
 
     fun isOn(context: Context): Boolean = prefs(context).getBoolean(KEY_ON, false)
+
+    /**
+     * The favourites that take turns, by id; null means all of them. A favourite added later joins
+     * only when chosen (UX-1, 13).
+     */
+    fun chosen(context: Context): Set<String>? = prefs(context).getStringSet(KEY_CHOSEN, null)?.toSet()
+
+    fun setChosen(context: Context, ids: Set<String>?) {
+        prefs(context).edit().apply { if (ids == null) remove(KEY_CHOSEN) else putStringSet(KEY_CHOSEN, ids) }.apply()
+    }
+
+    /**
+     * The favourite whose turn it is and the next turn counter: the chosen ones in their order, or all
+     * when none is chosen or every chosen one has been deleted.
+     */
+    internal fun turn(favorites: List<Favorite>, chosen: Set<String>?, next: Int): Pair<Favorite, Int>? {
+        val pool = chosen?.let { ids -> favorites.filter { it.id in ids } }?.ifEmpty { null } ?: favorites
+        if (pool.isEmpty()) return null
+        val index = next.mod(pool.size)
+        return pool[index] to index + 1
+    }
+
+    /**
+     * The choice after tapping one favourite in the picker. "All" shows every favourite ticked, so the
+     * first tap leaves out the tapped one; leaving out the last one, or ticking every one, means all again.
+     */
+    fun toggled(chosen: Set<String>?, all: List<String>, id: String): Set<String>? {
+        val current = chosen?.intersect(all.toSet()) ?: all.toSet()
+        val next = if (id in current) current - id else current + id
+        return if (next.isEmpty() || next == all.toSet()) null else next
+    }
 
     /** Name of the favourite set last, for the menu. */
     fun lastName(context: Context): String? = prefs(context).getString(KEY_LAST_NAME, null)
@@ -92,15 +124,14 @@ object DailyWallpaper {
         val favorites = FavoritesStore(File(context.filesDir, "favorites.json")).load()
         if (favorites.isEmpty()) return null
         val prefs = prefs(context)
-        val index = prefs.getInt(KEY_NEXT, 0).mod(favorites.size)
-        val favourite = favorites[index]
+        val (favourite, nextTurn) = turn(favorites, chosen(context), prefs.getInt(KEY_NEXT, 0)) ?: return null
         val params: MandalaParameters = favourite.parameters
         // Unnamed favourites are called by their styles, as the menu calls the mandala.
         val name = favourite.name.ifEmpty { params.layers.filter { it.isEnabled }.joinToString(", ") { it.style.displayName } }
         if (LiveWallpaper.isActive(context)) {
             // The live wallpaper fades over to the next favourite itself; a still image would replace it.
             LiveWallpaper.setMandala(context, params)
-            prefs.edit().putInt(KEY_NEXT, index + 1).putString(KEY_LAST_NAME, name).apply()
+            prefs.edit().putInt(KEY_NEXT, nextTurn).putString(KEY_LAST_NAME, name).apply()
             return name
         }
         val choice = SaveChoiceStore(context).load()
@@ -117,7 +148,7 @@ object DailyWallpaper {
         ).image
         val home = Finish(brightness = choice.homeBrightness).apply(lock, threads)
         Wallpapers.setPair(context, lock, home)
-        prefs.edit().putInt(KEY_NEXT, index + 1).putString(KEY_LAST_NAME, name).apply()
+        prefs.edit().putInt(KEY_NEXT, nextTurn).putString(KEY_LAST_NAME, name).apply()
         return name
     }
 
@@ -137,6 +168,7 @@ object DailyWallpaper {
     private const val KEY_ON = "on"
     private const val KEY_NEXT = "next"
     private const val KEY_LAST_NAME = "last_name"
+    private const val KEY_CHOSEN = "chosen"
     private const val RETRY_MS = 15 * 60 * 1000L
 }
 

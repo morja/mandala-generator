@@ -31,6 +31,11 @@
     <string name="menu_fast_preview_detail">エディタのプレビューだけを簡略化して速く描画します。保存する画像と壁紙は常にフル品質です。</string>
     <string name="menu_daily_wallpaper">毎日新しい壁紙</string>
     <string name="menu_daily_about">オンにすると、お気に入りの次の1枚がすぐに壁紙になります。ロック画面に、ホーム画面には少し暗くして設定します。その後は毎朝4時から8時の間に、できれば充電中に、次のお気に入りに替わります。ライブ壁紙がオンのときは、代わりにライブ壁紙が次のお気に入りへフェードします。</string>
+    <string name="menu_daily_favourites">お気に入り</string>
+    <string name="menu_daily_all">すべて</string>
+    <string name="menu_daily_some">%2$d 件中 %1$d 件</string>
+    <string name="menu_daily_pick_about">チェックしたお気に入りだけが、お気に入りの順番で入れ替わります。あとで追加したお気に入りは、ここでチェックすると加わります。</string>
+    <string name="menu_daily_choose_all">すべてチェック</string>
     <string name="menu_open_file_detail">このアプリやmacOSアプリでファイルに保存したマンダラの設定</string>
     <string name="menu_save_settings_detail">このマンダラをファイルとして保存し、残したりMacで開いたりできます</string>
     <string name="menu_more">その他</string>

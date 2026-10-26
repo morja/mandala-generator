@@ -35,6 +35,11 @@
     <string name="menu_fast_preview_detail">Seul l\'aperçu de l\'éditeur est dessiné plus simplement et plus vite. Les images enregistrées et les fonds d\'écran gardent toute leur qualité.</string>
     <string name="menu_daily_wallpaper">Nouveau fond d\'écran chaque jour</string>
     <string name="menu_daily_about">Une fois activé, le prochain de vos favoris devient aussitôt le fond d\'écran : sur l\'écran de verrouillage et, un peu plus sombre, sur l\'écran d\'accueil. Ensuite, le suivant arrive chaque matin entre 4 h et 8 h, de préférence pendant la charge. Si le fond d\'écran animé est actif, il passe en fondu au favori suivant.</string>
+    <string name="menu_daily_favourites">Favoris</string>
+    <string name="menu_daily_all">Tous</string>
+    <string name="menu_daily_some">%1$d sur %2$d</string>
+    <string name="menu_daily_pick_about">Seuls les favoris cochés se relaient, dans l\'ordre de vos favoris. Un favori ajouté plus tard en fait partie une fois coché ici.</string>
+    <string name="menu_daily_choose_all">Tout cocher</string>
     <string name="menu_open_file_detail">Réglages de mandala enregistrés dans un fichier, depuis cette app ou l\'app macOS</string>
     <string name="menu_save_settings_detail">Ce mandala dans un fichier, à garder ou à ouvrir sur le Mac</string>
     <string name="menu_more">Plus</string>

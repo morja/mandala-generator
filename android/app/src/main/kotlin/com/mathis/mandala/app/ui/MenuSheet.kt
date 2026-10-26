@@ -1,5 +1,8 @@
 package com.mathis.mandala.app.ui
 
+import com.mathis.mandala.core.Favorite
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.material3.TextButton
 import androidx.annotation.StringRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -76,6 +79,11 @@ internal class MenuActions(
     val dailyOn: Boolean,
     val dailySubtitle: String,
     val onDaily: (Boolean) -> Unit,
+    /** Which favourites take turns (null: all), chosen on a page of their own. */
+    val favourites: List<Favorite>,
+    val dailyChosen: Set<String>?,
+    val onToggleDaily: (String) -> Unit,
+    val onChooseAllDaily: () -> Unit,
     /** The line drawing as SVG (ADR-0013, Pro): without Pro its looks open the Pro sheet. */
     val lineDrawingPro: Boolean,
     val hasPointLayers: Boolean,
@@ -91,7 +99,7 @@ internal class MenuActions(
 )
 
 /** The pages of the menu: the main one, and those with room to explain what an entry does. */
-private enum class MenuPage { MAIN, LINE_DRAWING, DAILY, MORE }
+private enum class MenuPage { MAIN, LINE_DRAWING, DAILY, DAILY_FAVOURITES, MORE }
 
 /**
  * The menu as a sheet from below (DM-7 B): the mandala on screen with what keeps it, three dice for a
@@ -119,7 +127,8 @@ internal fun MenuSheet(
             when {
                 candidate != null -> Compare(image, candidate, actions)
                 page == MenuPage.LINE_DRAWING -> LineDrawingPage(busy, actions, back)
-                page == MenuPage.DAILY -> DailyPage(actions, back)
+                page == MenuPage.DAILY -> DailyPage(actions, back, onChoose = { page = MenuPage.DAILY_FAVOURITES })
+                page == MenuPage.DAILY_FAVOURITES -> DailyFavouritesPage(actions, onBack = { page = MenuPage.DAILY })
                 page == MenuPage.MORE -> MorePage(fastPreview, actions, back)
                 else -> {
                     Current(params, image)
@@ -296,15 +305,47 @@ private fun LineDrawingPage(busy: Boolean, actions: MenuActions, onBack: () -> U
 }
 
 @Composable
-private fun DailyPage(actions: MenuActions, onBack: () -> Unit) {
+private fun DailyPage(actions: MenuActions, onBack: () -> Unit, onChoose: () -> Unit) {
     val t = LocalTokens.current
     PageTop(stringResource(R.string.menu_daily_wallpaper), stringResource(R.string.menu_daily_about), onBack)
     Column(Modifier.padding(top = Spacing.md)) {
         HorizontalDivider(color = t.outline)
         // The page title names it already; the line says what is set now.
         SwitchMenuRow(EditorIcons.Wallpaper, actions.dailySubtitle, null, actions.dailyOn, actions.onDaily)
+        if (actions.favourites.isNotEmpty()) {
+            HorizontalDivider(color = t.outline)
+            val count = actions.favourites.count { actions.dailyChosen == null || it.id in actions.dailyChosen }
+            MenuRow(EditorIcons.StarLine, stringResource(R.string.menu_daily_favourites),
+                detail = if (actions.dailyChosen == null) stringResource(R.string.menu_daily_all)
+                    else stringResource(R.string.menu_daily_some, count, actions.favourites.size),
+                onClick = onChoose) { Chevron() }
+        }
     }
 }
+
+/** The favourites as a grid with ticks: only the ticked ones take turns; all are ticked at first. */
+@Composable
+private fun DailyFavouritesPage(actions: MenuActions, onBack: () -> Unit) {
+    PageTop(stringResource(R.string.menu_daily_favourites), stringResource(R.string.menu_daily_pick_about), onBack)
+    // Always there, so the grid does not move under the finger when the first tick goes.
+    TextButton(onClick = actions.onChooseAllDaily, enabled = actions.dailyChosen != null) { Text(stringResource(R.string.menu_daily_choose_all)) }
+    // The menu scrolls as a whole, so plain rows instead of a lazy grid.
+    Column(Modifier.padding(top = Spacing.sm), verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+        for (row in actions.favourites.chunked(DAILY_COLUMNS)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+                for (fav in row) {
+                    Box(Modifier.weight(1f)) {
+                        FavoriteTile(fav, selected = actions.dailyChosen == null || fav.id in actions.dailyChosen, selecting = true,
+                            onApply = {}, onToggle = { actions.onToggleDaily(fav.id) })
+                    }
+                }
+                repeat(DAILY_COLUMNS - row.size) { Spacer(Modifier.weight(1f)) }
+            }
+        }
+    }
+}
+
+private const val DAILY_COLUMNS = 3
 
 @Composable
 private fun MorePage(fastPreview: Boolean, actions: MenuActions, onBack: () -> Unit) {

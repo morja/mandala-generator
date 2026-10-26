@@ -280,6 +280,10 @@ fun EditorScreen(
                     else -> stringResource(R.string.editor_daily_off)
                 },
                 onDaily = { on -> if (pro.owned) vm.setDaily(on) else vm.showPro() },
+                favourites = favorites,
+                dailyChosen = daily.chosen,
+                onToggleDaily = vm::toggleDailyFavourite,
+                onChooseAllDaily = vm::chooseAllDailyFavourites,
                 lineDrawingPro = pro.owned,
                 hasPointLayers = VectorExport.hasPointLayers(params),
                 onLineDrawing = { look ->
@@ -810,7 +814,7 @@ private fun FavoritesSheet(
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun FavoriteTile(fav: Favorite, selected: Boolean, selecting: Boolean, onApply: (Favorite) -> Unit, onToggle: () -> Unit) {
+internal fun FavoriteTile(fav: Favorite, selected: Boolean, selecting: Boolean, onApply: (Favorite) -> Unit, onToggle: () -> Unit) {
     val t = LocalTokens.current
     val thumb = remember(fav.id) { Thumbnails.decode(fav.thumbnailData) }
     val styles = fav.parameters.layers.map { stringResource(it.style.labelRes) }.joinToString(", ")
