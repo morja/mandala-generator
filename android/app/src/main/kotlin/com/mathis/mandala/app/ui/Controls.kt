@@ -589,6 +589,7 @@ private fun TextTab(text: TextLayerSettings, vm: EditorViewModel, position: Posi
     val update = vm::updateText
     var choosing by remember { mutableStateOf(false) }
     val myQuotes by vm.myQuotes.collectAsStateWithLifecycle()
+    val quoteLanguages by vm.quoteLanguages.collectAsStateWithLifecycle()
     val switch: (Boolean) -> Unit = { on -> if (on && text.text.isEmpty()) vm.randomQuote() else update { it.copy(isEnabled = on) } }
     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
         // The label switches too; the die and reset beside it keep their own taps (as in the emblem tab).
@@ -605,6 +606,8 @@ private fun TextTab(text: TextLayerSettings, vm: EditorViewModel, position: Posi
     if (choosing) {
         QuoteDialog(
             myQuotes = myQuotes,
+            languages = quoteLanguages,
+            onToggleLanguage = vm::toggleQuoteLanguage,
             onPick = { vm.useQuote(it); choosing = false },
             onRemove = vm::removeMyQuote,
             onDismiss = { choosing = false },
@@ -676,22 +679,50 @@ private fun TextTab(text: TextLayerSettings, vm: EditorViewModel, position: Posi
     }
 }
 
-/** Your own quotes first (with a remove button), then the built-in public-domain collection. */
+/**
+ * Language chips (only with more than one collection), then your own quotes (with a remove button), then
+ * the built-in public-domain collections of the languages switched on (ADR-0017).
+ */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun QuoteDialog(myQuotes: List<Quote>, onPick: (Quote) -> Unit, onRemove: (Quote) -> Unit, onDismiss: () -> Unit) {
+private fun QuoteDialog(
+    myQuotes: List<Quote>,
+    languages: List<String>,
+    onToggleLanguage: (String) -> Unit,
+    onPick: (Quote) -> Unit,
+    onRemove: (Quote) -> Unit,
+    onDismiss: () -> Unit,
+) {
     val t = LocalTokens.current
+    val shown = Quotes.collectionsFor(languages)
     AlertDialog(
         onDismissRequest = onDismiss,
         confirmButton = { TextButton(onClick = onDismiss) { Text("Close") } },
         title = { Text("Quotes") },
         text = {
             LazyColumn {
+                if (Quotes.collections.size > 1) {
+                    item {
+                        FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.sm), modifier = Modifier.padding(bottom = Spacing.sm)) {
+                            for (c in Quotes.collections) {
+                                FilterChip(selected = c.language in languages, onClick = { onToggleLanguage(c.language) }, label = { Text(c.name) })
+                            }
+                        }
+                    }
+                }
                 if (myQuotes.isNotEmpty()) {
                     item { Text("Your quotes", style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(vertical = Spacing.xs)) }
                     items(myQuotes) { q -> QuoteRow(q, onPick) { IconButton(onClick = { onRemove(q) }) { Icon(EditorIcons.Close, "Remove quote") } } }
-                    item { Text("Collection", style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(top = Spacing.md, bottom = Spacing.xs)) }
                 }
-                items(Quotes.all) { q -> QuoteRow(q, onPick, null) }
+                for ((i, c) in shown.withIndex()) {
+                    if (myQuotes.isNotEmpty() || shown.size > 1) {
+                        item {
+                            Text(if (shown.size > 1) c.name else "Collection", style = MaterialTheme.typography.titleSmall,
+                                modifier = if (i > 0 || myQuotes.isNotEmpty()) Modifier.padding(top = Spacing.md, bottom = Spacing.xs) else Modifier.padding(bottom = Spacing.xs))
+                        }
+                    }
+                    items(c.quotes) { q -> QuoteRow(q, onPick, null) }
+                }
                 item {
                     Text("All quotes in the collection are in the public domain.", style = MaterialTheme.typography.bodySmall,
                         color = t.textMuted, modifier = Modifier.padding(top = Spacing.md))

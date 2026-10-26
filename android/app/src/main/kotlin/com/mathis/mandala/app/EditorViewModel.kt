@@ -468,7 +468,23 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
 
     fun useQuote(quote: Quote) = updateText { it.withQuote(quote) }
 
-    fun randomQuote() = useQuote((Quotes.all + _myQuotes.value).random())
+    /** A quote from the languages switched on in the quote list, or one of the user's own. */
+    fun randomQuote() = useQuote((Quotes.collectionsFor(_quoteLanguages.value).flatMap { it.quotes } + _myQuotes.value).random())
+
+    private val quoteLanguageStore = QuoteLanguages(application)
+    private val _quoteLanguages = MutableStateFlow(quoteLanguageStore.chosen)
+
+    /** The quote languages switched on, in the order the list shows them (ADR-0017). */
+    val quoteLanguages: StateFlow<List<String>> = _quoteLanguages.asStateFlow()
+
+    /** Switches a quote language on or off; the last one stays on. */
+    fun toggleQuoteLanguage(language: String) {
+        val current = _quoteLanguages.value
+        val next = if (language in current) current - language else current + language
+        if (next.isEmpty()) return
+        _quoteLanguages.value = next
+        quoteLanguageStore.chosen = next
+    }
 
     private val myQuotesStore = MyQuotesStore(File(application.filesDir, "my-quotes.json"))
     private val _myQuotes = MutableStateFlow(myQuotesStore.load())
