@@ -200,4 +200,6 @@
     <string name="controls_show_effects">Mostrar efeitos</string>
     <string name="controls_smoother">Suavizar</string>
     <string name="controls_seed">Semente</string>
+    <string name="controls_applies_to">Aplica-se a</string>
+    <string name="controls_reach_mandala">Mandala</string>
 </resources>

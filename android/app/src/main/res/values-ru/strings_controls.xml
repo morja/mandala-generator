@@ -202,4 +202,6 @@
     <string name="controls_show_effects">Показать эффекты</string>
     <string name="controls_smoother">Сглаживание</string>
     <string name="controls_seed">Сид</string>
+    <string name="controls_applies_to">Применяется к</string>
+    <string name="controls_reach_mandala">Мандала</string>
 </resources>

@@ -76,7 +76,7 @@ import kotlin.math.roundToInt
 
 /**
  * One section style across every tab. Headers have the same minimum height, type and right-hand
- * chevron; only indentation marks a child section. Large actions belong inside the open content.
+ * chevron; a small indentation inside the frame marks a child section. Large actions belong inside the open content.
  * The save sheet can omit the container because its surrounding dividers already frame Adjust.
  */
 @Composable
@@ -103,7 +103,7 @@ internal fun Group(
 
     Column(
         Modifier.fillMaxWidth()
-            .then(if (inset) Modifier.padding(start = Spacing.lg) else Modifier)
+            .then(if (inset) Modifier.padding(start = Spacing.sm) else Modifier)
             .padding(top = Spacing.sm)
             .then(container),
     ) {

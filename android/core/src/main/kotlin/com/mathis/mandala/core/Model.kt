@@ -154,6 +154,11 @@ data class EffectsLayerSettings(
     val highlightsSeed: ULong = 33uL,
     val starsSeed: ULong = 44uL,
     val glitterSeed: ULong = 55uL,
+    // Which layers above the mandala the effects reach (ADR-0018, Android only). The emblem is part of
+    // the picture by default; text stays legible above the effects (ADR-0017). Text sits above the
+    // emblem, so effects stop below the lowest layer left out.
+    val affectsEmblem: Boolean = true,
+    val affectsText: Boolean = false,
 )
 
 /** A line drawn by hand; points are normalised to the canvas (0.5 = centre, y downwards). */

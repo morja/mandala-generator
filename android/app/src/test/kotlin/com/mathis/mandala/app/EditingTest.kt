@@ -32,6 +32,7 @@ import com.mathis.mandala.core.EffectsLayerSettings
 import com.mathis.mandala.core.TextLayerSettings
 import com.mathis.mandala.core.StyleLayer
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -137,6 +138,22 @@ class EditingTest {
         assertEquals(EffectsLayerSettings(isEnabled = true), with(Editing) { fx.reset() })
         val text = TextLayerSettings(isEnabled = true, text = "Be still", customAuthor = "Me", showAuthor = false, glow = 2.0, fontName = "serif")
         assertEquals(TextLayerSettings(isEnabled = true, text = "Be still", customAuthor = "Me", showAuthor = false), with(Editing) { text.reset() })
+    }
+
+    @Test
+    fun effectsResetKeepsWhichLayersTheyReach() {
+        val fx = EffectsLayerSettings(isEnabled = true, vignette = 0.9, affectsEmblem = false)
+        assertEquals(EffectsLayerSettings(isEnabled = true, affectsEmblem = false), with(Editing) { fx.reset() })
+    }
+
+    @Test
+    fun effectsReachTheTextOnlyOverTheEmblem() {
+        with(Editing) {
+            val onText = EffectsLayerSettings(affectsEmblem = false).withText(true)
+            assertTrue(onText.affectsEmblem && onText.affectsText)
+            val offEmblem = onText.withEmblem(false)
+            assertFalse(offEmblem.affectsEmblem || offEmblem.affectsText)
+        }
     }
 
     @Test

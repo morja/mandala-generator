@@ -196,4 +196,6 @@
     <string name="controls_show_effects">显示效果</string>
     <string name="controls_smoother">平滑</string>
     <string name="controls_seed">种子</string>
+    <string name="controls_applies_to">应用于</string>
+    <string name="controls_reach_mandala">曼陀罗</string>
 </resources>

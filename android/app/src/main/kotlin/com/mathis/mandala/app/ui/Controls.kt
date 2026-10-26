@@ -66,6 +66,8 @@ import com.mathis.mandala.app.Editing
 import com.mathis.mandala.app.Editing.strokeCount
 import com.mathis.mandala.app.Editing.switched
 import com.mathis.mandala.app.Editing.switchedTo
+import com.mathis.mandala.app.Editing.withEmblem
+import com.mathis.mandala.app.Editing.withText
 import com.mathis.mandala.app.EditorViewModel
 import com.mathis.mandala.app.ui.theme.LocalTokens
 import com.mathis.mandala.app.ui.theme.Radius
@@ -377,11 +379,12 @@ private fun LayerControls(layer: StyleLayer, update: ((StyleLayer) -> StyleLayer
 
 @Composable
 private fun SceneTab(params: MandalaParameters, vm: EditorViewModel) {
+    // Effects are used far more than the background, so they come first and open.
     val base = params.baseLayer
+    EffectsGroup(params.effectsLayer, vm::updateEffects, vm::newEffectsPattern, vm::resetEffects)
     Group(stringResource(R.string.controls_background), summary = if (base.isEnabled) backgroundName(base.type) else stringResource(R.string.controls_off)) {
         BackgroundControls(base, vm::updateBackground, vm::useBackgroundImage)
     }
-    EffectsGroup(params.effectsLayer, vm::updateEffects, vm::newEffectsPattern, vm::resetEffects)
 }
 
 /** Background behind all layers: off or one of the macOS types, with the fitting sliders. */
@@ -463,7 +466,7 @@ private fun backgroundName(type: BaseLayerType) = stringResource(when (type) {
 })
 
 /**
- * Scene effects behind the text, switched on inside the section; the quick, reliable sliders in
+ * Scene effects over the mandala, by default also over the emblem and behind the text (ADR-0018), switched on inside the section; the quick, reliable sliders in
  * four groups and the rarer ones under "More" (TUNE-1). "Fade" sets the `wash` field; the old `fade`
  * field does almost the same and gets its own slider ("Old fade") only in settings that use it.
  * The die in the heading moves highlights, dimming, erasure, stars and glitter to new places, as the
@@ -480,7 +483,7 @@ private fun EffectsGroup(
     var showOldFade by rememberSaveable { mutableStateOf(false) }
     LaunchedEffect(fx.fade > 0) { if (fx.fade > 0) showOldFade = true }
     val t = LocalTokens.current
-    Group(stringResource(R.string.controls_effects), summary = if (fx.isEnabled) stringResource(R.string.controls_on) else stringResource(R.string.controls_off)) {
+    Group(stringResource(R.string.controls_effects), summary = if (fx.isEnabled) stringResource(R.string.controls_on) else stringResource(R.string.controls_off), initiallyOpen = true) {
         // Keep actions inside the section so its closed header is as compact as every other one.
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             Text(stringResource(R.string.controls_show_effects), style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
@@ -523,6 +526,16 @@ private fun EffectsGroup(
             if (fx.relief > 0) ValueSlider(stringResource(R.string.controls_relief_angle), fx.reliefAngle, default = EffectsLayerSettings().reliefAngle) { v -> update { it.copy(reliefAngle = v) } }
             ValueSlider(stringResource(R.string.controls_chromatic), fx.chromatic, default = EffectsLayerSettings().chromatic) { v -> update { it.copy(chromatic = v) } }
             if (showOldFade) ValueSlider(stringResource(R.string.controls_old_fade), fx.fade, default = EffectsLayerSettings().fade) { v -> update { it.copy(fade = v) } }
+        }
+        // Rarely changed, so last and closed; the summary says what the effects reach.
+        val emblem = stringResource(R.string.controls_tab_emblem)
+        val text = stringResource(R.string.controls_tab_text)
+        val reach = listOfNotNull(stringResource(R.string.controls_reach_mandala), emblem.takeIf { fx.affectsEmblem }, text.takeIf { fx.affectsText })
+        Group(stringResource(R.string.controls_applies_to), summary = reach.joinToString(", "), inset = true) {
+            Column(verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+                SwitchRow(emblem, fx.affectsEmblem) { on -> update { it.withEmblem(on) } }
+                SwitchRow(text, fx.affectsText) { on -> update { it.withText(on) } }
+            }
         }
     }
 }
