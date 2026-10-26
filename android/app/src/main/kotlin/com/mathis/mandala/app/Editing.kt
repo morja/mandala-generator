@@ -52,7 +52,7 @@ object Editing {
     fun paletteChoices(current: Int): List<Int> =
         if (current in BuiltInPalettes.all.indices && current !in offeredPalettes) offeredPalettes + current else offeredPalettes
 
-    // ── Own palettes (ADR-0020) ──
+    // ── Own palettes (ADR-0021) ──
 
     /** The built-in palette an app without own palettes draws instead of `own`: the one that looks most like it. */
     fun fallbackPalette(own: CustomPalette): Int =

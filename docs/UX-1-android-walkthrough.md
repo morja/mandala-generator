@@ -41,3 +41,4 @@ Layout and consistency
 - 9 Scene tab built as DM-12 (switch heads the tab, flat groups, background with its own switch). 6 Text tab built as DM-13 A: a "Words" card with the quote in the picture's font, tap to edit, and Collection, New quote, Keep below it.
 - 11 The small preview is kept while the app runs; it grows back while drawing or moving, when the controls are pulled down at their top, and after a restart. Idea from Mathis: one more, middle size.
 - Ideas wanted: 12 animation export (Pro), 13 daily wallpaper from chosen favourites, 14 home screen widget (probably Pro), 15 own palettes (free, at the palette), 16 compare by holding the preview, 17 text around the circle, 18 history strip. Which of these are Pro is recorded as an amendment of ADR-0016 when each is built.
+- 15 Own palettes built as DM-15 (ADR-0021): free, at the Palette group, made and edited in place, carried inside the settings with a built-in fallback for the Mac.

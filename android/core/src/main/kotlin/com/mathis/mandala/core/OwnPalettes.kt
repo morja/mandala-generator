@@ -5,7 +5,7 @@ import kotlin.math.floor
 
 /**
  * An own palette in the macOS app's `CustomPalette` format, so `palettes.json` and the copies inside
- * settings read the same on both. A layer or emblem that uses one carries it whole (ADR-0020); its
+ * settings read the same on both. A layer or emblem that uses one carries it whole (ADR-0021); its
  * `paletteIndex` keeps a built-in palette for apps that do not know the field.
  */
 @Serializable
@@ -102,6 +102,13 @@ object OwnPalettes {
             }
             for (ci in 0 until k) if (sums[ci][3] > 0) for (c in 0..2) centres[ci][c] = sums[ci][c] / sums[ci][3]
         }
+        // A cluster's mean mixes neighbouring hues into grey; its more colourful half shows what the eye sees.
+        for (ci in 0 until k) {
+            val members = px.indices.filter { assign[it] == ci }.map { px[it] }
+            if (members.isEmpty()) continue
+            val vivid = members.sortedByDescending { chroma(it) }.take(maxOf(1, members.size / 2))
+            for (c in 0..2) centres[ci][c] = vivid.sumOf { it[c] } / vivid.size
+        }
         val sorted = centres.sortedBy { luma(it) }
         val hsb = DoubleArray(3)
         return sorted.mapIndexed { n, c ->
@@ -160,6 +167,8 @@ object OwnPalettes {
         out[1] = if (max == 0.0) 0.0 else d / max
         out[2] = max
     }
+
+    private fun chroma(c: DoubleArray) = maxOf(c[0], c[1], c[2]) - minOf(c[0], c[1], c[2])
 
     private fun luma(c: DoubleArray) = 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]
 }

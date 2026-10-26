@@ -5,7 +5,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-/** Own palettes: the Mac's file format, the copy inside settings, and drawing with it (ADR-0020). */
+/** Own palettes: the Mac's file format, the copy inside settings, and drawing with it (ADR-0021). */
 class OwnPalettesTest {
     private val options = RenderOptions(outputSize = 128, supersample = false, threads = 2)
     private val own = CustomPalette(

@@ -14,7 +14,7 @@ import org.junit.Test
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 
-/** Own palettes in the editor: choosing, saving again, deleting (ADR-0020). */
+/** Own palettes in the editor: choosing, saving again, deleting (ADR-0021). */
 class OwnPalettesTest {
     private val gold = CustomPalette("G", "Gold copy", OwnPalettes.stopsOf(BuiltInPalettes.all[17]))
     private val other = CustomPalette("O", "Other", OwnPalettes.defaultStops())

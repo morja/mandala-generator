@@ -37,7 +37,7 @@ object SettingsJson {
     private val quotesSerializer = ListSerializer(Quote.serializer())
     private val palettesSerializer = ListSerializer(CustomPalette.serializer())
 
-    /** Own palettes, in the macOS app's `palettes.json` format (ADR-0020). */
+    /** Own palettes, in the macOS app's `palettes.json` format (ADR-0021). */
     fun decodePalettes(text: String): List<CustomPalette> = json.decodeFromString(palettesSerializer, text)
 
     fun encodePalettes(palettes: List<CustomPalette>): String = json.encodeToString(palettesSerializer, palettes)

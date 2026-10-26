@@ -516,7 +516,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
     private val myPalettesStore = MyPalettesStore(File(application.filesDir, "palettes.json"))
     private val _myPalettes = MutableStateFlow(myPalettesStore.load())
 
-    /** The user's own palettes, in the order made (ADR-0020). */
+    /** The user's own palettes, in the order made (ADR-0021). */
     val myPalettes: StateFlow<List<CustomPalette>> = _myPalettes.asStateFlow()
 
     /** A new id in the Mac's form (an upper-case UUID). */

@@ -4,7 +4,7 @@ import com.mathis.mandala.core.CustomPalette
 import com.mathis.mandala.core.SettingsJson
 import java.io.File
 
-/** The user's own palettes (ADR-0020): in the order made, as on the Mac; saving one again replaces it. */
+/** The user's own palettes (ADR-0021): in the order made, as on the Mac; saving one again replaces it. */
 object MyPalettes {
     fun put(list: List<CustomPalette>, palette: CustomPalette): List<CustomPalette> {
         val at = list.indexOfFirst { it.id == palette.id }

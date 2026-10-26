@@ -104,7 +104,7 @@ data class StyleLayer(
     /** Where the layer's centre sits, in fractions of the mandala's square from its centre (right, down); 0 = centred (ADR-0011). */
     val offsetX: Double = 0.0,
     val offsetY: Double = 0.0,
-    /** An own palette, carried whole; when set it is drawn instead of `paletteIndex` (ADR-0020, Android only). */
+    /** An own palette, carried whole; when set it is drawn instead of `paletteIndex` (ADR-0021, Android only). */
     val customPalette: CustomPalette? = null,
 )
 
@@ -349,7 +349,7 @@ data class EmblemLayerSettings(
     /** Where the emblem's centre sits, in fractions of the mandala's square from its centre (right, down); 0 = centred (ADR-0011). */
     val offsetX: Double = 0.0,
     val offsetY: Double = 0.0,
-    /** An own palette, carried whole; when set it is drawn instead of `paletteIndex` (ADR-0020, Android only). */
+    /** An own palette, carried whole; when set it is drawn instead of `paletteIndex` (ADR-0021, Android only). */
     val customPalette: CustomPalette? = null,
 )
 

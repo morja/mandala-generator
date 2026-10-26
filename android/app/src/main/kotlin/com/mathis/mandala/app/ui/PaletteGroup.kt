@@ -65,7 +65,7 @@ private data class PaletteDraft(
 )
 
 /**
- * The palette of a layer or the emblem (DM-15, ADR-0020): the offered built-in palettes, one that came
+ * The palette of a layer or the emblem (DM-15, ADR-0021): the offered built-in palettes, one that came
  * with the picture, the user's own ones with a plus to make one, and the editor for them in place, so
  * the picture above shows every change. `apply` sets index and own palette as they are given.
  */
@@ -132,6 +132,7 @@ internal fun PaletteGroup(
         val foreign = shown?.takeIf { it !in mine }
         if (foreign != null) {
             SubHeading(stringResource(R.string.controls_in_this_picture))
+            Swatch(foreign.toColorPalette(), selected = true) {}
             NameRow(foreign, stringResource(R.string.controls_palette_keep)) { vm.keepPalette(foreign) }
         }
         SubHeading(stringResource(R.string.controls_my_palettes))
