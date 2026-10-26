@@ -97,6 +97,18 @@ Since 23 October 2026 the listing exists in seven languages: English (default), 
 
 The Reddit and launch plan is [MKT-1](../MKT-1-reddit-and-launch-plan.md).
 
+## Release notes for 1.7.0 (code 13)
+
+Prepared 26 October 2026 on `main` after `android/scripts/check-full`. Changes since 1.6.0: UI in ten languages (ADR-0017, ADR-0019), home screen widget (ADR-0020), own palettes (ADR-0021), moving picture as MP4 and live wallpaper layers turning on their own (Pro, ADR-0014), calmer save sheet, Scene and Text tabs, and a Guide entry in the menu that opens the website guide.
+
+English:
+
+> Dahlia now speaks ten languages. New: a home screen widget with a mandala of the day, and your own palettes, also taken from a photo. With Pro, save a moving mandala as a video and let the live wallpaper turn its layers on their own. Saving, Scene and Text are calmer, and the menu links to the new guide.
+
+German:
+
+> Dahlia spricht jetzt zehn Sprachen. Neu: ein Widget für den Startbildschirm mit dem Mandala des Tages und eigene Paletten, auch aus einem Foto. Mit Pro speicherst du ein bewegtes Mandala als Video, und im Live-Hintergrund drehen sich die Ebenen auf Wunsch einzeln. Speichern, Szene und Text sind übersichtlicher, und das Menü führt zur neuen Anleitung.
+
 ## Release notes for 1.6.0 (code 12)
 
 **Submitted to production on 25 October 2026** through the API (`docs/store/play/play_release.py`), with a full rollout (`completed`). Google Play accepted and committed the release; a fresh API read verified code 12, both release notes and the uploaded bundle hash. Public store availability remains subject to Google's review and propagation. Public source tag: `android-v1.6.0` at `cbc4321f28ab37854435d637eb568a7413dd8a05`.
