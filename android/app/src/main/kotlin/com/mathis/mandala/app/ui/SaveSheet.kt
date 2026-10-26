@@ -372,23 +372,24 @@ private fun FrameWithFit(
     SubcomposeLayout(modifier.fillMaxWidth()) { constraints ->
         val maxW = constraints.maxWidth
         val maxH = constraints.maxHeight
-        val gap = Spacing.lg.roundToPx()
-        fun frameSize(height: Int, width: Int = maxW): Pair<Int, Int> {
+                fun frameSize(height: Int, width: Int = maxW): Pair<Int, Int> {
             val w = minOf(width.toFloat(), height / aspect).roundToInt().coerceAtLeast(0)
             return w to (w * aspect).roundToInt()
         }
-        // Tall frames (This screen, 9:16, 2:3) always keep the switch beside them, so it does not jump
-        // while "Adjust" opens; the frame gives up the room on both sides to stay centred.
+        // Tall frames (This screen, 9:16, 2:3) keep the switch in their lower right corner, over the
+        // picture (DM-18, Mathis): the frame stays centred and takes the whole height, and the switch
+        // does not jump while "Adjust" opens.
         val side = if (showFit && aspect >= SIDE_FIT_ASPECT) subcompose("side") { fit(true) }.map { it.measure(Constraints()) } else emptyList()
         val besides = side.isNotEmpty()
-        val (sideW, sideH) = frameSize(maxH, if (besides) maxW - 2 * (side.maxOf { it.width } + gap) else maxW)
+        val (sideW, sideH) = frameSize(maxH)
         if (!showFit || besides) {
             val shown = subcompose("frame", frame).map { it.measure(Constraints.fixed(sideW, sideH)) }
             val x = (maxW - sideW) / 2
             val y = (maxH - sideH) / 2
+            val inset = Spacing.sm.roundToPx()
             layout(maxW, maxH) {
                 shown.forEach { it.place(x, y) }
-                side.takeIf { besides }?.forEach { it.place(x + sideW + gap, y + sideH - it.height) }
+                side.takeIf { besides }?.forEach { it.place(x + sideW - it.width - inset, y + sideH - it.height - inset) }
             }
         } else {
             val below = subcompose("below") { fit(false) }.map { it.measure(Constraints(maxWidth = maxW)) }
@@ -405,12 +406,18 @@ private fun FrameWithFit(
     }
 }
 
-/** From this height over width on, Whole and Fill sit beside the frame instead of below it. */
+/** How much of the picture shows through the Whole and Fill switch lying over it. */
+private const val OVER_PICTURE_ALPHA = 0.85f
+
+/** From this height over width on, Whole and Fill sit in the frame's corner instead of below it. */
 private const val SIDE_FIT_ASPECT = 1.5f
 
 /** Whole or Fill as a small two-part switch, stacked beside a portrait frame or in a row below. */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun FitToggle(preset: Boolean?, vertical: Boolean, enabled: Boolean, onFill: (Boolean) -> Unit) {
+    // Stacked, it lies over the picture's corner, so it gets the sheet's colour behind it, a little see-through.
+    val over = vertical
     val t = LocalTokens.current
     val pill = RoundedCornerShape(percent = 50)
     val outer = if (vertical) RoundedCornerShape(Radius.md + Spacing.xs) else pill
@@ -432,6 +439,7 @@ private fun FitToggle(preset: Boolean?, vertical: Boolean, enabled: Boolean, onF
         }
     }
     val box = Modifier
+        .then(if (over) Modifier.clip(outer).background(BottomSheetDefaults.ContainerColor.copy(alpha = OVER_PICTURE_ALPHA)) else Modifier)
         .border(BorderStroke(OutlinedTextFieldDefaults.UnfocusedBorderThickness, t.outline), outer)
         .padding(Spacing.xs)
         .selectableGroup()
