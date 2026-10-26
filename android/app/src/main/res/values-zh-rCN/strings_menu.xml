@@ -112,4 +112,6 @@
     <string name="save_choose_size">选择尺寸</string>
     <string name="save_format">格式</string>
     <string name="save_save_pro">保存 · Pro</string>
+    <string name="save_adjust_pro_quote">亮度、对比度、饱和度以及随曼陀罗移动的引文需要 Pro。</string>
+    <string name="save_adjust_quote_moves">引文随之移动</string>
 </resources>

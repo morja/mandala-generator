@@ -114,4 +114,6 @@
     <string name="save_choose_size">Größe wählen</string>
     <string name="save_format">Format</string>
     <string name="save_save_pro">Speichern · Pro</string>
+    <string name="save_adjust_pro_quote">Helligkeit, Kontrast, Sättigung und das mitbewegte Zitat gibt es mit Pro.</string>
+    <string name="save_adjust_quote_moves">Zitat bewegt sich mit</string>
 </resources>
