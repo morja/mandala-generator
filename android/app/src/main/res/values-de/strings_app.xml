@@ -95,4 +95,11 @@
     <string name="pro_unavailable">Pro kann hier gerade nicht gekauft werden. Es wird über Google Play verkauft.</string>
     <string name="pro_unlocked">Danke! Pro ist freigeschaltet.</string>
     <string name="pro_pending">Der Kauf steht noch aus. Pro wird freigeschaltet, sobald er bezahlt ist.</string>
+    <string name="export_creating_video">Video wird erstellt</string>
+    <string name="export_saving_to_movies">In Movies speichern</string>
+    <string name="message_video_saved">Video %1$d × %2$d in Movies/%3$s gespeichert</string>
+    <string name="message_video_size">Dieses Handy kann kein Video in %1$d × %2$d erstellen; nimm die kleinere Größe.</string>
+    <string name="message_video_failed">Video konnte nicht erstellt werden: %1$s</string>
+    <string name="export_video_minutes">Video wird erstellt, noch etwa %1$d min</string>
+    <string name="export_video_under_minute">Video wird erstellt, noch knapp eine Minute</string>
 </resources>

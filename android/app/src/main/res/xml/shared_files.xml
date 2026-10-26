@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Images prepared for the share sheet (ImageShare). -->
+<!-- Images and videos prepared for the share sheet (ImageShare, VideoFiles). -->
 <paths>
     <cache-path name="shared" path="shared/" />
+    <cache-path name="video" path="video/" />
 </paths>

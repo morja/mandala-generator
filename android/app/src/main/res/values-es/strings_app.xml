@@ -97,4 +97,11 @@
     <string name="pro_unavailable">Ahora mismo no se puede comprar Pro aquí. Se vende a través de Google Play.</string>
     <string name="pro_unlocked">¡Gracias! Pro está desbloqueado.</string>
     <string name="pro_pending">La compra está pendiente. Pro se desbloquea cuando se complete el pago.</string>
+    <string name="export_creating_video">Creando el vídeo</string>
+    <string name="export_saving_to_movies">Guardando en Movies</string>
+    <string name="message_video_saved">Vídeo de %1$d × %2$d guardado en Movies/%3$s</string>
+    <string name="message_video_size">Este teléfono no puede crear un vídeo de %1$d × %2$d; prueba el tamaño menor.</string>
+    <string name="message_video_failed">No se pudo crear el vídeo: %1$s</string>
+    <string name="export_video_minutes">Creando el vídeo, quedan unos %1$d min</string>
+    <string name="export_video_under_minute">Creando el vídeo, queda menos de un minuto</string>
 </resources>

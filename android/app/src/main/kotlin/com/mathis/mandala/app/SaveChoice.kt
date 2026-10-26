@@ -12,6 +12,7 @@ import com.mathis.mandala.app.Editing.SaveFormat
 import com.mathis.mandala.core.Finish
 import com.mathis.mandala.core.Framing
 import com.mathis.mandala.core.Image8
+import com.mathis.mandala.core.LayerAnimation
 import kotlin.math.max
 import kotlin.math.min
 
@@ -28,6 +29,10 @@ data class SaveChoice(
     val homeBrightness: Double = DEFAULT_HOME_BRIGHTNESS,
     /** How the mandala sat in the other formats, so each keeps its own; `fit` and `framing` are this format's. */
     val placements: Map<SaveFormat, Placement> = emptyMap(),
+    /** Pro, a video of the layers turning (UX-1 12) instead of a picture. */
+    val moving: Boolean = false,
+    /** The video's length, one of [LayerAnimation.SECONDS]. */
+    val videoSeconds: Int = LayerAnimation.DEFAULT_SECONDS,
 ) {
     /** The same choice in another format, with the placement that format had last ("Whole" the first time). */
     fun withFormat(next: SaveFormat): SaveChoice {
@@ -88,7 +93,8 @@ class SaveChoiceStore(context: Context) {
                 ).clamped(),
             )
         }
-        return SaveChoice(format, framing, prefs.getBoolean(KEY_TEXT_FOLLOWS, false), fit, finish, home, placements)
+        val seconds = prefs.getInt(KEY_VIDEO_SECONDS, LayerAnimation.DEFAULT_SECONDS).takeIf { it in LayerAnimation.SECONDS } ?: LayerAnimation.DEFAULT_SECONDS
+        return SaveChoice(format, framing, prefs.getBoolean(KEY_TEXT_FOLLOWS, false), fit, finish, home, placements, prefs.getBoolean(KEY_MOVING, false), seconds)
     }
 
     fun save(choice: SaveChoice) = prefs.edit()
@@ -110,6 +116,8 @@ class SaveChoiceStore(context: Context) {
         .putFloat(KEY_CONTRAST, choice.finish.contrast.toFloat())
         .putFloat(KEY_SATURATION, choice.finish.saturation.toFloat())
         .putFloat(KEY_HOME_BRIGHTNESS, choice.homeBrightness.toFloat())
+        .putBoolean(KEY_MOVING, choice.moving)
+        .putInt(KEY_VIDEO_SECONDS, choice.videoSeconds)
         .apply()
 
     private companion object {
@@ -123,6 +131,8 @@ class SaveChoiceStore(context: Context) {
         const val KEY_CONTRAST = "finish_contrast"
         const val KEY_SATURATION = "finish_saturation"
         const val KEY_HOME_BRIGHTNESS = "home_brightness"
+        const val KEY_MOVING = "moving"
+        const val KEY_VIDEO_SECONDS = "video_seconds"
     }
 }
 

@@ -104,4 +104,11 @@
     <string name="about_privacy_policy">Datenschutzerklärung</string>
     <string name="about_libraries">Open-Source-Bibliotheken</string>
     <string name="about_full_text">Volltext</string>
+    <string name="save_still">Bild</string>
+    <string name="save_moving">Bewegt</string>
+    <string name="save_video_seconds">%1$d s</string>
+    <string name="save_video">Video speichern</string>
+    <string name="save_video_pro_label">Video speichern · Pro</string>
+    <string name="save_cancel">Abbrechen</string>
+    <string name="save_video_pro">Das sich drehende Mandala als Video speichern und teilen gibt es mit Pro.</string>
 </resources>

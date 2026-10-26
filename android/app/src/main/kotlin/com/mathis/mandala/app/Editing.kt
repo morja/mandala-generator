@@ -395,6 +395,28 @@ object Editing {
     fun exportSize(format: SaveFormat, screenAspect: Double, large: Boolean): Pair<Int, Int> =
         size(format, screenAspect, if (large) LARGE_EXPORT_SIZE else EXPORT_SIZE)
 
+    /** Shorter side of a video (UX-1 12), and with `large` of the larger one. */
+    const val VIDEO_SIZE = 720
+    const val LARGE_VIDEO_SIZE = 1080
+
+    /**
+     * Longest side of a video: what phones and the apps videos are shared to play everywhere, and what
+     * fits the memory budget with all five layers kept (MemoryBudgetTest).
+     */
+    const val MAX_VIDEO_SIDE = 1920
+
+    /** A video's size in a format: 720 or 1080 on the shorter side, at most 1920 on the longer one, both even. */
+    fun videoSize(format: SaveFormat, screenAspect: Double, large: Boolean): Pair<Int, Int> {
+        val (w, h) = size(format, screenAspect, if (large) LARGE_VIDEO_SIZE else VIDEO_SIZE)
+        val scale = minOf(1.0, MAX_VIDEO_SIDE.toDouble() / maxOf(w, h))
+        fun even(x: Int) = (Math.round(x * scale / 2.0) * 2).toInt()
+        return even(w) to even(h)
+    }
+
+    /** File name of a video, with its size and length. */
+    fun videoFileName(params: MandalaParameters, width: Int, height: Int, seconds: Int): String =
+        fileName(params).removeSuffix(".png") + "-${width}x$height-${seconds}s.mp4"
+
     /** File name with the size added for anything but the normal square. */
     fun fileName(params: MandalaParameters, width: Int, height: Int): String {
         val name = fileName(params)

@@ -88,6 +88,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.LaunchedEffect
@@ -125,6 +127,13 @@ fun EditorScreen(
     val preview by vm.preview.collectAsStateWithLifecycle()
     val busy by vm.busy.collectAsStateWithLifecycle()
     val export by vm.export.collectAsStateWithLifecycle()
+    val makingVideo by vm.makingVideo.collectAsStateWithLifecycle()
+    // A video takes minutes; the screen stays on so the phone does not sleep in the middle of it.
+    val view = LocalView.current
+    DisposableEffect(makingVideo) {
+        view.keepScreenOn = makingVideo
+        onDispose { view.keepScreenOn = false }
+    }
     val selected by vm.selected.collectAsStateWithLifecycle()
     val favorites by vm.favorites.collectAsStateWithLifecycle()
     val drawTool by vm.drawTool.collectAsStateWithLifecycle()
@@ -189,7 +198,7 @@ fun EditorScreen(
                 }
                 is EditorEvent.ShareImage -> {
                     val send = Intent(Intent.ACTION_SEND)
-                        .setType("image/png")
+                        .setType(event.type)
                         .putExtra(Intent.EXTRA_STREAM, event.uri)
                         .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                     context.startActivity(Intent.createChooser(send, null))
@@ -223,6 +232,11 @@ fun EditorScreen(
             onShowPro = vm::showPro,
             onDismiss = { showSave = false },
             snackbar = snackbar,
+            makingVideo = makingVideo,
+            onMoving = vm::setMoving,
+            onVideoSeconds = vm::setVideoSeconds,
+            onSaveVideo = vm::saveVideo,
+            onCancelVideo = vm::cancelVideo,
         )
     }
     if (showPair) {

@@ -79,6 +79,7 @@ import com.mathis.mandala.app.ui.theme.Sizes
 import com.mathis.mandala.app.ui.theme.Spacing
 import com.mathis.mandala.core.Finish
 import com.mathis.mandala.core.Framing
+import com.mathis.mandala.core.LayerAnimation
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
@@ -86,7 +87,8 @@ import kotlin.math.roundToInt
  * Saving in a format (ADR-0010, laid out as DM-11 A, without scrolling): format, the mandala placed in the frame (Pro)
  * with Whole or Fill beside it, the finish folded into "Adjust", and whether the quote follows. Size, Save
  * and Wallpaper stay at the bottom. The line drawing (ADR-0013) has its own page in the menu, since none of
- * this applies to it. Each format keeps its own placement.
+ * this applies to it. Each format keeps its own placement. "Moving" (UX-1 12, DM-16 A) keeps all of this,
+ * turns the layers in the frame as the video will, and offers the length, Share and Save video instead.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -112,13 +114,19 @@ internal fun SaveSheet(
     onShowPro: () -> Unit,
     onDismiss: () -> Unit,
     snackbar: SnackbarHostState,
+    makingVideo: Boolean = false,
+    onMoving: (Boolean) -> Unit = {},
+    onVideoSeconds: (Int) -> Unit = {},
+    onSaveVideo: (large: Boolean, share: Boolean) -> Unit = { _, _ -> },
+    onCancelVideo: () -> Unit = {},
 ) {
     val t = LocalTokens.current
     val aspect = Editing.aspect(choice.format, screenAspect)
     // The preset the frame is on; none once a Pro user has moved or zoomed by hand.
     val preset = when (choice.fit) { Fit.WHOLE -> false; Fit.FILL -> true; Fit.HAND -> if (proOwned) null else false }
-    val (w, h) = Editing.exportSize(choice.format, screenAspect, large = false)
-    val (lw, lh) = Editing.exportSize(choice.format, screenAspect, large = true)
+    val moving = choice.moving
+    val (w, h) = if (moving) Editing.videoSize(choice.format, screenAspect, large = false) else Editing.exportSize(choice.format, screenAspect, large = false)
+    val (lw, lh) = if (moving) Editing.videoSize(choice.format, screenAspect, large = true) else Editing.exportSize(choice.format, screenAspect, large = true)
     var large by rememberSaveable { mutableStateOf(false) }
     ModalBottomSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
       // Messages ("Saved …") show inside the sheet while it is open; behind it they would be hidden.
@@ -132,6 +140,7 @@ internal fun SaveSheet(
                 verticalArrangement = Arrangement.spacedBy(Spacing.md),
             ) {
                 Text(stringResource(R.string.save_title), style = MaterialTheme.typography.titleMedium)
+                MovingRow(moving, enabled = !busy, onMoving)
                 FormatRow(choice.format, onFormat)
                 FrameWithFit(
                     aspect = aspect.toFloat(),
@@ -190,6 +199,7 @@ internal fun SaveSheet(
                         FinishControls(choice.finish, proOwned, enabled = !busy, onFinish = onFinish, onShowPro = onShowPro)
                     }
                 }
+                if (moving) LengthRow(choice.videoSeconds, enabled = !busy, onVideoSeconds)
                 if (hasQuote) SwitchRow(stringResource(R.string.save_quote_follows), choice.textFollowsMandala, onTextFollows)
             }
             HorizontalDivider(color = t.outline)
@@ -213,7 +223,19 @@ internal fun SaveSheet(
                         icon = {},
                     ) { Text(stringResource(if (proOwned) R.string.save_size else R.string.save_size_pro, lw, lh), maxLines = 1, overflow = TextOverflow.Ellipsis) }
                 }
-                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+                if (moving) Row(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+                    // A video goes mostly straight to a story or status, so Share takes the wallpaper's place.
+                    if (makingVideo) {
+                        OutlinedButton(colors = outlinedColors(), onClick = onCancelVideo, modifier = Modifier.weight(1f)) { Text(stringResource(R.string.save_cancel)) }
+                    } else {
+                        OutlinedButton(colors = outlinedColors(), onClick = { onSaveVideo(large && proOwned, true) }, enabled = !busy, modifier = Modifier.weight(1f)) {
+                            Text(stringResource(R.string.action_share), maxLines = 1)
+                        }
+                    }
+                    Button(onClick = { onSaveVideo(large && proOwned, false) }, enabled = !busy, modifier = Modifier.weight(1f)) {
+                        Text(stringResource(if (proOwned) R.string.save_video else R.string.save_video_pro_label), maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    }
+                } else Row(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
                     // A wallpaper fills the screen, so it is set in the phone screen format; the frame shows it first.
                     WallpaperButton(
                         enabled = !busy,
@@ -232,6 +254,32 @@ internal fun SaveSheet(
         // Above the frame and buttons, which may be scrolled away; the same place as messages.
         if (export != null) ExportNote(export, Modifier.align(Alignment.TopCenter)) else MessageHost(snackbar, Modifier.align(Alignment.TopCenter))
       }
+    }
+}
+
+/** A picture, or the layers turning as a video (UX-1 12). */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun MovingRow(moving: Boolean, enabled: Boolean, onMoving: (Boolean) -> Unit) {
+    SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
+        for ((i, pair) in listOf(R.string.save_still to false, R.string.save_moving to true).withIndex()) {
+            SegmentedButton(selected = moving == pair.second, onClick = { onMoving(pair.second) }, shape = SegmentedButtonDefaults.itemShape(i, 2), enabled = enabled, icon = {}) {
+                Text(stringResource(pair.first), maxLines = 1)
+            }
+        }
+    }
+}
+
+/** The video's length; a longer one turns more calmly. */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun LengthRow(seconds: Int, enabled: Boolean, onSeconds: (Int) -> Unit) {
+    SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
+        for ((i, s) in LayerAnimation.SECONDS.withIndex()) {
+            SegmentedButton(selected = seconds == s, onClick = { onSeconds(s) }, shape = SegmentedButtonDefaults.itemShape(i, LayerAnimation.SECONDS.size), enabled = enabled, icon = {}) {
+                Text(stringResource(R.string.save_video_seconds, s), maxLines = 1)
+            }
+        }
     }
 }
 

@@ -53,47 +53,61 @@ internal class TextLayer(private val par: Parallel, private val renderer: TextRe
 
     private class Block(val quote: List<PlacedLine>, val author: List<PlacedLine>, val centreX: Float, val centreYDown: Float, val fontSize: Float)
 
-    fun apply(image: Image8, s: TextLayerSettings, frame: TextFrame): Image8 {
+    /**
+     * `still`: kept parts of an animation's frames; the text's masks (cloud, shadow, letters, glow and
+     * light) are made once there, and each frame only blends them.
+     */
+    fun apply(image: Image8, s: TextLayerSettings, frame: TextFrame, still: MutableMap<String, Any>? = null): Image8 {
         val w = image.width
         val h = image.height
         val size = frame.scale
         val block = layout(s, frame, 0f, 0f)
         var out = image
+        fun kept(name: String, make: () -> FloatArray): FloatArray {
+            if (still == null) return make()
+            val rows = still.getOrPut("text.$name") { KeptRows(w, h, 1).also { k -> val m = make(); for (y in 0 until h) k.write(y, m.copyOfRange(y * w, y * w + w)) } } as KeptRows
+            return FloatArray(w * h).also { m -> val row = FloatArray(w); for (y in 0 until h) { rows.read(y, row); System.arraycopy(row, 0, m, y * w, w) } }
+        }
 
         if (s.cloudOpacity > 0.01) {
             val textHalf = block.fontSize * 0.8f
             val fullRadius = size * 0.78f
             val circR = textHalf + s.cloudScale.toFloat() * (fullRadius - textHalf)
-            val mask = FloatArray(w * h)
-            // Solid to half the radius, then fading to nothing at the edge (NSGradient stops 0, 0.5, 1).
-            for (y in 0 until h) for (x in 0 until w) {
-                val dx = x + 0.5f - block.centreX
-                val dy = y + 0.5f - block.centreYDown
-                val t = sqrt(dx * dx + dy * dy) / circR
-                mask[y * w + x] = when {
-                    t <= 0.5f -> 1f
-                    t >= 1f -> 0f
-                    else -> 1f - (t - 0.5f) / 0.5f
-                } * s.cloudOpacity.toFloat()
+            val mask = kept("cloud") {
+                val mask = FloatArray(w * h)
+                // Solid to half the radius, then fading to nothing at the edge (NSGradient stops 0, 0.5, 1).
+                for (y in 0 until h) for (x in 0 until w) {
+                    val dx = x + 0.5f - block.centreX
+                    val dy = y + 0.5f - block.centreYDown
+                    val t = sqrt(dx * dx + dy * dy) / circR
+                    mask[y * w + x] = when {
+                        t <= 0.5f -> 1f
+                        t >= 1f -> 0f
+                        else -> 1f - (t - 0.5f) / 0.5f
+                    } * s.cloudOpacity.toFloat()
+                }
+                MaskBlur.blur(mask, w, h, (circR * s.cloudRadius.toFloat() * 0.35f + block.fontSize * 0.3f).toDouble(), par)
+                mask
             }
-            MaskBlur.blur(mask, w, h, (circR * s.cloudRadius.toFloat() * 0.35f + block.fontSize * 0.3f).toDouble(), par)
             out = sourceOver(out, mask, hsbColour(s.cloudHue, s.cloudSaturation, s.cloudBrightness))
         }
 
         if (s.shadowOpacity > 0.01) {
             val offX = (s.shadowOffsetX * block.fontSize * 0.75).toFloat()
             val offY = (s.shadowOffsetY * block.fontSize * 0.75).toFloat()
-            val shadow = layout(s, frame, offX, -offY)
-            val mask = renderer.drawLines(w, h, shadow.quote + shadow.author)
-            MaskBlur.blur(mask, w, h, max(0.5, s.shadowBlur * block.fontSize * 0.4), par)
+            val mask = kept("shadow") {
+                val shadow = layout(s, frame, offX, -offY)
+                renderer.drawLines(w, h, shadow.quote + shadow.author).also { MaskBlur.blur(it, w, h, max(0.5, s.shadowBlur * block.fontSize * 0.4), par) }
+            }
             val colour = hsbColour(s.shadowHue, s.shadowSaturation, s.shadowBrightness)
             repeat(max(1, (s.shadowOpacity * 4 + 0.5).toInt())) { out = sourceOver(out, mask, colour) }
         }
 
-        val text = renderer.drawLines(w, h, block.quote + block.author)
-        if (s.blur > 0.005) MaskBlur.blur(text, w, h, s.blur * s.blur * size * 0.025, par)
+        val text = kept("letters") {
+            renderer.drawLines(w, h, block.quote + block.author).also { if (s.blur > 0.005) MaskBlur.blur(it, w, h, s.blur * s.blur * size * 0.025, par) }
+        }
         var glow: FloatArray? = null
-        if (s.glow > 0.005) {
+        if (s.glow > 0.005) glow = kept("glow") {
             // Glow radii are given at a 1600 px reference width.
             val g = FloatArray(w * h)
             val k = size / 1600.0
@@ -106,7 +120,7 @@ internal class TextLayer(private val par: Parallel, private val renderer: TextRe
                 val st = strength.toFloat()
                 for (i in g.indices) g[i] += pass[i] * st
             }
-            glow = g
+            g
         }
         val colour = hsbColour(s.hue, s.saturation, min(1.0, s.brightness))
         val boost = if (s.brightness > 1.005) s.brightness.toFloat() else 1f
@@ -116,15 +130,18 @@ internal class TextLayer(private val par: Parallel, private val renderer: TextRe
         // Glow above 1: the two wide passes of the glow at 1 as light, growing from nothing at 1
         // (macOS textGlowLightPasses). The macOS light source is the boosted text with its glow at 1
         // as an 8-bit image, so the boost saturates at white.
-        val source = FloatArray(w * h) { val ta = text[it].coerceIn(0f, 1f); val ga = glow?.get(it) ?: 0f; (ta + ga - ta * ga).coerceIn(0f, 1f) }
-        val light = FloatArray(w * h)
-        val k = size / 1600.0
-        val gain = (s.glow - 1) * opacity
-        for ((radius, strength) in listOf(105.0 to 0.75 * gain, 210.0 to 0.3 * gain)) {
-            val pass = source.copyOf()
-            MaskBlur.blur(pass, w, h, radius * k, par)
-            val st = strength.toFloat()
-            for (i in light.indices) light[i] += pass[i] * st
+        val light = kept("light") {
+            val source = FloatArray(w * h) { val ta = text[it].coerceIn(0f, 1f); val ga = glow?.get(it) ?: 0f; (ta + ga - ta * ga).coerceIn(0f, 1f) }
+            val light = FloatArray(w * h)
+            val k = size / 1600.0
+            val gain = (s.glow - 1) * opacity
+            for ((radius, strength) in listOf(105.0 to 0.75 * gain, 210.0 to 0.3 * gain)) {
+                val pass = source.copyOf()
+                MaskBlur.blur(pass, w, h, radius * k, par)
+                val st = strength.toFloat()
+                for (i in light.indices) light[i] += pass[i] * st
+            }
+            light
         }
         val lightColour = FloatArray(3) { min(1f, colour[it] * boost) }
         return mapPixels(blended) { p, c ->

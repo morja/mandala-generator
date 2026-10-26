@@ -2,7 +2,7 @@
 
 Mandala Generator for Android: a port of the macOS app in `../mac`. These rules add to the repository rules in `../AGENTS.md`; paths here are relative to `android/`. Reasons and details are in `../docs/adr/`. Read the affected ADRs before building; do not reinvent decisions already made.
 
-- **Kotlin, native Android with Jetpack Compose** for the app (ADR-0001), module `app`, minSdk 29 (ADR-0005). The app holds no rendering or file-format logic: editing rules in `Editing.kt`, state in `EditorViewModel`, rendering in `core`.
+- **Kotlin, native Android with Jetpack Compose** for the app (ADR-0001), module `app`, minSdk 29 (ADR-0005). The app holds no rendering or file-format logic: editing rules in `Editing.kt`, state in `EditorViewModel`, rendering in `core`. One exception: the moving picture's MP4, written with Android's `MediaCodec` and `MediaMuxer` in `VideoExport.kt` (ADR-0010 point 10).
 - **Renderer in `core`, plain Kotlin:** no `android.*`, `java.awt`, `javax.*` or coroutines there; only Kotlin stdlib, `java.util.concurrent` and kotlinx.serialization. The JVM command and the Android app call `core`; rendering logic lives nowhere else (ADR-0002). Enforced by `ArchitectureTest`.
 - **Memory budget:** a 1024 px export of the worst case the app allows (five heavy layers) must render within 256 MB of heap (`MemoryBudgetTest`). Intermediates are 8-bit `Image8`; no full-size float copies or per-thread buffers (ADR-0002).
 - **Settings JSON stays compatible with the macOS app:** same field names, same defaults, unknown values fall back like the Swift decoders, unknown fields are ignored, unported layers are kept as raw JSON (ADR-0003).

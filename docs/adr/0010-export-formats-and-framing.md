@@ -21,6 +21,8 @@ Status: accepted, 20 October 2026 (Mathis' decisions; points 1 to 3 first, the r
 
 Formats offered: **Square**, **This screen** (aspect ratio of the device's screen, taller side over shorter, at most 21:9; the format for wallpapers) and, in a menu "Other ratio", portrait **4:5, 3:4, 2:3, 9:16** and landscape **5:4, 4:3, 3:2, 16:9** (added 22 October 2026 at Mathis' request). The mandala fits the canvas's shorter side, so square and portrait are unchanged and a landscape canvas extends to the sides. More can follow without a new decision.
 
+10. **Moving picture** (26 October 2026, Mathis, UX-1 12, DM-16 A, Pro per ADR-0016). The save sheet switches between "Picture" and "Moving"; the moving picture keeps format, framing, finish and the text choice. The layers turn against each other as in the macOS animation export (first, third and fifth one way, the others the other way), each one whole turn per loop, so the loop has no jump; background, emblem and text stand still. Lengths 5, 10 or 15 s at 24 frames a second; 720 or 1080 px on the shorter side, at most 1920 on the longer one (players and the apps videos are shared to, and the memory budget with five kept layers), drawn without supersampling like the Pro picture. File: H.264 in MP4, BT.709 limited range, written with Android's own `MediaCodec` and `MediaMuxer` (no package); the encoder and the file live in the app, the colour conversion in `core` (`VideoFrames`). This is the one file format the app writes itself, an exception to `android/AGENTS.md` approved with the decision. GIF and the macOS app's MOV are not offered for now.
+
 ## How it is built
 
 - `RenderOptions` has a canvas (`width`, `height`), a `Framing` (`centreX`, `centreY` as fractions of the canvas, `zoom` relative to "fits the shorter side", clamped to 0.25–4 with the centre inside the frame) and `textFollowsMandala`. `outputSize` stays as the square shortcut.
@@ -32,6 +34,8 @@ Formats offered: **Square**, **This screen** (aspect ratio of the device's scree
 - Backgrounds take width and height. Radial ones (radial gradient, sunburst, auto) stay round and sit at the mandala's centre; radial gradient and sunburst measure their radius on the canvas's shorter side, the auto background on the mandala's square; a linear gradient runs edge to edge; an image is stretched to the square of the longer side and its middle is used. In the effects layer, spots, highlights, stars and glitter spread over the whole canvas and their number grows with its area.
 - The text layer is laid out in a frame: the canvas (font size from the shorter side, vertical position from the height) or the mandala's square. The platform text renderer draws masks of width × height.
 - Memory: the budget rule (ADR-0002, `MemoryBudgetTest`) holds for the Pro portrait 2048 × 4437 zoomed in to 4 and the free portrait 1024 × 2219, and for the Pro landscape 3641 × 2048 zoomed in to 4.
+
+- **Moving picture:** each layer is drawn once as a turning layer and kept with its image before turning (`LayerCache`, `RenderOptions.turningLayers`), cut to what can turn onto the canvas; what stands still (background, drawing layer, emblem, text masks, stars and glitter) is kept too. A frame then only turns and blends the layers and runs the effects chain, so it equals a render of that frame (the kept glows of emblem and text are 16-bit fixed point, at most one step of 255 off, `LayerAnimationTest`).
 
 ## Reasons
 

@@ -19,7 +19,18 @@ import kotlin.math.sqrt
  */
 internal class EmblemLayer(private val par: Parallel, private val fx: LayerEffects) {
 
-    fun apply(base: Image8, s: EmblemLayerSettings, palettes: List<ColorPalette>, place: Placement): Image8 {
+    /** The emblem's mask, colour and glow, made once for all frames of an animation. */
+    private class Drawn(
+        val area: IntArray, val mask: ByteArray, val colour: ColourSource, val glowAlpha: ByteArray?,
+        /** The glow at canvas size, as fixed point (see [KeptRows]), or null for none. */
+        val glow: KeptRows?,
+    )
+
+    /** `still`: kept parts of an animation's frames; the emblem is drawn once and only blended in each frame. */
+    fun apply(base: Image8, s: EmblemLayerSettings, palettes: List<ColorPalette>, place: Placement, still: MutableMap<String, Any>? = null): Image8 {
+        val kept = still?.get("emblem") as? Drawn
+        if (kept != null) return blend(base, s, kept.area, kept.mask, kept.colour, kept.glowAlpha, kept.glow?.let { g -> { y, out -> g.read(y, out) } }, null)
+
         // The emblem belongs to the mandala: it is sized by the mandala's square and drawn around
         // its centre, on the part of the canvas it and its glow can reach (all of it by default).
         val size = place.size
@@ -63,7 +74,27 @@ internal class EmblemLayer(private val par: Parallel, private val fx: LayerEffec
             null
         }
         val glow = passes?.let { fx.referenceBlurOverlay(colour, size, it) }
+        if (still != null) {
+            val rows = glow?.let { g -> KeptRows(w, h).also { k -> Filters.resampleRows(g.asRowSource(), w, h, par) { y, row -> k.write(y, row) } } }
+            val drawn = Drawn(area, mask, colour, glowAlpha, rows)
+            still["emblem"] = drawn
+            return apply(base, s, palettes, place, still)
+        }
+        return blend(base, s, area, mask, colour, glowAlpha, null, glow)
+    }
 
+    /**
+     * Blends the emblem into `base`: its glow either kept at canvas size (`keptGlow`) or at reference
+     * size (`glow`), resampled row by row.
+     */
+    private fun blend(
+        base: Image8, s: EmblemLayerSettings, area: IntArray, mask: ByteArray, colour: ColourSource, glowAlpha: ByteArray?,
+        keptGlow: ((Int, FloatArray) -> Unit)?, glow: FloatImage?,
+    ): Image8 {
+        val w = area[2] - area[0]
+        val h = area[3] - area[1]
+        val light = s.glowMode == EmblemGlowMode.LIGHT && s.blendMode != LayerBlendMode.MULTIPLY
+        val op = s.blendMode
         val fade = if (s.opacity < 0.999) s.opacity.coerceIn(0.0, 1.0).toFloat() else 1f
         val canvasW = base.width
         val out = if (base.encoding == Encoding.SRGB) base else Image8(canvasW, base.height, Encoding.SRGB)
@@ -101,7 +132,15 @@ internal class EmblemLayer(private val par: Parallel, private val fx: LayerEffec
             }
             WorkingSpace.writeRow(row, out, y + area[1])
         }
-        if (glow != null) {
+        if (keptGlow != null) {
+            par.forRange(h) { from, until ->
+                val over = FloatArray(w * 3)
+                for (y in from until until) {
+                    keptGlow(y, over)
+                    blendRow(y, over)
+                }
+            }
+        } else if (glow != null) {
             Filters.resampleRows(glow.asRowSource(), w, h, par) { y, over -> blendRow(y, over) }
         } else {
             par.forRange(h) { from, until -> for (y in from until until) blendRow(y, null) }

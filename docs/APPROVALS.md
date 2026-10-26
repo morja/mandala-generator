@@ -15,6 +15,8 @@ Format: `- **What** · What for and why · Alternative without approval · Recom
 
 ## Approved
 
+26 October 2026 (Mathis, DM-16 "as recommended"): animation export on Android as a Pro "Moving" mode in the save sheet, layers turning against each other with kept layer images, MP4 only for now; the app writes MP4 itself with `MediaCodec` and `MediaMuxer` (an exception to "the app holds no file-format logic"), no new package. ADR-0010 point 10, ADR-0016 point 4.
+
 22 October 2026 (Mathis, PLAN-5 question by question): ADR-0016, one line between free and Pro for Android and iPhone (two layers, effects free, emblems, text and positions Pro, five favourites, try freely and keep with Pro), 2.99 € on both; Android 1.4 is the first public version.
 
 22 October 2026 (Mathis, PLAN-3): ADR-0014, more for Pro (finish, wallpaper pair, daily and live wallpaper); the permission `RECEIVE_BOOT_COMPLETED` and a `WallpaperService` with `BIND_WALLPAPER` in the manifest.

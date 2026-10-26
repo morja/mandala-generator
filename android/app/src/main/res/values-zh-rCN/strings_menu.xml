@@ -102,4 +102,11 @@
     <string name="about_privacy_policy">隐私政策</string>
     <string name="about_libraries">开源库</string>
     <string name="about_full_text">全文</string>
+    <string name="save_still">图片</string>
+    <string name="save_moving">动态</string>
+    <string name="save_video_seconds">%1$d 秒</string>
+    <string name="save_video">保存视频</string>
+    <string name="save_video_pro_label">保存视频 · Pro</string>
+    <string name="save_cancel">取消</string>
+    <string name="save_video_pro">将旋转的曼陀罗保存并分享为视频需要 Pro。</string>
 </resources>
