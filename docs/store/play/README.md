@@ -1,5 +1,11 @@
 # Play Console tools
 
+## Release order
+
+Before a Play release, merge the completed changes into `main`, verify the integrated source with the required checks and push `main`. Build the signed bundle from that verified `main` commit, then create its source tag and upload the bundle. Do not release an unmerged feature branch. An explicit release request authorizes the prerequisite merge and push; it does not permit skipping checks. This order was requested by Mathis on 26 October 2026 and also applies to macOS releases (see `AGENTS.md`).
+
+## Tools
+
 Small scripts for the Google Play Developer API, used for the listing of `one.tearoom.mandala`. They need the service account key at `~/.keystore/google-keys.json` and Python 3 without extra packages (the JWT is signed with `openssl`). Run them with the folder as the first argument, from anywhere:
 
 ```
