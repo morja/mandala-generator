@@ -93,6 +93,13 @@
     <string name="pro_unavailable">目前无法在此购买 Pro。Pro 通过 Google Play 销售。</string>
     <string name="pro_unlocked">谢谢！Pro 已解锁。</string>
     <string name="pro_pending">购买正在处理中。付款完成后即可解锁 Pro。</string>
+    <string name="export_creating_video">正在创建视频</string>
+    <string name="export_saving_to_movies">正在保存到 Movies</string>
+    <string name="message_video_saved">已将 %1$d × %2$d 视频保存到 Movies/%3$s</string>
+    <string name="message_video_size">此手机无法创建 %1$d × %2$d 的视频，请尝试较小的尺寸。</string>
+    <string name="message_video_failed">无法创建视频：%1$s</string>
+    <string name="export_video_minutes">正在创建视频，约剩 %1$d 分钟</string>
+    <string name="export_video_under_minute">正在创建视频，剩余不到 1 分钟</string>
     <!-- Home screen widget (ADR-0020) -->
     <string name="widget_label">今日曼陀罗</string>
     <string name="widget_description">把今天的收藏放到主屏幕。方形只显示图片，宽版同时显示文字。Pro 每天早上换一个。</string>

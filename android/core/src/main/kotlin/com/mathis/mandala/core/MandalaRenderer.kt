@@ -54,6 +54,11 @@ data class RenderOptions(
     val glowReferenceWidth: Int = 1600,
     /** A last adjustment of the finished image (ADR-0014); the default leaves it untouched. */
     val finish: Finish = Finish(),
+    /**
+     * Every layer is drawn as a rotated one, even at rotation 0, so its kept image (`layerCache`) can be
+     * turned to any angle: the frames of an animation then only turn and blend the layers ([LayerAnimation]).
+     */
+    val turningLayers: Boolean = false,
 )
 
 fun interface ImageLoader {
@@ -105,7 +110,18 @@ object MandalaRenderer {
             if (base.isEnabled && base.type != BaseLayerType.COLOR && !Background.supports(base.type)) {
                 warnings += "Background \"${base.type.name.lowercase()}\" is not available yet; drawn black."
             }
-            var composite = if (base.isEnabled && base.type == BaseLayerType.AUTO) {
+            // An animation keeps what does not turn, so its frames only turn and blend the layers.
+            val still: MutableMap<String, Any>? = if (options.turningLayers && options.layerCache != null) {
+                options.layerCache.still(
+                    listOf(
+                        params.copy(layers = params.layers.map { it.copy(rotation = 0.0) }), palettes, bufW, bufH, options.framing,
+                        options.textFollowsMandala, options.glowReferenceWidth, options.imageLoader, options.textRenderer,
+                    ),
+                )
+            } else {
+                null
+            }
+            fun background(): Image8 = if (base.isEnabled && base.type == BaseLayerType.AUTO) {
                 Background.renderAuto(params, palettes, bufW, bufH, place.centreX, place.centreY, mandalaSize, par)
             } else if (base.isEnabled && base.type == BaseLayerType.IMAGE) {
                 val picture = base.imageURL?.let { url -> options.imageLoader?.load(url, max(bufW, bufH)) }
@@ -116,6 +132,8 @@ object MandalaRenderer {
             } else {
                 Image8(bufW, bufH, Encoding.SRGB)
             }
+            // Layers are blended into the background in place, so a frame gets a copy of the kept one.
+            var composite = if (still != null) (still.getOrPut("background", ::background) as Image8).copy() else background()
             val solidBackground = if (base.isEnabled && base.type == BaseLayerType.COLOR) solidColor(base) else null
             val graffiti = params.graffitiLayer.isEnabled && params.graffitiLayer.strokes.isNotEmpty()
             val drawing = params.drawingLayer.isEnabled && params.drawingLayer.strokes.isNotEmpty()
@@ -154,15 +172,17 @@ object MandalaRenderer {
                     LayerBlendMode.NORMAL -> BlendOp.LIGHTEN
                     LayerBlendMode.MULTIPLY -> BlendOp.MULTIPLY
                 }
+                val rotated = options.turningLayers || abs(layer.rotation) > 0.001
+                // The kept image is the one before turning and fading, so those two need no new drawing.
                 val cacheKey = cache?.let {
                     LayerCache.Key(
-                        layer, if (layer.seed == 0uL) li else -1, params.seed, palette,
+                        layer.copy(rotation = 0.0, opacity = 1.0), rotated, if (layer.seed == 0uL) li else -1, params.seed, palette,
                         bufW, bufH, place.centreX, place.centreY, mandalaSize, options.glowReferenceWidth,
                     )
                 }
                 val cached = cacheKey?.let { cache.get(it) }
                 if (cached != null) {
-                    composite = fx.composite(composite, cached.image, op, cached.x0, cached.y0)
+                    composite = blendLayer(fx, composite, cached.image, cached.x0, cached.y0, op, layer, rotated, cached.cx, cached.cy, kept = true)
                     continue
                 }
                 val layerSeed = if (layer.seed == 0uL) {
@@ -181,7 +201,6 @@ object MandalaRenderer {
                 // from just outside the frame still bleeds in. Size-dependent effects use effectWidth.
                 val raw = ceil(layerRadius * 2.0).toInt() + 8
                 val effectWidth = max(mandalaSize, if (raw % 2 == 0) raw else raw + 1)
-                val rotated = abs(layer.rotation) > 0.001
                 val margin = effectMargin(layer, effectWidth)
                 // A moved layer shows parts beyond the centred square, so it gets the full one (ADR-0011).
                 val moved = layer.offsetX != 0.0 || layer.offsetY != 0.0
@@ -219,7 +238,8 @@ object MandalaRenderer {
                 val sy0 = lYi - (size - bufH) / 2
                 var view = when {
                     !rotated -> intArrayOf(max(sx0, -margin), max(sy0, -margin), min(sx0 + size, bufW + margin), min(sy0 + size, bufH + margin))
-                    size <= 2 * max(bufW, bufH) -> intArrayOf(sx0, sy0, sx0 + size, sy0 + size)
+                    // Turning layers are kept for every frame of an animation, so they hold only what can turn into view.
+                    size <= 2 * max(bufW, bufH) && !options.turningLayers -> intArrayOf(sx0, sy0, sx0 + size, sy0 + size)
                     else -> {
                         val reach = farthestCorner(layerCentreX, layerCentreY, bufW, bufH, margin)
                         intArrayOf(
@@ -290,11 +310,26 @@ object MandalaRenderer {
                 progress.layer(n, RenderProgress.PAINTED)
                 checkpoint()
                 img = fx.colourGrade(img, layer.saturation, layer.brightness)
-                if (rotated) img = fx.rotate(img, layer.rotation * Math.PI * 2, cx, cy)
-                if (layer.opacity < 0.999) img = fx.opacity(img, layer.opacity)
-                // Blending reads the layer image without changing it, so it can be kept.
-                if (cacheKey != null) cache.put(cacheKey, LayerCache.Entry(img, view[0], view[1]))
-                composite = fx.composite(composite, img, op, view[0], view[1])
+                var turnX = cx
+                var turnY = cy
+                if (options.turningLayers) {
+                    // Kept for every frame of an animation: only what can turn onto the canvas, without the
+                    // margin the effects needed (the light from there is in the image now).
+                    val reach = farthestCorner(layerCentreX, layerCentreY, bufW, bufH, 0) + 2
+                    val keep = intArrayOf(
+                        max(view[0], floor(layerCentreX - reach).toInt()), max(view[1], floor(layerCentreY - reach).toInt()),
+                        min(view[2], ceil(layerCentreX + reach).toInt()), min(view[3], ceil(layerCentreY + reach).toInt()),
+                    )
+                    if (!keep.contentEquals(view) && keep[2] > keep[0] && keep[3] > keep[1]) {
+                        img = Filters.crop(img, keep[0] - view[0], keep[1] - view[1], keep[2] - keep[0], keep[3] - keep[1])
+                        turnX -= keep[0] - view[0]
+                        turnY -= keep[1] - view[1]
+                        view = keep
+                    }
+                }
+                System.err.println("DBG layer $li size=$size view=${img.width}x${img.height} mandala=$mandalaSize margin=$margin used=${(Runtime.getRuntime().totalMemory()-Runtime.getRuntime().freeMemory())/1048576}")
+                if (cacheKey != null) cache.put(cacheKey, LayerCache.Entry(img, view[0], view[1], turnX, turnY))
+                composite = blendLayer(fx, composite, img, view[0], view[1], op, layer, rotated, turnX, turnY, kept = cacheKey != null)
             }
             progress.layer(layerNo, 0.0)
             cache?.finish()
@@ -308,7 +343,7 @@ object MandalaRenderer {
             }
             if (drawing) {
                 checkpoint()
-                composite = hand.drawing(composite, params.drawingLayer, place)
+                composite = hand.drawing(composite, params.drawingLayer, place, still)
                 progress.above(RenderProgress.HAND_LAYER)
             }
 
@@ -324,7 +359,7 @@ object MandalaRenderer {
             fun applyEffects() {
                 if (!effects.isEnabled) return
                 checkpoint()
-                composite = EffectsLayer(par, fx).apply(composite, effects)
+                composite = EffectsLayer(par, fx).apply(composite, effects, still)
                 progress.above(RenderProgress.EFFECTS)
             }
             if (!effectsOverEmblem) applyEffects()
@@ -332,7 +367,7 @@ object MandalaRenderer {
             // Emblem above the mandala and background, below the text.
             if (params.emblemLayer.isEnabled) {
                 checkpoint()
-                composite = EmblemLayer(par, fx).apply(composite, params.emblemLayer, palettes, place)
+                composite = EmblemLayer(par, fx).apply(composite, params.emblemLayer, palettes, place, still)
                 progress.above(RenderProgress.EMBLEM)
             }
 
@@ -350,7 +385,7 @@ object MandalaRenderer {
                     } else {
                         TextFrame(0f, 0f, bufW, bufH, min(bufW, bufH))
                     }
-                    composite = TextLayer(par, textRenderer).apply(composite, params.textLayer, frame)
+                    composite = TextLayer(par, textRenderer).apply(composite, params.textLayer, frame, still)
                     progress.above(RenderProgress.TEXT)
                 }
             }
@@ -365,6 +400,32 @@ object MandalaRenderer {
             progress.done()
             return RenderResult(options.finish.apply(result, options.threads), warnings, (System.nanoTime() - start) / 1_000_000)
         }
+    }
+
+    /**
+     * Blends the layer's image, placed at (x0, y0), into `composite`, turned about (cx, cy) and faded by
+     * its opacity. A turned image is only made where it meets the canvas. A `kept` image (in the layer
+     * cache) stays as it is: turning makes a new image, and fading works on a copy when nothing turned.
+     */
+    private fun blendLayer(
+        fx: LayerEffects, composite: Image8, image: Image8, x0: Int, y0: Int, op: BlendOp,
+        layer: StyleLayer, rotated: Boolean, cx: Float, cy: Float, kept: Boolean,
+    ): Image8 {
+        var img = image
+        var ox = x0
+        var oy = y0
+        if (rotated) {
+            val left = max(x0, 0)
+            val top = max(y0, 0)
+            val right = min(x0 + image.width, composite.width)
+            val bottom = min(y0 + image.height, composite.height)
+            if (right <= left || bottom <= top) return fx.composite(composite, null, op)
+            img = fx.rotate(image, layer.rotation * Math.PI * 2, cx, cy, left - x0, top - y0, right - left, bottom - top)
+            ox = left
+            oy = top
+        }
+        if (layer.opacity < 0.999) img = fx.opacity(if (kept && img === image) img.copy() else img, layer.opacity)
+        return fx.composite(composite, img, op, ox, oy)
     }
 
     /**

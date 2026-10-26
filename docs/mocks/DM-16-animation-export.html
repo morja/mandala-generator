@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DM-16 Animation exportieren</title>
+<style>
+  :root {
+    --bg: #0A0908; --surface: #121110; --raised: #1B1917; --text: #E6E1DB; --muted: #9C948B;
+    --outline: #2E2A26; --accent: #D9A15C; --on-accent: #241605; --accent-soft: #2A2117; --canvas: #000;
+    --page: #161412;
+    --m1: #D9A15C; --m2: #5FA8A0; --m3: #C9655A; --m4: #E6D3B0;
+    --r-sm: 10px; --r-md: 14px; --s-xs: 4px; --s-sm: 8px; --s-md: 12px; --s-lg: 16px;
+  }
+  :root[data-theme="light"] {
+    --bg: #F7F4EF; --surface: #FFFDFA; --raised: #EFEAE3; --text: #221F1C; --muted: #5F5851;
+    --outline: #CFC7BD; --accent: #8A5210; --on-accent: #fff; --accent-soft: #F3E3CF; --page: #E9E4DC;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--page); color: var(--text); font: 15px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  header { padding: 16px; display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; }
+  header h1 { font-size: 17px; margin: 0 8px 0 0; font-weight: 600; }
+  .seg { display: inline-flex; border: 1px solid var(--outline); border-radius: 999px; overflow: hidden; }
+  .seg button { background: transparent; color: var(--text); border: 0; padding: 6px 14px; font: inherit; cursor: pointer; }
+  .seg button[aria-pressed="true"] { background: var(--accent-soft); color: var(--accent); }
+  main { display: flex; flex-wrap: wrap; gap: 24px; padding: 0 16px 32px; justify-content: center; }
+  figure { margin: 0; width: min(360px, 100%); }
+  figcaption { font-size: 14px; color: var(--muted); margin: 0 0 8px; }
+  figcaption b { color: var(--text); font-weight: 600; }
+  .phone { background: var(--bg); border-radius: 22px; padding: 14px 16px 16px; border: 1px solid var(--outline); display: flex; flex-direction: column; gap: 10px; }
+  .title { font-size: 17px; font-weight: 600; }
+  .row { display: flex; align-items: center; gap: var(--s-sm); min-height: 40px; }
+  .row .label { flex: 1; }
+  .muted { color: var(--muted); font-size: 13px; }
+  .link { color: var(--accent); font-weight: 500; }
+  .hr { height: 1px; background: var(--outline); margin: 0 -16px; }
+
+  /* Segmented rows as in the save sheet */
+  .segrow { display: flex; border: 1px solid var(--outline); border-radius: 999px; overflow: hidden; font-size: 13px; }
+  .segrow span { flex: 1; text-align: center; padding: 7px 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .segrow span + span { border-left: 1px solid var(--outline); }
+  .segrow .on { background: var(--accent-soft); color: var(--accent); }
+  .segrow .on::before { content: "✓ "; }
+
+  /* The frame with the moving mandala */
+  .frame { align-self: center; border-radius: 6px; overflow: hidden; background: #0d0b0a; border: 1px solid var(--outline); position: relative; }
+  .frame svg { width: 100%; height: 100%; display: block; }
+  .tall { width: 150px; height: 266px; }
+  .sq { width: 92px; height: 92px; }
+  .cap { text-align: center; }
+
+  .group { border-top: 1px solid var(--outline); border-bottom: 1px solid var(--outline); margin: 0 -16px; padding: 0 16px; }
+  .group .head { display: flex; align-items: center; gap: var(--s-sm); min-height: 44px; }
+  .group .head b { font-weight: 600; }
+  .group .head .chev { margin-left: auto; color: var(--muted); }
+  .group .body { padding: 0 0 10px; display: flex; flex-direction: column; gap: 8px; }
+  .field-label { font-size: 13px; color: var(--muted); margin-bottom: -4px; }
+
+  .buttons { display: flex; gap: 8px; }
+  .btn { flex: 1; border: 1px solid var(--outline); border-radius: 999px; padding: 10px 12px; text-align: center; color: var(--accent); font-weight: 500; }
+  .btn.primary { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+  .progress { position: relative; overflow: hidden; }
+  .progress i { position: absolute; left: 0; top: 0; bottom: 0; width: 38%; background: var(--accent-soft); }
+  .progress span { position: relative; }
+
+  /* Menu rows */
+  .mrow { display: flex; align-items: center; gap: 12px; min-height: 52px; border-top: 1px solid var(--outline); }
+  .mrow:last-child { border-bottom: 1px solid var(--outline); }
+  .mrow .ico { width: 22px; height: 22px; stroke: var(--accent); fill: none; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+  .mrow .txt { flex: 1; }
+  .mrow .txt small { display: block; color: var(--muted); font-size: 12.5px; }
+  .mrow .chev { color: var(--muted); }
+  .back { color: var(--muted); font-size: 14px; }
+  .sub { font-weight: 600; margin-top: 6px; }
+
+  .note { max-width: 780px; margin: 0 auto; padding: 0 16px 40px; color: var(--muted); font-size: 14px; }
+  .note p { margin: 6px 0; }
+  .note b { color: var(--text); }
+
+  /* Motion: even layers turn one way, odd layers the other; text stays upright. */
+  .spin-a { animation: turn 20s linear infinite; transform-origin: 0 0; transform-box: view-box; }
+  .spin-b { animation: turn 20s linear infinite reverse; transform-origin: 0 0; transform-box: view-box; }
+  .spin-c { animation: turn 40s linear infinite; transform-origin: 0 0; transform-box: view-box; }
+  @keyframes turn { to { transform: rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce) { .spin-a, .spin-b, .spin-c { animation: none; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>DM-16</h1>
+  <div class="seg" id="theme">
+    <button aria-pressed="true" data-v="dark">Dunkel</button>
+    <button aria-pressed="false" data-v="light">Hell</button>
+  </div>
+</header>
+
+<template id="mandala">
+  <svg viewBox="-100 -100 200 200" aria-hidden="true">
+    <rect x="-100" y="-100" width="200" height="200" fill="#0d0b0a"/>
+    <g class="spin-a" data-petals="8" data-r="62" data-rx="11" data-ry="30" data-col="--m1"></g>
+    <g class="spin-b" data-dots="12" data-r="44" data-d="7" data-col="--m2"></g>
+    <g class="spin-a" data-petals="6" data-r="22" data-rx="7" data-ry="18" data-col="--m3"></g>
+    <circle r="6" fill="var(--m4)"/>
+  </svg>
+</template>
+
+<main>
+  <figure>
+    <figcaption><b>A · Im Speichern-Sheet</b> · oben Bild oder Bewegt, sonst dasselbe Sheet</figcaption>
+    <div class="phone">
+      <div class="title">Bild speichern</div>
+      <div class="segrow"><span>Bild</span><span class="on">Bewegt</span></div>
+      <div class="segrow"><span>Quadrat</span><span>Bildschirm</span><span class="on">9:16</span></div>
+      <div class="frame tall" data-mandala data-quote></div>
+      <div class="muted cap">Die Vorschau bewegt sich so, wie das Video wird.</div>
+      <div class="group">
+        <div class="head"><b>Bewegung</b><span class="muted">Ebenen · 10 s · MP4</span><span class="chev">⌃</span></div>
+        <div class="body">
+          <div class="field-label">Was sich dreht</div>
+          <div class="segrow"><span class="on">Ebenen</span><span>Ganzes Bild</span></div>
+          <div class="field-label">Länge</div>
+          <div class="segrow"><span>5 s</span><span class="on">10 s</span><span>15 s</span></div>
+          <div class="field-label">Datei</div>
+          <div class="segrow"><span class="on">Video (MP4)</span><span>GIF</span></div>
+        </div>
+      </div>
+      <div class="group"><div class="head"><b>Anpassen</b><span class="muted">Unverändert</span><span class="chev">⌄</span></div></div>
+      <div class="segrow"><span class="on">720 × 1280</span><span>1080 × 1920</span></div>
+      <div class="buttons"><span class="btn">Teilen</span><span class="btn primary">Video speichern</span></div>
+    </div>
+  </figure>
+
+  <figure>
+    <figcaption><b>A · beim Rendern</b> · Fortschritt im Knopf, Abbrechen daneben</figcaption>
+    <div class="phone">
+      <div class="title">Bild speichern</div>
+      <div class="segrow"><span>Bild</span><span class="on">Bewegt</span></div>
+      <div class="segrow"><span>Quadrat</span><span>Bildschirm</span><span class="on">9:16</span></div>
+      <div class="frame tall" data-mandala data-quote></div>
+      <div class="muted cap">Etwa eine Minute. Du kannst die App solange verlassen.</div>
+      <div class="group"><div class="head"><b>Bewegung</b><span class="muted">Ebenen · 10 s · MP4</span><span class="chev">⌄</span></div></div>
+      <div class="group"><div class="head"><b>Anpassen</b><span class="muted">Unverändert</span><span class="chev">⌄</span></div></div>
+      <div class="segrow"><span class="on">720 × 1280</span><span>1080 × 1920</span></div>
+      <div class="buttons"><span class="btn">Abbrechen</span><span class="btn progress"><i></i><span>Erstellen · 38 %</span></span></div>
+    </div>
+  </figure>
+
+  <figure>
+    <figcaption><b>B · Menüseite „Exportieren“</b> · Strichzeichnung und Animation zusammen</figcaption>
+    <div class="phone">
+      <div class="mrow"><svg class="ico" viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M5 20h14"/></svg><span class="txt">Exportieren · Pro<small>Strichzeichnung (SVG), Animation</small></span><span class="chev">›</span></div>
+      <div class="mrow"><svg class="ico" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg><span class="txt">Mehr</span><span class="chev">›</span></div>
+      <div class="hr" style="margin:6px -16px"></div>
+      <div class="back">‹ Zurück</div>
+      <div class="title">Exportieren</div>
+      <div class="sub">Animation</div>
+      <div class="row" style="gap:12px; align-items:flex-start">
+        <div class="frame sq" data-mandala></div>
+        <div class="muted" style="flex:1">Die Ebenen drehen sich gegeneinander, als Endlosschleife. Für Stories und Status.</div>
+      </div>
+      <div class="segrow"><span>Quadrat</span><span class="on">9:16</span></div>
+      <div class="segrow"><span>5 s</span><span class="on">10 s</span><span>15 s</span></div>
+      <div class="mrow"><svg class="ico" viewBox="0 0 24 24"><rect x="3" y="6" width="13" height="12" rx="2"/><path d="M16 10l5-3v10l-5-3"/></svg><span class="txt">Video (MP4)</span><span class="chev">›</span></div>
+      <div class="mrow"><svg class="ico" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 12h3M13 9v6M16 9h-1"/></svg><span class="txt">GIF</span><span class="chev">›</span></div>
+      <div class="sub">Strichzeichnung (SVG)</div>
+      <div class="mrow"><svg class="ico" viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6zM14 3v5h5"/></svg><span class="txt">Farbig auf Schwarz</span><span class="chev">›</span></div>
+      <div class="mrow"><svg class="ico" viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6zM14 3v5h5"/></svg><span class="txt">Dunkel auf Weiß</span><span class="chev">›</span></div>
+    </div>
+  </figure>
+</main>
+
+<div class="note">
+  <p><b>A, Speichern-Sheet (Empfehlung):</b> Ein Schalter „Bild | Bewegt“ unter dem Titel. Bewegt behält Format, Rahmen, Zoom, „Anpassen“ und das Zitat; dazu kommt die Gruppe „Bewegung“ (was sich dreht, Länge, Datei). Größen 720 und 1080 Pixel breit. Unten „Teilen“ statt „Hintergrund“, weil Stories meist direkt geteilt werden. Das Zitat steht still, nur das Mandala dreht sich.</p>
+  <p><b>B, Menüseite „Exportieren“:</b> „Strichzeichnung (SVG)“ wird zu „Exportieren“ mit zwei Abschnitten. Kleiner, eigene Vorschau, aber Format, Rahmen und Anpassen fehlen oder müssten doppelt gebaut werden.</p>
+  <p><b>Pro:</b> Jeder kann „Bewegt“ öffnen und die Vorschau sehen; Speichern und Teilen öffnen ohne Pro das Pro-Sheet (ADR-0016: ausprobieren frei, behalten mit Pro).</p>
+</div>
+
+<script>
+  const seg = document.getElementById('theme');
+  seg.addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    seg.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+    document.documentElement.dataset.theme = b.dataset.v;
+  });
+
+  const NS = 'http://www.w3.org/2000/svg';
+  const tpl = document.getElementById('mandala');
+  document.querySelectorAll('[data-mandala]').forEach(frame => {
+    const svg = tpl.content.firstElementChild.cloneNode(true);
+    if (frame.classList.contains('tall')) svg.setAttribute('viewBox', '-100 -177 200 354');
+    svg.querySelector('rect').setAttribute('y', '-177');
+    svg.querySelector('rect').setAttribute('height', '354');
+    svg.querySelectorAll('g').forEach(g => {
+      const col = `var(${g.dataset.col})`;
+      if (g.dataset.petals) {
+        const n = +g.dataset.petals, r = +g.dataset.r;
+        for (let i = 0; i < n; i++) {
+          const e = document.createElementNS(NS, 'ellipse');
+          e.setAttribute('cx', 0); e.setAttribute('cy', -r * 0.62);
+          e.setAttribute('rx', g.dataset.rx); e.setAttribute('ry', g.dataset.ry);
+          e.setAttribute('fill', 'none'); e.setAttribute('stroke', col); e.setAttribute('stroke-width', 2);
+          e.setAttribute('transform', `rotate(${i * 360 / n})`);
+          g.appendChild(e);
+        }
+      } else {
+        const n = +g.dataset.dots, r = +g.dataset.r;
+        for (let i = 0; i < n; i++) {
+          const c = document.createElementNS(NS, 'circle');
+          const a = i * 2 * Math.PI / n;
+          c.setAttribute('cx', Math.sin(a) * r); c.setAttribute('cy', -Math.cos(a) * r);
+          c.setAttribute('r', g.dataset.d); c.setAttribute('fill', col);
+          g.appendChild(c);
+        }
+      }
+    });
+    if (frame.hasAttribute('data-quote')) {
+      const t = document.createElementNS(NS, 'text');
+      t.setAttribute('y', 120); t.setAttribute('text-anchor', 'middle');
+      t.setAttribute('fill', 'var(--m4)'); t.setAttribute('font-family', 'Georgia, serif'); t.setAttribute('font-size', 11);
+      t.textContent = 'Be still, and know.';
+      svg.appendChild(t);
+    }
+    frame.appendChild(svg);
+  });
+</script>
+</body>
+</html>

@@ -35,4 +35,14 @@ class LayerCacheTest {
         val reseeded = reordered.copy(seed = 12uL)
         assertContentEquals(render(reseeded, null), render(reseeded, cache))
     }
+
+    @Test
+    fun turningAndFadingAKeptLayerGiveTheSameImageAsAFreshRender() {
+        val cache = LayerCache()
+        render(threeLayers, cache)
+        val turned = threeLayers.copy(layers = threeLayers.layers.map { it.copy(rotation = it.rotation + 0.2, opacity = 0.7) })
+        assertContentEquals(render(turned, null), render(turned, cache))
+        // Back to the first look: the kept images were not changed by fading.
+        assertContentEquals(render(threeLayers, null), render(threeLayers, cache))
+    }
 }

@@ -93,6 +93,13 @@
     <string name="pro_unavailable">現在ここではProを購入できません。ProはGoogle Playで販売しています。</string>
     <string name="pro_unlocked">ありがとうございます。Proのロックが解除されました。</string>
     <string name="pro_pending">購入は保留中です。支払いが完了するとProのロックが解除されます。</string>
+    <string name="export_creating_video">動画を作成中</string>
+    <string name="export_saving_to_movies">Movies に保存中</string>
+    <string name="message_video_saved">%1$d × %2$d の動画を Movies/%3$s に保存しました</string>
+    <string name="message_video_size">この端末では %1$d × %2$d の動画を作成できません。小さいサイズをお試しください。</string>
+    <string name="message_video_failed">動画を作成できませんでした: %1$s</string>
+    <string name="export_video_minutes">動画を作成中、残り約 %1$d 分</string>
+    <string name="export_video_under_minute">動画を作成中、残り 1 分未満</string>
     <!-- Home screen widget (ADR-0020) -->
     <string name="widget_label">今日のマンダラ</string>
     <string name="widget_description">今日のお気に入りをホーム画面に。正方形は画像だけ、横長は言葉も表示します。Pro なら毎朝新しいものに。</string>

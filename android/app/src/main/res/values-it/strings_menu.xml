@@ -107,4 +107,11 @@
     <string name="about_privacy_policy">Informativa sulla privacy</string>
     <string name="about_libraries">Librerie open source</string>
     <string name="about_full_text">Testo completo</string>
+    <string name="save_still">Immagine</string>
+    <string name="save_moving">In movimento</string>
+    <string name="save_video_seconds">%1$d s</string>
+    <string name="save_video">Salva video</string>
+    <string name="save_video_pro_label">Salva video · Pro</string>
+    <string name="save_cancel">Annulla</string>
+    <string name="save_video_pro">Salvare e condividere il mandala che ruota come video è incluso in Pro.</string>
 </resources>

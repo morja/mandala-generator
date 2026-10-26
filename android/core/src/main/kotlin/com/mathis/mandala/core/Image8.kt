@@ -13,6 +13,8 @@ class Image8(
 ) {
     fun get(i: Int): Int = data[i].toInt() and 0xFF
 
+    fun copy(): Image8 = Image8(width, height, encoding, data.copyOf())
+
     /** Converts to 0xAARRGGBB pixels in sRGB (row-major, top row first). */
     fun toArgbPixels(): IntArray {
         val srgb = if (encoding == Encoding.SRGB) this else WorkingSpace.convertToSrgb(this)

@@ -118,6 +118,27 @@ class MemoryBudgetTest {
         assertEquals(2389, result.image.height)
     }
 
+    /**
+     * The video (UX-1 12) at its largest, 1080 wide on a 21:9 screen, zoomed in as far as the app
+     * allows: all five layers are kept in the layer cache as turning ones while each frame is drawn.
+     */
+    @Test
+    fun animatesTheVideoPortraitZoomedInWithin256MbHeap() {
+        val params = SettingsJson.decode(fiveHeavyLayers)
+        val cache = LayerCache()
+        val options = LayerAnimation.options(
+            RenderOptions(width = 1080, height = 1920, supersample = false, framing = Framing(zoom = Framing.MAX_ZOOM), threads = 4),
+            cache,
+        )
+        val y = ByteArray(1080 * 1920)
+        val u = ByteArray(540 * 960)
+        val v = ByteArray(540 * 960)
+        for (f in 0 until 2) {
+            val frame = MandalaRenderer.render(LayerAnimation.frame(params, f, 300), options).image
+            VideoFrames.toI420(frame, y, u, v)
+        }
+    }
+
     @Test
     fun largeExportMatchesTheNormalExportScaledDown() {
         val params = SettingsJson.decode("""{"layers":[{"style":"roseCurves","scale":0.8,"seed":3}]}""")

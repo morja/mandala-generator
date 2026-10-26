@@ -93,6 +93,13 @@
     <string name="pro_unavailable">지금은 여기에서 Pro를 구매할 수 없습니다. Pro는 Google Play에서 판매됩니다.</string>
     <string name="pro_unlocked">감사합니다! Pro가 잠금 해제되었습니다.</string>
     <string name="pro_pending">구매가 대기 중입니다. 결제가 완료되면 Pro가 잠금 해제됩니다.</string>
+    <string name="export_creating_video">동영상 만드는 중</string>
+    <string name="export_saving_to_movies">Movies에 저장 중</string>
+    <string name="message_video_saved">%1$d × %2$d 동영상을 Movies/%3$s에 저장했습니다</string>
+    <string name="message_video_size">이 휴대폰은 %1$d × %2$d 동영상을 만들 수 없습니다. 더 작은 크기를 사용해 보세요.</string>
+    <string name="message_video_failed">동영상을 만들 수 없습니다: %1$s</string>
+    <string name="export_video_minutes">동영상 만드는 중, 약 %1$d분 남음</string>
+    <string name="export_video_under_minute">동영상 만드는 중, 1분 미만 남음</string>
     <!-- Home screen widget (ADR-0020) -->
     <string name="widget_label">오늘의 만다라</string>
     <string name="widget_description">오늘의 즐겨찾기를 홈 화면에. 정사각형은 그림만, 넓게 하면 글도 함께 보여 줍니다. Pro는 매일 아침 새로 바뀝니다.</string>

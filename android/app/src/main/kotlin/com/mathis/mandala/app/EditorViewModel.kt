@@ -46,6 +46,7 @@ import com.mathis.mandala.core.Favorite
 import com.mathis.mandala.core.Finish
 import com.mathis.mandala.core.Framing
 import com.mathis.mandala.core.Image8
+import com.mathis.mandala.core.LayerAnimation
 import com.mathis.mandala.core.LayerCache
 import com.mathis.mandala.core.MacFile
 import com.mathis.mandala.core.CustomPalette
@@ -63,7 +64,10 @@ import com.mathis.mandala.core.RenderOptions
 import com.mathis.mandala.core.SettingsJson
 import com.mathis.mandala.core.StyleLayer
 import com.mathis.mandala.core.VectorExport
+import android.os.SystemClock
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.yield
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
@@ -145,7 +149,7 @@ data class HistoryState(val canGoBack: Boolean, val canGoForward: Boolean)
 sealed interface EditorEvent {
     /** `undo` restores what the message reports; changes to the mandala are undone with Back instead. */
     data class Message(val text: String, val undo: (() -> Unit)? = null) : EditorEvent
-    data class ShareImage(val uri: Uri) : EditorEvent
+    data class ShareImage(val uri: Uri, val type: String = "image/png") : EditorEvent
 }
 
 /**
@@ -289,6 +293,13 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
     }
 
     fun setTextFollowsMandala(follows: Boolean) = _saveChoice.update { it.copy(textFollowsMandala = follows) }
+
+    /** A picture or a video of the layers turning (UX-1 12); anyone may look, keeping the video is Pro. */
+    fun setMoving(moving: Boolean) = _saveChoice.update { it.copy(moving = moving) }
+
+    fun setVideoSeconds(seconds: Int) {
+        if (seconds in LayerAnimation.SECONDS) _saveChoice.update { it.copy(videoSeconds = seconds) }
+    }
 
     /** The last adjustment of saved images and wallpapers (ADR-0014), part of Pro. */
     fun setFinish(finish: Finish) {
@@ -954,6 +965,101 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         _events.send(EditorEvent.ShareImage(uri))
     }
 
+    private var videoJob: Job? = null
+
+    /** True while a video is made; the screen stays on meanwhile. */
+    private val _makingVideo = MutableStateFlow(false)
+    val makingVideo: StateFlow<Boolean> = _makingVideo.asStateFlow()
+
+    /**
+     * Makes a video of the layers turning against each other (UX-1 12, Pro) in the chosen format and
+     * framing, 720 or (`large`) 1080 on the shorter side, and saves it to Movies or (`share`) shares it.
+     * The layers are drawn once; each frame turns and blends them and runs the scene effects.
+     */
+    fun saveVideo(large: Boolean, share: Boolean) {
+        if (!pro.state.value.owned) {
+            _proRequest.value = ProRequest(missingPro.value, note = string(R.string.save_video_pro))
+            return
+        }
+        if (_busy.value) return
+        val choice = _saveChoice.value
+        val (w, h) = Editing.videoSize(choice.format, _screenAspect.value, large)
+        val params = _params.value
+        val seconds = choice.videoSeconds
+        val frames = LayerAnimation.frameCount(seconds)
+        val label = string(R.string.export_creating_video)
+        _busy.value = true
+        _makingVideo.value = true
+        _export.value = ExportProgress(label, 0f)
+        videoJob = viewModelScope.launch {
+            val context = getApplication<Application>()
+            try {
+                if (!Mp4Writer.supports(w, h, LayerAnimation.FPS)) {
+                    message(string(R.string.message_video_size, w, h))
+                    return@launch
+                }
+                val framing = framingFor(choice, params, aspectOf(choice.format), true)
+                val fileName = Editing.videoFileName(params, w, h, seconds)
+                val file = withContext(Dispatchers.Default) {
+                    val job = coroutineContext.job
+                    val options = LayerAnimation.options(
+                        RenderOptions(
+                            width = w, height = h, framing = framing, textFollowsMandala = choice.textFollowsMandala,
+                            supersample = false, finish = choice.finish, threads = threads,
+                            textRenderer = textRenderer, imageLoader = imageLoader, isCancelled = { !job.isActive },
+                        ),
+                        LayerCache(),
+                    )
+                    val file = VideoFiles.workFile(context, fileName)
+                    Mp4Writer(file, w, h, LayerAnimation.FPS, threads).use { writer ->
+                        val start = SystemClock.elapsedRealtime()
+                        var shown = label
+                        for (f in 0 until frames) {
+                            writer.add(MandalaRenderer.render(LayerAnimation.frame(params, f, frames), options).image)
+                            // The first frame draws the layers; from a few frames on, the pace says how long is left.
+                            if (f >= TIME_LEFT_AFTER_FRAMES) {
+                                val left = (SystemClock.elapsedRealtime() - start) * (frames - f - 1) / (f + 1)
+                                shown = if (left < UNDER_A_MINUTE_MS) {
+                                    string(R.string.export_video_under_minute)
+                                } else {
+                                    string(R.string.export_video_minutes, maxOf(1L, (left + 30_000) / 60_000).toInt())
+                                }
+                            }
+                            _export.value = ExportProgress(shown, (f + 1f) / frames)
+                        }
+                        writer.finish()
+                    }
+                    file
+                }
+                if (share) {
+                    exportStep(string(R.string.export_preparing_share))
+                    _events.send(EditorEvent.ShareImage(VideoFiles.shareUri(context, file), VideoFiles.MIME))
+                } else {
+                    exportStep(string(R.string.export_saving_to_movies))
+                    withContext(Dispatchers.IO) { VideoFiles.saveToMovies(context, file) }
+                    message(string(R.string.message_video_saved, w, h, GalleryExport.FOLDER))
+                }
+            } catch (e: RenderCancelledException) {
+                // Cancelled from the sheet.
+            } catch (e: kotlinx.coroutines.CancellationException) {
+                throw e
+            } catch (e: OutOfMemoryError) {
+                message(string(R.string.message_image_memory))
+            } catch (e: Exception) {
+                message(string(R.string.message_video_failed, e.message ?: e.javaClass.simpleName))
+            } finally {
+                _export.value = null
+                _busy.value = false
+                _makingVideo.value = false
+                videoJob = null
+            }
+        }
+    }
+
+    fun cancelVideo() {
+        videoJob?.cancel()
+    }
+
     /**
      * Writes the mandala as an SVG line drawing (ADR-0013, Pro) to a file the user picked: the
      * layers' lines and the emblem, square and centred, without the pixel steps.
@@ -1208,6 +1314,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
     private fun plural(@PluralsRes id: Int, count: Int): String = getApplication<Application>().resources.getQuantityString(id, count, count)
 
     private suspend fun renderFramePreview(request: FrameRequest) {
+        if (request.choice.moving) return animateFramePreview(request)
         recentFrames[request]?.let {
             _framePreview.value = it
             return
@@ -1234,6 +1341,47 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
             recentFrames[request] = _framePreview.value
         } catch (e: RenderCancelledException) {
             // A newer framing is already being rendered.
+        } catch (e: OutOfMemoryError) {
+            _framePreview.update { it.copy(rendering = false) }
+        }
+    }
+
+    /**
+     * The save sheet's frame while "Moving" is on: the layers turning as in the video, drawn again and
+     * again, small and with the fast preview's glow, until something changes or the sheet closes. It
+     * pauses while a video is made, which needs the processors more.
+     */
+    private suspend fun animateFramePreview(request: FrameRequest) {
+        val (w, h) = Editing.size(request.choice.format, request.aspect, Editing.FRAME_PREVIEW_WIDTH)
+        val framing = framingFor(request.choice, request.params, Editing.aspect(request.choice.format, request.aspect), request.pro)
+        val finish = if (request.pro) request.choice.finish else Finish()
+        val cache = LayerCache()
+        val seconds = request.choice.videoSeconds
+        val start = SystemClock.elapsedRealtime()
+        try {
+            withContext(Dispatchers.Default) {
+                val job = coroutineContext.job
+                val options = LayerAnimation.options(
+                    RenderOptions(
+                        width = w, height = h, framing = framing, textFollowsMandala = request.choice.textFollowsMandala,
+                        supersample = false, finish = finish, threads = threads, glowReferenceWidth = Editing.FAST_GLOW_REFERENCE,
+                        textRenderer = textRenderer, imageLoader = imageLoader, isCancelled = { !job.isActive },
+                    ),
+                    cache,
+                )
+                while (isActive) {
+                    if (_makingVideo.value && _framePreview.value.image != null) {
+                        delay(MOVING_PAUSE_MS)
+                        continue
+                    }
+                    val t = ((SystemClock.elapsedRealtime() - start) / 1000.0 / seconds).mod(1.0)
+                    val image = MandalaRenderer.render(LayerAnimation.at(request.params, t), options).image
+                    _framePreview.value = FramePreviewState(image.toBitmap().asImageBitmap(), rendering = false, framing = framing, width = w, height = h)
+                    yield()
+                }
+            }
+        } catch (e: RenderCancelledException) {
+            // Something changed; the next request starts again.
         } catch (e: OutOfMemoryError) {
             _framePreview.update { it.copy(rendering = false) }
         }
@@ -1300,6 +1448,11 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         const val SAVE_DELAY_MS = 400L
         const val HISTORY_DELAY_MS = 700L
         const val FRAME_DEBOUNCE_MS = 60L
+        /** How often the moving frame looks whether the video is done. */
+        const val MOVING_PAUSE_MS = 300L
+        /** Frames made before the video's progress says how many minutes are left. */
+        const val TIME_LEFT_AFTER_FRAMES = 5
+        const val UNDER_A_MINUTE_MS = 50_000L
         const val RECENT_PREVIEWS = 30
         const val RECENT_FRAMES = 6
         const val WALLPAPER_MESSAGE_DELAY_MS = 1500L

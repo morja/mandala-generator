@@ -99,6 +99,13 @@
     <string name="pro_unavailable">Сейчас Pro здесь купить нельзя. Он продаётся через Google Play.</string>
     <string name="pro_unlocked">Спасибо! Pro разблокирован.</string>
     <string name="pro_pending">Покупка ожидает оплаты. Pro разблокируется после оплаты.</string>
+    <string name="export_creating_video">Создание видео</string>
+    <string name="export_saving_to_movies">Сохранение в Movies</string>
+    <string name="message_video_saved">Видео %1$d × %2$d сохранено в Movies/%3$s</string>
+    <string name="message_video_size">Этот телефон не может создать видео %1$d × %2$d; попробуйте размер поменьше.</string>
+    <string name="message_video_failed">Не удалось создать видео: %1$s</string>
+    <string name="export_video_minutes">Создание видео, осталось около %1$d мин</string>
+    <string name="export_video_under_minute">Создание видео, осталось меньше минуты</string>
     <!-- Home screen widget (ADR-0020) -->
     <string name="widget_label">Мандала дня</string>
     <string name="widget_description">Мандала дня из избранного на главном экране. Квадратный виджет показывает изображение, широкий — ещё и слова. С Pro каждое утро новая.</string>

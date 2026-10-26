@@ -309,10 +309,14 @@ internal class LayerEffects(
         return out
     }
 
-    /** Rotates about (cx, cy) (counter-clockwise on screen for positive angles), bilinear, zero outside. */
-    fun rotate(image: Image8, angle: Double, cx: Float = image.width * 0.5f, cy: Float = image.height * 0.5f): Image8 {
-        val w = image.width
-        val h = image.height
+    /**
+     * Rotates about (cx, cy) (counter-clockwise on screen for positive angles), bilinear, zero outside.
+     * Only the window of `w` x `h` at (x0, y0) of the result is made, by default all of it.
+     */
+    fun rotate(
+        image: Image8, angle: Double, cx: Float = image.width * 0.5f, cy: Float = image.height * 0.5f,
+        x0: Int = 0, y0: Int = 0, w: Int = image.width, h: Int = image.height,
+    ): Image8 {
         val out = Image8(w, h, Encoding.SRGB)
         val ca = cos(angle).toFloat()
         val sa = sin(angle).toFloat()
@@ -321,8 +325,8 @@ internal class LayerEffects(
             val tmp = FloatArray(3)
             for (y in from until until) {
                 for (x in 0 until w) {
-                    val dx = x + 0.5f - cx
-                    val dy = y + 0.5f - cy
+                    val dx = x0 + x + 0.5f - cx
+                    val dy = y0 + y + 0.5f - cy
                     Filters.sampleBilinear(image, cx + dx * ca - dy * sa - 0.5f, cy + dx * sa + dy * ca - 0.5f, row, x * 3, tmp)
                 }
                 WorkingSpace.writeRow(row, out, y)

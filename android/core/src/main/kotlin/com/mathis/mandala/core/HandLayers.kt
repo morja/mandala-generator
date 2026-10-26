@@ -18,7 +18,17 @@ internal class HandLayers(private val par: Parallel, private val fx: LayerEffect
 
     // ── Drawing layer: the same additive lines as the styles, then glow and blending ──
 
-    fun drawing(base: Image8, s: DrawingLayerSettings, place: Placement): Image8 {
+    /** `still`: kept parts of an animation's frames; the drawn lines are kept there. */
+    fun drawing(base: Image8, s: DrawingLayerSettings, place: Placement, still: MutableMap<String, Any>? = null): Image8 {
+        val drawn = if (still != null) still.getOrPut("drawing") { drawn(s, place) ?: Unit } as? Drawn else drawn(s, place)
+        drawn ?: return base
+        return fx.composite(base, drawn.image, blendOp(s.blendMode, normal = BlendOp.LIGHTEN)!!, drawn.x0, drawn.y0)
+    }
+
+    private class Drawn(val image: Image8, val x0: Int, val y0: Int)
+
+    /** The drawing layer's lines with glow and opacity, on the part of the canvas they reach. */
+    private fun drawn(s: DrawingLayerSettings, place: Placement): Drawn? {
         val size = place.size
         val half = size * 0.5f
         val sym = max(1, s.symmetry)
@@ -27,7 +37,7 @@ internal class HandLayers(private val par: Parallel, private val fx: LayerEffect
         val area = place.around(size * 0.75 + thickness + 3 * 60.0 * s.glowIntensity * size / 1600 + 4)
         val w = area[2] - area[0]
         val h = area[3] - area[1]
-        if (w <= 0 || h <= 0) return base
+        if (w <= 0 || h <= 0) return null
         val cx = (place.centreX - area[0]).toFloat()
         val cy = (place.centreY - area[1]).toFloat()
         var img = PixelBuffer.drawInStrips(w, h) { buffer ->
@@ -52,7 +62,7 @@ internal class HandLayers(private val par: Parallel, private val fx: LayerEffect
         }
         img = fx.glow(img, s.glowIntensity, size)
         if (s.opacity < 0.999) img = fx.opacity(img, s.opacity)
-        return fx.composite(base, img, blendOp(s.blendMode, normal = BlendOp.LIGHTEN)!!, area[0], area[1])
+        return Drawn(img, area[0], area[1])
     }
 
     // ── Graffiti layer: round-capped strokes painted over each other, blurred, then blended ──

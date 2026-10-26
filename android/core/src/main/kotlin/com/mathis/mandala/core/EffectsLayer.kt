@@ -28,13 +28,15 @@ internal class EffectsLayer(private val par: Parallel, private val fx: LayerEffe
         const val LOCAL_CONTRAST_SIGMA = 96.0
     }
 
-    fun apply(image: Image8, s: EffectsLayerSettings): Image8 {
+    /** `still`: kept parts of an animation's frames; stars and glitter, which do not depend on the image, are kept there. */
+    fun apply(image: Image8, s: EffectsLayerSettings, still: MutableMap<String, Any>? = null): Image8 {
         var result = if (hasChain(s)) chain(image, s) else image
         val w = result.width
         val h = result.height
         val side = min(w, h)
-        if (s.stars > 0) result = fx.composite(result, fx.glow(lightLayer(w, h) { stars(it, s, w, h) }, 0.28, side), BlendOp.SCREEN)
-        if (s.glitter > 0) result = fx.composite(result, fx.glow(lightLayer(w, h) { glitter(it, s, w, h) }, 0.18, side), BlendOp.SCREEN)
+        fun kept(name: String, make: () -> Image8): Image8 = if (still != null) still.getOrPut(name, make) as Image8 else make()
+        if (s.stars > 0) result = fx.composite(result, kept("stars") { fx.glow(lightLayer(w, h) { stars(it, s, w, h) }, 0.28, side) }, BlendOp.SCREEN)
+        if (s.glitter > 0) result = fx.composite(result, kept("glitter") { fx.glow(lightLayer(w, h) { glitter(it, s, w, h) }, 0.18, side) }, BlendOp.SCREEN)
         return result
     }
 

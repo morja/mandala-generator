@@ -97,6 +97,13 @@
     <string name="pro_unavailable">Pro ne peut pas être acheté ici pour le moment. Il est vendu via Google Play.</string>
     <string name="pro_unlocked">Merci ! Pro est débloqué.</string>
     <string name="pro_pending">L\'achat est en attente. Pro sera débloqué une fois le paiement effectué.</string>
+    <string name="export_creating_video">Création de la vidéo</string>
+    <string name="export_saving_to_movies">Enregistrement dans Movies</string>
+    <string name="message_video_saved">Vidéo %1$d × %2$d enregistrée dans Movies/%3$s</string>
+    <string name="message_video_size">Ce téléphone ne peut pas créer de vidéo en %1$d × %2$d ; essayez la petite taille.</string>
+    <string name="message_video_failed">Impossible de créer la vidéo : %1$s</string>
+    <string name="export_video_minutes">Création de la vidéo, environ %1$d min restantes</string>
+    <string name="export_video_under_minute">Création de la vidéo, moins d\'une minute restante</string>
     <!-- Home screen widget (ADR-0020) -->
     <string name="widget_label">Mandala du jour</string>
     <string name="widget_description">Le favori du jour sur votre écran d\'accueil. Carré : l\'image ; large : avec les mots. Avec Pro, un nouveau chaque matin.</string>
