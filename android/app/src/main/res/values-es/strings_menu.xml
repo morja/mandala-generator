@@ -32,8 +32,12 @@
     <string name="menu_open_file">Abrir archivo</string>
     <string name="menu_save_settings">Guardar ajustes</string>
     <string name="menu_fast_preview">Vista previa rápida</string>
-    <string name="menu_fast_preview_detail">Las imágenes guardadas siempre tienen el brillo completo</string>
+    <string name="menu_fast_preview_detail">Solo la vista previa del editor se dibuja de forma más simple y rápida. Las imágenes guardadas y los fondos conservan toda la calidad.</string>
     <string name="menu_daily_wallpaper">Un fondo nuevo cada día</string>
+    <string name="menu_daily_about">Al activarlo, el siguiente de tus favoritos pasa a ser el fondo de pantalla enseguida: en la pantalla de bloqueo y, algo más oscuro, en la pantalla de inicio. Después llega el siguiente cada mañana entre las 4 y las 8, preferiblemente mientras el teléfono se carga. Con el fondo animado activo, este pasa con un fundido al siguiente favorito.</string>
+    <string name="menu_open_file_detail">Ajustes de mandala guardados como archivo, desde esta app o la app de macOS</string>
+    <string name="menu_save_settings_detail">Este mandala como archivo, para guardarlo o abrirlo en el Mac</string>
+    <string name="menu_more">Más</string>
     <string name="menu_theme">Tema</string>
     <string name="menu_theme_dark">Oscuro</string>
     <string name="menu_theme_light">Claro</string>
@@ -76,8 +80,8 @@
     <string name="save_wallpaper">Fondo</string>
 
     <!-- Save sheet: the line drawing as SVG -->
-    <string name="save_line_drawing">Dibujo lineal</string>
-    <string name="save_line_drawing_pro">Dibujo lineal · Pro</string>
+    <string name="save_line_drawing">Dibujo lineal (SVG)</string>
+    <string name="save_line_drawing_pro">Dibujo lineal (SVG) · Pro</string>
     <string name="save_line_drawing_detail">Un SVG cuadrado: las capas y el emblema como líneas, sin brillo, efectos, fondo ni cita.</string>
     <string name="save_line_drawing_points">Las capas Atractor extraño se omiten.</string>
     <string name="save_line_drawing_colour">Color sobre negro</string>

@@ -32,8 +32,12 @@
     <string name="menu_open_file">Apri file</string>
     <string name="menu_save_settings">Salva impostazioni</string>
     <string name="menu_fast_preview">Anteprima rapida</string>
-    <string name="menu_fast_preview_detail">Le immagini salvate hanno sempre il bagliore completo</string>
+    <string name="menu_fast_preview_detail">Solo l\'anteprima nell\'editor viene disegnata in modo più semplice e veloce. Le immagini salvate e gli sfondi mantengono la piena qualità.</string>
     <string name="menu_daily_wallpaper">Nuovo sfondo ogni giorno</string>
+    <string name="menu_daily_about">Quando lo attivi, il prossimo dei tuoi preferiti diventa subito lo sfondo: sulla schermata di blocco e, un po\' più scuro, sulla schermata Home. Poi arriva il successivo ogni mattina tra le 4 e le 8, preferibilmente mentre il telefono è in carica. Con lo sfondo animato attivo, sfuma invece al preferito successivo.</string>
+    <string name="menu_open_file_detail">Impostazioni di mandala salvate come file, da questa app o dall\'app per macOS</string>
+    <string name="menu_save_settings_detail">Questo mandala come file, da conservare o da aprire sul Mac</string>
+    <string name="menu_more">Altro</string>
     <string name="menu_theme">Tema</string>
     <string name="menu_theme_dark">Scuro</string>
     <string name="menu_theme_light">Chiaro</string>
@@ -76,8 +80,8 @@
     <string name="save_wallpaper">Sfondo</string>
 
     <!-- Save sheet: the line drawing as SVG -->
-    <string name="save_line_drawing">Disegno al tratto</string>
-    <string name="save_line_drawing_pro">Disegno al tratto · Pro</string>
+    <string name="save_line_drawing">Disegno al tratto (SVG)</string>
+    <string name="save_line_drawing_pro">Disegno al tratto (SVG) · Pro</string>
     <string name="save_line_drawing_detail">Un SVG quadrato: i livelli e l\'emblema come linee, senza bagliore, effetti, sfondo e citazione.</string>
     <string name="save_line_drawing_points">I livelli Attrattore strano vengono esclusi.</string>
     <string name="save_line_drawing_colour">Colore su nero</string>

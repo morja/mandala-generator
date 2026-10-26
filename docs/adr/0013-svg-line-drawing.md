@@ -25,5 +25,5 @@ Status: accepted, 22 October 2026 (Mathis: build it, Pro on Android, say plainly
 ## How it is built (22 October 2026)
 
 - `VectorExport` in `core`: layers through `MandalaRenderer.collectStyle`, the emblem through `EmblemMask.writeSvgMask` (the same shapes as the pixel mask: round-capped segments, discs, rings and even-odd polygons; outline cuts are black in the mask), filled with its palette as a radial gradient. Colours are converted from P3 to sRGB. 1024 user units, coordinates to a tenth.
-- App: in the save sheet below "Set as wallpaper", a button with the two looks and one line on what is left out (plus Strange Attractor when the mandala has one). `EditorViewModel.saveLineDrawing` streams the file to the picked URI.
+- App: *since 26 October 2026 (Mathis)* a page of its own in the menu, "Line drawing (SVG)", with what is left out (plus Strange Attractor when the mandala has one) and the two looks; none of the save sheet's format, framing or finish applies to it. Before, a button in the save sheet. `EditorViewModel.saveLineDrawing` streams the file to the picked URI.
 - Tests: `VectorExportTest` (every style, both looks, every emblem motif and rendering, determinism, what is left out); `MemoryBudgetTest` streams the five-layer worst case within 256 MB.

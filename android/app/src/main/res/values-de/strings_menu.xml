@@ -30,8 +30,12 @@
     <string name="menu_open_file">Datei öffnen</string>
     <string name="menu_save_settings">Einstellungen speichern</string>
     <string name="menu_fast_preview">Schnelle Vorschau</string>
-    <string name="menu_fast_preview_detail">Gespeicherte Bilder leuchten immer voll</string>
+    <string name="menu_fast_preview_detail">Nur die Vorschau im Editor wird einfacher und schneller gezeichnet. Gespeicherte Bilder und Hintergründe behalten die volle Qualität.</string>
     <string name="menu_daily_wallpaper">Jeden Tag ein neuer Hintergrund</string>
+    <string name="menu_daily_about">Beim Einschalten wird gleich der nächste deiner Favoriten zum Hintergrund: auf dem Sperrbildschirm und etwas dunkler auf dem Startbildschirm. Danach folgt jeden Morgen zwischen 4 und 8 Uhr der nächste, am liebsten während das Handy lädt. Ist der Live-Hintergrund an, blendet er stattdessen zum nächsten Favoriten über.</string>
+    <string name="menu_open_file_detail">Als Datei gespeicherte Mandala-Einstellungen, aus dieser App oder der macOS-App</string>
+    <string name="menu_save_settings_detail">Dieses Mandala als Datei, zum Aufheben oder zum Öffnen auf dem Mac</string>
+    <string name="menu_more">Mehr</string>
     <string name="menu_theme">Design</string>
     <string name="menu_theme_dark">Dunkel</string>
     <string name="menu_theme_light">Hell</string>
@@ -74,8 +78,8 @@
     <string name="save_wallpaper">Hintergrund</string>
 
     <!-- Save sheet: the line drawing as SVG -->
-    <string name="save_line_drawing">Strichzeichnung</string>
-    <string name="save_line_drawing_pro">Strichzeichnung · Pro</string>
+    <string name="save_line_drawing">Strichzeichnung (SVG)</string>
+    <string name="save_line_drawing_pro">Strichzeichnung (SVG) · Pro</string>
     <string name="save_line_drawing_detail">Ein quadratisches SVG: die Ebenen und das Emblem als Linien, ohne Leuchten, Effekte, Hintergrund und Zitat.</string>
     <string name="save_line_drawing_points">Ebenen im Stil „Seltsamer Attraktor“ werden weggelassen.</string>
     <string name="save_line_drawing_colour">Farbig auf Schwarz</string>

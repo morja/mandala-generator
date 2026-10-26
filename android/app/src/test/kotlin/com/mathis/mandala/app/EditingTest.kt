@@ -141,6 +141,19 @@ class EditingTest {
     }
 
     @Test
+    fun eachSaveFormatKeepsItsOwnPlacement() {
+        val byHand = Framing(0.4, 0.6, 1.8)
+        val screen = SaveChoice(format = Editing.SaveFormat.SCREEN, fit = Fit.HAND, framing = byHand)
+        val square = screen.withFormat(Editing.SaveFormat.SQUARE)
+        assertEquals(Fit.WHOLE, square.fit)
+        assertEquals(Framing(), square.framing)
+        val back = square.copy(fit = Fit.FILL).withFormat(Editing.SaveFormat.SCREEN)
+        assertEquals(Fit.HAND, back.fit)
+        assertEquals(byHand, back.framing)
+        assertEquals(Fit.FILL, back.withFormat(Editing.SaveFormat.SQUARE).fit)
+    }
+
+    @Test
     fun effectsResetKeepsWhichLayersTheyReach() {
         val fx = EffectsLayerSettings(isEnabled = true, vignette = 0.9, affectsEmblem = false)
         assertEquals(EffectsLayerSettings(isEnabled = true, affectsEmblem = false), with(Editing) { fx.reset() })
