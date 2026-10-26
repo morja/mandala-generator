@@ -68,6 +68,7 @@
     <!-- Favourites, quotes and pictures -->
     <string name="message_favourite_added">お気に入りに追加しました</string>
     <string name="message_favourite_deleted">お気に入りを削除しました</string>
+    <string name="message_favourites_deleted">削除したお気に入り: %d</string>
     <string name="message_quote_saved">マイ引用に保存しました</string>
     <string name="message_picture_failed">画像を開けませんでした: %1$s</string>
 

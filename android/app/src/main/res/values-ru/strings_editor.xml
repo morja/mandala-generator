@@ -46,9 +46,11 @@
     <!-- Editor: favourites sheet -->
     <string name="editor_favourites_add">Добавить текущую</string>
     <string name="editor_favourites_empty">Избранного пока нет. Добавьте текущую мандалу или откройте файл избранного приложения для Mac (favorites.json) через «Открыть файл».</string>
-    <string name="editor_favourites_hint">Нажмите, чтобы применить; удерживайте, чтобы удалить.</string>
+    <string name="editor_favourites_hint">Нажмите, чтобы применить, долгое нажатие — выбрать и удалить.</string>
     <string name="editor_favourite_description">Избранное: %1$s</string>
     <string name="editor_favourite_delete">Удалить</string>
+    <string name="editor_favourites_selected">Выбрано: %d</string>
+    <string name="editor_favourites_cancel">Отмена</string>
 
     <!-- Wallpaper pair sheet -->
     <string name="pair_title">Главный экран и экран блокировки</string>

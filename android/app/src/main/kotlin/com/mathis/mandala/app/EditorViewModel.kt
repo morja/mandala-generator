@@ -711,6 +711,20 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         })
     }
 
+    /** Deletes several favourites at once; one "Undo" brings them all back in their places. */
+    fun removeFavorites(ids: Set<String>) {
+        val before = _favorites.value
+        if (before.none { it.id in ids }) return
+        _favorites.update { list -> list.filterNot { it.id in ids } }
+        message(string(R.string.message_favourites_deleted, before.count { it.id in ids }), undo = {
+            _favorites.update { current ->
+                val kept = current.associateBy { it.id }
+                // The old order, with favourites added since then kept at the end.
+                before.filter { it.id in ids || it.id in kept } + current.filter { c -> before.none { it.id == c.id } }
+            }
+        })
+    }
+
     // ── Files of the macOS app ──
 
     /** Opens a settings file or a favourites file saved by the macOS app (or by this app). */

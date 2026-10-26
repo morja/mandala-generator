@@ -68,6 +68,7 @@
     <!-- Favourites, quotes and pictures -->
     <string name="message_favourite_added">Aggiunto ai preferiti</string>
     <string name="message_favourite_deleted">Preferito eliminato</string>
+    <string name="message_favourites_deleted">Preferiti eliminati: %d</string>
     <string name="message_quote_saved">Salvata nelle tue citazioni</string>
     <string name="message_picture_failed">Impossibile aprire l\'immagine: %1$s</string>
 

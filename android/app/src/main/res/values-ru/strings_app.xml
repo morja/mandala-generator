@@ -68,6 +68,7 @@
     <!-- Favourites, quotes and pictures -->
     <string name="message_favourite_added">Добавлено в избранное</string>
     <string name="message_favourite_deleted">Удалено из избранного</string>
+    <string name="message_favourites_deleted">Удалено из избранного: %d</string>
     <string name="message_quote_saved">Сохранено в ваши цитаты</string>
     <string name="message_picture_failed">Не удалось открыть изображение: %1$s</string>
 

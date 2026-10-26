@@ -33,3 +33,11 @@ Layout and consistency
 16. **Compare:** press and hold the preview to see it without scene effects, to judge how much they add.
 17. **Text around the circle:** a quote set along a ring around the mandala, as a text layout next to the centred one.
 18. **History strip:** the states the editor keeps for undo as small pictures to jump back to, like the dice comparison in the menu.
+
+## Decisions (Mathis, 26 October 2026)
+
+- 1 Numbers stay as decimals (less room than percent, and some sliders go below zero). 3 The greyed arrows stay with one layer. 4 Symmetry stays on its own in the Draw tab, as the most direct control there. 7 Random quotes stay as they are.
+- Done: 2 the die rows ("Arrangement", "Variation") are plain rows with the die on the right, without "Seed"; 5 the text description says "in the picture"; 8 all outlined buttons use the normal text colour (Material's default was the muted one); 10 favourites can be selected by long press and deleted together, with one Undo (Undo for a single favourite existed already). No rename: the name shows almost nowhere.
+- 6 and 9: proposal in `mocks/DM-12-text-and-scene-tabs.html`, waiting for Mathis.
+- 11 The small preview is kept while the app runs; it grows back while drawing or moving, when the controls are pulled down at their top, and after a restart. Idea from Mathis: one more, middle size.
+- Ideas wanted: 12 animation export (Pro), 13 daily wallpaper from chosen favourites, 14 home screen widget (probably Pro), 15 own palettes (free, at the palette), 16 compare by holding the preview, 17 text around the circle, 18 history strip. Which of these are Pro is recorded as an amendment of ADR-0016 when each is built.

@@ -157,7 +157,7 @@
 
     <!-- Text tab and quote list -->
     <string name="controls_random_text_look">Stile testo casuale</string>
-    <string name="controls_text_off_note">Una citazione o parole tue sotto il mandala, con l\'autore se vuoi.</string>
+    <string name="controls_text_off_note">Una citazione o parole tue nell\'immagine, con l\'autore se vuoi.</string>
     <string name="controls_pro_note_text">Testo e citazioni sono inclusi in Pro. Provali quanto vuoi; per tenere il mandala serve Pro.</string>
     <string name="controls_random_quote">Citazione casuale</string>
     <string name="controls_choose_quote">Scegli citazione</string>
@@ -199,7 +199,6 @@
     <string name="controls_seed_description">Nuova disposizione, stesso stile, tavolozza e impostazioni</string>
     <string name="controls_show_effects">Mostra effetti</string>
     <string name="controls_smoother">Ammorbidisci</string>
-    <string name="controls_seed">Seme</string>
     <string name="controls_applies_to">Si applica a</string>
     <string name="controls_reach_mandala">Mandala</string>
 </resources>

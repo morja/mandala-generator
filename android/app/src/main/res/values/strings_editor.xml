@@ -46,9 +46,11 @@
     <!-- Editor: favourites sheet -->
     <string name="editor_favourites_add">Add current</string>
     <string name="editor_favourites_empty">No favourites yet. Add the current mandala, or open the favourites file of the Mac app (favorites.json) with Open file.</string>
-    <string name="editor_favourites_hint">Tap to use, long press to delete.</string>
+    <string name="editor_favourites_hint">Tap to use, long press to select and delete.</string>
     <string name="editor_favourite_description">Favourite: %1$s</string>
     <string name="editor_favourite_delete">Delete</string>
+    <string name="editor_favourites_selected">Selected: %d</string>
+    <string name="editor_favourites_cancel">Cancel</string>
 
     <!-- Wallpaper pair sheet -->
     <string name="pair_title">Home and lock screen</string>

@@ -60,6 +60,7 @@ import com.mathis.mandala.app.Thumbnails
 import com.mathis.mandala.core.Favorite
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -84,6 +85,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -308,7 +310,7 @@ fun EditorScreen(
             canAdd = preview.image != null,
             onAdd = vm::addFavorite,
             onApply = { vm.applyFavorite(it); showFavorites = false },
-            onDelete = { vm.removeFavorite(it.id) },
+            onDelete = { ids -> if (ids.size == 1) vm.removeFavorite(ids.first()) else vm.removeFavorites(ids) },
             onDismiss = { showFavorites = false },
             snackbar = snackbar,
         )
@@ -727,7 +729,7 @@ private fun ProSheet(pro: ProState, request: ProRequest, onBuy: () -> Unit, onWi
                 Text(pro.price?.let { stringResource(R.string.editor_pro_buy_for, it) } ?: stringResource(R.string.editor_pro_buy))
             }
             if (request.features.isNotEmpty()) {
-                OutlinedButton(onClick = onWithout, modifier = Modifier.fillMaxWidth()) {
+                OutlinedButton(colors = outlinedColors(), onClick = onWithout, modifier = Modifier.fillMaxWidth()) {
                     Text(request.action?.let { stringResource(R.string.editor_pro_without, it) } ?: stringResource(R.string.editor_pro_remove))
                 }
             }
@@ -739,7 +741,10 @@ private fun ProSheet(pro: ProState, request: ProRequest, onBuy: () -> Unit, onWi
     }
 }
 
-/** Favourites as a grid of thumbnails: tap applies, long press offers delete. */
+/**
+ * Favourites as a grid of thumbnails: tap applies. A long press starts selecting; then taps add or remove
+ * favourites, and the heading offers deleting them all at once (with Undo in the message).
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun FavoritesSheet(
@@ -747,19 +752,28 @@ private fun FavoritesSheet(
     canAdd: Boolean,
     onAdd: () -> Unit,
     onApply: (Favorite) -> Unit,
-    onDelete: (Favorite) -> Unit,
+    onDelete: (Set<String>) -> Unit,
     onDismiss: () -> Unit,
     snackbar: SnackbarHostState,
 ) {
     val t = LocalTokens.current
+    var selected by rememberSaveable { mutableStateOf(emptySet<String>()) }
+    // A favourite deleted elsewhere (or by Undo's opposite) drops out of the selection.
+    val selection = selected.filterTo(mutableSetOf()) { id -> favorites.any { it.id == id } }
     ModalBottomSheet(onDismissRequest = onDismiss) {
       // Messages show inside the sheet while it is open; behind it they would be hidden. They sit near
       // the top, because the sheet's lower part can be below the screen while it is half open.
       Box {
         Column(Modifier.padding(horizontal = Spacing.lg).padding(bottom = Spacing.xl)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(stringResource(R.string.editor_favourites), style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
-                Button(onClick = onAdd, enabled = canAdd) { Text(stringResource(R.string.editor_favourites_add)) }
+                if (selection.isEmpty()) {
+                    Text(stringResource(R.string.editor_favourites), style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
+                    Button(onClick = onAdd, enabled = canAdd) { Text(stringResource(R.string.editor_favourites_add)) }
+                } else {
+                    Text(stringResource(R.string.editor_favourites_selected, selection.size), style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
+                    TextButton(onClick = { selected = emptySet() }) { Text(stringResource(R.string.editor_favourites_cancel)) }
+                    Button(onClick = { onDelete(selection); selected = emptySet() }) { Text(stringResource(R.string.editor_favourite_delete)) }
+                }
             }
             // Below the title, so a message does not cover "Add current"; it takes no room while empty.
             MessageHost(snackbar)
@@ -778,7 +792,15 @@ private fun FavoritesSheet(
                     horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
                     verticalArrangement = Arrangement.spacedBy(Spacing.sm),
                 ) {
-                    items(favorites, key = { it.id }) { fav -> FavoriteTile(fav, onApply, onDelete) }
+                    items(favorites, key = { it.id }) { fav ->
+                        FavoriteTile(
+                            fav,
+                            selected = fav.id in selection,
+                            selecting = selection.isNotEmpty(),
+                            onApply = onApply,
+                            onToggle = { selected = if (fav.id in selection) selection - fav.id else selection + fav.id },
+                        )
+                    }
                 }
             }
         }
@@ -788,25 +810,28 @@ private fun FavoritesSheet(
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun FavoriteTile(fav: Favorite, onApply: (Favorite) -> Unit, onDelete: (Favorite) -> Unit) {
+private fun FavoriteTile(fav: Favorite, selected: Boolean, selecting: Boolean, onApply: (Favorite) -> Unit, onToggle: () -> Unit) {
     val t = LocalTokens.current
     val thumb = remember(fav.id) { Thumbnails.decode(fav.thumbnailData) }
-    var menu by remember { mutableStateOf(false) }
     val styles = fav.parameters.layers.map { stringResource(it.style.labelRes) }.joinToString(", ")
     val description = stringResource(R.string.editor_favourite_description, styles)
-    Box {
-        Box(
-            Modifier
-                .aspectRatio(1f)
-                .clip(RoundedCornerShape(Radius.sm))
-                .background(t.canvas)
-                .combinedClickable(onClick = { onApply(fav) }, onLongClick = { menu = true })
-                .semantics { contentDescription = description },
-        ) {
-            thumb?.let { Image(it, contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize()) }
-        }
-        DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
-            DropdownMenuItem(text = { Text(stringResource(R.string.editor_favourite_delete)) }, onClick = { menu = false; onDelete(fav) })
+    val shape = RoundedCornerShape(Radius.sm)
+    Box(
+        Modifier
+            .aspectRatio(1f)
+            .clip(shape)
+            .background(t.canvas)
+            .then(if (selected) Modifier.border(Sizes.swatchRing, t.accent, shape) else Modifier)
+            .combinedClickable(onClick = { if (selecting) onToggle() else onApply(fav) }, onLongClick = onToggle)
+            .semantics {
+                contentDescription = description
+                if (selecting) this.selected = selected
+            },
+    ) {
+        thumb?.let { Image(it, contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize()) }
+        if (selected) {
+            Icon(EditorIcons.Check, contentDescription = null, tint = t.onAccent,
+                modifier = Modifier.align(Alignment.TopEnd).padding(Spacing.xs).clip(CircleShape).background(t.accent).padding(Spacing.xs))
         }
     }
 }

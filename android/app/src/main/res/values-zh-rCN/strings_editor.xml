@@ -46,9 +46,11 @@
     <!-- Editor: favourites sheet -->
     <string name="editor_favourites_add">添加当前</string>
     <string name="editor_favourites_empty">还没有收藏。添加当前曼陀罗，或通过“打开文件”打开 Mac 应用的收藏文件 (favorites.json)。</string>
-    <string name="editor_favourites_hint">点按即可使用，长按即可删除。</string>
+    <string name="editor_favourites_hint">轻点即可使用，长按可选择并删除。</string>
     <string name="editor_favourite_description">收藏：%1$s</string>
     <string name="editor_favourite_delete">删除</string>
+    <string name="editor_favourites_selected">已选择：%d</string>
+    <string name="editor_favourites_cancel">取消</string>
 
     <!-- Wallpaper pair sheet -->
     <string name="pair_title">主屏幕和锁定屏幕</string>

@@ -157,7 +157,7 @@
 
     <!-- Text tab and quote list -->
     <string name="controls_random_text_look">Style de texte au hasard</string>
-    <string name="controls_text_off_note">Une citation ou vos propres mots sous le mandala, avec l\'auteur si vous le souhaitez.</string>
+    <string name="controls_text_off_note">Une citation ou vos propres mots dans l\'image, avec l\'auteur si vous le souhaitez.</string>
     <string name="controls_pro_note_text">Le texte et les citations, c\'est avec Pro. Essayez-les librement ; pour garder le mandala, il faut Pro.</string>
     <string name="controls_random_quote">Citation au hasard</string>
     <string name="controls_choose_quote">Choisir une citation</string>
@@ -199,7 +199,6 @@
     <string name="controls_seed_description">Nouvelle disposition, même style, palette et réglages</string>
     <string name="controls_show_effects">Afficher les effets</string>
     <string name="controls_smoother">Lissage</string>
-    <string name="controls_seed">Graine</string>
     <string name="controls_applies_to">S\'applique à</string>
     <string name="controls_reach_mandala">Mandala</string>
 </resources>
