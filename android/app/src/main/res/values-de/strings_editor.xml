@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Texts of the editor screen, the wallpaper pair and the live wallpaper sheets (ADR-0019). -->
+<resources>
+    <!-- Editor: messages and export progress -->
+    <string name="editor_undo">Rückgängig</string>
+    <string name="editor_progress_step">%1$s…</string>
+    <string name="editor_percent">%1$d %%</string>
+
+    <!-- Editor: top bar -->
+    <string name="editor_back">Zurück</string>
+    <string name="editor_forward">Vorwärts</string>
+    <string name="editor_surprise">Überrasch mich</string>
+    <string name="editor_save_image">Bild speichern</string>
+    <string name="editor_favourites">Favoriten</string>
+    <string name="editor_more">Mehr</string>
+
+    <!-- Editor: menu, daily wallpaper entry -->
+    <string name="editor_daily_pro">Jeden Morgen einer deiner Favoriten · Pro</string>
+    <string name="editor_daily_today">Heute: %1$s</string>
+    <string name="editor_daily_off">Deine Favoriten im Wechsel, auf Sperr- und Startbildschirm</string>
+
+    <!-- Editor: canvas -->
+    <string name="editor_show_large">Bild groß anzeigen</string>
+    <string name="editor_make_small">Bild verkleinern</string>
+    <string name="editor_larger_image">Größeres Bild</string>
+    <string name="editor_smaller_image">Kleineres Bild</string>
+    <string name="editor_preview">Mandala-Vorschau</string>
+    <string name="editor_pro_mark_action">Was Pro braucht</string>
+    <string name="editor_pro_mark_description">Dieses Mandala nutzt Pro-Funktionen</string>
+    <string name="editor_draw_hint">Zum Zeichnen über das Bild ziehen</string>
+    <string name="editor_move_layer_hint">Ziehen, um Ebene %1$d zu verschieben; mit zwei Fingern skalieren und drehen</string>
+    <string name="editor_move_emblem_hint">Ziehen, um das Emblem zu verschieben; mit zwei Fingern skalieren und drehen</string>
+
+    <!-- Editor: Pro sheet -->
+    <string name="editor_pro_title">Dahlia Pro</string>
+    <string name="editor_pro_uses_keep">Dieses Mandala nutzt, was es mit Pro gibt. Um es so zu behalten, hol dir Pro:</string>
+    <string name="editor_pro_uses">Dieses Mandala nutzt, was es mit Pro gibt:</string>
+    <string name="editor_pro_feature_item">· %1$s</string>
+    <string name="editor_pro_summary">Pro bietet bis zu fünf Ebenen, Embleme, Text und Zitate sowie verschiebbare Ebenen und Embleme. Speichern mit 2048 Pixeln Breite, mit von Hand platziertem und angepasstem Mandala, und als Strichzeichnung. Hintergründe: Start- und Sperrbildschirm als Paar, jeden Tag ein neuer und ein Live-Hintergrund. Probier mehr Ebenen, Embleme und Zitate im Editor aus, bevor du kaufst. Einmal kaufen, kein Abo.</string>
+    <string name="editor_pro_buy_for">Für %1$s kaufen</string>
+    <string name="editor_pro_buy">Pro kaufen</string>
+    <string name="editor_pro_without">%1$s ohne diese Funktionen</string>
+    <string name="editor_pro_remove">Entfernen</string>
+    <string name="editor_pro_unavailable">Pro wird über Google Play verkauft und ist in dieser Installation gerade nicht verfügbar.</string>
+
+    <!-- Editor: favourites sheet -->
+    <string name="editor_favourites_add">Aktuelles hinzufügen</string>
+    <string name="editor_favourites_empty">Noch keine Favoriten. Füge das aktuelle Mandala hinzu oder öffne die Favoritendatei der Mac-App (favorites.json) über „Datei öffnen“.</string>
+    <string name="editor_favourites_hint">Tippen zum Verwenden, lange drücken zum Löschen.</string>
+    <string name="editor_favourite_description">Favorit: %1$s</string>
+    <string name="editor_favourite_delete">Löschen</string>
+
+    <!-- Wallpaper pair sheet -->
+    <string name="pair_title">Start- und Sperrbildschirm</string>
+    <string name="pair_lock_screen">Sperrbildschirm</string>
+    <string name="pair_home_screen">Startbildschirm</string>
+    <string name="pair_screen_preview">Vorschau: %1$s</string>
+    <string name="pair_lock_note">Der Sperrbildschirm übernimmt Helligkeit, Kontrast und Sättigung aus dem Speichern-Dialog.</string>
+    <string name="pair_set_both">Beide festlegen</string>
+
+    <!-- Live wallpaper sheet -->
+    <string name="live_title">Live-Hintergrund</string>
+    <string name="live_intro">Dieses Mandala füllt den Bildschirm und dreht sich langsam, eine Umdrehung in vier Minuten. Es bewegt sich nur, während du es siehst.</string>
+    <string name="live_breathing">Atmen: Die Helligkeit steigt und fällt</string>
+    <string name="live_colour_drift">Farbwandel: Die Farben ändern sich langsam</string>
+    <string name="live_palettes_in_turn">Paletten im Wechsel: Alle zehn Minuten blendet die nächste ein</string>
+    <string name="live_daily_note">Mit aktivem täglichem Hintergrund blendet der Live-Hintergrund jeden Morgen zum nächsten Favoriten über.</string>
+    <string name="live_set">Live-Hintergrund festlegen</string>
+</resources>

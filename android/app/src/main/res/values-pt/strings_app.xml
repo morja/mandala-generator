@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Texts of the app outside the ui package: save formats, tools, messages, wallpapers, Pro (ADR-0019). -->
+<resources>
+    <!-- Save formats (ADR-0010) -->
+    <string name="format_square">Quadrado</string>
+    <string name="format_screen">Esta tela</string>
+    <string name="format_4_5">4:5</string>
+    <string name="format_3_4">3:4</string>
+    <string name="format_2_3">2:3</string>
+    <string name="format_9_16">9:16</string>
+    <string name="format_5_4">5:4</string>
+    <string name="format_4_3">4:3</string>
+    <string name="format_3_2">3:2</string>
+    <string name="format_16_9">16:9</string>
+
+    <!-- Drawing tools -->
+    <string name="draw_tool_lines">Linhas</string>
+    <string name="draw_tool_spray">Spray</string>
+
+    <!-- How much a new mandala from the menu changes -->
+    <string name="new_kind_variation">Variação</string>
+    <string name="new_kind_layers">Novas camadas</string>
+    <string name="new_kind_everything">Tudo</string>
+
+    <!-- Wallpaper targets and menu entries (ADR-0014) -->
+    <string name="wallpaper_target_home">Tela inicial</string>
+    <string name="wallpaper_target_lock">Tela de bloqueio</string>
+    <string name="wallpaper_target_both">Tela inicial e de bloqueio</string>
+    <string name="wallpaper_live">Plano de fundo animado</string>
+    <string name="wallpaper_live_pro">Plano de fundo animado · Pro</string>
+    <string name="wallpaper_pair">Inicial e bloqueio, em par</string>
+    <string name="wallpaper_pair_pro">Inicial e bloqueio, em par · Pro</string>
+    <!-- What the user was about to do when the Pro sheet opened -->
+    <string name="action_save">Salvar</string>
+    <string name="action_set_wallpaper">Definir como plano de fundo</string>
+    <string name="action_share">Compartilhar</string>
+
+    <!-- Export progress, shown with an ellipsis -->
+    <string name="export_creating_image">Criando a imagem</string>
+    <string name="export_saving_to_pictures">Salvando em Imagens</string>
+    <string name="export_creating_wallpaper">Criando o plano de fundo</string>
+    <string name="export_setting_wallpaper">Definindo o plano de fundo</string>
+    <string name="export_preparing_share">Preparando para compartilhar</string>
+    <string name="export_creating_line_drawing">Criando o desenho em linhas</string>
+    <string name="export_creating_wallpapers">Criando os planos de fundo</string>
+    <string name="export_setting_both_wallpapers">Definindo os dois planos de fundo</string>
+    <string name="export_setting_daily">Definindo o plano de fundo de hoje</string>
+    <string name="export_preparing_live">Preparando o plano de fundo animado</string>
+
+    <!-- Messages after saving, sharing and setting wallpapers; %1$s in the failures is a technical reason -->
+    <string name="message_saved_to_pictures">%1$d × %2$d salvo em Pictures/%3$s</string>
+    <string name="message_wallpaper_set">Plano de fundo definido</string>
+    <string name="message_pair_set">Tela inicial e de bloqueio definidas</string>
+    <string name="message_line_drawing_saved">Desenho em linhas salvo</string>
+    <string name="message_line_drawing_memory">Memória insuficiente para este desenho em linhas.</string>
+    <string name="message_line_drawing_failed">Não foi possível salvar o desenho em linhas: %1$s</string>
+    <string name="message_image_memory">Memória insuficiente para esta imagem.</string>
+    <string name="message_image_failed">Não foi possível criar a imagem: %1$s</string>
+    <string name="message_wallpaper_failed">Não foi possível definir o plano de fundo: %1$s</string>
+    <string name="message_preview_memory">Memória insuficiente para a prévia.</string>
+
+    <!-- Daily and live wallpaper messages; %1$s is the name of a favourite -->
+    <string name="message_daily_needs_favourite">O plano de fundo diário usa seus favoritos, um de cada vez; adicione um primeiro.</string>
+    <string name="message_daily_on">Um novo plano de fundo toda manhã</string>
+    <string name="message_daily_on_today">Hoje: %1$s. Um novo plano de fundo toda manhã</string>
+    <string name="message_live_updating">O plano de fundo animado mostrará esta mandala em instantes</string>
+
+    <!-- Favourites, quotes and pictures -->
+    <string name="message_favourite_added">Adicionado aos favoritos</string>
+    <string name="message_favourite_deleted">Favorito excluído</string>
+    <string name="message_quote_saved">Salva nas suas citações</string>
+    <string name="message_picture_failed">Não foi possível abrir a imagem: %1$s</string>
+
+    <!-- Opening and saving files of the macOS app -->
+    <string name="message_file_unreadable">Não foi possível ler o arquivo.</string>
+    <string name="message_file_no_layers">O arquivo não tem camadas.</string>
+    <string name="message_file_unknown">Este não é um arquivo de configurações ou de favoritos do Mandala.</string>
+    <string name="message_settings_saved">Configurações salvas</string>
+    <string name="message_settings_failed">Não foi possível salvar as configurações.</string>
+    <plurals name="message_favourites_imported">
+        <item quantity="one">%d favorito importado</item>
+        <item quantity="many">%d favoritos importados</item>
+        <item quantity="other">%d favoritos importados</item>
+    </plurals>
+    <plurals name="message_favourites_already_there">
+        <item quantity="one">%d já estava lá</item>
+        <item quantity="many">%d já estavam lá</item>
+        <item quantity="other">%d já estavam lá</item>
+    </plurals>
+    <!-- %1$s is the import message, %2$s how many were already there -->
+    <string name="message_favourites_imported_note">%1$s (%2$s)</string>
+
+    <!-- Google Play purchase of Pro (ADR-0007); %1$s is Google Play's reason, %1$d its code -->
+    <string name="pro_purchase_failed">A compra não foi concluída (%1$s).</string>
+    <string name="pro_purchase_code">código %1$d</string>
+    <string name="pro_unavailable">Não é possível comprar o Pro aqui no momento. Ele é vendido pelo Google Play.</string>
+    <string name="pro_unlocked">Obrigado! O Pro está desbloqueado.</string>
+    <string name="pro_pending">A compra está pendente. O Pro será desbloqueado assim que for paga.</string>
+</resources>

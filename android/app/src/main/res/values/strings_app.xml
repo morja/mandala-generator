@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Texts of the app outside the ui package: save formats, tools, messages, wallpapers, Pro (ADR-0019). -->
+<resources>
+    <!-- Save formats (ADR-0010) -->
+    <string name="format_square">Square</string>
+    <string name="format_screen">This screen</string>
+    <string name="format_4_5">4:5</string>
+    <string name="format_3_4">3:4</string>
+    <string name="format_2_3">2:3</string>
+    <string name="format_9_16">9:16</string>
+    <string name="format_5_4">5:4</string>
+    <string name="format_4_3">4:3</string>
+    <string name="format_3_2">3:2</string>
+    <string name="format_16_9">16:9</string>
+
+    <!-- Drawing tools -->
+    <string name="draw_tool_lines">Lines</string>
+    <string name="draw_tool_spray">Spray</string>
+
+    <!-- How much a new mandala from the menu changes -->
+    <string name="new_kind_variation">Variation</string>
+    <string name="new_kind_layers">New layers</string>
+    <string name="new_kind_everything">Everything</string>
+
+    <!-- Wallpaper targets and menu entries (ADR-0014) -->
+    <string name="wallpaper_target_home">Home screen</string>
+    <string name="wallpaper_target_lock">Lock screen</string>
+    <string name="wallpaper_target_both">Home and lock screen</string>
+    <string name="wallpaper_live">Live wallpaper</string>
+    <string name="wallpaper_live_pro">Live wallpaper · Pro</string>
+    <string name="wallpaper_pair">Home and lock, as a pair</string>
+    <string name="wallpaper_pair_pro">Home and lock, as a pair · Pro</string>
+    <!-- What the user was about to do when the Pro sheet opened -->
+    <string name="action_save">Save</string>
+    <string name="action_set_wallpaper">Set as wallpaper</string>
+    <string name="action_share">Share</string>
+
+    <!-- Export progress, shown with an ellipsis -->
+    <string name="export_creating_image">Creating the image</string>
+    <string name="export_saving_to_pictures">Saving to Pictures</string>
+    <string name="export_creating_wallpaper">Creating the wallpaper</string>
+    <string name="export_setting_wallpaper">Setting the wallpaper</string>
+    <string name="export_preparing_share">Preparing to share</string>
+    <string name="export_creating_line_drawing">Creating the line drawing</string>
+    <string name="export_creating_wallpapers">Creating the wallpapers</string>
+    <string name="export_setting_both_wallpapers">Setting both wallpapers</string>
+    <string name="export_setting_daily">Setting today\'s wallpaper</string>
+    <string name="export_preparing_live">Preparing the live wallpaper</string>
+
+    <!-- Messages after saving, sharing and setting wallpapers; %1$s in the failures is a technical reason -->
+    <string name="message_saved_to_pictures">Saved %1$d × %2$d to Pictures/%3$s</string>
+    <string name="message_wallpaper_set">Wallpaper set</string>
+    <string name="message_pair_set">Home and lock screen set</string>
+    <string name="message_line_drawing_saved">Line drawing saved</string>
+    <string name="message_line_drawing_memory">Not enough memory for this line drawing.</string>
+    <string name="message_line_drawing_failed">Could not save the line drawing: %1$s</string>
+    <string name="message_image_memory">Not enough memory for this image.</string>
+    <string name="message_image_failed">Could not create the image: %1$s</string>
+    <string name="message_wallpaper_failed">Could not set the wallpaper: %1$s</string>
+    <string name="message_preview_memory">Not enough memory for the preview.</string>
+
+    <!-- Daily and live wallpaper messages; %1$s is the name of a favourite -->
+    <string name="message_daily_needs_favourite">The daily wallpaper takes your favourites in turn; add one first.</string>
+    <string name="message_daily_on">A new wallpaper every morning</string>
+    <string name="message_daily_on_today">Today: %1$s. A new wallpaper every morning</string>
+    <string name="message_live_updating">The live wallpaper shows this mandala in a moment</string>
+
+    <!-- Favourites, quotes and pictures -->
+    <string name="message_favourite_added">Added to favourites</string>
+    <string name="message_favourite_deleted">Favourite deleted</string>
+    <string name="message_quote_saved">Saved to your quotes</string>
+    <string name="message_picture_failed">Could not open the picture: %1$s</string>
+
+    <!-- Opening and saving files of the macOS app -->
+    <string name="message_file_unreadable">Could not read the file.</string>
+    <string name="message_file_no_layers">The file has no layers.</string>
+    <string name="message_file_unknown">This is not a Mandala settings or favourites file.</string>
+    <string name="message_settings_saved">Settings saved</string>
+    <string name="message_settings_failed">Could not save the settings.</string>
+    <plurals name="message_favourites_imported">
+        <item quantity="one">Imported %d favourite</item>
+        <item quantity="other">Imported %d favourites</item>
+    </plurals>
+    <plurals name="message_favourites_already_there">
+        <item quantity="one">%d was already there</item>
+        <item quantity="other">%d were already there</item>
+    </plurals>
+    <!-- %1$s is the import message, %2$s how many were already there -->
+    <string name="message_favourites_imported_note">%1$s (%2$s)</string>
+
+    <!-- Google Play purchase of Pro (ADR-0007); %1$s is Google Play's reason, %1$d its code -->
+    <string name="pro_purchase_failed">The purchase did not go through (%1$s).</string>
+    <string name="pro_purchase_code">code %1$d</string>
+    <string name="pro_unavailable">Pro cannot be bought here right now. It is sold through Google Play.</string>
+    <string name="pro_unlocked">Thank you! Pro is unlocked.</string>
+    <string name="pro_pending">The purchase is pending. Pro unlocks once it is paid.</string>
+</resources>

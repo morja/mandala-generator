@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Texts of the app outside the ui package: save formats, tools, messages, wallpapers, Pro (ADR-0019). -->
+<resources>
+    <!-- Save formats (ADR-0010) -->
+    <string name="format_square">정사각형</string>
+    <string name="format_screen">현재 화면</string>
+    <string name="format_4_5">4:5</string>
+    <string name="format_3_4">3:4</string>
+    <string name="format_2_3">2:3</string>
+    <string name="format_9_16">9:16</string>
+    <string name="format_5_4">5:4</string>
+    <string name="format_4_3">4:3</string>
+    <string name="format_3_2">3:2</string>
+    <string name="format_16_9">16:9</string>
+
+    <!-- Drawing tools -->
+    <string name="draw_tool_lines">선</string>
+    <string name="draw_tool_spray">스프레이</string>
+
+    <!-- How much a new mandala from the menu changes -->
+    <string name="new_kind_variation">변형</string>
+    <string name="new_kind_layers">새 레이어</string>
+    <string name="new_kind_everything">전부</string>
+
+    <!-- Wallpaper targets and menu entries (ADR-0014) -->
+    <string name="wallpaper_target_home">홈 화면</string>
+    <string name="wallpaper_target_lock">잠금 화면</string>
+    <string name="wallpaper_target_both">홈 화면 및 잠금 화면</string>
+    <string name="wallpaper_live">라이브 배경화면</string>
+    <string name="wallpaper_live_pro">라이브 배경화면 · Pro</string>
+    <string name="wallpaper_pair">홈 및 잠금 화면, 한 쌍으로</string>
+    <string name="wallpaper_pair_pro">홈 및 잠금 화면, 한 쌍으로 · Pro</string>
+    <!-- What the user was about to do when the Pro sheet opened -->
+    <string name="action_save">저장</string>
+    <string name="action_set_wallpaper">배경화면으로 설정</string>
+    <string name="action_share">공유</string>
+
+    <!-- Export progress, shown with an ellipsis -->
+    <string name="export_creating_image">이미지 만드는 중</string>
+    <string name="export_saving_to_pictures">Pictures 폴더에 저장 중</string>
+    <string name="export_creating_wallpaper">배경화면 만드는 중</string>
+    <string name="export_setting_wallpaper">배경화면 설정 중</string>
+    <string name="export_preparing_share">공유 준비 중</string>
+    <string name="export_creating_line_drawing">선화 만드는 중</string>
+    <string name="export_creating_wallpapers">배경화면 만드는 중</string>
+    <string name="export_setting_both_wallpapers">두 배경화면 설정 중</string>
+    <string name="export_setting_daily">오늘의 배경화면 설정 중</string>
+    <string name="export_preparing_live">라이브 배경화면 준비 중</string>
+
+    <!-- Messages after saving, sharing and setting wallpapers; %1$s in the failures is a technical reason -->
+    <string name="message_saved_to_pictures">%1$d × %2$d 이미지를 Pictures/%3$s에 저장했습니다</string>
+    <string name="message_wallpaper_set">배경화면이 설정되었습니다</string>
+    <string name="message_pair_set">홈 화면과 잠금 화면이 설정되었습니다</string>
+    <string name="message_line_drawing_saved">선화를 저장했습니다</string>
+    <string name="message_line_drawing_memory">이 선화를 만들 메모리가 부족합니다.</string>
+    <string name="message_line_drawing_failed">선화를 저장할 수 없습니다: %1$s</string>
+    <string name="message_image_memory">이 이미지를 만들 메모리가 부족합니다.</string>
+    <string name="message_image_failed">이미지를 만들 수 없습니다: %1$s</string>
+    <string name="message_wallpaper_failed">배경화면을 설정할 수 없습니다: %1$s</string>
+    <string name="message_preview_memory">미리보기를 만들 메모리가 부족합니다.</string>
+
+    <!-- Daily and live wallpaper messages; %1$s is the name of a favourite -->
+    <string name="message_daily_needs_favourite">매일 배경화면은 즐겨찾기를 차례로 사용합니다. 먼저 즐겨찾기를 추가하세요.</string>
+    <string name="message_daily_on">매일 아침 새 배경화면</string>
+    <string name="message_daily_on_today">오늘: %1$s. 매일 아침 새 배경화면</string>
+    <string name="message_live_updating">잠시 후 라이브 배경화면에 이 만다라가 표시됩니다</string>
+
+    <!-- Favourites, quotes and pictures -->
+    <string name="message_favourite_added">즐겨찾기에 추가했습니다</string>
+    <string name="message_favourite_deleted">즐겨찾기를 삭제했습니다</string>
+    <string name="message_quote_saved">내 명언에 저장했습니다</string>
+    <string name="message_picture_failed">사진을 열 수 없습니다: %1$s</string>
+
+    <!-- Opening and saving files of the macOS app -->
+    <string name="message_file_unreadable">파일을 읽을 수 없습니다.</string>
+    <string name="message_file_no_layers">파일에 레이어가 없습니다.</string>
+    <string name="message_file_unknown">Mandala 설정 파일이나 즐겨찾기 파일이 아닙니다.</string>
+    <string name="message_settings_saved">설정을 저장했습니다</string>
+    <string name="message_settings_failed">설정을 저장할 수 없습니다.</string>
+    <plurals name="message_favourites_imported">
+        <item quantity="other">즐겨찾기 %d개를 가져왔습니다</item>
+    </plurals>
+    <plurals name="message_favourites_already_there">
+        <item quantity="other">%d개는 이미 있습니다</item>
+    </plurals>
+    <!-- %1$s is the import message, %2$s how many were already there -->
+    <string name="message_favourites_imported_note">%1$s (%2$s)</string>
+
+    <!-- Google Play purchase of Pro (ADR-0007); %1$s is Google Play's reason, %1$d its code -->
+    <string name="pro_purchase_failed">구매가 완료되지 않았습니다(%1$s).</string>
+    <string name="pro_purchase_code">코드 %1$d</string>
+    <string name="pro_unavailable">지금은 여기에서 Pro를 구매할 수 없습니다. Pro는 Google Play에서 판매됩니다.</string>
+    <string name="pro_unlocked">감사합니다! Pro가 잠금 해제되었습니다.</string>
+    <string name="pro_pending">구매가 대기 중입니다. 결제가 완료되면 Pro가 잠금 해제됩니다.</string>
+</resources>

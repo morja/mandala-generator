@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Texts of the control tabs below or beside the canvas (Controls.kt, Parts.kt; ADR-0019). -->
+<resources>
+
+    <!-- Tab row and the header beside the folded image -->
+    <string name="controls_tab_layers">Calques</string>
+    <string name="controls_tab_scene">Scène</string>
+    <string name="controls_tab_emblem">Emblème</string>
+    <string name="controls_tab_text">Texte</string>
+    <string name="controls_tab_draw">Dessin</string>
+    <string name="controls_header_no_layers">Aucun calque</string>
+    <string name="controls_header_no_background">Aucun arrière-plan</string>
+    <string name="controls_header_strokes">%1$s · %2$s</string>
+    <plurals name="controls_header_lines">
+        <item quantity="one">%d ligne</item>
+        <item quantity="many">%d de lignes</item>
+        <item quantity="other">%d lignes</item>
+    </plurals>
+    <plurals name="controls_header_spray">
+        <item quantity="one">%d jet</item>
+        <item quantity="many">%d de jets</item>
+        <item quantity="other">%d jets</item>
+    </plurals>
+
+    <!-- Shared summaries: blend mode with opacity, the Pro mark -->
+    <string name="controls_blend_summary">%1$s · %2$d %%</string>
+    <string name="controls_with_pro">%1$s · Pro</string>
+
+    <!-- Foldable groups and sliders (accessibility) -->
+    <string name="controls_group_open">Ouvrir %1$s</string>
+    <string name="controls_group_close">Fermer %1$s</string>
+    <string name="controls_group_state_open">Ouvert</string>
+    <string name="controls_group_state_closed">Fermé</string>
+    <string name="controls_slider_reset">Réinitialiser %1$s</string>
+
+    <!-- Layers tab: actions and layer rows -->
+    <string name="controls_layers_add">Ajouter</string>
+    <string name="controls_layers_duplicate">Dupliquer</string>
+    <string name="controls_layers_randomize">Calque %1$d au hasard</string>
+    <string name="controls_layer_hide">Masquer le calque %1$d</string>
+    <string name="controls_layer_show">Afficher le calque %1$d</string>
+    <string name="controls_layer_move_up">Monter le calque %1$d</string>
+    <string name="controls_layer_move_down">Descendre le calque %1$d</string>
+    <string name="controls_style_new_variant">Nouvelle variante %1$s</string>
+    <string name="controls_position_centred">Centré</string>
+    <string name="controls_position_moved">Déplacé</string>
+
+    <!-- Scene tab: background types -->
+    <string name="controls_background_auto">Auto</string>
+    <string name="controls_background_picture">Image</string>
+    <string name="controls_background_colour">Couleur</string>
+    <string name="controls_background_gradient">Dégradé</string>
+    <string name="controls_background_sunburst">Soleil</string>
+    <string name="controls_background_grain">Grain</string>
+
+    <!-- Emblem and text tabs: on/off rows -->
+    <string name="controls_emblem_show">Afficher l\'emblème</string>
+    <string name="controls_emblem_shape_seed">Forme %1$s</string>
+    <string name="controls_text_show">Afficher le texte</string>
+    <string name="controls_text_in_my_quotes">Dans vos citations</string>
+    <string name="controls_text_save_to_my_quotes">Ajouter à mes citations</string>
+    <string name="controls_quotes_collection">Collection</string>
+
+    <!-- Draw tab: show switch per tool -->
+    <string name="controls_draw_show_lines">Afficher les lignes</string>
+    <string name="controls_draw_show_spray">Afficher le spray</string>
+
+    <!-- Layers tab: group titles, sliders and notes (some shared with other tabs) -->
+    <string name="controls_pro_note_layers">Plus de trois calques, c\'est avec Pro. Essayez-les librement ; pour garder le mandala, il faut Pro.</string>
+    <string name="controls_delete">Supprimer</string>
+    <string name="controls_about_pro">À propos de Pro</string>
+    <string name="controls_position">Position</string>
+    <string name="controls_pro_note_position">Déplacer les calques, c\'est avec Pro. Essayez librement ; pour garder le mandala, il faut Pro.</string>
+    <string name="controls_position_hidden_note">Ce calque est masqué. Affichez-le pour voir où il se déplace.</string>
+    <string name="controls_across">Horizontal</string>
+    <string name="controls_up_and_down">Vertical</string>
+    <string name="controls_centre">Centrer</string>
+    <string name="controls_done">OK</string>
+    <string name="controls_move_on_image">Déplacer sur l\'image</string>
+    <string name="controls_style">Style</string>
+    <string name="controls_palette">Palette</string>
+    <string name="controls_blending">Fusion</string>
+    <string name="controls_opacity">Opacité</string>
+    <string name="controls_shape">Forme</string>
+    <string name="controls_shape_new_arrangement">Nouvelle disposition, même style et même palette</string>
+    <string name="controls_symmetry">Symétrie</string>
+    <string name="controls_scale">Échelle</string>
+    <string name="controls_complexity">Complexité</string>
+    <string name="controls_spokes">Rayons</string>
+    <string name="controls_density">Densité</string>
+    <string name="controls_ripple">Ondulation</string>
+    <string name="controls_light_and_colour">Lumière et couleur</string>
+    <string name="controls_glow">Lueur</string>
+    <string name="controls_colour_drift">Dérive des couleurs</string>
+    <string name="controls_painted">Peint</string>
+    <string name="controls_saturation">Saturation</string>
+    <string name="controls_brightness">Luminosité</string>
+
+    <!-- Scene tab: background and effects -->
+    <string name="controls_background">Arrière-plan</string>
+    <string name="controls_off">Désactivé</string>
+    <string name="controls_background_auto_note">Une lueur sombre et de fines fibres aux couleurs du calque du bas.</string>
+    <string name="controls_choose_picture">Choisir une image</string>
+    <string name="controls_strength">Intensité</string>
+    <string name="controls_colour_1">Couleur 1</string>
+    <string name="controls_colour">Couleur</string>
+    <string name="controls_colour_2">Couleur 2</string>
+    <string name="controls_radial">Radial</string>
+    <string name="controls_angle">Angle</string>
+    <string name="controls_rays">Rayons</string>
+    <string name="controls_sharpness">Netteté</string>
+    <string name="controls_grain">Grain</string>
+    <string name="controls_coloured_grain">Grain coloré</string>
+    <string name="controls_effects">Effets</string>
+    <string name="controls_on">Activé</string>
+    <string name="controls_effects_new_pattern">Nouvelle répartition des reflets, assombrissements, étoiles et paillettes</string>
+    <string name="controls_reset">Réinitialiser</string>
+    <string name="controls_effects_off_note">Activez pour utiliser vignette, halo, grain, étoiles et plus encore.</string>
+    <string name="controls_light">Lumière</string>
+    <string name="controls_contrast">Contraste</string>
+    <string name="controls_vignette">Vignette</string>
+    <string name="controls_bloom">Halo</string>
+    <string name="controls_tone">Ton</string>
+    <string name="controls_sepia">Sépia</string>
+    <string name="controls_fade">Délavé</string>
+    <string name="controls_texture">Texture</string>
+    <string name="controls_clarity">Clarté</string>
+    <string name="controls_sparkle">Scintillement</string>
+    <string name="controls_stars">Étoiles</string>
+    <string name="controls_glitter">Paillettes</string>
+    <string name="controls_more">Plus</string>
+    <string name="controls_highlights">Reflets</string>
+    <string name="controls_dimming">Assombrissement</string>
+    <string name="controls_erasure">Effacement</string>
+    <string name="controls_relief">Relief</string>
+    <string name="controls_relief_angle">Angle du relief</string>
+    <string name="controls_chromatic">Chromatique</string>
+    <string name="controls_old_fade">Vieilli</string>
+
+    <!-- Emblem tab -->
+    <string name="controls_random_emblem">Emblème au hasard</string>
+    <string name="controls_emblem_off_note">Un motif dessiné en grand au centre : Om, Arbre de vie, Fleur de vie, Lotus et plus encore.</string>
+    <string name="controls_pro_note_emblem">L\'emblème, c\'est avec Pro. Essayez-le librement ; pour garder le mandala, il faut Pro.</string>
+    <string name="controls_motif">Motif</string>
+    <string name="controls_variant">Variante</string>
+    <string name="controls_petals">Pétales</string>
+    <string name="controls_organic">Organique</string>
+    <string name="controls_new_shape">Nouvelle forme</string>
+    <string name="controls_branches">Branches</string>
+    <string name="controls_roots">Racines</string>
+    <string name="controls_style_and_frame">Style et cadre</string>
+    <string name="controls_frame">Cadre</string>
+    <string name="controls_size">Taille</string>
+    <string name="controls_weight">Épaisseur</string>
+    <string name="controls_rotate">Rotation</string>
+    <string name="controls_spread">Étalement</string>
+
+    <!-- Text tab and quote list -->
+    <string name="controls_random_text_look">Style de texte au hasard</string>
+    <string name="controls_text_off_note">Une citation ou vos propres mots sous le mandala, avec l\'auteur si vous le souhaitez.</string>
+    <string name="controls_pro_note_text">Le texte et les citations, c\'est avec Pro. Essayez-les librement ; pour garder le mandala, il faut Pro.</string>
+    <string name="controls_random_quote">Citation au hasard</string>
+    <string name="controls_choose_quote">Choisir une citation</string>
+    <string name="controls_text_field">Texte</string>
+    <string name="controls_author">Auteur</string>
+    <string name="controls_show_author">Afficher l\'auteur</string>
+    <string name="controls_font">Police</string>
+    <string name="controls_size_and_place">Taille et position</string>
+    <string name="controls_width">Largeur</string>
+    <string name="controls_tracking">Interlettrage</string>
+    <string name="controls_height">Hauteur</string>
+    <string name="controls_cloud">Nuage</string>
+    <string name="controls_cloud_size">Taille du nuage</string>
+    <string name="controls_cloud_colour">Couleur du nuage</string>
+    <string name="controls_shadow">Ombre</string>
+    <string name="controls_shadow_colour">Couleur de l\'ombre</string>
+    <string name="controls_hue">Teinte</string>
+    <string name="controls_close">Fermer</string>
+    <string name="controls_quotes">Citations</string>
+    <string name="controls_your_quotes">Vos citations</string>
+    <string name="controls_remove_quote">Retirer la citation</string>
+    <string name="controls_quotes_public_domain">Toutes les citations de la collection sont dans le domaine public.</string>
+
+    <!-- Draw tab -->
+    <string name="controls_draw_on_image">Dessiner sur l\'image</string>
+    <string name="controls_undo">Annuler</string>
+    <string name="controls_clear">Effacer</string>
+    <string name="controls_line_colour">Couleur du trait</string>
+    <string name="controls_line_and_light">Trait et lumière</string>
+    <string name="controls_brush_size">Taille du pinceau</string>
+    <string name="controls_paint">Peinture</string>
+    <string name="controls_spray_colour">Couleur du spray</string>
+    <string name="controls_softness_and_blending">Douceur et fusion</string>
+    <string name="controls_softness">Douceur</string>
+    <!-- Added with main's variation/seed rows and Smoother -->
+    <string name="controls_variation_detail">Couleurs et réglages</string>
+    <string name="controls_variation_description">Nouvelles couleurs et réglages, même style</string>
+    <string name="controls_seed_detail">Disposition</string>
+    <string name="controls_seed_description">Nouvelle disposition, même style, palette et réglages</string>
+    <string name="controls_show_effects">Afficher les effets</string>
+    <string name="controls_smoother">Lissage</string>
+    <string name="controls_seed">Graine</string>
+    <string name="controls_applies_to">S\'applique à</string>
+    <string name="controls_reach_mandala">Mandala</string>
+</resources>

@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Texts of the editor screen, the wallpaper pair and the live wallpaper sheets (ADR-0019). -->
+<resources>
+    <!-- Editor: messages and export progress -->
+    <string name="editor_undo">Desfazer</string>
+    <string name="editor_progress_step">%1$s…</string>
+    <string name="editor_percent">%1$d %%</string>
+
+    <!-- Editor: top bar -->
+    <string name="editor_back">Voltar</string>
+    <string name="editor_forward">Avançar</string>
+    <string name="editor_surprise">Surpreenda-me</string>
+    <string name="editor_save_image">Salvar imagem</string>
+    <string name="editor_favourites">Favoritos</string>
+    <string name="editor_more">Mais</string>
+
+    <!-- Editor: menu, daily wallpaper entry -->
+    <string name="editor_daily_pro">Seus favoritos, um a cada manhã · Pro</string>
+    <string name="editor_daily_today">Hoje: %1$s</string>
+    <string name="editor_daily_off">Seus favoritos, um de cada vez, na tela de bloqueio e na inicial</string>
+
+    <!-- Editor: canvas -->
+    <string name="editor_show_large">Mostrar a imagem grande</string>
+    <string name="editor_make_small">Deixar a imagem pequena</string>
+    <string name="editor_larger_image">Imagem maior</string>
+    <string name="editor_smaller_image">Imagem menor</string>
+    <string name="editor_preview">Prévia da mandala</string>
+    <string name="editor_pro_mark_action">O que precisa do Pro</string>
+    <string name="editor_pro_mark_description">Esta mandala usa recursos do Pro</string>
+    <string name="editor_draw_hint">Arraste na imagem para desenhar</string>
+    <string name="editor_move_layer_hint">Arraste para mover a camada %1$d, use o gesto de pinça para redimensionar e girar</string>
+    <string name="editor_move_emblem_hint">Arraste para mover o emblema, use o gesto de pinça para redimensionar e girar</string>
+
+    <!-- Editor: Pro sheet -->
+    <string name="editor_pro_title">Dahlia Pro</string>
+    <string name="editor_pro_uses_keep">Esta mandala usa o que vem com o Pro. Para mantê-la como está, adquira o Pro:</string>
+    <string name="editor_pro_uses">Esta mandala usa o que vem com o Pro:</string>
+    <string name="editor_pro_feature_item">· %1$s</string>
+    <string name="editor_pro_summary">O Pro oferece até cinco camadas, emblemas, texto e citações, além de mover as camadas e o emblema. Salve com 2048 pixels de largura, com a mandala posicionada à mão e ajustada, e como desenho em linhas. Planos de fundo: tela inicial e de bloqueio em par, um novo a cada dia e um plano de fundo animado. Experimente mais camadas, emblemas e citações no editor antes de comprar. Uma única compra, sem assinatura.</string>
+    <string name="editor_pro_buy_for">Comprar por %1$s</string>
+    <string name="editor_pro_buy">Comprar o Pro</string>
+    <string name="editor_pro_without">%1$s sem eles</string>
+    <string name="editor_pro_remove">Remover</string>
+    <string name="editor_pro_unavailable">O Pro é vendido pelo Google Play e não está disponível nesta instalação no momento.</string>
+
+    <!-- Editor: favourites sheet -->
+    <string name="editor_favourites_add">Adicionar atual</string>
+    <string name="editor_favourites_empty">Nenhum favorito ainda. Adicione a mandala atual ou abra o arquivo de favoritos do app para Mac (favorites.json) com Abrir arquivo.</string>
+    <string name="editor_favourites_hint">Toque para usar, toque e mantenha pressionado para excluir.</string>
+    <string name="editor_favourite_description">Favorito: %1$s</string>
+    <string name="editor_favourite_delete">Excluir</string>
+
+    <!-- Wallpaper pair sheet -->
+    <string name="pair_title">Tela inicial e de bloqueio</string>
+    <string name="pair_lock_screen">Tela de bloqueio</string>
+    <string name="pair_home_screen">Tela inicial</string>
+    <string name="pair_screen_preview">Prévia: %1$s</string>
+    <string name="pair_lock_note">A tela de bloqueio usa a luminosidade, o contraste e a saturação da tela de salvar.</string>
+    <string name="pair_set_both">Definir ambas</string>
+
+    <!-- Live wallpaper sheet -->
+    <string name="live_title">Plano de fundo animado</string>
+    <string name="live_intro">Esta mandala preenche a tela e gira devagar, uma volta a cada quatro minutos. Ela só se move enquanto você a vê.</string>
+    <string name="live_breathing">Respiração: a luminosidade sobe e desce</string>
+    <string name="live_colour_drift">Deriva de cor: as cores mudam devagar</string>
+    <string name="live_palettes_in_turn">Paletas em sequência: a próxima surge a cada dez minutos</string>
+    <string name="live_daily_note">Com o plano de fundo diário ativado, o plano de fundo animado passa suavemente para o próximo favorito toda manhã.</string>
+    <string name="live_set">Definir plano de fundo animado</string>
+</resources>

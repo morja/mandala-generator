@@ -56,6 +56,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.stateDescription
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import com.mathis.mandala.app.ui.theme.LocalTokens
@@ -63,6 +64,7 @@ import com.mathis.mandala.app.ui.theme.Radius
 import com.mathis.mandala.app.ui.theme.Sizes
 import com.mathis.mandala.app.ui.theme.Spacing
 import com.mathis.mandala.app.Editing
+import com.mathis.mandala.app.R
 import com.mathis.mandala.core.BuiltInPalettes
 import com.mathis.mandala.core.ColorPalette
 import com.mathis.mandala.core.LayerBlendMode
@@ -90,6 +92,8 @@ internal fun Group(
 ) {
     val t = LocalTokens.current
     var open by openState
+    val toggleLabel = stringResource(if (open) R.string.controls_group_close else R.string.controls_group_open, title)
+    val state = stringResource(if (open) R.string.controls_group_state_open else R.string.controls_group_state_closed)
     val shape = RoundedCornerShape(Radius.sm)
     val container = if (framed) Modifier
         .clip(shape)
@@ -106,8 +110,8 @@ internal fun Group(
         Row(
             Modifier.fillMaxWidth()
                 .heightIn(min = Sizes.icon * 2)
-                .clickable(onClickLabel = if (open) "Close $title" else "Open $title") { open = !open }
-                .semantics { stateDescription = if (open) "Open" else "Closed" }
+                .clickable(onClickLabel = toggleLabel) { open = !open }
+                .semantics { stateDescription = state }
                 .padding(horizontal = Spacing.sm),
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -204,11 +208,12 @@ internal fun SteppedSlider(label: String, value: Int, range: IntRange, default: 
 @Composable
 private fun SliderRow(label: String, value: String, onReset: () -> Unit, slider: @Composable () -> Unit) {
     val t = LocalTokens.current
+    val resetLabel = stringResource(R.string.controls_slider_reset, label)
     Row(
         Modifier
             .fillMaxWidth()
             .onDoubleTap(onReset)
-            .semantics { customActions = listOf(CustomAccessibilityAction("Reset $label") { onReset(); true }) },
+            .semantics { customActions = listOf(CustomAccessibilityAction(resetLabel) { onReset(); true }) },
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
@@ -284,9 +289,9 @@ internal fun ColourGroup(
     onChange: (Double, Double, Double) -> Unit,
 ) {
     Group(title, inset = inset, initiallyOpen = initiallyOpen, trailing = { ColourDot(hsbColour(hue, saturation, brightness)) }) {
-        ValueSlider("Hue", hue, default = defaults.first) { v -> onChange(v, saturation, brightness) }
-        ValueSlider("Saturation", saturation, default = defaults.second) { v -> onChange(hue, v, brightness) }
-        ValueSlider("Brightness", brightness, brightnessRange, default = defaults.third) { v -> onChange(hue, saturation, v) }
+        ValueSlider(stringResource(R.string.controls_hue), hue, default = defaults.first) { v -> onChange(v, saturation, brightness) }
+        ValueSlider(stringResource(R.string.save_saturation), saturation, default = defaults.second) { v -> onChange(hue, v, brightness) }
+        ValueSlider(stringResource(R.string.save_brightness), brightness, brightnessRange, default = defaults.third) { v -> onChange(hue, saturation, v) }
     }
 }
 
@@ -303,7 +308,7 @@ internal fun hsbColour(h: Double, s: Double, b: Double): Color =
 internal fun BlendChips(mode: LayerBlendMode, onChange: (LayerBlendMode) -> Unit) {
     FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
         for (m in LayerBlendMode.entries) {
-            FilterChip(selected = mode == m, onClick = { onChange(m) }, label = { Text(m.displayName) })
+            FilterChip(selected = mode == m, onClick = { onChange(m) }, label = { Text(stringResource(m.labelRes)) })
         }
     }
 }

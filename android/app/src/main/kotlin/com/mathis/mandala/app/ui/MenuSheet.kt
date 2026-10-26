@@ -1,5 +1,6 @@
 package com.mathis.mandala.app.ui
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -44,11 +45,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import com.mathis.mandala.app.Candidate
 import com.mathis.mandala.app.NewKind
+import com.mathis.mandala.app.R
 import com.mathis.mandala.app.WallpaperTarget
 import com.mathis.mandala.app.ui.theme.LocalTokens
 import com.mathis.mandala.app.ui.theme.Radius
@@ -119,11 +123,15 @@ private fun Current(params: MandalaParameters, image: ImageBitmap?) {
         Thumb(image, Modifier.size(Sizes.favourite / 2))
         Column(Modifier.weight(1f)) {
             Text(
-                layers.joinToString(", ") { it.style.displayName }.ifEmpty { "No layers" },
+                layers.map { stringResource(it.style.labelRes) }.joinToString(", ").ifEmpty { stringResource(R.string.menu_no_layers) },
                 style = MaterialTheme.typography.titleSmall, maxLines = 1, overflow = TextOverflow.Ellipsis,
             )
             Text(
-                "${layers.size} ${if (layers.size == 1) "layer" else "layers"} · emblem ${if (params.emblemLayer.isEnabled) "on" else "off"}",
+                pluralStringResource(
+                    if (params.emblemLayer.isEnabled) R.plurals.menu_layers_emblem_on else R.plurals.menu_layers_emblem_off,
+                    layers.size,
+                    layers.size,
+                ),
                 style = MaterialTheme.typography.bodySmall, color = t.textMuted,
             )
         }
@@ -133,14 +141,14 @@ private fun Current(params: MandalaParameters, image: ImageBitmap?) {
 @Composable
 private fun KeepRow(busy: Boolean, actions: MenuActions) {
     Row(Modifier.padding(top = Spacing.md), horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
-        Pill(EditorIcons.StarLine, "Favourite", onClick = actions.onFavourite)
-        Pill(EditorIcons.Share, "Share", enabled = !busy, onClick = actions.onShare)
+        Pill(EditorIcons.StarLine, stringResource(R.string.menu_favourite), onClick = actions.onFavourite)
+        Pill(EditorIcons.Share, stringResource(R.string.menu_share), enabled = !busy, onClick = actions.onShare)
         var open by remember { mutableStateOf(false) }
         Box(Modifier.weight(1f)) {
-            PillContent(EditorIcons.Wallpaper, "Wallpaper", !busy, { open = true }, Modifier.fillMaxWidth())
+            PillContent(EditorIcons.Wallpaper, stringResource(R.string.menu_wallpaper), !busy, { open = true }, Modifier.fillMaxWidth())
             DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
                 for (target in WallpaperTarget.entries) {
-                    DropdownMenuItem(text = { Text(target.label) }, onClick = { open = false; actions.onWallpaper(target) })
+                    DropdownMenuItem(text = { Text(stringResource(target.label)) }, onClick = { open = false; actions.onWallpaper(target) })
                 }
                 DropdownMenuItem(text = { Text(actions.pairLabel) }, onClick = { open = false; actions.onPair() })
                 DropdownMenuItem(text = { Text(actions.liveLabel) }, onClick = { open = false; actions.onLive() })
@@ -167,18 +175,18 @@ private fun PillContent(icon: ImageVector, label: String, enabled: Boolean, onCl
     }
 }
 
-private class DieChoice(val kind: NewKind, val icon: ImageVector, val title: String, val detail: String, val steps: Int)
+private class DieChoice(val kind: NewKind, val icon: ImageVector, @StringRes val title: Int, @StringRes val detail: Int, val steps: Int)
 
 private val dice = listOf(
-    DieChoice(NewKind.VARIATION, EditorIcons.DieOne, "Variation", "new details", 1),
-    DieChoice(NewKind.LAYERS, EditorIcons.DieThree, "New layers", "new styles", 2),
-    DieChoice(NewKind.EVERYTHING, EditorIcons.DieFive, "Surprise me", "everything", 3),
+    DieChoice(NewKind.VARIATION, EditorIcons.DieOne, R.string.menu_die_variation, R.string.menu_die_variation_detail, 1),
+    DieChoice(NewKind.LAYERS, EditorIcons.DieThree, R.string.menu_die_layers, R.string.menu_die_layers_detail, 2),
+    DieChoice(NewKind.EVERYTHING, EditorIcons.DieFive, R.string.menu_die_everything, R.string.menu_die_everything_detail, 3),
 )
 
 @Composable
 private fun NewMandala(onTryNew: (NewKind) -> Unit) {
     val t = LocalTokens.current
-    Text("New mandala", style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(top = Spacing.lg, bottom = Spacing.sm))
+    Text(stringResource(R.string.menu_new_mandala), style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(top = Spacing.lg, bottom = Spacing.sm))
     Row(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
         for (die in dice) {
             Column(
@@ -188,8 +196,8 @@ private fun NewMandala(onTryNew: (NewKind) -> Unit) {
                 verticalArrangement = Arrangement.spacedBy(Spacing.xs),
             ) {
                 Icon(die.icon, contentDescription = null, tint = t.accent)
-                Text(die.title, style = MaterialTheme.typography.labelLarge, textAlign = TextAlign.Center, maxLines = 1)
-                Text(die.detail, style = MaterialTheme.typography.bodySmall, color = t.textMuted, maxLines = 1)
+                Text(stringResource(die.title), style = MaterialTheme.typography.labelLarge, textAlign = TextAlign.Center, maxLines = 1)
+                Text(stringResource(die.detail), style = MaterialTheme.typography.bodySmall, color = t.textMuted, maxLines = 1)
                 // How much changes: one, two or three of three steps.
                 Row(horizontalArrangement = Arrangement.spacedBy(Spacing.xs)) {
                     repeat(3) { i ->
@@ -227,19 +235,19 @@ private fun Settings(fastPreview: Boolean, lightTheme: Boolean, actions: MenuAct
     val t = LocalTokens.current
     Column(Modifier.padding(top = Spacing.md)) {
         HorizontalDivider(color = t.outline)
-        MenuRow(EditorIcons.Folder, "Open file", onClick = actions.onOpen) { Chevron() }
+        MenuRow(EditorIcons.Folder, stringResource(R.string.menu_open_file), onClick = actions.onOpen) { Chevron() }
         HorizontalDivider(color = t.outline)
-        MenuRow(EditorIcons.FileSave, "Save settings", onClick = actions.onSaveSettings) { Chevron() }
+        MenuRow(EditorIcons.FileSave, stringResource(R.string.menu_save_settings), onClick = actions.onSaveSettings) { Chevron() }
         HorizontalDivider(color = t.outline)
-        SwitchMenuRow(EditorIcons.Bolt, "Fast preview", "Saved images always get the full glow", fastPreview, actions.onFastPreview)
+        SwitchMenuRow(EditorIcons.Bolt, stringResource(R.string.menu_fast_preview), stringResource(R.string.menu_fast_preview_detail), fastPreview, actions.onFastPreview)
         HorizontalDivider(color = t.outline)
-        SwitchMenuRow(EditorIcons.Wallpaper, "New wallpaper every day", actions.dailySubtitle, actions.dailyOn, actions.onDaily)
+        SwitchMenuRow(EditorIcons.Wallpaper, stringResource(R.string.menu_daily_wallpaper), actions.dailySubtitle, actions.dailyOn, actions.onDaily)
         HorizontalDivider(color = t.outline)
-        MenuRow(EditorIcons.Moon, "Theme", onClick = null) {
+        MenuRow(EditorIcons.Moon, stringResource(R.string.menu_theme), onClick = null) {
             ThemeChoice(lightTheme, actions.onLightTheme)
         }
         HorizontalDivider(color = t.outline)
-        MenuRow(EditorIcons.Info, "About", onClick = actions.onAbout) { Chevron() }
+        MenuRow(EditorIcons.Info, stringResource(R.string.menu_about), onClick = actions.onAbout) { Chevron() }
     }
 }
 
@@ -266,10 +274,10 @@ private fun ThemeChoice(light: Boolean, onLight: (Boolean) -> Unit) {
     val t = LocalTokens.current
     val pill = RoundedCornerShape(percent = 50)
     Row(Modifier.clip(pill).background(t.surfaceRaised).padding(Spacing.xs)) {
-        for ((label, isLight) in listOf("Dark" to false, "Light" to true)) {
+        for ((label, isLight) in listOf(R.string.menu_theme_dark to false, R.string.menu_theme_light to true)) {
             val on = light == isLight
             Text(
-                label,
+                stringResource(label),
                 style = MaterialTheme.typography.labelLarge,
                 color = if (on) t.text else t.textMuted,
                 modifier = Modifier.clip(pill).background(if (on) t.surface else t.surfaceRaised)
@@ -289,12 +297,12 @@ private fun Compare(image: ImageBitmap?, candidate: Candidate, actions: MenuActi
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Icon(EditorIcons.ChevronBack, contentDescription = null, tint = t.textMuted)
-        Text("Menu", style = MaterialTheme.typography.bodyMedium, color = t.textMuted)
+        Text(stringResource(R.string.menu_back), style = MaterialTheme.typography.bodyMedium, color = t.textMuted)
     }
     Row(Modifier.padding(top = Spacing.sm), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
-        Captioned("Now", Modifier.weight(1f)) { Thumb(image, Modifier.fillMaxWidth()) }
+        Captioned(stringResource(R.string.menu_now), Modifier.weight(1f)) { Thumb(image, Modifier.fillMaxWidth()) }
         Icon(EditorIcons.Arrow, contentDescription = null, tint = t.textMuted)
-        Captioned(candidate.kind.label, Modifier.weight(1f)) {
+        Captioned(stringResource(candidate.kind.label), Modifier.weight(1f)) {
             Box {
                 Thumb(candidate.image, Modifier.fillMaxWidth())
                 if (candidate.rendering) {
@@ -312,7 +320,7 @@ private fun Compare(image: ImageBitmap?, candidate: Candidate, actions: MenuActi
             FilterChip(
                 selected = kind == candidate.kind,
                 onClick = { actions.onTryNew(kind) },
-                label = { Text(kind.label, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center, maxLines = 1) },
+                label = { Text(stringResource(kind.label), modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center, maxLines = 1) },
                 modifier = Modifier.weight(1f),
             )
         }
@@ -320,11 +328,11 @@ private fun Compare(image: ImageBitmap?, candidate: Candidate, actions: MenuActi
     Row(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
         OutlinedButton(onClick = { actions.onTryNew(candidate.kind) }, modifier = Modifier.weight(1f)) {
             Icon(EditorIcons.DieThree, contentDescription = null, tint = t.accent, modifier = Modifier.padding(end = Spacing.sm))
-            Text("Try another")
+            Text(stringResource(R.string.menu_try_another))
         }
         Button(onClick = actions.onUseNew, enabled = candidate.image != null && !candidate.rendering, modifier = Modifier.weight(1f)) {
             Icon(EditorIcons.Check, contentDescription = null, modifier = Modifier.padding(end = Spacing.sm))
-            Text("Use new")
+            Text(stringResource(R.string.menu_use_new))
         }
     }
 }

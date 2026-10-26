@@ -56,6 +56,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.SubcomposeLayout
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -67,6 +68,7 @@ import com.mathis.mandala.app.Editing.zoomedAround
 import com.mathis.mandala.app.ExportProgress
 import com.mathis.mandala.app.Fit
 import com.mathis.mandala.app.FramePreviewState
+import com.mathis.mandala.app.R
 import com.mathis.mandala.app.SaveChoice
 import com.mathis.mandala.app.WallpaperTarget
 import com.mathis.mandala.app.liveLabel
@@ -131,7 +133,7 @@ internal fun SaveSheet(
                 verticalArrangement = Arrangement.spacedBy(Spacing.md),
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text("Save image", style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
+                    Text(stringResource(R.string.save_title), style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
                     LineDrawingButton(proOwned, hasPointLayers, enabled = !busy, onLineDrawing = onLineDrawing, onShowPro = onShowPro)
                 }
                 FormatRow(choice.format, onFormat)
@@ -147,7 +149,7 @@ internal fun SaveSheet(
                 // While the sliders are open the hint gives its line to the frame.
                 if (proOwned && !adjustOpen.value) {
                     Text(
-                        "Drag to move, pinch to zoom, double tap to centre.",
+                        stringResource(R.string.save_frame_hint),
                         style = MaterialTheme.typography.bodySmall,
                         color = t.textMuted,
                         textAlign = TextAlign.Center,
@@ -155,21 +157,21 @@ internal fun SaveSheet(
                     )
                 } else if (!proOwned) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text("Moving and zooming the mandala come with Pro.", style = MaterialTheme.typography.bodySmall, color = t.textMuted, modifier = Modifier.weight(1f))
-                        TextButton(onClick = onShowPro) { Text("About Pro") }
+                        Text(stringResource(R.string.save_frame_pro), style = MaterialTheme.typography.bodySmall, color = t.textMuted, modifier = Modifier.weight(1f))
+                        TextButton(onClick = onShowPro) { Text(stringResource(R.string.save_about_pro)) }
                     }
                 }
                 Column {
                     HorizontalDivider(color = t.outline)
                     Group(
-                        "Adjust",
+                        stringResource(R.string.save_adjust),
                         summary = finishSummary(choice.finish, proOwned),
                         // Reset in the heading, only when something is changed; it saves the frame a line. Plain
                         // text, not a button, so the heading keeps its height and the frame does not jump.
                         trailing = if (proOwned && !choice.finish.isIdentity) {
                             {
                                 Text(
-                                    "Reset",
+                                    stringResource(R.string.save_reset),
                                     style = MaterialTheme.typography.labelLarge,
                                     color = t.accent,
                                     modifier = Modifier
@@ -186,7 +188,7 @@ internal fun SaveSheet(
                         FinishControls(choice.finish, proOwned, enabled = !busy, onFinish = onFinish, onShowPro = onShowPro)
                     }
                 }
-                if (hasQuote) SwitchRow("Quote moves with the mandala", choice.textFollowsMandala, onTextFollows)
+                if (hasQuote) SwitchRow(stringResource(R.string.save_quote_follows), choice.textFollowsMandala, onTextFollows)
             }
             HorizontalDivider(color = t.outline)
             Column(
@@ -200,14 +202,14 @@ internal fun SaveSheet(
                         shape = SegmentedButtonDefaults.itemShape(0, 2),
                         enabled = !busy,
                         icon = {},
-                    ) { Text("$w × $h", maxLines = 1) }
+                    ) { Text(stringResource(R.string.save_size, w, h), maxLines = 1) }
                     SegmentedButton(
                         selected = large && proOwned,
                         onClick = { if (proOwned) large = true else onShowPro() },
                         shape = SegmentedButtonDefaults.itemShape(1, 2),
                         enabled = !busy,
                         icon = {},
-                    ) { Text(if (proOwned) "$lw × $lh" else "$lw × $lh · Pro", maxLines = 1, overflow = TextOverflow.Ellipsis) }
+                    ) { Text(stringResource(if (proOwned) R.string.save_size else R.string.save_size_pro, lw, lh), maxLines = 1, overflow = TextOverflow.Ellipsis) }
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
                     // A wallpaper fills the screen, so it is set in the phone screen format; the frame shows it first.
@@ -221,7 +223,7 @@ internal fun SaveSheet(
                         onLive = onLive,
                         modifier = Modifier.weight(1f),
                     )
-                    Button(onClick = { onSave(large && proOwned) }, enabled = !busy, modifier = Modifier.weight(1f)) { Text("Save") }
+                    Button(onClick = { onSave(large && proOwned) }, enabled = !busy, modifier = Modifier.weight(1f)) { Text(stringResource(R.string.save_save)) }
                 }
             }
         }
@@ -239,19 +241,19 @@ private fun FormatRow(format: SaveFormat, onFormat: (SaveFormat) -> Unit) {
     SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
         for ((i, f) in listOf(SaveFormat.SQUARE, SaveFormat.SCREEN).withIndex()) {
             SegmentedButton(selected = format == f, onClick = { onFormat(f) }, shape = SegmentedButtonDefaults.itemShape(i, 3), icon = {}) {
-                Text(f.label, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(stringResource(f.label), maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
         }
         SegmentedButton(selected = format.isRatio, onClick = { open = true }, shape = SegmentedButtonDefaults.itemShape(2, 3), icon = {}) {
             Box {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(if (format.isRatio) format.label else "Ratio", maxLines = 1)
+                    Text(if (format.isRatio) stringResource(format.label) else stringResource(R.string.save_ratio), maxLines = 1)
                     Icon(EditorIcons.Expand, contentDescription = null, modifier = Modifier.size(Sizes.icon))
                 }
                 DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
                     for (f in SaveFormat.entries.filter { it.isRatio }) {
                         DropdownMenuItem(
-                            text = { Text("${f.label} · ${if (f.isLandscape) "landscape" else "portrait"}") },
+                            text = { Text(stringResource(if (f.isLandscape) R.string.save_ratio_landscape else R.string.save_ratio_portrait, stringResource(f.label))) },
                             onClick = { open = false; onFormat(f) },
                         )
                     }
@@ -320,10 +322,10 @@ private fun FitToggle(preset: Boolean?, vertical: Boolean, enabled: Boolean, onF
     val pill = RoundedCornerShape(percent = 50)
     val outer = if (vertical) RoundedCornerShape(Radius.md + Spacing.xs) else pill
     val parts = @Composable { itemModifier: Modifier ->
-        for ((label, fill) in listOf("Whole" to false, "Fill" to true)) {
+        for ((label, fill) in listOf(R.string.save_fit_whole to false, R.string.save_fit_fill to true)) {
             val on = preset == fill
             Text(
-                label,
+                stringResource(label),
                 style = MaterialTheme.typography.labelLarge,
                 color = if (on) t.accent else t.text,
                 textAlign = TextAlign.Center,
@@ -390,7 +392,7 @@ private fun Frame(
             val drawn = preview.framing
             Image(
                 image,
-                contentDescription = "Preview of the saved image",
+                contentDescription = stringResource(R.string.save_preview_description),
                 contentScale = ContentScale.FillBounds,
                 modifier = Modifier.fillMaxSize().graphicsLayer {
                     val s = (framing.zoom / drawn.zoom).toFloat()
@@ -412,10 +414,11 @@ private fun Frame(
 }
 
 /** What "Adjust" shows while folded: the changed values, or that nothing is changed. */
+@Composable
 private fun finishSummary(finish: Finish, proOwned: Boolean): String = when {
-    !proOwned -> "With Pro"
-    finish.isIdentity -> "Unchanged"
-    else -> "Brightness ${percent(finish.brightness)}, contrast ${percent(finish.contrast)}, saturation ${percent(finish.saturation)}"
+    !proOwned -> stringResource(R.string.save_adjust_with_pro)
+    finish.isIdentity -> stringResource(R.string.save_adjust_unchanged)
+    else -> stringResource(R.string.save_adjust_summary, percent(finish.brightness), percent(finish.contrast), percent(finish.saturation))
 }
 
 private fun percent(v: Double) = "${(v * 100).roundToInt()} %"
@@ -429,19 +432,19 @@ private fun FinishControls(finish: Finish, proOwned: Boolean, enabled: Boolean, 
     val t = LocalTokens.current
     if (!proOwned) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Text("Brightness, contrast and saturation of the image come with Pro.", style = MaterialTheme.typography.bodySmall, color = t.textMuted, modifier = Modifier.weight(1f))
-            TextButton(onClick = onShowPro) { Text("About Pro") }
+            Text(stringResource(R.string.save_adjust_pro), style = MaterialTheme.typography.bodySmall, color = t.textMuted, modifier = Modifier.weight(1f))
+            TextButton(onClick = onShowPro) { Text(stringResource(R.string.save_about_pro)) }
         }
         return
     }
     Column {
-        ValueSlider("Brightness", finish.brightness, Finish.MIN_BRIGHTNESS.toFloat()..Finish.MAX_BRIGHTNESS.toFloat(), default = 1.0, display = ::percent) {
+        ValueSlider(stringResource(R.string.save_brightness), finish.brightness, Finish.MIN_BRIGHTNESS.toFloat()..Finish.MAX_BRIGHTNESS.toFloat(), default = 1.0, display = ::percent) {
             if (enabled) onFinish(finish.copy(brightness = it))
         }
-        ValueSlider("Contrast", finish.contrast, Finish.MIN_CONTRAST.toFloat()..Finish.MAX_CONTRAST.toFloat(), default = 1.0, display = ::percent) {
+        ValueSlider(stringResource(R.string.save_contrast), finish.contrast, Finish.MIN_CONTRAST.toFloat()..Finish.MAX_CONTRAST.toFloat(), default = 1.0, display = ::percent) {
             if (enabled) onFinish(finish.copy(contrast = it))
         }
-        ValueSlider("Saturation", finish.saturation, 0f..Finish.MAX_SATURATION.toFloat(), default = 1.0, display = ::percent) {
+        ValueSlider(stringResource(R.string.save_saturation), finish.saturation, 0f..Finish.MAX_SATURATION.toFloat(), default = 1.0, display = ::percent) {
             if (enabled) onFinish(finish.copy(saturation = it))
         }
     }
@@ -457,18 +460,18 @@ private fun LineDrawingButton(proOwned: Boolean, hasPointLayers: Boolean, enable
     var open by remember { mutableStateOf(false) }
     Box {
         TextButton(onClick = { if (proOwned) open = true else onShowPro() }, enabled = enabled) {
-            Text(if (proOwned) "Line drawing" else "Line drawing · Pro")
+            Text(stringResource(if (proOwned) R.string.save_line_drawing else R.string.save_line_drawing_pro))
         }
         DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
             Text(
-                "An SVG, square: the layers and the emblem as lines, without glow, effects, background and quote." +
-                    if (hasPointLayers) " Strange Attractor layers are left out." else "",
+                stringResource(R.string.save_line_drawing_detail) +
+                    if (hasPointLayers) " " + stringResource(R.string.save_line_drawing_points) else "",
                 style = MaterialTheme.typography.bodySmall,
                 color = t.textMuted,
                 modifier = Modifier.padding(horizontal = Spacing.lg, vertical = Spacing.sm),
             )
-            DropdownMenuItem(text = { Text("Colour on black") }, onClick = { open = false; onLineDrawing(VectorExport.Look.COLOUR) })
-            DropdownMenuItem(text = { Text("Dark on white, for plotters and colouring") }, onClick = { open = false; onLineDrawing(VectorExport.Look.LINES) })
+            DropdownMenuItem(text = { Text(stringResource(R.string.save_line_drawing_colour)) }, onClick = { open = false; onLineDrawing(VectorExport.Look.COLOUR) })
+            DropdownMenuItem(text = { Text(stringResource(R.string.save_line_drawing_lines)) }, onClick = { open = false; onLineDrawing(VectorExport.Look.LINES) })
         }
     }
 }
@@ -486,10 +489,10 @@ private fun WallpaperButton(
 ) {
     var open by remember { mutableStateOf(false) }
     Box(modifier) {
-        OutlinedButton(onClick = { onOpen(); open = true }, enabled = enabled, modifier = Modifier.fillMaxWidth()) { Text("Wallpaper") }
+        OutlinedButton(onClick = { onOpen(); open = true }, enabled = enabled, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.save_wallpaper)) }
         DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
             for (target in WallpaperTarget.entries) {
-                DropdownMenuItem(text = { Text(target.label) }, onClick = { open = false; onWallpaper(target) })
+                DropdownMenuItem(text = { Text(stringResource(target.label)) }, onClick = { open = false; onWallpaper(target) })
             }
             DropdownMenuItem(text = { Text(pairLabel) }, onClick = { open = false; onPair() })
             DropdownMenuItem(text = { Text(liveLabel) }, onClick = { open = false; onLive() })

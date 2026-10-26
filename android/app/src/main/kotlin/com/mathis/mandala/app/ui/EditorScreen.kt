@@ -108,6 +108,8 @@ import com.mathis.mandala.app.ui.theme.Sizes
 import com.mathis.mandala.app.ui.theme.Spacing
 import com.mathis.mandala.core.MandalaParameters
 import com.mathis.mandala.core.VectorExport
+import androidx.compose.ui.res.stringResource
+import com.mathis.mandala.app.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -168,6 +170,7 @@ fun EditorScreen(
         uri?.let { vm.saveLineDrawing(lineDrawingLook, it) }
     }
 
+    val undoLabel = stringResource(R.string.editor_undo)
     LaunchedEffect(vm) {
         vm.events.collect { event ->
             when (event) {
@@ -176,7 +179,7 @@ fun EditorScreen(
                     messageFor = vm.params.value
                     val result = snackbar.showSnackbar(
                         event.text,
-                        actionLabel = if (event.undo != null) "Undo" else null,
+                        actionLabel = if (event.undo != null) undoLabel else null,
                         duration = SnackbarDuration.Short,
                     )
                     messageFor = null
@@ -272,9 +275,9 @@ fun EditorScreen(
                 liveLabel = liveLabel(pro.owned),
                 dailyOn = daily.on,
                 dailySubtitle = when {
-                    !pro.owned -> "Your favourites in turn, every morning · Pro"
-                    daily.on && daily.lastName != null -> "Today: ${daily.lastName}"
-                    else -> "Your favourites in turn, on lock and home screen"
+                    !pro.owned -> stringResource(R.string.editor_daily_pro)
+                    daily.on && daily.lastName != null -> stringResource(R.string.editor_daily_today, daily.lastName.orEmpty())
+                    else -> stringResource(R.string.editor_daily_off)
                 },
                 onDaily = { on -> if (pro.owned) vm.setDaily(on) else vm.showPro() },
                 onTryNew = vm::tryNew,
@@ -311,23 +314,23 @@ fun EditorScreen(
                 title = { if (wide) Text("Dahlia") },
                 navigationIcon = {
                     Row {
-                        IconButton(onClick = vm::goBack, enabled = history.canGoBack) { Icon(EditorIcons.Back, contentDescription = "Back") }
+                        IconButton(onClick = vm::goBack, enabled = history.canGoBack) { Icon(EditorIcons.Back, contentDescription = stringResource(R.string.editor_back)) }
                         IconButton(onClick = vm::goForward, enabled = history.canGoForward) {
-                            Icon(EditorIcons.Forward, contentDescription = "Forward")
+                            Icon(EditorIcons.Forward, contentDescription = stringResource(R.string.editor_forward))
                         }
                     }
                 },
                 actions = {
-                    IconButton(onClick = vm::surprise) { Icon(EditorIcons.DieFive, contentDescription = "Surprise me", tint = LocalTokens.current.accent) }
+                    IconButton(onClick = vm::surprise) { Icon(EditorIcons.DieFive, contentDescription = stringResource(R.string.menu_die_everything), tint = LocalTokens.current.accent) }
                     IconButton(onClick = { showSave = true }, enabled = !busy) {
                         if (busy) {
                             CircularProgressIndicator(Modifier.size(Sizes.icon), strokeWidth = Sizes.progress)
                         } else {
-                            Icon(EditorIcons.Save, contentDescription = "Save image", tint = LocalTokens.current.accent)
+                            Icon(EditorIcons.Save, contentDescription = stringResource(R.string.editor_save_image), tint = LocalTokens.current.accent)
                         }
                     }
-                    IconButton(onClick = { showFavorites = true }) { Icon(EditorIcons.Star, contentDescription = "Favourites") }
-                    IconButton(onClick = { showMenu = true }) { Icon(EditorIcons.More, contentDescription = "More") }
+                    IconButton(onClick = { showFavorites = true }) { Icon(EditorIcons.Star, contentDescription = stringResource(R.string.editor_favourites)) }
+                    IconButton(onClick = { showMenu = true }) { Icon(EditorIcons.More, contentDescription = stringResource(R.string.editor_more)) }
                 },
             )
         },
@@ -407,17 +410,18 @@ private class MoveInput(
     val x: Float,
     val y: Float,
     val radius: Float,
-    val label: String,
+    /** The layer's number from 1, or null for the emblem. */
+    val layer: Int?,
     val onMove: (dx: Double, dy: Double, zoom: Double, turnDegrees: Double) -> Unit,
 )
 
 private fun moving(params: MandalaParameters, selected: Int, target: MoveTarget?, vm: EditorViewModel): MoveInput? = when (target) {
     null -> null
     MoveTarget.LAYER -> params.layers.getOrNull(selected)?.let { l ->
-        MoveInput((0.5 + l.offsetX).toFloat(), (0.5 + l.offsetY).toFloat(), (0.36 * l.scale).toFloat(), "layer ${selected + 1}", vm::moveBy)
+        MoveInput((0.5 + l.offsetX).toFloat(), (0.5 + l.offsetY).toFloat(), (0.36 * l.scale).toFloat(), selected + 1, vm::moveBy)
     }
     MoveTarget.EMBLEM -> params.emblemLayer.let { e ->
-        MoveInput((0.5 + e.offsetX).toFloat(), (0.5 + e.offsetY).toFloat(), (0.5 * e.size).toFloat(), "the emblem", vm::moveBy)
+        MoveInput((0.5 + e.offsetX).toFloat(), (0.5 + e.offsetY).toFloat(), (0.5 * e.size).toFloat(), null, vm::moveBy)
     }
 }
 
@@ -503,12 +507,12 @@ private fun FoldingCanvas(
                                 .padding(Spacing.xs)
                                 .clip(CircleShape)
                                 .background(t.surface)
-                                .clickable(onClickLabel = if (small) "Show the image large" else "Make the image small") { small = !small }
+                                .clickable(onClickLabel = if (small) stringResource(R.string.editor_show_large) else stringResource(R.string.editor_make_small)) { small = !small }
                                 .padding(Spacing.xs),
                         ) {
                             Icon(
                                 if (small) EditorIcons.Enlarge else EditorIcons.Shrink,
-                                contentDescription = if (small) "Larger image" else "Smaller image",
+                                contentDescription = if (small) stringResource(R.string.editor_larger_image) else stringResource(R.string.editor_smaller_image),
                                 tint = t.text,
                                 modifier = Modifier.size(Sizes.icon),
                             )
@@ -543,14 +547,17 @@ private fun Canvas(
     corner: @Composable androidx.compose.foundation.layout.BoxScope.() -> Unit = {},
 ) {
     val t = LocalTokens.current
+    val showLarge = stringResource(R.string.editor_show_large)
+    val proMarkAction = stringResource(R.string.editor_pro_mark_action)
+    val proMarkDescription = stringResource(R.string.editor_pro_mark_description)
     Column(modifier.padding(bottom = Spacing.xs), verticalArrangement = Arrangement.spacedBy(Spacing.xs)) {
         Box(
             Modifier.fillMaxWidth().aspectRatio(1f).clip(RoundedCornerShape(Radius.md)).background(t.canvas)
-                .then(if (onTap != null) Modifier.clickable(onClickLabel = "Show the image large", onClick = onTap) else Modifier),
+                .then(if (onTap != null) Modifier.clickable(onClickLabel = showLarge, onClick = onTap) else Modifier),
             contentAlignment = Alignment.BottomCenter,
         ) {
             preview.image?.let {
-                Image(it, contentDescription = "Mandala preview", contentScale = ContentScale.Fit, modifier = Modifier.fillMaxSize())
+                Image(it, contentDescription = stringResource(R.string.editor_preview), contentScale = ContentScale.Fit, modifier = Modifier.fillMaxSize())
             }
             if (drawing != null) DrawingOverlay(drawing, t.accent)
             if (move != null) MoveOverlay(move, t.accent, t.canvas)
@@ -564,9 +571,9 @@ private fun Canvas(
                         .padding(Spacing.sm)
                         .clip(CircleShape)
                         .background(t.surface)
-                        .clickable(onClickLabel = "What needs Pro", onClick = proMark)
+                        .clickable(onClickLabel = proMarkAction, onClick = proMark)
                         .padding(horizontal = Spacing.md, vertical = Spacing.xs)
-                        .semantics { contentDescription = "This mandala uses Pro features" },
+                        .semantics { contentDescription = proMarkDescription },
                 )
             }
             corner()
@@ -576,8 +583,8 @@ private fun Canvas(
         }
         val status = when {
             preview.error != null -> preview.error
-            drawing != null -> "Drag on the image to draw"
-            move != null -> "Drag to move ${move.label}, pinch to size and turn it"
+            drawing != null -> stringResource(R.string.editor_draw_hint)
+            move != null -> move.layer?.let { stringResource(R.string.editor_move_layer_hint, it) } ?: stringResource(R.string.editor_move_emblem_hint)
             else -> null
         }
         if (!showStatus) return@Column
@@ -690,36 +697,33 @@ private fun ProSheet(pro: ProState, request: ProRequest, onBuy: () -> Unit, onWi
     val t = LocalTokens.current
     ModalBottomSheet(onDismissRequest = onDismiss) {
         Column(Modifier.padding(horizontal = Spacing.lg).padding(bottom = Spacing.xl), verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
-            Text("Dahlia Pro", style = MaterialTheme.typography.titleLarge)
+            Text(stringResource(R.string.editor_pro_title), style = MaterialTheme.typography.titleLarge)
             if (request.features.isNotEmpty()) {
                 Text(
-                    if (request.action != null) "This mandala uses what comes with Pro. To keep it as it is, get Pro:"
-                    else "This mandala uses what comes with Pro:",
+                    if (request.action != null) stringResource(R.string.editor_pro_uses_keep)
+                    else stringResource(R.string.editor_pro_uses),
                     style = MaterialTheme.typography.bodyMedium,
                 )
                 Column(Modifier.padding(start = Spacing.md)) {
-                    for (feature in request.features) Text("· ${feature.label}", style = MaterialTheme.typography.bodyMedium)
+                    for (feature in request.features) Text(stringResource(R.string.editor_pro_feature_item, stringResource(feature.labelRes)), style = MaterialTheme.typography.bodyMedium)
                 }
             }
             request.note?.let { Text(it, style = MaterialTheme.typography.bodyMedium) }
             Text(
-                "Pro adds up to five layers, emblems, text and quotes, and moving layers and the emblem. " +
-                    "Save at 2048 pixels wide with the mandala placed by hand and adjusted, and as a line drawing. " +
-                    "Wallpapers: home and lock as a pair, a new one every day, and a live wallpaper. " +
-                    "Try more layers, emblems and quotes in the editor before you buy. One purchase, no subscription.",
+                stringResource(R.string.editor_pro_summary),
                 style = MaterialTheme.typography.bodySmall,
                 color = t.textMuted,
             )
             Button(onClick = onBuy, enabled = pro.available, modifier = Modifier.fillMaxWidth()) {
-                Text(if (pro.price != null) "Buy for ${pro.price}" else "Buy Pro")
+                Text(pro.price?.let { stringResource(R.string.editor_pro_buy_for, it) } ?: stringResource(R.string.editor_pro_buy))
             }
             if (request.features.isNotEmpty()) {
                 OutlinedButton(onClick = onWithout, modifier = Modifier.fillMaxWidth()) {
-                    Text(request.action?.let { "$it without them" } ?: "Remove them")
+                    Text(request.action?.let { stringResource(R.string.editor_pro_without, it) } ?: stringResource(R.string.editor_pro_remove))
                 }
             }
             if (!pro.available) {
-                Text("Pro is sold through Google Play and is not available in this installation right now.",
+                Text(stringResource(R.string.editor_pro_unavailable),
                     style = MaterialTheme.typography.bodySmall, color = t.textMuted)
             }
         }
@@ -745,21 +749,20 @@ private fun FavoritesSheet(
       Box {
         Column(Modifier.padding(horizontal = Spacing.lg).padding(bottom = Spacing.xl)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("Favourites", style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
-                Button(onClick = onAdd, enabled = canAdd) { Text("Add current") }
+                Text(stringResource(R.string.editor_favourites), style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
+                Button(onClick = onAdd, enabled = canAdd) { Text(stringResource(R.string.editor_favourites_add)) }
             }
             // Below the title, so a message does not cover "Add current"; it takes no room while empty.
             MessageHost(snackbar)
             if (favorites.isEmpty()) {
                 Text(
-                    "No favourites yet. Add the current mandala, or open the favourites file of the Mac app " +
-                        "(favorites.json) with Open file.",
+                    stringResource(R.string.editor_favourites_empty),
                     style = MaterialTheme.typography.bodyMedium,
                     color = t.textMuted,
                     modifier = Modifier.padding(top = Spacing.md),
                 )
             } else {
-                Text("Tap to use, long press to delete.", style = MaterialTheme.typography.bodySmall, color = t.textMuted,
+                Text(stringResource(R.string.editor_favourites_hint), style = MaterialTheme.typography.bodySmall, color = t.textMuted,
                     modifier = Modifier.padding(top = Spacing.sm, bottom = Spacing.sm))
                 LazyVerticalGrid(
                     columns = GridCells.Adaptive(Sizes.favourite),
@@ -780,7 +783,8 @@ private fun FavoriteTile(fav: Favorite, onApply: (Favorite) -> Unit, onDelete: (
     val t = LocalTokens.current
     val thumb = remember(fav.id) { Thumbnails.decode(fav.thumbnailData) }
     var menu by remember { mutableStateOf(false) }
-    val styles = fav.parameters.layers.joinToString(", ") { it.style.displayName }
+    val styles = fav.parameters.layers.map { stringResource(it.style.labelRes) }.joinToString(", ")
+    val description = stringResource(R.string.editor_favourite_description, styles)
     Box {
         Box(
             Modifier
@@ -788,12 +792,12 @@ private fun FavoriteTile(fav: Favorite, onApply: (Favorite) -> Unit, onDelete: (
                 .clip(RoundedCornerShape(Radius.sm))
                 .background(t.canvas)
                 .combinedClickable(onClick = { onApply(fav) }, onLongClick = { menu = true })
-                .semantics { contentDescription = "Favourite: $styles" },
+                .semantics { contentDescription = description },
         ) {
             thumb?.let { Image(it, contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize()) }
         }
         DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
-            DropdownMenuItem(text = { Text("Delete") }, onClick = { menu = false; onDelete(fav) })
+            DropdownMenuItem(text = { Text(stringResource(R.string.editor_favourite_delete)) }, onClick = { menu = false; onDelete(fav) })
         }
     }
 }

@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Texts of the editor screen, the wallpaper pair and the live wallpaper sheets (ADR-0019). -->
+<resources>
+    <!-- Editor: messages and export progress -->
+    <string name="editor_undo">Отменить</string>
+    <string name="editor_progress_step">%1$s…</string>
+    <string name="editor_percent">%1$d %%</string>
+
+    <!-- Editor: top bar -->
+    <string name="editor_back">Назад</string>
+    <string name="editor_forward">Вперёд</string>
+    <string name="editor_surprise">Сюрприз</string>
+    <string name="editor_save_image">Сохранить изображение</string>
+    <string name="editor_favourites">Избранное</string>
+    <string name="editor_more">Ещё</string>
+
+    <!-- Editor: menu, daily wallpaper entry -->
+    <string name="editor_daily_pro">Ваше избранное по очереди, каждое утро · Pro</string>
+    <string name="editor_daily_today">Сегодня: %1$s</string>
+    <string name="editor_daily_off">Ваше избранное по очереди на экране блокировки и главном экране</string>
+
+    <!-- Editor: canvas -->
+    <string name="editor_show_large">Показать изображение крупно</string>
+    <string name="editor_make_small">Показать изображение мелко</string>
+    <string name="editor_larger_image">Увеличить изображение</string>
+    <string name="editor_smaller_image">Уменьшить изображение</string>
+    <string name="editor_preview">Предпросмотр мандалы</string>
+    <string name="editor_pro_mark_action">Что требует Pro</string>
+    <string name="editor_pro_mark_description">Эта мандала использует функции Pro</string>
+    <string name="editor_draw_hint">Проведите по изображению, чтобы рисовать</string>
+    <string name="editor_move_layer_hint">Перетащите, чтобы сдвинуть слой %1$d; сведите или разведите пальцы, чтобы изменить размер и повернуть</string>
+    <string name="editor_move_emblem_hint">Перетащите, чтобы сдвинуть эмблему; сведите или разведите пальцы, чтобы изменить размер и повернуть</string>
+
+    <!-- Editor: Pro sheet -->
+    <string name="editor_pro_title">Dahlia Pro</string>
+    <string name="editor_pro_uses_keep">Эта мандала использует возможности Pro. Чтобы сохранить её как есть, купите Pro:</string>
+    <string name="editor_pro_uses">Эта мандала использует возможности Pro:</string>
+    <string name="editor_pro_feature_item">· %1$s</string>
+    <string name="editor_pro_summary">Pro добавляет до пяти слоёв, эмблемы, текст и цитаты, а также перемещение слоёв и эмблемы. Сохранение шириной 2048 пикселей, с размещённой вручную и настроенной мандалой, а также в виде контурного рисунка. Обои: пара для главного экрана и экрана блокировки, новые обои каждый день и живые обои. Попробуйте больше слоёв, эмблемы и цитаты в редакторе до покупки. Одна покупка, без подписки.</string>
+    <string name="editor_pro_buy_for">Купить за %1$s</string>
+    <string name="editor_pro_buy">Купить Pro</string>
+    <string name="editor_pro_without">%1$s без них</string>
+    <string name="editor_pro_remove">Убрать их</string>
+    <string name="editor_pro_unavailable">Pro продаётся через Google Play и сейчас недоступен в этой установке.</string>
+
+    <!-- Editor: favourites sheet -->
+    <string name="editor_favourites_add">Добавить текущую</string>
+    <string name="editor_favourites_empty">Избранного пока нет. Добавьте текущую мандалу или откройте файл избранного приложения для Mac (favorites.json) через «Открыть файл».</string>
+    <string name="editor_favourites_hint">Нажмите, чтобы применить; удерживайте, чтобы удалить.</string>
+    <string name="editor_favourite_description">Избранное: %1$s</string>
+    <string name="editor_favourite_delete">Удалить</string>
+
+    <!-- Wallpaper pair sheet -->
+    <string name="pair_title">Главный экран и экран блокировки</string>
+    <string name="pair_lock_screen">Экран блокировки</string>
+    <string name="pair_home_screen">Главный экран</string>
+    <string name="pair_screen_preview">Предпросмотр: %1$s</string>
+    <string name="pair_lock_note">Экран блокировки берёт яркость, контраст и насыщенность из окна сохранения.</string>
+    <string name="pair_set_both">Установить оба</string>
+
+    <!-- Live wallpaper sheet -->
+    <string name="live_title">Живые обои</string>
+    <string name="live_intro">Эта мандала заполняет экран и медленно вращается: один оборот за четыре минуты. Она движется, только когда вы её видите.</string>
+    <string name="live_breathing">Дыхание: яркость то нарастает, то спадает</string>
+    <string name="live_colour_drift">Дрейф цвета: цвета медленно меняются</string>
+    <string name="live_palettes_in_turn">Палитры по очереди: каждые десять минут плавно появляется следующая</string>
+    <string name="live_daily_note">Если включены ежедневные обои, живые обои каждое утро плавно переходят к следующей мандале из избранного.</string>
+    <string name="live_set">Установить живые обои</string>
+</resources>

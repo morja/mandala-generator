@@ -1,6 +1,8 @@
 package com.mathis.mandala.app
 
 import android.app.Application
+import androidx.annotation.PluralsRes
+import androidx.annotation.StringRes
 import android.net.Uri
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
@@ -114,7 +116,7 @@ data class DailyState(val on: Boolean, val lastName: String?)
 data class PairPreview(val lock: ImageBitmap? = null, val home: ImageBitmap? = null, val rendering: Boolean = true)
 
 /** How much a new mandala from the menu changes (DM-7): more dots on its die, more change. */
-enum class NewKind(val label: String) { VARIATION("Variation"), LAYERS("New layers"), EVERYTHING("Everything") }
+enum class NewKind(@StringRes val label: Int) { VARIATION(R.string.new_kind_variation), LAYERS(R.string.new_kind_layers), EVERYTHING(R.string.new_kind_everything) }
 
 /** A new mandala shown next to the current one in the menu; nothing is replaced until it is used. */
 data class Candidate(val kind: NewKind, val params: MandalaParameters, val image: ImageBitmap? = null, val rendering: Boolean = true)
@@ -468,7 +470,23 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
 
     fun useQuote(quote: Quote) = updateText { it.withQuote(quote) }
 
-    fun randomQuote() = useQuote((Quotes.all + _myQuotes.value).random())
+    /** A quote from the languages switched on in the quote list, or one of the user's own. */
+    fun randomQuote() = useQuote((Quotes.collectionsFor(_quoteLanguages.value).flatMap { it.quotes } + _myQuotes.value).random())
+
+    private val quoteLanguageStore = QuoteLanguages(application)
+    private val _quoteLanguages = MutableStateFlow(quoteLanguageStore.chosen)
+
+    /** The quote languages switched on, in the order the list shows them (ADR-0019). */
+    val quoteLanguages: StateFlow<List<String>> = _quoteLanguages.asStateFlow()
+
+    /** Switches a quote language on or off; the last one stays on. */
+    fun toggleQuoteLanguage(language: String) {
+        val current = _quoteLanguages.value
+        val next = if (language in current) current - language else current + language
+        if (next.isEmpty()) return
+        _quoteLanguages.value = next
+        quoteLanguageStore.chosen = next
+    }
 
     private val myQuotesStore = MyQuotesStore(File(application.filesDir, "my-quotes.json"))
     private val _myQuotes = MutableStateFlow(myQuotesStore.load())
@@ -480,7 +498,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
     fun saveTextAsMyQuote() {
         val text = _params.value.textLayer
         changeMyQuotes { MyQuotes.add(it, Quote(text.text, text.customAuthor)) }
-        message("Saved to your quotes")
+        message(string(R.string.message_quote_saved))
     }
 
     fun removeMyQuote(quote: Quote) = changeMyQuotes { MyQuotes.remove(it, quote) }
@@ -498,7 +516,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
                 val url = withContext(Dispatchers.IO) { BackgroundImages.import(getApplication(), uri) }
                 updateBackground { it.copy(isEnabled = true, type = BaseLayerType.IMAGE, imageURL = url) }
             } catch (e: Exception) {
-                message("Could not open the picture: ${e.message ?: e.javaClass.simpleName}")
+                message(string(R.string.message_picture_failed, e.message ?: e.javaClass.simpleName))
             }
         }
     }
@@ -671,7 +689,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
             createdAt = Favorite.createdNow(System.currentTimeMillis()),
         )
         _favorites.update { Favorites.add(it, favorite) }
-        message("Added to favourites")
+        message(string(R.string.message_favourite_added))
     }
 
     fun applyFavorite(favorite: Favorite) {
@@ -688,7 +706,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         if (index < 0) return
         val removed = before[index]
         _favorites.update { Favorites.remove(it, id) }
-        message("Favourite deleted", undo = {
+        message(string(R.string.message_favourite_deleted), undo = {
             _favorites.update { list -> if (list.any { it.id == removed.id }) list else list.toMutableList().apply { add(index.coerceAtMost(size), removed) } }
         })
     }
@@ -703,13 +721,13 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
                     getApplication<Application>().contentResolver.openInputStream(uri)?.use { it.readBytes().decodeToString() }
                 } ?: error("empty")
             } catch (e: Exception) {
-                message("Could not read the file.")
+                message(string(R.string.message_file_unreadable))
                 return@launch
             }
             when (val file = runCatching { SettingsJson.decodeMacFile(text) }.getOrNull()) {
                 is MacFile.Settings -> {
                     if (file.params.layers.isEmpty()) {
-                        message("The file has no layers.")
+                        message(string(R.string.message_file_no_layers))
                     } else {
                         replace(file.params)
                     }
@@ -722,10 +740,10 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
                         merged.list
                     }
                     val already = file.favorites.size - added
-                    val alreadyNote = if (already > 0) " ($already were already there)" else ""
-                    message("Imported $added favourites$alreadyNote")
+                    val imported = plural(R.plurals.message_favourites_imported, added)
+                    message(if (already > 0) string(R.string.message_favourites_imported_note, imported, plural(R.plurals.message_favourites_already_there, already)) else imported)
                 }
-                null -> message("This is not a Mandala settings or favourites file.")
+                null -> message(string(R.string.message_file_unknown))
             }
         }
     }
@@ -739,7 +757,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
                         ?: error("no stream")
                 }
             }.isSuccess
-            message(if (ok) "Settings saved" else "Could not save the settings.")
+            message(string(if (ok) R.string.message_settings_saved else R.string.message_settings_failed))
         }
     }
 
@@ -753,15 +771,15 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
      */
     fun saveImage(large: Boolean) {
         if (large && !pro.state.value.owned) return
-        if (!mayKeep("Save") { saveImage(large) }) return
+        if (!mayKeep(string(R.string.action_save)) { saveImage(large) }) return
         val choice = _saveChoice.value
         val (w, h) = Editing.exportSize(choice.format, _screenAspect.value, large)
         val params = _params.value
         val framing: suspend () -> Framing = { framingFor(choice, params, aspectOf(choice.format), pro.state.value.owned) }
-        renderFullSize("Creating the image", w, h, large, framing, choice.textFollowsMandala, finish = effectiveFinish()) { image, fileName ->
-            exportStep("Saving to Pictures")
+        renderFullSize(string(R.string.export_creating_image), w, h, large, framing, choice.textFollowsMandala, finish = effectiveFinish()) { image, fileName ->
+            exportStep(string(R.string.export_saving_to_pictures))
             withContext(Dispatchers.IO) { GalleryExport.savePng(getApplication(), image, fileName) }
-            message("Saved $w × $h to Pictures/${GalleryExport.FOLDER}")
+            message(string(R.string.message_saved_to_pictures, w, h, GalleryExport.FOLDER))
         }
     }
 
@@ -772,7 +790,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
      * fills the screen, which suits a wallpaper best.
      */
     fun setWallpaper(target: WallpaperTarget, filled: Boolean = false) {
-        if (!mayKeep("Set as wallpaper") { setWallpaper(target, filled) }) return
+        if (!mayKeep(string(R.string.action_set_wallpaper)) { setWallpaper(target, filled) }) return
         val choice = _saveChoice.value
         val large = pro.state.value.owned
         val (w, h) = Editing.exportSize(Editing.SaveFormat.SCREEN, _screenAspect.value, large)
@@ -783,22 +801,22 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
             k.params == params && k.framing == f && k.textFollows == choice.textFollowsMandala && k.finish == effectiveFinish() &&
                 k.width >= screenShortSide && kotlin.math.abs(k.height.toDouble() / k.width - h.toDouble() / w) < 0.002
         }
-        renderFullSize("Creating the wallpaper", w, h, large, framing, choice.textFollowsMandala, reuse, effectiveFinish()) { image, _ ->
-            exportStep("Setting the wallpaper")
+        renderFullSize(string(R.string.export_creating_wallpaper), w, h, large, framing, choice.textFollowsMandala, reuse, effectiveFinish()) { image, _ ->
+            exportStep(string(R.string.export_setting_wallpaper))
             withContext(Dispatchers.IO) { Wallpapers.set(getApplication(), image, target) }
             _export.value = null
             // Android recreates the screen when the wallpaper changes; a message sent right away is lost with it.
             delay(WALLPAPER_MESSAGE_DELAY_MS)
-            message("Wallpaper set")
+            message(string(R.string.message_wallpaper_set))
         }
     }
 
     fun shareImage() {
-        if (mayKeep("Share", ::shareImage)) shareSquare()
+        if (mayKeep(string(R.string.action_share), ::shareImage)) shareSquare()
     }
 
-    private fun shareSquare() = renderFullSize("Creating the image", Editing.EXPORT_SIZE, Editing.EXPORT_SIZE, large = false, { Framing() }, textFollows = false) { image, fileName ->
-        exportStep("Preparing to share")
+    private fun shareSquare() = renderFullSize(string(R.string.export_creating_image), Editing.EXPORT_SIZE, Editing.EXPORT_SIZE, large = false, { Framing() }, textFollows = false) { image, fileName ->
+        exportStep(string(R.string.export_preparing_share))
         val uri = withContext(Dispatchers.IO) { ImageShare.prepare(getApplication(), image, fileName) }
         _events.send(EditorEvent.ShareImage(uri))
     }
@@ -811,18 +829,18 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         if (!pro.state.value.owned || _busy.value) return
         val snapshot = _params.value
         _busy.value = true
-        _export.value = ExportProgress("Creating the line drawing")
+        _export.value = ExportProgress(string(R.string.export_creating_line_drawing))
         viewModelScope.launch {
             try {
                 withContext(Dispatchers.IO) {
                     val stream = getApplication<Application>().contentResolver.openOutputStream(uri, "wt") ?: error("no stream")
                     stream.bufferedWriter().use { VectorExport.svg(snapshot, Editing.EXPORT_SIZE, look, it) }
                 }
-                message("Line drawing saved")
+                message(string(R.string.message_line_drawing_saved))
             } catch (e: OutOfMemoryError) {
-                message("Not enough memory for this line drawing.")
+                message(string(R.string.message_line_drawing_memory))
             } catch (e: Exception) {
-                message("Could not save the line drawing: ${e.message ?: e.javaClass.simpleName}")
+                message(string(R.string.message_line_drawing_failed, e.message ?: e.javaClass.simpleName))
             } finally {
                 _export.value = null
                 _busy.value = false
@@ -843,13 +861,13 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         val (w, h) = Editing.exportSize(Editing.SaveFormat.SCREEN, _screenAspect.value, large = true)
         val params = _params.value
         val framing: suspend () -> Framing = { framingFor(choice.copy(fit = Fit.FILL), params, aspectOf(Editing.SaveFormat.SCREEN), pro = true) }
-        renderFullSize("Creating the wallpapers", w, h, large = true, framing, choice.textFollowsMandala, finish = effectiveFinish()) { image, _ ->
-            exportStep("Setting both wallpapers")
+        renderFullSize(string(R.string.export_creating_wallpapers), w, h, large = true, framing, choice.textFollowsMandala, finish = effectiveFinish()) { image, _ ->
+            exportStep(string(R.string.export_setting_both_wallpapers))
             val home = withContext(Dispatchers.Default) { Finish(brightness = choice.homeBrightness).apply(image, threads) }
             withContext(Dispatchers.IO) { Wallpapers.setPair(getApplication(), image, home) }
             _export.value = null
             delay(WALLPAPER_MESSAGE_DELAY_MS)
-            message("Home and lock screen set")
+            message(string(R.string.message_pair_set))
         }
     }
 
@@ -867,24 +885,24 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         }
         if (!pro.state.value.owned || _busy.value) return
         if (_favorites.value.isEmpty()) {
-            message("The daily wallpaper takes your favourites in turn; add one first.")
+            message(string(R.string.message_daily_needs_favourite))
             return
         }
         DailyWallpaper.setOn(app, true)
         _daily.update { it.copy(on = true) }
         _busy.value = true
-        _export.value = ExportProgress("Setting today's wallpaper")
+        _export.value = ExportProgress(string(R.string.export_setting_daily))
         viewModelScope.launch {
             try {
                 val name = withContext(Dispatchers.Default) { DailyWallpaper.setNext(app, threads) }
                 _daily.update { it.copy(lastName = DailyWallpaper.lastName(app)) }
                 _export.value = null
                 delay(WALLPAPER_MESSAGE_DELAY_MS)
-                message(if (name.isNullOrEmpty()) "A new wallpaper every morning" else "Today: $name. A new wallpaper every morning")
+                message(if (name.isNullOrEmpty()) string(R.string.message_daily_on) else string(R.string.message_daily_on_today, name))
             } catch (e: OutOfMemoryError) {
-                message("Not enough memory for this image.")
+                message(string(R.string.message_image_memory))
             } catch (e: Exception) {
-                message("Could not set the wallpaper: ${e.message ?: e.javaClass.simpleName}")
+                message(string(R.string.message_wallpaper_failed, e.message ?: e.javaClass.simpleName))
             } finally {
                 _export.value = null
                 _busy.value = false
@@ -914,11 +932,11 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         val params = _params.value
         LiveWallpaper.setMandala(app, params)
         if (LiveWallpaper.isActive(app)) {
-            message("The live wallpaper shows this mandala in a moment")
+            message(string(R.string.message_live_updating))
             return
         }
         _busy.value = true
-        _export.value = ExportProgress("Preparing the live wallpaper")
+        _export.value = ExportProgress(string(R.string.export_preparing_live))
         viewModelScope.launch {
             try {
                 withContext(Dispatchers.Default) { LiveWallpaper.prepare(app, params) }
@@ -1018,9 +1036,9 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
                 if (_saveOpen.value) lastExport = key to image
                 then(image, Editing.fileName(snapshot, width, height))
             } catch (e: OutOfMemoryError) {
-                message("Not enough memory for this image.")
+                message(string(R.string.message_image_memory))
             } catch (e: Exception) {
-                message("Could not create the image: ${e.message ?: e.javaClass.simpleName}")
+                message(string(R.string.message_image_failed, e.message ?: e.javaClass.simpleName))
             } finally {
                 _export.value = null
                 _busy.value = false
@@ -1031,6 +1049,11 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
     private fun message(text: String, undo: (() -> Unit)? = null) {
         _events.trySend(EditorEvent.Message(text, undo))
     }
+
+    /** A user-visible text in the device's language (ADR-0019). */
+    private fun string(@StringRes id: Int, vararg args: Any): String = getApplication<Application>().getString(id, *args)
+
+    private fun plural(@PluralsRes id: Int, count: Int): String = getApplication<Application>().resources.getQuantityString(id, count, count)
 
     private suspend fun renderFramePreview(request: FrameRequest) {
         recentFrames[request]?.let {
@@ -1115,7 +1138,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
             // A newer change is already being rendered.
         } catch (e: OutOfMemoryError) {
             previewCache.clear()
-            _preview.update { it.copy(rendering = false, error = "Not enough memory for the preview.") }
+            _preview.update { it.copy(rendering = false, error = string(R.string.message_preview_memory)) }
         }
     }
 

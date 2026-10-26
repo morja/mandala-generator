@@ -28,7 +28,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import com.mathis.mandala.app.ExportProgress
+import com.mathis.mandala.app.R
 import com.mathis.mandala.app.PairPreview
 import com.mathis.mandala.app.SaveChoice
 import com.mathis.mandala.app.ui.theme.LocalTokens
@@ -60,24 +62,25 @@ internal fun PairSheet(
                 Modifier.verticalScroll(rememberScrollState()).padding(horizontal = Spacing.lg).padding(bottom = Spacing.xl),
                 verticalArrangement = Arrangement.spacedBy(Spacing.md),
             ) {
-                Text("Home and lock screen", style = MaterialTheme.typography.titleMedium)
+                Text(stringResource(R.string.pair_title), style = MaterialTheme.typography.titleMedium)
                 Row(horizontalArrangement = Arrangement.spacedBy(Spacing.lg)) {
-                    Screen("Lock screen", preview.lock, preview.rendering, screenAspect, Modifier.weight(1f))
-                    Screen("Home screen", preview.home, preview.rendering, screenAspect, Modifier.weight(1f))
+                    Screen(stringResource(R.string.pair_lock_screen), preview.lock, preview.rendering, screenAspect, Modifier.weight(1f))
+                    Screen(stringResource(R.string.pair_home_screen), preview.home, preview.rendering, screenAspect, Modifier.weight(1f))
                 }
+                val percent = stringResource(R.string.editor_percent)
                 ValueSlider(
-                    "Home screen",
+                    stringResource(R.string.pair_home_screen),
                     homeBrightness,
                     SaveChoice.MIN_HOME_BRIGHTNESS.toFloat()..1f,
                     default = SaveChoice.DEFAULT_HOME_BRIGHTNESS,
-                    display = { "${(it * 100).roundToInt()} %" },
+                    display = { percent.format((it * 100).roundToInt()) },
                 ) { if (!busy) onHomeBrightness(it) }
                 Text(
-                    "The lock screen takes brightness, contrast and saturation from the save sheet.",
+                    stringResource(R.string.pair_lock_note),
                     style = MaterialTheme.typography.bodySmall,
                     color = LocalTokens.current.textMuted,
                 )
-                Button(onClick = onSet, enabled = !busy, modifier = Modifier.fillMaxWidth()) { Text("Set both") }
+                Button(onClick = onSet, enabled = !busy, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.pair_set_both)) }
             }
             if (export != null) ExportNote(export, Modifier.align(Alignment.TopCenter)) else MessageHost(snackbar, Modifier.align(Alignment.TopCenter))
         }
@@ -90,7 +93,7 @@ private fun Screen(label: String, image: ImageBitmap?, rendering: Boolean, aspec
     val t = LocalTokens.current
     Column(modifier, horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
         Box(Modifier.fillMaxWidth().aspectRatio((1 / aspect).toFloat()).clip(RoundedCornerShape(Radius.md)).background(t.canvas)) {
-            if (image != null) Image(image, contentDescription = "$label preview", contentScale = ContentScale.FillBounds, modifier = Modifier.fillMaxSize())
+            if (image != null) Image(image, contentDescription = stringResource(R.string.pair_screen_preview, label), contentScale = ContentScale.FillBounds, modifier = Modifier.fillMaxSize())
             if (rendering) LinearProgressIndicator(Modifier.fillMaxWidth().height(Sizes.progress).align(Alignment.BottomCenter))
         }
         Text(label, style = MaterialTheme.typography.bodySmall, color = t.textMuted)

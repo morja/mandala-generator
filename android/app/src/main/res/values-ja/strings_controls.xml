@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Texts of the control tabs below or beside the canvas (Controls.kt, Parts.kt; ADR-0019). -->
+<resources>
+
+    <!-- Tab row and the header beside the folded image -->
+    <string name="controls_tab_layers">レイヤー</string>
+    <string name="controls_tab_scene">シーン</string>
+    <string name="controls_tab_emblem">エンブレム</string>
+    <string name="controls_tab_text">テキスト</string>
+    <string name="controls_tab_draw">描画</string>
+    <string name="controls_header_no_layers">レイヤーなし</string>
+    <string name="controls_header_no_background">背景なし</string>
+    <string name="controls_header_strokes">%1$s · %2$s</string>
+    <plurals name="controls_header_lines">
+        <item quantity="other">線%d本</item>
+    </plurals>
+    <plurals name="controls_header_spray">
+        <item quantity="other">スプレー%d回</item>
+    </plurals>
+
+    <!-- Shared summaries: blend mode with opacity, the Pro mark -->
+    <string name="controls_blend_summary">%1$s · %2$d %%</string>
+    <string name="controls_with_pro">%1$s · Pro</string>
+
+    <!-- Foldable groups and sliders (accessibility) -->
+    <string name="controls_group_open">%1$sを開く</string>
+    <string name="controls_group_close">%1$sを閉じる</string>
+    <string name="controls_group_state_open">展開</string>
+    <string name="controls_group_state_closed">折りたたみ</string>
+    <string name="controls_slider_reset">%1$sをリセット</string>
+
+    <!-- Layers tab: actions and layer rows -->
+    <string name="controls_layers_add">追加</string>
+    <string name="controls_layers_duplicate">複製</string>
+    <string name="controls_layers_randomize">レイヤー%1$dをランダムに変更</string>
+    <string name="controls_layer_hide">レイヤー%1$dを非表示</string>
+    <string name="controls_layer_show">レイヤー%1$dを表示</string>
+    <string name="controls_layer_move_up">レイヤー%1$dを上へ移動</string>
+    <string name="controls_layer_move_down">レイヤー%1$dを下へ移動</string>
+    <string name="controls_style_new_variant">%1$sの新しいバリエーション</string>
+    <string name="controls_position_centred">中央</string>
+    <string name="controls_position_moved">移動済み</string>
+
+    <!-- Scene tab: background types -->
+    <string name="controls_background_auto">自動</string>
+    <string name="controls_background_picture">画像</string>
+    <string name="controls_background_colour">単色</string>
+    <string name="controls_background_gradient">グラデーション</string>
+    <string name="controls_background_sunburst">サンバースト</string>
+    <string name="controls_background_grain">粒子</string>
+
+    <!-- Emblem and text tabs: on/off rows -->
+    <string name="controls_emblem_show">エンブレムを表示</string>
+    <string name="controls_emblem_shape_seed">形状 %1$s</string>
+    <string name="controls_text_show">テキストを表示</string>
+    <string name="controls_text_in_my_quotes">マイ引用に保存済み</string>
+    <string name="controls_text_save_to_my_quotes">マイ引用に保存</string>
+    <string name="controls_quotes_collection">コレクション</string>
+
+    <!-- Draw tab: show switch per tool -->
+    <string name="controls_draw_show_lines">線を表示</string>
+    <string name="controls_draw_show_spray">スプレーを表示</string>
+
+    <!-- Layers tab: group titles, sliders and notes (some shared with other tabs) -->
+    <string name="controls_pro_note_layers">4つ以上のレイヤーはPro機能です。自由にお試しいただけますが、マンダラを残すにはProが必要です。</string>
+    <string name="controls_delete">削除</string>
+    <string name="controls_about_pro">Proについて</string>
+    <string name="controls_position">位置</string>
+    <string name="controls_pro_note_position">レイヤーの移動はPro機能です。自由にお試しいただけますが、マンダラを残すにはProが必要です。</string>
+    <string name="controls_position_hidden_note">このレイヤーは非表示です。表示すると移動先を確認できます。</string>
+    <string name="controls_across">左右</string>
+    <string name="controls_up_and_down">上下</string>
+    <string name="controls_centre">中央に戻す</string>
+    <string name="controls_done">完了</string>
+    <string name="controls_move_on_image">画像上で移動</string>
+    <string name="controls_style">スタイル</string>
+    <string name="controls_palette">パレット</string>
+    <string name="controls_blending">合成</string>
+    <string name="controls_opacity">不透明度</string>
+    <string name="controls_shape">形状</string>
+    <string name="controls_shape_new_arrangement">スタイルとパレットはそのままで新しい配置に</string>
+    <string name="controls_symmetry">対称</string>
+    <string name="controls_scale">大きさ</string>
+    <string name="controls_complexity">複雑さ</string>
+    <string name="controls_spokes">放射線</string>
+    <string name="controls_density">密度</string>
+    <string name="controls_ripple">波紋</string>
+    <string name="controls_light_and_colour">光と色</string>
+    <string name="controls_glow">グロー</string>
+    <string name="controls_colour_drift">色の移ろい</string>
+    <string name="controls_painted">絵画風</string>
+    <string name="controls_saturation">彩度</string>
+    <string name="controls_brightness">明るさ</string>
+
+    <!-- Scene tab: background and effects -->
+    <string name="controls_background">背景</string>
+    <string name="controls_off">オフ</string>
+    <string name="controls_background_auto_note">一番下のレイヤーの色で、暗い光と細かな繊維を描きます。</string>
+    <string name="controls_choose_picture">画像を選択</string>
+    <string name="controls_strength">強さ</string>
+    <string name="controls_colour_1">色1</string>
+    <string name="controls_colour">色</string>
+    <string name="controls_colour_2">色2</string>
+    <string name="controls_radial">放射状</string>
+    <string name="controls_angle">角度</string>
+    <string name="controls_rays">光線</string>
+    <string name="controls_sharpness">シャープさ</string>
+    <string name="controls_grain">粒子</string>
+    <string name="controls_coloured_grain">カラー粒子</string>
+    <string name="controls_effects">エフェクト</string>
+    <string name="controls_on">オン</string>
+    <string name="controls_effects_new_pattern">ハイライト、減光、星、きらめきの新しいパターン</string>
+    <string name="controls_reset">リセット</string>
+    <string name="controls_effects_off_note">オンにすると、周辺減光、ブルーム、粒子、星などを使えます。</string>
+    <string name="controls_light">光</string>
+    <string name="controls_contrast">コントラスト</string>
+    <string name="controls_vignette">周辺減光</string>
+    <string name="controls_bloom">ブルーム</string>
+    <string name="controls_tone">トーン</string>
+    <string name="controls_sepia">セピア</string>
+    <string name="controls_fade">退色</string>
+    <string name="controls_texture">質感</string>
+    <string name="controls_clarity">明瞭度</string>
+    <string name="controls_sparkle">輝き</string>
+    <string name="controls_stars">星</string>
+    <string name="controls_glitter">きらめき</string>
+    <string name="controls_more">その他</string>
+    <string name="controls_highlights">ハイライト</string>
+    <string name="controls_dimming">減光</string>
+    <string name="controls_erasure">かすれ</string>
+    <string name="controls_relief">レリーフ</string>
+    <string name="controls_relief_angle">レリーフの角度</string>
+    <string name="controls_chromatic">色収差</string>
+    <string name="controls_old_fade">古びた退色</string>
+
+    <!-- Emblem tab -->
+    <string name="controls_random_emblem">ランダムなエンブレム</string>
+    <string name="controls_emblem_off_note">中央に大きく描くモチーフ: オーム、生命の樹、フラワーオブライフ、蓮など。</string>
+    <string name="controls_pro_note_emblem">エンブレムはPro機能です。自由にお試しいただけますが、マンダラを残すにはProが必要です。</string>
+    <string name="controls_motif">モチーフ</string>
+    <string name="controls_variant">バリエーション</string>
+    <string name="controls_petals">花びら</string>
+    <string name="controls_organic">有機的</string>
+    <string name="controls_new_shape">新しい形</string>
+    <string name="controls_branches">枝</string>
+    <string name="controls_roots">根</string>
+    <string name="controls_style_and_frame">スタイルと枠</string>
+    <string name="controls_frame">枠</string>
+    <string name="controls_size">サイズ</string>
+    <string name="controls_weight">太さ</string>
+    <string name="controls_rotate">回転</string>
+    <string name="controls_spread">広がり</string>
+
+    <!-- Text tab and quote list -->
+    <string name="controls_random_text_look">ランダムな文字デザイン</string>
+    <string name="controls_text_off_note">マンダラの下に引用や自分の言葉を、必要なら著者名も添えて表示します。</string>
+    <string name="controls_pro_note_text">テキストと引用はPro機能です。自由にお試しいただけますが、マンダラを残すにはProが必要です。</string>
+    <string name="controls_random_quote">ランダムな引用</string>
+    <string name="controls_choose_quote">引用を選ぶ</string>
+    <string name="controls_text_field">テキスト</string>
+    <string name="controls_author">著者</string>
+    <string name="controls_show_author">著者を表示</string>
+    <string name="controls_font">フォント</string>
+    <string name="controls_size_and_place">サイズと位置</string>
+    <string name="controls_width">幅</string>
+    <string name="controls_tracking">字間</string>
+    <string name="controls_height">高さ</string>
+    <string name="controls_cloud">雲</string>
+    <string name="controls_cloud_size">雲のサイズ</string>
+    <string name="controls_cloud_colour">雲の色</string>
+    <string name="controls_shadow">影</string>
+    <string name="controls_shadow_colour">影の色</string>
+    <string name="controls_hue">色相</string>
+    <string name="controls_close">閉じる</string>
+    <string name="controls_quotes">引用</string>
+    <string name="controls_your_quotes">マイ引用</string>
+    <string name="controls_remove_quote">引用を削除</string>
+    <string name="controls_quotes_public_domain">コレクション内の引用はすべてパブリックドメインです。</string>
+
+    <!-- Draw tab -->
+    <string name="controls_draw_on_image">画像上に描く</string>
+    <string name="controls_undo">元に戻す</string>
+    <string name="controls_clear">消去</string>
+    <string name="controls_line_colour">線の色</string>
+    <string name="controls_line_and_light">線と光</string>
+    <string name="controls_brush_size">ブラシサイズ</string>
+    <string name="controls_paint">塗り</string>
+    <string name="controls_spray_colour">スプレーの色</string>
+    <string name="controls_softness_and_blending">柔らかさと合成</string>
+    <string name="controls_softness">柔らかさ</string>
+    <!-- Added with main's variation/seed rows and Smoother -->
+    <string name="controls_variation_detail">色と設定</string>
+    <string name="controls_variation_description">同じスタイルで色と設定を変更</string>
+    <string name="controls_seed_detail">配置</string>
+    <string name="controls_seed_description">スタイル・パレット・設定はそのままで配置を変更</string>
+    <string name="controls_show_effects">エフェクトを表示</string>
+    <string name="controls_smoother">スムーズ</string>
+    <string name="controls_seed">シード</string>
+    <string name="controls_applies_to">適用先</string>
+    <string name="controls_reach_mandala">曼荼羅</string>
+</resources>

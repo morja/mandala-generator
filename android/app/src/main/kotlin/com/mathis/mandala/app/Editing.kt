@@ -1,5 +1,6 @@
 package com.mathis.mandala.app
 
+import androidx.annotation.StringRes
 import com.mathis.mandala.core.BaseLayerSettings
 import com.mathis.mandala.core.BaseLayerType
 import com.mathis.mandala.core.BuiltInPalettes
@@ -354,17 +355,17 @@ object Editing {
     // ── Saving in a format (ADR-0010) ──
 
     /** Formats offered when saving. The phone screen follows the device's aspect ratio. */
-    enum class SaveFormat(val label: String, val across: Int = 0, val down: Int = 0) {
-        SQUARE("Square", 1, 1),
-        SCREEN("This screen"),
-        FOUR_FIVE("4:5", 4, 5),
-        THREE_FOUR("3:4", 3, 4),
-        TWO_THREE("2:3", 2, 3),
-        NINE_SIXTEEN("9:16", 9, 16),
-        FIVE_FOUR("5:4", 5, 4),
-        FOUR_THREE("4:3", 4, 3),
-        THREE_TWO("3:2", 3, 2),
-        SIXTEEN_NINE("16:9", 16, 9),
+    enum class SaveFormat(@StringRes val label: Int, val across: Int = 0, val down: Int = 0) {
+        SQUARE(R.string.format_square, 1, 1),
+        SCREEN(R.string.format_screen),
+        FOUR_FIVE(R.string.format_4_5, 4, 5),
+        THREE_FOUR(R.string.format_3_4, 3, 4),
+        TWO_THREE(R.string.format_2_3, 2, 3),
+        NINE_SIXTEEN(R.string.format_9_16, 9, 16),
+        FIVE_FOUR(R.string.format_5_4, 5, 4),
+        FOUR_THREE(R.string.format_4_3, 4, 3),
+        THREE_TWO(R.string.format_3_2, 3, 2),
+        SIXTEEN_NINE(R.string.format_16_9, 16, 9),
         ;
 
         /** The fixed ratios offered in the list next to Square and This screen. */
@@ -441,4 +442,4 @@ object Editing {
 enum class MoveTarget { LAYER, EMBLEM }
 
 /** The two hand-drawing tools of the macOS app: glowing lines (drawing layer) and spray paint (graffiti layer). */
-enum class DrawTool(val label: String) { LINES("Lines"), SPRAY("Spray") }
+enum class DrawTool(@StringRes val label: Int) { LINES(R.string.draw_tool_lines), SPRAY(R.string.draw_tool_spray) }

@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Texts of the menu sheet, the save sheet and the About screen (ADR-0019). -->
+<resources>
+    <!-- Menu: the mandala on screen -->
+    <string name="menu_no_layers">Нет слоёв</string>
+    <plurals name="menu_layers_emblem_on">
+        <item quantity="one">%1$d слой · эмблема вкл.</item>
+        <item quantity="few">%1$d слоя · эмблема вкл.</item>
+        <item quantity="many">%1$d слоёв · эмблема вкл.</item>
+        <item quantity="other">%1$d слоя · эмблема вкл.</item>
+    </plurals>
+    <plurals name="menu_layers_emblem_off">
+        <item quantity="one">%1$d слой · эмблема выкл.</item>
+        <item quantity="few">%1$d слоя · эмблема выкл.</item>
+        <item quantity="many">%1$d слоёв · эмблема выкл.</item>
+        <item quantity="other">%1$d слоя · эмблема выкл.</item>
+    </plurals>
+
+    <!-- Menu: what keeps the mandala -->
+    <string name="menu_favourite">В избранное</string>
+    <string name="menu_share">Поделиться</string>
+    <string name="menu_wallpaper">Обои</string>
+
+    <!-- Menu: the three dice for a new mandala -->
+    <string name="menu_new_mandala">Новая мандала</string>
+    <string name="menu_die_variation">Вариация</string>
+    <string name="menu_die_variation_detail">новые детали</string>
+    <string name="menu_die_layers">Новые слои</string>
+    <string name="menu_die_layers_detail">новые стили</string>
+    <string name="menu_die_everything">Сюрприз</string>
+    <string name="menu_die_everything_detail">всё</string>
+
+    <!-- Menu: files and settings -->
+    <string name="menu_open_file">Открыть файл</string>
+    <string name="menu_save_settings">Сохранить настройки</string>
+    <string name="menu_fast_preview">Быстрый предпросмотр</string>
+    <string name="menu_fast_preview_detail">Сохранённые изображения всегда получают полное свечение</string>
+    <string name="menu_daily_wallpaper">Новые обои каждый день</string>
+    <string name="menu_theme">Тема</string>
+    <string name="menu_theme_dark">Тёмная</string>
+    <string name="menu_theme_light">Светлая</string>
+    <string name="menu_about">О приложении</string>
+
+    <!-- Menu: comparing the new mandala with the current one -->
+    <string name="menu_back">Меню</string>
+    <string name="menu_now">Сейчас</string>
+    <string name="menu_try_another">Ещё вариант</string>
+    <string name="menu_use_new">Взять новую</string>
+
+    <!-- Save sheet: title, format and frame -->
+    <string name="save_title">Сохранить изображение</string>
+    <string name="save_ratio">Пропорции</string>
+    <string name="save_ratio_landscape">%1$s · альбомная</string>
+    <string name="save_ratio_portrait">%1$s · книжная</string>
+    <string name="save_fit_whole">Целиком</string>
+    <string name="save_fit_fill">Заполнить</string>
+    <string name="save_frame_hint">Перетащите, чтобы сдвинуть; сведите пальцы для масштаба; нажмите дважды, чтобы отцентровать.</string>
+    <string name="save_frame_pro">Перемещение и масштабирование мандалы доступны в Pro.</string>
+    <string name="save_about_pro">О Pro</string>
+    <string name="save_preview_description">Предпросмотр сохраняемого изображения</string>
+
+    <!-- Save sheet: the finish under "Adjust" -->
+    <string name="save_adjust">Коррекция</string>
+    <string name="save_reset">Сбросить</string>
+    <string name="save_adjust_with_pro">С Pro</string>
+    <string name="save_adjust_unchanged">Без изменений</string>
+    <string name="save_adjust_summary">Яркость %1$s, контраст %2$s, насыщенность %3$s</string>
+    <string name="save_adjust_pro">Яркость, контраст и насыщенность изображения доступны в Pro.</string>
+    <string name="save_brightness">Яркость</string>
+    <string name="save_contrast">Контраст</string>
+    <string name="save_saturation">Насыщенность</string>
+
+    <!-- Save sheet: quote, size and buttons -->
+    <string name="save_quote_follows">Цитата движется вместе с мандалой</string>
+    <string name="save_size">%1$d × %2$d</string>
+    <string name="save_size_pro">%1$d × %2$d · Pro</string>
+    <string name="save_save">Сохранить</string>
+    <string name="save_wallpaper">Обои</string>
+
+    <!-- Save sheet: the line drawing as SVG -->
+    <string name="save_line_drawing">Контурный рисунок</string>
+    <string name="save_line_drawing_pro">Контурный рисунок · Pro</string>
+    <string name="save_line_drawing_detail">SVG, квадратный: слои и эмблема в виде линий, без свечения, эффектов, фона и цитаты.</string>
+    <string name="save_line_drawing_points">Слои «Странный аттрактор» не включаются.</string>
+    <string name="save_line_drawing_colour">Цвет на чёрном</string>
+    <string name="save_line_drawing_lines">Тёмное на белом, для плоттеров и раскрашивания</string>
+
+    <!-- About screen -->
+    <string name="about_title">О приложении</string>
+    <string name="about_close">Закрыть</string>
+    <string name="about_version">Версия %1$s (%2$d)</string>
+    <string name="about_licence">Лицензия</string>
+    <string name="about_free_software">Dahlia — свободное программное обеспечение: вы можете распространять и/или изменять его на условиях GNU General Public License версии 3, опубликованной Free Software Foundation. Программа предоставляется без каких-либо гарантий.</string>
+    <string name="about_source_code">Исходный код на GitHub</string>
+    <string name="about_additional_permission">Дополнительное разрешение</string>
+    <string name="about_gpl_section_7">GPL, раздел 7</string>
+    <string name="about_privacy">Конфиденциальность</string>
+    <string name="about_privacy_text">Без аккаунта, без рекламы, без отслеживания. Ваши мандалы и настройки остаются на вашем устройстве.</string>
+    <string name="about_privacy_policy">Политика конфиденциальности</string>
+    <string name="about_libraries">Библиотеки с открытым исходным кодом</string>
+    <string name="about_full_text">Полный текст</string>
+</resources>

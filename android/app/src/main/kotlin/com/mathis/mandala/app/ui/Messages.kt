@@ -21,7 +21,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.res.stringResource
 import com.mathis.mandala.app.ExportProgress
+import com.mathis.mandala.app.R
 import com.mathis.mandala.app.ui.theme.Spacing
 
 /** Shows the editor's messages; a message can be swiped away to either side. */
@@ -56,11 +58,11 @@ internal fun ExportNote(progress: ExportProgress, modifier: Modifier = Modifier)
             Row {
                 // Read out when the step changes, not at every percent.
                 Text(
-                    "${progress.label}…",
+                    stringResource(R.string.editor_progress_step, progress.label),
                     style = MaterialTheme.typography.bodyMedium,
                     modifier = Modifier.weight(1f).semantics { liveRegion = LiveRegionMode.Polite },
                 )
-                progress.share?.let { Text("${(it * 100).toInt()} %", style = MaterialTheme.typography.bodyMedium) }
+                progress.share?.let { Text(stringResource(R.string.editor_percent, (it * 100).toInt()), style = MaterialTheme.typography.bodyMedium) }
             }
             val bar = MaterialTheme.colorScheme.inversePrimary
             val track = content.copy(alpha = 0.24f)

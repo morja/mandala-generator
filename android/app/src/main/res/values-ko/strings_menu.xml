@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Texts of the menu sheet, the save sheet and the About screen (ADR-0019). -->
+<resources>
+    <!-- Menu: the mandala on screen -->
+    <string name="menu_no_layers">레이어 없음</string>
+    <plurals name="menu_layers_emblem_on">
+        <item quantity="other">레이어 %1$d개 · 엠블럼 켜짐</item>
+    </plurals>
+    <plurals name="menu_layers_emblem_off">
+        <item quantity="other">레이어 %1$d개 · 엠블럼 꺼짐</item>
+    </plurals>
+
+    <!-- Menu: what keeps the mandala -->
+    <string name="menu_favourite">즐겨찾기</string>
+    <string name="menu_share">공유</string>
+    <string name="menu_wallpaper">배경화면</string>
+
+    <!-- Menu: the three dice for a new mandala -->
+    <string name="menu_new_mandala">새 만다라</string>
+    <string name="menu_die_variation">변형</string>
+    <string name="menu_die_variation_detail">새 디테일</string>
+    <string name="menu_die_layers">새 레이어</string>
+    <string name="menu_die_layers_detail">새 스타일</string>
+    <string name="menu_die_everything">깜짝 만다라</string>
+    <string name="menu_die_everything_detail">전부 새로</string>
+
+    <!-- Menu: files and settings -->
+    <string name="menu_open_file">파일 열기</string>
+    <string name="menu_save_settings">설정 저장</string>
+    <string name="menu_fast_preview">빠른 미리보기</string>
+    <string name="menu_fast_preview_detail">저장한 이미지에는 항상 글로우가 모두 적용됩니다</string>
+    <string name="menu_daily_wallpaper">매일 새 배경화면</string>
+    <string name="menu_theme">테마</string>
+    <string name="menu_theme_dark">어둡게</string>
+    <string name="menu_theme_light">밝게</string>
+    <string name="menu_about">정보</string>
+
+    <!-- Menu: comparing the new mandala with the current one -->
+    <string name="menu_back">메뉴</string>
+    <string name="menu_now">현재</string>
+    <string name="menu_try_another">다른 것 보기</string>
+    <string name="menu_use_new">새 만다라 사용</string>
+
+    <!-- Save sheet: title, format and frame -->
+    <string name="save_title">이미지 저장</string>
+    <string name="save_ratio">비율</string>
+    <string name="save_ratio_landscape">%1$s · 가로</string>
+    <string name="save_ratio_portrait">%1$s · 세로</string>
+    <string name="save_fit_whole">전체</string>
+    <string name="save_fit_fill">채우기</string>
+    <string name="save_frame_hint">드래그하여 이동, 손가락을 벌려 확대, 두 번 탭하여 가운데 정렬.</string>
+    <string name="save_frame_pro">만다라 이동과 확대는 Pro 기능입니다.</string>
+    <string name="save_about_pro">Pro 정보</string>
+    <string name="save_preview_description">저장할 이미지 미리보기</string>
+
+    <!-- Save sheet: the finish under "Adjust" -->
+    <string name="save_adjust">보정</string>
+    <string name="save_reset">초기화</string>
+    <string name="save_adjust_with_pro">Pro 사용</string>
+    <string name="save_adjust_unchanged">변경 없음</string>
+    <string name="save_adjust_summary">밝기 %1$s, 대비 %2$s, 채도 %3$s</string>
+    <string name="save_adjust_pro">이미지의 밝기, 대비, 채도 조절은 Pro 기능입니다.</string>
+    <string name="save_brightness">밝기</string>
+    <string name="save_contrast">대비</string>
+    <string name="save_saturation">채도</string>
+
+    <!-- Save sheet: quote, size and buttons -->
+    <string name="save_quote_follows">명언이 만다라와 함께 이동</string>
+    <string name="save_size">%1$d × %2$d</string>
+    <string name="save_size_pro">%1$d × %2$d · Pro</string>
+    <string name="save_save">저장</string>
+    <string name="save_wallpaper">배경화면</string>
+
+    <!-- Save sheet: the line drawing as SVG -->
+    <string name="save_line_drawing">선화</string>
+    <string name="save_line_drawing_pro">선화 · Pro</string>
+    <string name="save_line_drawing_detail">정사각형 SVG: 레이어와 엠블럼을 선으로만 그리며, 글로우, 효과, 배경, 명언은 빠집니다.</string>
+    <string name="save_line_drawing_points">기묘한 끌개 레이어는 제외됩니다.</string>
+    <string name="save_line_drawing_colour">검은 바탕에 컬러</string>
+    <string name="save_line_drawing_lines">흰 바탕에 어두운 선, 플로터와 색칠용</string>
+
+    <!-- About screen -->
+    <string name="about_title">정보</string>
+    <string name="about_close">닫기</string>
+    <string name="about_version">버전 %1$s (%2$d)</string>
+    <string name="about_licence">라이선스</string>
+    <string name="about_free_software">Dahlia는 자유 소프트웨어입니다. 자유 소프트웨어 재단이 발행한 GNU 일반 공중 사용 허가서 버전 3의 조건에 따라 재배포하거나 수정할 수 있습니다. 어떠한 보증도 제공되지 않습니다.</string>
+    <string name="about_source_code">GitHub의 소스 코드</string>
+    <string name="about_additional_permission">추가 허가</string>
+    <string name="about_gpl_section_7">GPL 제7조</string>
+    <string name="about_privacy">개인정보</string>
+    <string name="about_privacy_text">계정, 광고, 추적이 없습니다. 만다라와 설정은 기기에만 저장됩니다.</string>
+    <string name="about_privacy_policy">개인정보처리방침</string>
+    <string name="about_libraries">오픈소스 라이브러리</string>
+    <string name="about_full_text">전문 보기</string>
+</resources>

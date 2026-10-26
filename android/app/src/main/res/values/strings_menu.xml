@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Texts of the menu sheet, the save sheet and the About screen (ADR-0019). -->
+<resources>
+    <!-- Menu: the mandala on screen -->
+    <string name="menu_no_layers">No layers</string>
+    <plurals name="menu_layers_emblem_on">
+        <item quantity="one">%1$d layer · emblem on</item>
+        <item quantity="other">%1$d layers · emblem on</item>
+    </plurals>
+    <plurals name="menu_layers_emblem_off">
+        <item quantity="one">%1$d layer · emblem off</item>
+        <item quantity="other">%1$d layers · emblem off</item>
+    </plurals>
+
+    <!-- Menu: what keeps the mandala -->
+    <string name="menu_favourite">Favourite</string>
+    <string name="menu_share">Share</string>
+    <string name="menu_wallpaper">Wallpaper</string>
+
+    <!-- Menu: the three dice for a new mandala -->
+    <string name="menu_new_mandala">New mandala</string>
+    <string name="menu_die_variation">Variation</string>
+    <string name="menu_die_variation_detail">new details</string>
+    <string name="menu_die_layers">New layers</string>
+    <string name="menu_die_layers_detail">new styles</string>
+    <string name="menu_die_everything">Surprise me</string>
+    <string name="menu_die_everything_detail">everything</string>
+
+    <!-- Menu: files and settings -->
+    <string name="menu_open_file">Open file</string>
+    <string name="menu_save_settings">Save settings</string>
+    <string name="menu_fast_preview">Fast preview</string>
+    <string name="menu_fast_preview_detail">Saved images always get the full glow</string>
+    <string name="menu_daily_wallpaper">New wallpaper every day</string>
+    <string name="menu_theme">Theme</string>
+    <string name="menu_theme_dark">Dark</string>
+    <string name="menu_theme_light">Light</string>
+    <string name="menu_about">About</string>
+
+    <!-- Menu: comparing the new mandala with the current one -->
+    <string name="menu_back">Menu</string>
+    <string name="menu_now">Now</string>
+    <string name="menu_try_another">Try another</string>
+    <string name="menu_use_new">Use new</string>
+
+    <!-- Save sheet: title, format and frame -->
+    <string name="save_title">Save image</string>
+    <string name="save_ratio">Ratio</string>
+    <string name="save_ratio_landscape">%1$s · landscape</string>
+    <string name="save_ratio_portrait">%1$s · portrait</string>
+    <string name="save_fit_whole">Whole</string>
+    <string name="save_fit_fill">Fill</string>
+    <string name="save_frame_hint">Drag to move, pinch to zoom, double tap to centre.</string>
+    <string name="save_frame_pro">Moving and zooming the mandala come with Pro.</string>
+    <string name="save_about_pro">About Pro</string>
+    <string name="save_preview_description">Preview of the saved image</string>
+
+    <!-- Save sheet: the finish under "Adjust" -->
+    <string name="save_adjust">Adjust</string>
+    <string name="save_reset">Reset</string>
+    <string name="save_adjust_with_pro">With Pro</string>
+    <string name="save_adjust_unchanged">Unchanged</string>
+    <string name="save_adjust_summary">Brightness %1$s, contrast %2$s, saturation %3$s</string>
+    <string name="save_adjust_pro">Brightness, contrast and saturation of the image come with Pro.</string>
+    <string name="save_brightness">Brightness</string>
+    <string name="save_contrast">Contrast</string>
+    <string name="save_saturation">Saturation</string>
+
+    <!-- Save sheet: quote, size and buttons -->
+    <string name="save_quote_follows">Quote moves with the mandala</string>
+    <string name="save_size">%1$d × %2$d</string>
+    <string name="save_size_pro">%1$d × %2$d · Pro</string>
+    <string name="save_save">Save</string>
+    <string name="save_wallpaper">Wallpaper</string>
+
+    <!-- Save sheet: the line drawing as SVG -->
+    <string name="save_line_drawing">Line drawing</string>
+    <string name="save_line_drawing_pro">Line drawing · Pro</string>
+    <string name="save_line_drawing_detail">An SVG, square: the layers and the emblem as lines, without glow, effects, background and quote.</string>
+    <string name="save_line_drawing_points">Strange Attractor layers are left out.</string>
+    <string name="save_line_drawing_colour">Colour on black</string>
+    <string name="save_line_drawing_lines">Dark on white, for plotters and colouring</string>
+
+    <!-- About screen -->
+    <string name="about_title">About</string>
+    <string name="about_close">Close</string>
+    <string name="about_version">Version %1$s (%2$d)</string>
+    <string name="about_licence">Licence</string>
+    <string name="about_free_software">Dahlia is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, version 3. It comes without any warranty.</string>
+    <string name="about_source_code">Source code on GitHub</string>
+    <string name="about_additional_permission">Additional permission</string>
+    <string name="about_gpl_section_7">GPL section 7</string>
+    <string name="about_privacy">Privacy</string>
+    <string name="about_privacy_text">No account, no ads, no tracking. Your mandalas and settings stay on your device.</string>
+    <string name="about_privacy_policy">Privacy policy</string>
+    <string name="about_libraries">Open-source libraries</string>
+    <string name="about_full_text">Full text</string>
+</resources>
