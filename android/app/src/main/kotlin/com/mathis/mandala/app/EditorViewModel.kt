@@ -749,6 +749,11 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         message(string(R.string.message_favourite_added))
     }
 
+    /** Opens a favourite by id, as the home screen widget asks for with a tap (ADR-0020). */
+    fun applyFavoriteId(id: String) {
+        _favorites.value.firstOrNull { it.id == id }?.let(::applyFavorite)
+    }
+
     fun applyFavorite(favorite: Favorite) {
         // Its thumbnail stands in until the preview is rendered.
         if (recentPreviews[favorite.parameters] == null) {
@@ -984,7 +989,9 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         _export.value = ExportProgress(string(R.string.export_setting_daily))
         viewModelScope.launch {
             try {
-                val name = withContext(Dispatchers.Default) { DailyWallpaper.setNext(app, threads) }
+                val name = withContext(Dispatchers.Default) {
+                    DailyWallpaper.setNext(app, threads).also { runCatching { MandalaWidget.refresh(app) } }
+                }
                 _daily.update { it.copy(lastName = DailyWallpaper.lastName(app)) }
                 _export.value = null
                 delay(WALLPAPER_MESSAGE_DELAY_MS)

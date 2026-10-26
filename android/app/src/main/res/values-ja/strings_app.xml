@@ -93,4 +93,8 @@
     <string name="pro_unavailable">現在ここではProを購入できません。ProはGoogle Playで販売しています。</string>
     <string name="pro_unlocked">ありがとうございます。Proのロックが解除されました。</string>
     <string name="pro_pending">購入は保留中です。支払いが完了するとProのロックが解除されます。</string>
+    <!-- Home screen widget (ADR-0020) -->
+    <string name="widget_label">今日のマンダラ</string>
+    <string name="widget_description">今日のお気に入りをホーム画面に。正方形は画像だけ、横長は言葉も表示します。Pro なら毎朝新しいものに。</string>
+    <string name="widget_empty">アプリでお気に入りを追加すると、ここに表示されます。</string>
 </resources>

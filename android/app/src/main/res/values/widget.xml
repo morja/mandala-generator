@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The home screen widget (ADR-0020). RemoteViews cannot use the Compose tokens, so these repeat
+     the values of ui/theme/Tokens.kt (light here, dark in values-night); keep them in step. -->
+<resources>
+    <color name="widget_surface">#FFFFFDFA</color>
+    <color name="widget_text">#FF221F1C</color>
+    <color name="widget_muted">#FF5F5851</color>
+    <dimen name="widget_radius">16dp</dimen>
+    <dimen name="widget_padding">16dp</dimen>
+    <dimen name="widget_gap">8dp</dimen>
+    <dimen name="widget_quote_size">15sp</dimen>
+    <dimen name="widget_author_size">13sp</dimen>
+</resources>

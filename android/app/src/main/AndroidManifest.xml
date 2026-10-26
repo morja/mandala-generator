@@ -28,6 +28,18 @@
             android:name=".DailyWallpaperJob"
             android:exported="false"
             android:permission="android.permission.BIND_JOB_SERVICE" />
+        <!-- Mandala of the day on the home screen (ADR-0020). -->
+        <receiver
+            android:name=".MandalaWidget"
+            android:exported="true"
+            android:label="@string/widget_label">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/mandala_widget" />
+        </receiver>
         <!-- The live wallpaper (ADR-0014, Pro); Android shows its preview and sets it. -->
         <service
             android:name=".LiveWallpaperService"

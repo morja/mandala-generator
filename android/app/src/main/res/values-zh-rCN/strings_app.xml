@@ -93,4 +93,8 @@
     <string name="pro_unavailable">目前无法在此购买 Pro。Pro 通过 Google Play 销售。</string>
     <string name="pro_unlocked">谢谢！Pro 已解锁。</string>
     <string name="pro_pending">购买正在处理中。付款完成后即可解锁 Pro。</string>
+    <!-- Home screen widget (ADR-0020) -->
+    <string name="widget_label">今日曼陀罗</string>
+    <string name="widget_description">把今天的收藏放到主屏幕。方形只显示图片，宽版同时显示文字。Pro 每天早上换一个。</string>
+    <string name="widget_empty">在应用中添加收藏后，会显示在这里。</string>
 </resources>

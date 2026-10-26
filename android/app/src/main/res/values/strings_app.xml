@@ -95,4 +95,8 @@
     <string name="pro_unavailable">Pro cannot be bought here right now. It is sold through Google Play.</string>
     <string name="pro_unlocked">Thank you! Pro is unlocked.</string>
     <string name="pro_pending">The purchase is pending. Pro unlocks once it is paid.</string>
+    <!-- Home screen widget (ADR-0020) -->
+    <string name="widget_label">Mandala of the day</string>
+    <string name="widget_description">Today\'s favourite on your home screen. Square shows the picture, wide adds the words. With Pro a new one every morning.</string>
+    <string name="widget_empty">Add a favourite in the app to see it here.</string>
 </resources>
