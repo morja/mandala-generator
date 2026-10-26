@@ -41,6 +41,11 @@ object EditorIcons {
         soft = "M4,20l1.2,-4.6L15.5,5.1a2,2 0 0,1 2.8,0l0.6,0.6a2,2 0 0,1 0,2.8L8.6,18.8z")
     /** "More": two sliders. */
     val Tune = line("M4,7.5h8.5M17.5,7.5h2.5M4,16.5h2.5M11.5,16.5h8.5M15,5a2.5,2.5 0 1,0 0,5a2.5,2.5 0 1,0 0,-5zM9,14a2.5,2.5 0 1,0 0,5a2.5,2.5 0 1,0 0,-5z")
+    /** The words card: the quote collection, a new quote (two arrows, not a die: the die is the look), keeping a quote. */
+    val QuoteList = line("M5,6.5h14M5,12h14M5,17.5h9")
+    val NewQuote = line("M4,8h11M12,5l3,3 -3,3M20,16H9M12,13l-3,3 3,3")
+    val Keep = line("M7,4h10v16l-5,-4 -5,4z")
+    val Kept = line("M7,4h10v16l-5,-4 -5,4z", soft = "M7,4h10v16l-5,-4 -5,4z")
     /** Clear: a bin. */
     val Trash = line("M4.5,7h15M9.5,7V4.5h5V7M6.5,7l1,13h9l1,-13M10.5,10.5v6M13.5,10.5v6")
     val Chevron = line("M9,6l6,6 -6,6")

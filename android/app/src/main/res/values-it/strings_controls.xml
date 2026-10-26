@@ -57,8 +57,6 @@
     <string name="controls_emblem_show">Mostra emblema</string>
     <string name="controls_emblem_shape_seed">Forma %1$s</string>
     <string name="controls_text_show">Mostra testo</string>
-    <string name="controls_text_in_my_quotes">Nelle tue citazioni</string>
-    <string name="controls_text_save_to_my_quotes">Salva nelle mie citazioni</string>
     <string name="controls_quotes_collection">Raccolta</string>
 
     <!-- Draw tab: show switch per tool -->
@@ -158,9 +156,13 @@
     <!-- Text tab and quote list -->
     <string name="controls_random_text_look">Stile testo casuale</string>
     <string name="controls_text_off_note">Una citazione o parole tue nell\'immagine, con l\'autore se vuoi.</string>
+    <string name="controls_words">Parole</string>
+    <string name="controls_tap_to_edit">Tocca per modificare</string>
+    <string name="controls_collection">Raccolta</string>
+    <string name="controls_new_quote">Altra citazione</string>
+    <string name="controls_keep">Salva</string>
+    <string name="controls_kept">Salvata</string>
     <string name="controls_pro_note_text">Testo e citazioni sono inclusi in Pro. Provali quanto vuoi; per tenere il mandala serve Pro.</string>
-    <string name="controls_random_quote">Citazione casuale</string>
-    <string name="controls_choose_quote">Scegli citazione</string>
     <string name="controls_text_field">Testo</string>
     <string name="controls_author">Autore</string>
     <string name="controls_show_author">Mostra autore</string>

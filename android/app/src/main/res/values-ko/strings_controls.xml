@@ -53,8 +53,6 @@
     <string name="controls_emblem_show">엠블럼 표시</string>
     <string name="controls_emblem_shape_seed">모양 %1$s</string>
     <string name="controls_text_show">텍스트 표시</string>
-    <string name="controls_text_in_my_quotes">내 명언에 있음</string>
-    <string name="controls_text_save_to_my_quotes">내 명언에 저장</string>
     <string name="controls_quotes_collection">컬렉션</string>
 
     <!-- Draw tab: show switch per tool -->
@@ -154,9 +152,13 @@
     <!-- Text tab and quote list -->
     <string name="controls_random_text_look">무작위 텍스트 스타일</string>
     <string name="controls_text_off_note">그림에 명언이나 나만의 글을 넣고, 원하면 저자도 함께 표시합니다.</string>
+    <string name="controls_words">글</string>
+    <string name="controls_tap_to_edit">탭하여 편집</string>
+    <string name="controls_collection">모음</string>
+    <string name="controls_new_quote">다른 명언</string>
+    <string name="controls_keep">저장</string>
+    <string name="controls_kept">저장됨</string>
     <string name="controls_pro_note_text">텍스트와 명언은 Pro 기능입니다. 마음껏 사용해 보세요. 만다라를 간직하려면 Pro가 필요합니다.</string>
-    <string name="controls_random_quote">무작위 명언</string>
-    <string name="controls_choose_quote">명언 선택</string>
     <string name="controls_text_field">텍스트</string>
     <string name="controls_author">저자</string>
     <string name="controls_show_author">저자 표시</string>

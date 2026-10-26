@@ -1,5 +1,10 @@
 package com.mathis.mandala.app.ui
 
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontStyle
+import com.mathis.mandala.app.AndroidTextRenderer
+import androidx.compose.foundation.layout.RowScope
+import androidx.compose.ui.graphics.vector.ImageVector
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
@@ -703,29 +708,8 @@ private fun TextTab(text: TextLayerSettings, vm: EditorViewModel, position: Posi
         return
     }
     if (!position.proOwned) ProNote(stringResource(R.string.controls_pro_note_text), position.showPro)
-    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
-        OutlinedButton(colors = outlinedColors(), onClick = vm::randomQuote) { Text(stringResource(R.string.controls_random_quote)) }
-        OutlinedButton(colors = outlinedColors(), onClick = { choosing = true }) { Text(stringResource(R.string.controls_choose_quote)) }
-    }
-    OutlinedTextField(
-        value = text.text,
-        onValueChange = { v -> update { it.copy(text = v) } },
-        label = { Text(stringResource(R.string.controls_text_field)) },
-        maxLines = 4,
-        modifier = Modifier.fillMaxWidth().padding(top = Spacing.sm),
-    )
-    OutlinedTextField(
-        value = text.customAuthor,
-        onValueChange = { v -> update { it.copy(customAuthor = v) } },
-        label = { Text(stringResource(R.string.controls_author)) },
-        singleLine = true,
-        modifier = Modifier.fillMaxWidth(),
-    )
-    val saved = myQuotes.any { it.text == text.text.trim() && it.author == text.customAuthor.trim() }
-    TextButton(onClick = vm::saveTextAsMyQuote, enabled = text.text.isNotBlank() && !saved) {
-        Text(stringResource(if (saved) R.string.controls_text_in_my_quotes else R.string.controls_text_save_to_my_quotes))
-    }
-    SwitchRow(stringResource(R.string.controls_show_author), text.showAuthor) { a -> update { it.copy(showAuthor = a) } }
+    Words(text, saved = myQuotes.any { it.text == text.text.trim() && it.author == text.customAuthor.trim() },
+        update = update, onChoose = { choosing = true }, onNewQuote = vm::randomQuote, onKeep = vm::saveTextAsMyQuote)
     Group(stringResource(R.string.controls_font), summary = Quotes.fonts.firstOrNull { it.first == text.fontName }?.second ?: text.fontName) {
         FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
             for ((name, display) in Quotes.fonts) {
@@ -825,6 +809,84 @@ private fun QuoteRow(q: Quote, onPick: (Quote) -> Unit, trailing: (@Composable (
             if (q.author.isNotEmpty()) Text(q.author, style = MaterialTheme.typography.bodySmall, color = t.textMuted)
         }
         trailing?.invoke()
+    }
+}
+
+/**
+ * The words of the text layer as a card (DM-13 A): the quote large, in the picture's font, the author in
+ * italics below; a tap opens the two fields. Below it the collection, a new quote and keeping the quote.
+ * The die beside the tab's switch is the look (font, colour, light), not the words.
+ */
+@Composable
+private fun Words(
+    text: TextLayerSettings,
+    saved: Boolean,
+    update: ((TextLayerSettings) -> TextLayerSettings) -> Unit,
+    onChoose: () -> Unit,
+    onNewQuote: () -> Unit,
+    onKeep: () -> Unit,
+) {
+    val t = LocalTokens.current
+    var editing by rememberSaveable { mutableStateOf(false) }
+    val family = remember(text.fontName) { FontFamily(AndroidTextRenderer.typeface(text.fontName)) }
+    Group(stringResource(R.string.controls_words), summary = text.customAuthor.ifBlank { null }, initiallyOpen = true) {
+        if (editing || text.text.isBlank()) {
+            OutlinedTextField(
+                value = text.text,
+                onValueChange = { v -> update { it.copy(text = v) } },
+                label = { Text(stringResource(R.string.controls_text_field)) },
+                textStyle = MaterialTheme.typography.titleMedium.copy(fontFamily = family),
+                maxLines = 6,
+                modifier = Modifier.fillMaxWidth(),
+            )
+            OutlinedTextField(
+                value = text.customAuthor,
+                onValueChange = { v -> update { it.copy(customAuthor = v) } },
+                label = { Text(stringResource(R.string.controls_author)) },
+                textStyle = MaterialTheme.typography.bodyLarge.copy(fontFamily = family, fontStyle = FontStyle.Italic),
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth(),
+            )
+            if (text.text.isNotBlank()) {
+                TextButton(onClick = { editing = false }, modifier = Modifier.align(Alignment.End)) { Text(stringResource(R.string.controls_done)) }
+            }
+        } else {
+            val editLabel = stringResource(R.string.controls_tap_to_edit)
+            Column(
+                Modifier.fillMaxWidth().clip(RoundedCornerShape(Radius.sm))
+                    .clickable(onClickLabel = editLabel) { editing = true }
+                    .padding(vertical = Spacing.xs),
+                verticalArrangement = Arrangement.spacedBy(Spacing.xs),
+            ) {
+                Text(text.text, style = MaterialTheme.typography.titleLarge.copy(fontFamily = family))
+                if (text.customAuthor.isNotBlank()) {
+                    Text("— " + text.customAuthor, color = t.textMuted,
+                        style = MaterialTheme.typography.bodyLarge.copy(fontFamily = family, fontStyle = FontStyle.Italic))
+                }
+                Text(editLabel, style = MaterialTheme.typography.bodySmall, color = t.textMuted)
+            }
+        }
+        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.sm), modifier = Modifier.padding(top = Spacing.md, bottom = Spacing.sm)) {
+            WordsAction(EditorIcons.QuoteList, stringResource(R.string.controls_collection), enabled = true, onClick = onChoose)
+            WordsAction(EditorIcons.NewQuote, stringResource(R.string.controls_new_quote), enabled = true) { editing = false; onNewQuote() }
+            WordsAction(if (saved) EditorIcons.Kept else EditorIcons.Keep, stringResource(if (saved) R.string.controls_kept else R.string.controls_keep),
+                enabled = text.text.isNotBlank() && !saved, onClick = onKeep)
+        }
+        SwitchRow(stringResource(R.string.controls_show_author), text.showAuthor) { a -> update { it.copy(showAuthor = a) } }
+    }
+}
+
+@Composable
+private fun RowScope.WordsAction(icon: ImageVector, label: String, enabled: Boolean, onClick: () -> Unit) {
+    val t = LocalTokens.current
+    Column(
+        Modifier.weight(1f).clip(RoundedCornerShape(Radius.md)).background(t.surfaceRaised)
+            .clickable(enabled = enabled, role = Role.Button, onClick = onClick).padding(vertical = Spacing.md),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(Spacing.xs),
+    ) {
+        Icon(icon, contentDescription = null, tint = if (enabled) t.accent else t.textMuted)
+        Text(label, style = MaterialTheme.typography.labelMedium, color = if (enabled) t.text else t.textMuted, maxLines = 1)
     }
 }
 

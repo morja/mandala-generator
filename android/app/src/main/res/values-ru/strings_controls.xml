@@ -59,8 +59,6 @@
     <string name="controls_emblem_show">Показать эмблему</string>
     <string name="controls_emblem_shape_seed">Форма %1$s</string>
     <string name="controls_text_show">Показать текст</string>
-    <string name="controls_text_in_my_quotes">В ваших цитатах</string>
-    <string name="controls_text_save_to_my_quotes">Сохранить в мои цитаты</string>
     <string name="controls_quotes_collection">Коллекция</string>
 
     <!-- Draw tab: show switch per tool -->
@@ -160,9 +158,13 @@
     <!-- Text tab and quote list -->
     <string name="controls_random_text_look">Случайный вид текста</string>
     <string name="controls_text_off_note">Цитата или ваши слова на изображении, при желании с автором.</string>
+    <string name="controls_words">Слова</string>
+    <string name="controls_tap_to_edit">Нажмите, чтобы изменить</string>
+    <string name="controls_collection">Подборка</string>
+    <string name="controls_new_quote">Другая цитата</string>
+    <string name="controls_keep">Сохранить</string>
+    <string name="controls_kept">Сохранено</string>
     <string name="controls_pro_note_text">Текст и цитаты доступны в Pro. Пробуйте сколько угодно; чтобы сохранить мандалу, нужен Pro.</string>
-    <string name="controls_random_quote">Случайная цитата</string>
-    <string name="controls_choose_quote">Выбрать цитату</string>
     <string name="controls_text_field">Текст</string>
     <string name="controls_author">Автор</string>
     <string name="controls_show_author">Показать автора</string>

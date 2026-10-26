@@ -53,8 +53,6 @@
     <string name="controls_emblem_show">エンブレムを表示</string>
     <string name="controls_emblem_shape_seed">形状 %1$s</string>
     <string name="controls_text_show">テキストを表示</string>
-    <string name="controls_text_in_my_quotes">マイ引用に保存済み</string>
-    <string name="controls_text_save_to_my_quotes">マイ引用に保存</string>
     <string name="controls_quotes_collection">コレクション</string>
 
     <!-- Draw tab: show switch per tool -->
@@ -154,9 +152,13 @@
     <!-- Text tab and quote list -->
     <string name="controls_random_text_look">ランダムな文字デザイン</string>
     <string name="controls_text_off_note">画像に引用や自分の言葉を、必要なら著者名も添えて表示します。</string>
+    <string name="controls_words">言葉</string>
+    <string name="controls_tap_to_edit">タップして編集</string>
+    <string name="controls_collection">コレクション</string>
+    <string name="controls_new_quote">別の引用</string>
+    <string name="controls_keep">保存</string>
+    <string name="controls_kept">保存済み</string>
     <string name="controls_pro_note_text">テキストと引用はPro機能です。自由にお試しいただけますが、マンダラを残すにはProが必要です。</string>
-    <string name="controls_random_quote">ランダムな引用</string>
-    <string name="controls_choose_quote">引用を選ぶ</string>
     <string name="controls_text_field">テキスト</string>
     <string name="controls_author">著者</string>
     <string name="controls_show_author">著者を表示</string>
