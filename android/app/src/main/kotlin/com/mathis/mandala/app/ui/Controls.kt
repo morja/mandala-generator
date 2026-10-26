@@ -61,6 +61,8 @@ import com.mathis.mandala.app.Editing
 import com.mathis.mandala.app.Editing.strokeCount
 import com.mathis.mandala.app.Editing.switched
 import com.mathis.mandala.app.Editing.switchedTo
+import com.mathis.mandala.app.Editing.withEmblem
+import com.mathis.mandala.app.Editing.withText
 import com.mathis.mandala.app.EditorViewModel
 import com.mathis.mandala.app.ui.theme.LocalTokens
 import com.mathis.mandala.app.ui.theme.Radius
@@ -344,11 +346,12 @@ private fun LayerControls(layer: StyleLayer, update: ((StyleLayer) -> StyleLayer
 
 @Composable
 private fun SceneTab(params: MandalaParameters, vm: EditorViewModel) {
+    // Effects are used far more than the background, so they come first and open.
     val base = params.baseLayer
+    EffectsGroup(params.effectsLayer, vm::updateEffects, vm::newEffectsPattern, vm::resetEffects)
     Group("Background", summary = if (base.isEnabled) backgroundName(base.type) else "Off") {
         BackgroundControls(base, vm::updateBackground, vm::useBackgroundImage)
     }
-    EffectsGroup(params.effectsLayer, vm::updateEffects, vm::newEffectsPattern, vm::resetEffects)
 }
 
 /** Background behind all layers: off or one of the macOS types, with the fitting sliders. */
@@ -429,7 +432,7 @@ private fun backgroundName(type: BaseLayerType) = when (type) {
 }
 
 /**
- * Scene effects behind the text, switched on inside the section; the quick, reliable sliders in
+ * Scene effects over the mandala, by default also over the emblem and behind the text (ADR-0018), switched on inside the section; the quick, reliable sliders in
  * four groups and the rarer ones under "More" (TUNE-1). "Fade" sets the `wash` field; the old `fade`
  * field does almost the same and gets its own slider ("Old fade") only in settings that use it.
  * The die in the heading moves highlights, dimming, erasure, stars and glitter to new places, as the
@@ -446,7 +449,7 @@ private fun EffectsGroup(
     var showOldFade by rememberSaveable { mutableStateOf(false) }
     LaunchedEffect(fx.fade > 0) { if (fx.fade > 0) showOldFade = true }
     val t = LocalTokens.current
-    Group("Effects", summary = if (fx.isEnabled) "On" else "Off") {
+    Group("Effects", summary = if (fx.isEnabled) "On" else "Off", initiallyOpen = true) {
         // Keep actions inside the section so its closed header is as compact as every other one.
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             Text("Show effects", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
@@ -489,6 +492,12 @@ private fun EffectsGroup(
             if (fx.relief > 0) ValueSlider("Relief angle", fx.reliefAngle, default = EffectsLayerSettings().reliefAngle) { v -> update { it.copy(reliefAngle = v) } }
             ValueSlider("Chromatic", fx.chromatic, default = EffectsLayerSettings().chromatic) { v -> update { it.copy(chromatic = v) } }
             if (showOldFade) ValueSlider("Old fade", fx.fade, default = EffectsLayerSettings().fade) { v -> update { it.copy(fade = v) } }
+        }
+        // Rarely changed, so last and closed; the summary says what the effects reach.
+        val reach = listOfNotNull("Mandala", "emblem".takeIf { fx.affectsEmblem }, "text".takeIf { fx.affectsText })
+        Group("Applies to", summary = reach.joinToString(", "), inset = true) {
+            SwitchRow("Emblem", fx.affectsEmblem) { on -> update { it.withEmblem(on) } }
+            SwitchRow("Text", fx.affectsText) { on -> update { it.withText(on) } }
         }
     }
 }
