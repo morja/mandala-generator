@@ -14,7 +14,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import com.mathis.mandala.app.LiveSettings
+import com.mathis.mandala.app.R
 import com.mathis.mandala.app.ui.theme.LocalTokens
 import com.mathis.mandala.app.ui.theme.Spacing
 
@@ -31,21 +33,21 @@ internal fun LiveSheet(settings: LiveSettings, onSettings: (LiveSettings) -> Uni
             Modifier.verticalScroll(rememberScrollState()).padding(horizontal = Spacing.lg).padding(bottom = Spacing.xl),
             verticalArrangement = Arrangement.spacedBy(Spacing.md),
         ) {
-            Text("Live wallpaper", style = MaterialTheme.typography.titleMedium)
+            Text(stringResource(R.string.live_title), style = MaterialTheme.typography.titleMedium)
             Text(
-                "This mandala fills the screen and turns slowly, one turn in four minutes. It only moves while you see it.",
+                stringResource(R.string.live_intro),
                 style = MaterialTheme.typography.bodyMedium,
                 color = t.textMuted,
             )
-            SwitchRow("Breathing: brightness rises and falls", settings.breathing) { onSettings(settings.copy(breathing = it)) }
-            SwitchRow("Colour drift: the colours turn slowly", settings.colourDrift) { onSettings(settings.copy(colourDrift = it)) }
-            SwitchRow("Palettes in turn: the next one fades in every ten minutes", settings.palettesInTurn) { onSettings(settings.copy(palettesInTurn = it)) }
+            SwitchRow(stringResource(R.string.live_breathing), settings.breathing) { onSettings(settings.copy(breathing = it)) }
+            SwitchRow(stringResource(R.string.live_colour_drift), settings.colourDrift) { onSettings(settings.copy(colourDrift = it)) }
+            SwitchRow(stringResource(R.string.live_palettes_in_turn), settings.palettesInTurn) { onSettings(settings.copy(palettesInTurn = it)) }
             Text(
-                "With the daily wallpaper on, the live wallpaper fades over to the next favourite every morning.",
+                stringResource(R.string.live_daily_note),
                 style = MaterialTheme.typography.bodySmall,
                 color = t.textMuted,
             )
-            Button(onClick = onSet, modifier = Modifier.fillMaxWidth()) { Text("Set live wallpaper") }
+            Button(onClick = onSet, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.live_set)) }
         }
     }
 }

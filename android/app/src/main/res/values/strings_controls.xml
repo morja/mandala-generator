@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Texts of the control tabs below or beside the canvas (Controls.kt, Parts.kt; ADR-0017). -->
+<resources>
+
+    <!-- Tab row and the header beside the folded image -->
+    <string name="controls_tab_layers">Layers</string>
+    <string name="controls_tab_scene">Scene</string>
+    <string name="controls_tab_emblem">Emblem</string>
+    <string name="controls_tab_text">Text</string>
+    <string name="controls_tab_draw">Draw</string>
+    <string name="controls_header_no_layers">No layers</string>
+    <string name="controls_header_no_background">No background</string>
+    <string name="controls_header_strokes">%1$s · %2$s</string>
+    <plurals name="controls_header_lines">
+        <item quantity="one">%d line</item>
+        <item quantity="other">%d lines</item>
+    </plurals>
+    <plurals name="controls_header_spray">
+        <item quantity="one">%d spray</item>
+        <item quantity="other">%d spray</item>
+    </plurals>
+
+    <!-- Shared summaries: blend mode with opacity, the Pro mark -->
+    <string name="controls_blend_summary">%1$s · %2$d %%</string>
+    <string name="controls_with_pro">%1$s · Pro</string>
+
+    <!-- Foldable groups and sliders (accessibility) -->
+    <string name="controls_group_open">Open %1$s</string>
+    <string name="controls_group_close">Close %1$s</string>
+    <string name="controls_group_state_open">Open</string>
+    <string name="controls_group_state_closed">Closed</string>
+    <string name="controls_slider_reset">Reset %1$s</string>
+
+    <!-- Layers tab: actions and layer rows -->
+    <string name="controls_layers_add">Add</string>
+    <string name="controls_layers_duplicate">Duplicate</string>
+    <string name="controls_layers_randomize">Randomize layer %1$d</string>
+    <string name="controls_layer_hide">Hide layer %1$d</string>
+    <string name="controls_layer_show">Show layer %1$d</string>
+    <string name="controls_layer_move_up">Move layer %1$d up</string>
+    <string name="controls_layer_move_down">Move layer %1$d down</string>
+    <string name="controls_style_new_variant">New %1$s variant</string>
+    <string name="controls_position_centred">Centred</string>
+    <string name="controls_position_moved">Moved</string>
+
+    <!-- Scene tab: background types -->
+    <string name="controls_background_auto">Auto</string>
+    <string name="controls_background_picture">Picture</string>
+    <string name="controls_background_colour">Colour</string>
+    <string name="controls_background_gradient">Gradient</string>
+    <string name="controls_background_sunburst">Sunburst</string>
+    <string name="controls_background_grain">Grain</string>
+
+    <!-- Emblem and text tabs: on/off rows -->
+    <string name="controls_emblem_show">Show emblem</string>
+    <string name="controls_emblem_shape_seed">Shape %1$s</string>
+    <string name="controls_text_show">Show text</string>
+    <string name="controls_text_in_my_quotes">In your quotes</string>
+    <string name="controls_text_save_to_my_quotes">Save to my quotes</string>
+    <string name="controls_quotes_collection">Collection</string>
+
+    <!-- Draw tab: show switch per tool -->
+    <string name="controls_draw_show_lines">Show lines</string>
+    <string name="controls_draw_show_spray">Show spray</string>
+
+    <!-- Layers tab: group titles, sliders and notes (some shared with other tabs) -->
+    <string name="controls_pro_note_layers">More than three layers come with Pro. Try them as you like; keeping the mandala needs Pro.</string>
+    <string name="controls_delete">Delete</string>
+    <string name="controls_about_pro">About Pro</string>
+    <string name="controls_position">Position</string>
+    <string name="controls_pro_note_position">Moving layers comes with Pro. Try it as you like; keeping the mandala needs Pro.</string>
+    <string name="controls_position_hidden_note">This layer is hidden. Show it to see where it moves.</string>
+    <string name="controls_across">Across</string>
+    <string name="controls_up_and_down">Up and down</string>
+    <string name="controls_centre">Centre</string>
+    <string name="controls_done">Done</string>
+    <string name="controls_move_on_image">Move on image</string>
+    <string name="controls_style">Style</string>
+    <string name="controls_palette">Palette</string>
+    <string name="controls_blending">Blending</string>
+    <string name="controls_opacity">Opacity</string>
+    <string name="controls_shape">Shape</string>
+    <string name="controls_shape_new_arrangement">New arrangement, same style and palette</string>
+    <string name="controls_symmetry">Symmetry</string>
+    <string name="controls_scale">Scale</string>
+    <string name="controls_complexity">Complexity</string>
+    <string name="controls_spokes">Spokes</string>
+    <string name="controls_density">Density</string>
+    <string name="controls_ripple">Ripple</string>
+    <string name="controls_light_and_colour">Light and colour</string>
+    <string name="controls_glow">Glow</string>
+    <string name="controls_colour_drift">Colour drift</string>
+    <string name="controls_painted">Painted</string>
+    <string name="controls_saturation">Saturation</string>
+    <string name="controls_brightness">Brightness</string>
+
+    <!-- Scene tab: background and effects -->
+    <string name="controls_background">Background</string>
+    <string name="controls_off">Off</string>
+    <string name="controls_background_auto_note">A dark glow and fine fibres in the colours of the bottom layer.</string>
+    <string name="controls_choose_picture">Choose picture</string>
+    <string name="controls_strength">Strength</string>
+    <string name="controls_colour_1">Colour 1</string>
+    <string name="controls_colour">Colour</string>
+    <string name="controls_colour_2">Colour 2</string>
+    <string name="controls_radial">Radial</string>
+    <string name="controls_angle">Angle</string>
+    <string name="controls_rays">Rays</string>
+    <string name="controls_sharpness">Sharpness</string>
+    <string name="controls_grain">Grain</string>
+    <string name="controls_coloured_grain">Coloured grain</string>
+    <string name="controls_effects">Effects</string>
+    <string name="controls_on">On</string>
+    <string name="controls_effects_new_pattern">New pattern of highlights, dimming, stars and glitter</string>
+    <string name="controls_reset">Reset</string>
+    <string name="controls_effects_off_note">Switch on to use vignette, bloom, grain, stars and more.</string>
+    <string name="controls_light">Light</string>
+    <string name="controls_contrast">Contrast</string>
+    <string name="controls_vignette">Vignette</string>
+    <string name="controls_bloom">Bloom</string>
+    <string name="controls_tone">Tone</string>
+    <string name="controls_sepia">Sepia</string>
+    <string name="controls_fade">Fade</string>
+    <string name="controls_texture">Texture</string>
+    <string name="controls_clarity">Clarity</string>
+    <string name="controls_sparkle">Sparkle</string>
+    <string name="controls_stars">Stars</string>
+    <string name="controls_glitter">Glitter</string>
+    <string name="controls_more">More</string>
+    <string name="controls_highlights">Highlights</string>
+    <string name="controls_dimming">Dimming</string>
+    <string name="controls_erasure">Erasure</string>
+    <string name="controls_relief">Relief</string>
+    <string name="controls_relief_angle">Relief angle</string>
+    <string name="controls_chromatic">Chromatic</string>
+    <string name="controls_old_fade">Old fade</string>
+
+    <!-- Emblem tab -->
+    <string name="controls_random_emblem">Random emblem</string>
+    <string name="controls_emblem_off_note">One motif drawn large in the centre: Om, Tree of Life, Flower of Life, Lotus and more.</string>
+    <string name="controls_pro_note_emblem">The emblem comes with Pro. Try it as you like; keeping the mandala needs Pro.</string>
+    <string name="controls_motif">Motif</string>
+    <string name="controls_variant">Variant</string>
+    <string name="controls_petals">Petals</string>
+    <string name="controls_organic">Organic</string>
+    <string name="controls_new_shape">New shape</string>
+    <string name="controls_branches">Branches</string>
+    <string name="controls_roots">Roots</string>
+    <string name="controls_style_and_frame">Style and frame</string>
+    <string name="controls_frame">Frame</string>
+    <string name="controls_size">Size</string>
+    <string name="controls_weight">Weight</string>
+    <string name="controls_rotate">Rotate</string>
+    <string name="controls_spread">Spread</string>
+
+    <!-- Text tab and quote list -->
+    <string name="controls_random_text_look">Random text look</string>
+    <string name="controls_text_off_note">A quote or your own words below the mandala, with the author if you like.</string>
+    <string name="controls_pro_note_text">Text and quotes come with Pro. Try them as you like; keeping the mandala needs Pro.</string>
+    <string name="controls_random_quote">Random quote</string>
+    <string name="controls_choose_quote">Choose quote</string>
+    <string name="controls_text_field">Text</string>
+    <string name="controls_author">Author</string>
+    <string name="controls_show_author">Show author</string>
+    <string name="controls_font">Font</string>
+    <string name="controls_size_and_place">Size and place</string>
+    <string name="controls_width">Width</string>
+    <string name="controls_tracking">Tracking</string>
+    <string name="controls_height">Height</string>
+    <string name="controls_cloud">Cloud</string>
+    <string name="controls_cloud_size">Cloud size</string>
+    <string name="controls_cloud_colour">Cloud colour</string>
+    <string name="controls_shadow">Shadow</string>
+    <string name="controls_shadow_colour">Shadow colour</string>
+    <string name="controls_hue">Hue</string>
+    <string name="controls_close">Close</string>
+    <string name="controls_quotes">Quotes</string>
+    <string name="controls_your_quotes">Your quotes</string>
+    <string name="controls_remove_quote">Remove quote</string>
+    <string name="controls_quotes_public_domain">All quotes in the collection are in the public domain.</string>
+
+    <!-- Draw tab -->
+    <string name="controls_draw_on_image">Draw on image</string>
+    <string name="controls_undo">Undo</string>
+    <string name="controls_clear">Clear</string>
+    <string name="controls_line_colour">Line colour</string>
+    <string name="controls_line_and_light">Line and light</string>
+    <string name="controls_brush_size">Brush size</string>
+    <string name="controls_paint">Paint</string>
+    <string name="controls_spray_colour">Spray colour</string>
+    <string name="controls_softness_and_blending">Softness and blending</string>
+    <string name="controls_softness">Softness</string>
+</resources>

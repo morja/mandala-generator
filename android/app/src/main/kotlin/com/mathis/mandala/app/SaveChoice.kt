@@ -5,6 +5,9 @@ import android.app.WallpaperManager
 import android.content.Context
 import android.os.Build
 import android.util.DisplayMetrics
+import androidx.annotation.StringRes
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
 import com.mathis.mandala.app.Editing.SaveFormat
 import com.mathis.mandala.core.Finish
 import com.mathis.mandala.core.Framing
@@ -92,17 +95,19 @@ class SaveChoiceStore(context: Context) {
 }
 
 /** Where "Set as wallpaper" puts the image. */
-enum class WallpaperTarget(val label: String, val flags: Int) {
-    HOME("Home screen", WallpaperManager.FLAG_SYSTEM),
-    LOCK("Lock screen", WallpaperManager.FLAG_LOCK),
-    BOTH("Home and lock screen", WallpaperManager.FLAG_SYSTEM or WallpaperManager.FLAG_LOCK),
+enum class WallpaperTarget(@StringRes val label: Int, val flags: Int) {
+    HOME(R.string.wallpaper_target_home, WallpaperManager.FLAG_SYSTEM),
+    LOCK(R.string.wallpaper_target_lock, WallpaperManager.FLAG_LOCK),
+    BOTH(R.string.wallpaper_target_both, WallpaperManager.FLAG_SYSTEM or WallpaperManager.FLAG_LOCK),
 }
 
 /** The menu entry for the live wallpaper (ADR-0014), marked when it opens the Pro sheet. */
-fun liveLabel(pro: Boolean): String = if (pro) "Live wallpaper" else "Live wallpaper · Pro"
+@Composable
+fun liveLabel(pro: Boolean): String = stringResource(if (pro) R.string.wallpaper_live else R.string.wallpaper_live_pro)
 
 /** The menu entry for the wallpaper pair (ADR-0014), marked when it opens the Pro sheet. */
-fun pairLabel(pro: Boolean): String = if (pro) "Home and lock, as a pair" else "Home and lock, as a pair · Pro"
+@Composable
+fun pairLabel(pro: Boolean): String = stringResource(if (pro) R.string.wallpaper_pair else R.string.wallpaper_pair_pro)
 
 object Wallpapers {
     fun set(context: Context, image: Image8, target: WallpaperTarget) = set(context, image, target.flags)

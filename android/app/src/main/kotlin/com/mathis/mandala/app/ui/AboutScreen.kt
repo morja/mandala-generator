@@ -28,6 +28,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextLinkStyles
@@ -74,18 +75,16 @@ fun AboutScreen(onClose: () -> Unit) {
     BackHandler(onBack = onClose)
     val t = LocalTokens.current
     val context = LocalContext.current
-    val version = remember {
-        val info = context.packageManager.getPackageInfo(context.packageName, 0)
-        "Version ${info.versionName} (${info.longVersionCode})"
-    }
+    val info = remember { context.packageManager.getPackageInfo(context.packageName, 0) }
+    val version = stringResource(R.string.about_version, info.versionName.toString(), info.longVersionCode)
     val german = LocalConfiguration.current.locales[0].language == "de"
     val privacyUrl = "https://www.tearoom.one/${if (german) "de" else "en"}/apps/privacy/mandala-generator"
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("About") },
-                navigationIcon = { IconButton(onClick = onClose) { Icon(EditorIcons.Close, contentDescription = "Close") } },
+                title = { Text(stringResource(R.string.about_title)) },
+                navigationIcon = { IconButton(onClick = onClose) { Icon(EditorIcons.Close, contentDescription = stringResource(R.string.about_close)) } },
             )
         },
     ) { padding ->
@@ -104,28 +103,24 @@ fun AboutScreen(onClose: () -> Unit) {
                     Text(version, style = MaterialTheme.typography.bodyMedium, color = t.textMuted)
                 }
 
-                AboutSection("Licence") {
+                AboutSection(stringResource(R.string.about_licence)) {
                     Paragraph("Copyright © 2026 Mathis Koblin")
-                    Paragraph(
-                        "Dahlia is free software: you can redistribute it and/or modify it under the terms of the " +
-                            "GNU General Public License as published by the Free Software Foundation, version 3. It comes " +
-                            "without any warranty.",
-                    )
-                    LinkLine("Source code on GitHub", SOURCE_URL)
+                    Paragraph(stringResource(R.string.about_free_software))
+                    LinkLine(stringResource(R.string.about_source_code), SOURCE_URL)
                     LinkLine("GNU General Public License 3.0", GPL_URL)
-                    Group("Additional permission", summary = "GPL section 7") {
+                    Group(stringResource(R.string.about_additional_permission), summary = stringResource(R.string.about_gpl_section_7)) {
                         Paragraph(SECTION_7_PERMISSION, muted = true)
                     }
                 }
 
-                AboutSection("Privacy") {
-                    Paragraph("No account, no ads, no tracking. Your mandalas and settings stay on your device.")
-                    LinkLine("Privacy policy", privacyUrl)
+                AboutSection(stringResource(R.string.about_privacy)) {
+                    Paragraph(stringResource(R.string.about_privacy_text))
+                    LinkLine(stringResource(R.string.about_privacy_policy), privacyUrl)
                 }
 
-                AboutSection("Open-source libraries") {
+                AboutSection(stringResource(R.string.about_libraries)) {
                     for (library in LIBRARIES) LibraryRow(library)
-                    Group("Apache License 2.0", summary = "Full text") { ApacheLicenceText() }
+                    Group("Apache License 2.0", summary = stringResource(R.string.about_full_text)) { ApacheLicenceText() }
                 }
             }
         }

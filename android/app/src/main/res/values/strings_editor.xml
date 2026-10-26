@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Texts of the editor screen, the wallpaper pair and the live wallpaper sheets (ADR-0017). -->
+<resources>
+    <!-- Editor: messages and export progress -->
+    <string name="editor_undo">Undo</string>
+    <string name="editor_progress_step">%1$s…</string>
+    <string name="editor_percent">%1$d %%</string>
+
+    <!-- Editor: top bar -->
+    <string name="editor_back">Back</string>
+    <string name="editor_forward">Forward</string>
+    <string name="editor_surprise">Surprise me</string>
+    <string name="editor_save_image">Save image</string>
+    <string name="editor_favourites">Favourites</string>
+    <string name="editor_more">More</string>
+
+    <!-- Editor: menu, daily wallpaper entry -->
+    <string name="editor_daily_pro">Your favourites in turn, every morning · Pro</string>
+    <string name="editor_daily_today">Today: %1$s</string>
+    <string name="editor_daily_off">Your favourites in turn, on lock and home screen</string>
+
+    <!-- Editor: canvas -->
+    <string name="editor_show_large">Show the image large</string>
+    <string name="editor_make_small">Make the image small</string>
+    <string name="editor_larger_image">Larger image</string>
+    <string name="editor_smaller_image">Smaller image</string>
+    <string name="editor_preview">Mandala preview</string>
+    <string name="editor_pro_mark_action">What needs Pro</string>
+    <string name="editor_pro_mark_description">This mandala uses Pro features</string>
+    <string name="editor_draw_hint">Drag on the image to draw</string>
+    <string name="editor_move_layer_hint">Drag to move layer %1$d, pinch to size and turn it</string>
+    <string name="editor_move_emblem_hint">Drag to move the emblem, pinch to size and turn it</string>
+
+    <!-- Editor: Pro sheet -->
+    <string name="editor_pro_title">Dahlia Pro</string>
+    <string name="editor_pro_uses_keep">This mandala uses what comes with Pro. To keep it as it is, get Pro:</string>
+    <string name="editor_pro_uses">This mandala uses what comes with Pro:</string>
+    <string name="editor_pro_feature_item">· %1$s</string>
+    <string name="editor_pro_summary">Pro adds up to five layers, emblems, text and quotes, and moving layers and the emblem. Save at 2048 pixels wide with the mandala placed by hand and adjusted, and as a line drawing. Wallpapers: home and lock as a pair, a new one every day, and a live wallpaper. Try more layers, emblems and quotes in the editor before you buy. One purchase, no subscription.</string>
+    <string name="editor_pro_buy_for">Buy for %1$s</string>
+    <string name="editor_pro_buy">Buy Pro</string>
+    <string name="editor_pro_without">%1$s without them</string>
+    <string name="editor_pro_remove">Remove them</string>
+    <string name="editor_pro_unavailable">Pro is sold through Google Play and is not available in this installation right now.</string>
+
+    <!-- Editor: favourites sheet -->
+    <string name="editor_favourites_add">Add current</string>
+    <string name="editor_favourites_empty">No favourites yet. Add the current mandala, or open the favourites file of the Mac app (favorites.json) with Open file.</string>
+    <string name="editor_favourites_hint">Tap to use, long press to delete.</string>
+    <string name="editor_favourite_description">Favourite: %1$s</string>
+    <string name="editor_favourite_delete">Delete</string>
+
+    <!-- Wallpaper pair sheet -->
+    <string name="pair_title">Home and lock screen</string>
+    <string name="pair_lock_screen">Lock screen</string>
+    <string name="pair_home_screen">Home screen</string>
+    <string name="pair_screen_preview">%1$s preview</string>
+    <string name="pair_lock_note">The lock screen takes brightness, contrast and saturation from the save sheet.</string>
+    <string name="pair_set_both">Set both</string>
+
+    <!-- Live wallpaper sheet -->
+    <string name="live_title">Live wallpaper</string>
+    <string name="live_intro">This mandala fills the screen and turns slowly, one turn in four minutes. It only moves while you see it.</string>
+    <string name="live_breathing">Breathing: brightness rises and falls</string>
+    <string name="live_colour_drift">Colour drift: the colours turn slowly</string>
+    <string name="live_palettes_in_turn">Palettes in turn: the next one fades in every ten minutes</string>
+    <string name="live_daily_note">With the daily wallpaper on, the live wallpaper fades over to the next favourite every morning.</string>
+    <string name="live_set">Set live wallpaper</string>
+</resources>

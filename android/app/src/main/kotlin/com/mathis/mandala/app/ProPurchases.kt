@@ -33,6 +33,7 @@ data class ProState(
  */
 class ProPurchases(context: Context, private val onEvent: (String) -> Unit) {
     private val prefs = context.getSharedPreferences("pro", Context.MODE_PRIVATE)
+    private val resources = context.applicationContext.resources
     private val testBuild = context.resources.getBoolean(R.bool.pro_for_testing)
     private val _state = MutableStateFlow(ProState(owned = testBuild || prefs.getBoolean(KEY_OWNED, false)))
     val state: StateFlow<ProState> = _state.asStateFlow()
@@ -45,7 +46,7 @@ class ProPurchases(context: Context, private val onEvent: (String) -> Unit) {
                 BillingClient.BillingResponseCode.OK -> purchases.orEmpty().forEach(::handle)
                 BillingClient.BillingResponseCode.ITEM_ALREADY_OWNED -> refreshPurchases()
                 BillingClient.BillingResponseCode.USER_CANCELED -> Unit
-                else -> onEvent("The purchase did not go through (${result.debugMessage.ifEmpty { "code ${result.responseCode}" }}).")
+                else -> onEvent(resources.getString(R.string.pro_purchase_failed, result.debugMessage.ifEmpty { resources.getString(R.string.pro_purchase_code, result.responseCode) }))
             }
         }
         .enablePendingPurchases(PendingPurchasesParams.newBuilder().enableOneTimeProducts().build())
@@ -70,7 +71,7 @@ class ProPurchases(context: Context, private val onEvent: (String) -> Unit) {
     fun buy(activity: Activity) {
         val product = details
         if (product == null) {
-            onEvent("Pro cannot be bought here right now. It is sold through Google Play.")
+            onEvent(resources.getString(R.string.pro_unavailable))
             return
         }
         val params = BillingFlowParams.newBuilder()
@@ -107,11 +108,11 @@ class ProPurchases(context: Context, private val onEvent: (String) -> Unit) {
         if (PRODUCT_ID !in purchase.products) return
         when (purchase.purchaseState) {
             Purchase.PurchaseState.PURCHASED -> {
-                if (!_state.value.owned) onEvent("Thank you! Pro is unlocked.")
+                if (!_state.value.owned) onEvent(resources.getString(R.string.pro_unlocked))
                 setOwned(true)
                 acknowledge(purchase)
             }
-            Purchase.PurchaseState.PENDING -> onEvent("The purchase is pending. Pro unlocks once it is paid.")
+            Purchase.PurchaseState.PENDING -> onEvent(resources.getString(R.string.pro_pending))
             else -> Unit
         }
     }
