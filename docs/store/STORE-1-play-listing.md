@@ -263,6 +263,8 @@ No drawing screenshot (Mathis, 22 October 2026). Samsung marks the lock screen w
 
 The German listing has no screenshots of its own and shows these. All quotes shown are public domain (ADR-0007): Rumi in Nicholson's translation (1898, Nicholson died 1945), and in the favourites Gibran's The Prophet (1923, Gibran died 1931) and Whitman.
 
+**Open (Mathis, 26 October 2026), not urgent:** the screenshots no longer match the app in several places (scene tab, text tab with the Words card, palette group with own palettes, preview sizes, menu), and some listing texts are no longer exact. Take new screenshots, render the captions again and check the listing texts against the current app before the next store update.
+
 ## What Mathis does himself
 
 State on 22 October 2026, read from the Play Console through the API: production, beta and alpha are empty; the internal track has 1.1.0 (code 3); the English listing has the icon, the feature graphic and six phone screenshots (the German listing uses them too); the product `pro` is active at 1.99 €; the listing texts and the product description were updated the same day. The developer account is older than November 2023, so Google's closed test with 12 testers does not apply.
