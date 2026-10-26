@@ -35,6 +35,12 @@ object SettingsJson {
 
     private val favoritesSerializer = ListSerializer(Favorite.serializer())
     private val quotesSerializer = ListSerializer(Quote.serializer())
+    private val palettesSerializer = ListSerializer(CustomPalette.serializer())
+
+    /** Own palettes, in the macOS app's `palettes.json` format (ADR-0020). */
+    fun decodePalettes(text: String): List<CustomPalette> = json.decodeFromString(palettesSerializer, text)
+
+    fun encodePalettes(palettes: List<CustomPalette>): String = json.encodeToString(palettesSerializer, palettes)
 
     /** The user's own quotes (Android only; the macOS app has none). */
     fun decodeQuotes(text: String): List<Quote> = json.decodeFromString(quotesSerializer, text)
