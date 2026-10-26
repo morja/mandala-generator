@@ -89,12 +89,17 @@
     <!-- %1$s is the import message, %2$s how many were already there -->
     <string name="message_favourites_imported_note">%1$s (%2$s)</string>
 
-    <!-- Google Play purchase of Pro (ADR-0007); %1$s is Google Play's reason, %1$d its code -->
-    <string name="pro_purchase_failed">The purchase did not go through (%1$s).</string>
-    <string name="pro_purchase_code">code %1$d</string>
-    <string name="pro_unavailable">Pro cannot be bought here right now. It is sold through Google Play.</string>
+    <!-- Google Play purchase of Pro (ADR-0007, ADR-0022): texts for the codes of one.tearoom.unlock -->
     <string name="pro_unlocked">Thank you! Pro is unlocked.</string>
     <string name="pro_pending">The purchase is pending. Pro unlocks once it is paid.</string>
+    <string name="pro_product_unavailable">Google Play does not offer Pro to this account right now. Please try again later.</string>
+    <string name="pro_play_unavailable">Google Play cannot be reached right now, so there is no price yet. Check the connection and try again.</string>
+    <string name="pro_restore_active">Pro is active on this device.</string>
+    <string name="pro_restore_not_found">Google Play found no Pro purchase for this Google account. If you bought Pro with another Google account, switch to it in the Play Store and tap “Restore purchase” again.</string>
+    <string name="pro_restore_unreachable">Google Play could not be reached, so nothing was checked. Please try again later.</string>
+    <string name="pro_price_refreshing">The price is being updated. Tap Buy again in a moment.</string>
+    <string name="pro_purchase_not_started">Google Play could not open the purchase. Please try again.</string>
+    <string name="pro_purchase_incomplete">The purchase did not go through.</string>
     <string name="export_creating_video">Creating the video</string>
     <string name="export_saving_to_movies">Saving to Movies</string>
     <string name="message_video_saved">Saved a %1$d × %2$d video to Movies/%3$s</string>

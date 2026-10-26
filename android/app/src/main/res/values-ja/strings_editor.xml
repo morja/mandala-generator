@@ -43,6 +43,8 @@
     <string name="editor_pro_without">Pro機能を外して%1$s</string>
     <string name="editor_pro_remove">Pro機能を外す</string>
     <string name="editor_pro_unavailable">ProはGoogle Playで販売しています。現在このインストールでは利用できません。</string>
+    <string name="editor_pro_retry">再試行</string>
+    <string name="editor_pro_restore">購入を復元</string>
 
     <!-- Editor: favourites sheet -->
     <string name="editor_favourites_add">現在のものを追加</string>

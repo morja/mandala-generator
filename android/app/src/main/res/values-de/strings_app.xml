@@ -89,12 +89,17 @@
     <!-- %1$s is the import message, %2$s how many were already there -->
     <string name="message_favourites_imported_note">%1$s (%2$s)</string>
 
-    <!-- Google Play purchase of Pro (ADR-0007); %1$s is Google Play's reason, %1$d its code -->
-    <string name="pro_purchase_failed">Der Kauf ist nicht zustande gekommen (%1$s).</string>
-    <string name="pro_purchase_code">Code %1$d</string>
-    <string name="pro_unavailable">Pro kann hier gerade nicht gekauft werden. Es wird über Google Play verkauft.</string>
+    <!-- Google Play purchase of Pro (ADR-0007, ADR-0022): texts for the codes of one.tearoom.unlock -->
     <string name="pro_unlocked">Danke! Pro ist freigeschaltet.</string>
     <string name="pro_pending">Der Kauf steht noch aus. Pro wird freigeschaltet, sobald er bezahlt ist.</string>
+    <string name="pro_product_unavailable">Google Play bietet Pro für dieses Konto gerade nicht an. Bitte versuch es später noch einmal.</string>
+    <string name="pro_play_unavailable">Google Play ist gerade nicht erreichbar, daher gibt es noch keinen Preis. Prüf die Verbindung und versuch es noch einmal.</string>
+    <string name="pro_restore_active">Pro ist auf diesem Gerät aktiv.</string>
+    <string name="pro_restore_not_found">Google Play hat für dieses Google-Konto keinen Pro-Kauf gefunden. Wenn du Pro mit einem anderen Google-Konto gekauft hast, wechsle im Play Store zu diesem Konto und tippe noch einmal auf „Kauf wiederherstellen“.</string>
+    <string name="pro_restore_unreachable">Google Play war nicht erreichbar, daher wurde nichts geprüft. Bitte versuch es später noch einmal.</string>
+    <string name="pro_price_refreshing">Der Preis wird gerade aktualisiert. Tippe gleich noch einmal auf Kaufen.</string>
+    <string name="pro_purchase_not_started">Google Play konnte den Kauf nicht öffnen. Bitte versuch es noch einmal.</string>
+    <string name="pro_purchase_incomplete">Der Kauf ist nicht zustande gekommen.</string>
     <string name="export_creating_video">Video wird erstellt</string>
     <string name="export_saving_to_movies">In Movies speichern</string>
     <string name="message_video_saved">Video %1$d × %2$d in Movies/%3$s gespeichert</string>

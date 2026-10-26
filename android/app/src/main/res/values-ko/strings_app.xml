@@ -87,12 +87,17 @@
     <!-- %1$s is the import message, %2$s how many were already there -->
     <string name="message_favourites_imported_note">%1$s (%2$s)</string>
 
-    <!-- Google Play purchase of Pro (ADR-0007); %1$s is Google Play's reason, %1$d its code -->
-    <string name="pro_purchase_failed">구매가 완료되지 않았습니다(%1$s).</string>
-    <string name="pro_purchase_code">코드 %1$d</string>
-    <string name="pro_unavailable">지금은 여기에서 Pro를 구매할 수 없습니다. Pro는 Google Play에서 판매됩니다.</string>
+    <!-- Google Play purchase of Pro (ADR-0007, ADR-0022): texts for the codes of one.tearoom.unlock -->
     <string name="pro_unlocked">감사합니다! Pro가 잠금 해제되었습니다.</string>
     <string name="pro_pending">구매가 대기 중입니다. 결제가 완료되면 Pro가 잠금 해제됩니다.</string>
+    <string name="pro_product_unavailable">지금은 Google Play에서 이 계정에 Pro를 제공하지 않습니다. 나중에 다시 시도하세요.</string>
+    <string name="pro_play_unavailable">지금은 Google Play에 연결할 수 없어 가격을 표시할 수 없습니다. 연결을 확인하고 다시 시도하세요.</string>
+    <string name="pro_restore_active">이 기기에서 Pro가 활성화되어 있습니다.</string>
+    <string name="pro_restore_not_found">이 Google 계정으로 구매한 Pro를 찾지 못했습니다. 다른 Google 계정으로 Pro를 구매했다면 Play 스토어에서 그 계정으로 전환한 후 ‘구매 복원’을 다시 탭하세요.</string>
+    <string name="pro_restore_unreachable">Google Play에 연결할 수 없어 확인하지 못했습니다. 나중에 다시 시도하세요.</string>
+    <string name="pro_price_refreshing">가격을 업데이트하는 중입니다. 잠시 후 구매를 다시 탭하세요.</string>
+    <string name="pro_purchase_not_started">Google Play에서 구매 화면을 열 수 없습니다. 다시 시도하세요.</string>
+    <string name="pro_purchase_incomplete">구매가 완료되지 않았습니다.</string>
     <string name="export_creating_video">동영상 만드는 중</string>
     <string name="export_saving_to_movies">Movies에 저장 중</string>
     <string name="message_video_saved">%1$d × %2$d 동영상을 Movies/%3$s에 저장했습니다</string>

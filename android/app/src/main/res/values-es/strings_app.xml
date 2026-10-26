@@ -91,12 +91,17 @@
     <!-- %1$s is the import message, %2$s how many were already there -->
     <string name="message_favourites_imported_note">%1$s (%2$s)</string>
 
-    <!-- Google Play purchase of Pro (ADR-0007); %1$s is Google Play's reason, %1$d its code -->
-    <string name="pro_purchase_failed">La compra no se completó (%1$s).</string>
-    <string name="pro_purchase_code">código %1$d</string>
-    <string name="pro_unavailable">Ahora mismo no se puede comprar Pro aquí. Se vende a través de Google Play.</string>
+    <!-- Google Play purchase of Pro (ADR-0007, ADR-0022): texts for the codes of one.tearoom.unlock -->
     <string name="pro_unlocked">¡Gracias! Pro está desbloqueado.</string>
     <string name="pro_pending">La compra está pendiente. Pro se desbloquea cuando se complete el pago.</string>
+    <string name="pro_product_unavailable">Google Play no ofrece Pro a esta cuenta en este momento. Vuelve a intentarlo más tarde.</string>
+    <string name="pro_play_unavailable">Ahora mismo no se puede conectar con Google Play, por eso aún no hay precio. Comprueba la conexión y vuelve a intentarlo.</string>
+    <string name="pro_restore_active">Pro está activo en este dispositivo.</string>
+    <string name="pro_restore_not_found">Google Play no ha encontrado ninguna compra de Pro para esta cuenta de Google. Si compraste Pro con otra cuenta de Google, cámbiate a ella en Play Store y vuelve a tocar «Restaurar compra».</string>
+    <string name="pro_restore_unreachable">No se pudo conectar con Google Play, así que no se ha comprobado nada. Vuelve a intentarlo más tarde.</string>
+    <string name="pro_price_refreshing">El precio se está actualizando. Vuelve a tocar Comprar en un momento.</string>
+    <string name="pro_purchase_not_started">Google Play no pudo abrir la compra. Vuelve a intentarlo.</string>
+    <string name="pro_purchase_incomplete">La compra no se completó.</string>
     <string name="export_creating_video">Creando el vídeo</string>
     <string name="export_saving_to_movies">Guardando en Movies</string>
     <string name="message_video_saved">Vídeo de %1$d × %2$d guardado en Movies/%3$s</string>

@@ -83,7 +83,7 @@ object DailyWallpaper {
 
     /** The morning run is needed while the daily wallpaper is on or a widget is on the home screen, with Pro. */
     private fun needed(context: Context): Boolean =
-        ProPurchases.ownedOffline(context) && (isOn(context) || MandalaWidget.isPlaced(context))
+        Pro.isUnlocked(context) && (isOn(context) || MandalaWidget.isPlaced(context))
 
     /**
      * Plans the run again when it is needed but none is waiting: Android drops planned jobs when the
@@ -105,7 +105,7 @@ object DailyWallpaper {
     fun today(context: Context): Favorite? {
         val favorites = FavoritesStore(File(context.filesDir, "favorites.json")).load()
         val last = prefs(context).getString(KEY_LAST_ID, null)
-        if (ProPurchases.ownedOffline(context)) favorites.firstOrNull { it.id == last }?.let { return it }
+        if (Pro.isUnlocked(context)) favorites.firstOrNull { it.id == last }?.let { return it }
         return turn(favorites, chosen(context), 0)?.first
     }
 
@@ -155,7 +155,7 @@ object DailyWallpaper {
      * nothing to set (no favourites, no Pro). Takes 10 to 20 seconds on a phone.
      */
     fun setNext(context: Context, threads: Int = Runtime.getRuntime().availableProcessors()): String? {
-        if (!ProPurchases.ownedOffline(context)) return null
+        if (!Pro.isUnlocked(context)) return null
         val favourite = advance(context) ?: return null
         val params: MandalaParameters = favourite.parameters
         val name = displayName(favourite)
@@ -207,8 +207,8 @@ class DailyWallpaperJob : JobService() {
     private var scope: CoroutineScope? = null
 
     override fun onStartJob(params: JobParameters): Boolean {
-        val wallpaper = DailyWallpaper.isOn(this) && ProPurchases.ownedOffline(this)
-        val widget = MandalaWidget.isPlaced(this) && ProPurchases.ownedOffline(this)
+        val wallpaper = DailyWallpaper.isOn(this) && Pro.isUnlocked(this)
+        val widget = MandalaWidget.isPlaced(this) && Pro.isUnlocked(this)
         if (!wallpaper && !widget) return false
         val s = CoroutineScope(SupervisorJob() + Dispatchers.Default).also { scope = it }
         s.launch {

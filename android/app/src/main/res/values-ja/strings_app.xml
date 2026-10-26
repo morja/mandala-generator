@@ -87,12 +87,17 @@
     <!-- %1$s is the import message, %2$s how many were already there -->
     <string name="message_favourites_imported_note">%1$s（%2$s）</string>
 
-    <!-- Google Play purchase of Pro (ADR-0007); %1$s is Google Play's reason, %1$d its code -->
-    <string name="pro_purchase_failed">購入を完了できませんでした（%1$s）。</string>
-    <string name="pro_purchase_code">コード %1$d</string>
-    <string name="pro_unavailable">現在ここではProを購入できません。ProはGoogle Playで販売しています。</string>
+    <!-- Google Play purchase of Pro (ADR-0007, ADR-0022): texts for the codes of one.tearoom.unlock -->
     <string name="pro_unlocked">ありがとうございます。Proのロックが解除されました。</string>
     <string name="pro_pending">購入は保留中です。支払いが完了するとProのロックが解除されます。</string>
+    <string name="pro_product_unavailable">現在、Google PlayではこのアカウントにProを提供していません。しばらくしてからもう一度お試しください。</string>
+    <string name="pro_play_unavailable">現在Google Playに接続できないため、価格を表示できません。接続を確認して、もう一度お試しください。</string>
+    <string name="pro_restore_active">このデバイスでProが有効です。</string>
+    <string name="pro_restore_not_found">このGoogleアカウントではProの購入が見つかりませんでした。別のGoogleアカウントでProを購入した場合は、Playストアでそのアカウントに切り替えて、もう一度「購入を復元」をタップしてください。</string>
+    <string name="pro_restore_unreachable">Google Playに接続できなかったため、確認できませんでした。しばらくしてからもう一度お試しください。</string>
+    <string name="pro_price_refreshing">価格を更新しています。少し待ってから、もう一度購入をタップしてください。</string>
+    <string name="pro_purchase_not_started">Google Playで購入画面を開けませんでした。もう一度お試しください。</string>
+    <string name="pro_purchase_incomplete">購入を完了できませんでした。</string>
     <string name="export_creating_video">動画を作成中</string>
     <string name="export_saving_to_movies">Movies に保存中</string>
     <string name="message_video_saved">%1$d × %2$d の動画を Movies/%3$s に保存しました</string>

@@ -91,12 +91,17 @@
     <!-- %1$s is the import message, %2$s how many were already there -->
     <string name="message_favourites_imported_note">%1$s (%2$s)</string>
 
-    <!-- Google Play purchase of Pro (ADR-0007); %1$s is Google Play's reason, %1$d its code -->
-    <string name="pro_purchase_failed">L\'acquisto non è andato a buon fine (%1$s).</string>
-    <string name="pro_purchase_code">codice %1$d</string>
-    <string name="pro_unavailable">Al momento Pro non si può acquistare qui. È in vendita su Google Play.</string>
+    <!-- Google Play purchase of Pro (ADR-0007, ADR-0022): texts for the codes of one.tearoom.unlock -->
     <string name="pro_unlocked">Grazie! Pro è sbloccato.</string>
     <string name="pro_pending">L\'acquisto è in sospeso. Pro si sblocca appena è pagato.</string>
+    <string name="pro_product_unavailable">Al momento Google Play non offre Pro a questo account. Riprova più tardi.</string>
+    <string name="pro_play_unavailable">Al momento Google Play non è raggiungibile, quindi il prezzo non è ancora disponibile. Controlla la connessione e riprova.</string>
+    <string name="pro_restore_active">Pro è attivo su questo dispositivo.</string>
+    <string name="pro_restore_not_found">Google Play non ha trovato acquisti di Pro per questo account Google. Se hai acquistato Pro con un altro account Google, passa a quell’account nel Play Store e tocca di nuovo «Ripristina acquisto».</string>
+    <string name="pro_restore_unreachable">Google Play non è raggiungibile, quindi non è stato verificato nulla. Riprova più tardi.</string>
+    <string name="pro_price_refreshing">Il prezzo è in aggiornamento. Tra un attimo tocca di nuovo Acquista.</string>
+    <string name="pro_purchase_not_started">Google Play non è riuscito ad aprire l’acquisto. Riprova.</string>
+    <string name="pro_purchase_incomplete">L’acquisto non è andato a buon fine.</string>
     <string name="export_creating_video">Creazione del video</string>
     <string name="export_saving_to_movies">Salvataggio in Movies</string>
     <string name="message_video_saved">Video %1$d × %2$d salvato in Movies/%3$s</string>

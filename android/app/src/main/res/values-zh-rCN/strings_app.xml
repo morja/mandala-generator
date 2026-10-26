@@ -87,12 +87,17 @@
     <!-- %1$s is the import message, %2$s how many were already there -->
     <string name="message_favourites_imported_note">%1$s（%2$s）</string>
 
-    <!-- Google Play purchase of Pro (ADR-0007); %1$s is Google Play's reason, %1$d its code -->
-    <string name="pro_purchase_failed">购买未成功（%1$s）。</string>
-    <string name="pro_purchase_code">代码 %1$d</string>
-    <string name="pro_unavailable">目前无法在此购买 Pro。Pro 通过 Google Play 销售。</string>
+    <!-- Google Play purchase of Pro (ADR-0007, ADR-0022): texts for the codes of one.tearoom.unlock -->
     <string name="pro_unlocked">谢谢！Pro 已解锁。</string>
     <string name="pro_pending">购买正在处理中。付款完成后即可解锁 Pro。</string>
+    <string name="pro_product_unavailable">Google Play 目前不向此账号提供 Pro。请稍后再试。</string>
+    <string name="pro_play_unavailable">目前无法连接 Google Play，因此暂时没有价格。请检查网络连接后重试。</string>
+    <string name="pro_restore_active">Pro 已在此设备上激活。</string>
+    <string name="pro_restore_not_found">Google Play 未找到此 Google 账号的 Pro 购买记录。如果你用其他 Google 账号购买了 Pro，请在 Play 商店中切换到该账号，然后再次点按“恢复购买”。</string>
+    <string name="pro_restore_unreachable">无法连接 Google Play，因此未能检查。请稍后再试。</string>
+    <string name="pro_price_refreshing">价格正在更新。请稍后再次点按购买。</string>
+    <string name="pro_purchase_not_started">Google Play 无法打开购买页面。请重试。</string>
+    <string name="pro_purchase_incomplete">购买未成功。</string>
     <string name="export_creating_video">正在创建视频</string>
     <string name="export_saving_to_movies">正在保存到 Movies</string>
     <string name="message_video_saved">已将 %1$d × %2$d 视频保存到 Movies/%3$s</string>

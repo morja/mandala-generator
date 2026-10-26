@@ -93,12 +93,17 @@
     <!-- %1$s is the import message, %2$s how many were already there -->
     <string name="message_favourites_imported_note">%1$s (%2$s)</string>
 
-    <!-- Google Play purchase of Pro (ADR-0007); %1$s is Google Play's reason, %1$d its code -->
-    <string name="pro_purchase_failed">Покупка не прошла (%1$s).</string>
-    <string name="pro_purchase_code">код %1$d</string>
-    <string name="pro_unavailable">Сейчас Pro здесь купить нельзя. Он продаётся через Google Play.</string>
+    <!-- Google Play purchase of Pro (ADR-0007, ADR-0022): texts for the codes of one.tearoom.unlock -->
     <string name="pro_unlocked">Спасибо! Pro разблокирован.</string>
     <string name="pro_pending">Покупка ожидает оплаты. Pro разблокируется после оплаты.</string>
+    <string name="pro_product_unavailable">Сейчас Google Play не предлагает Pro для этого аккаунта. Попробуйте позже.</string>
+    <string name="pro_play_unavailable">Сейчас нет связи с Google Play, поэтому цена пока недоступна. Проверьте подключение и попробуйте снова.</string>
+    <string name="pro_restore_active">Pro активен на этом устройстве.</string>
+    <string name="pro_restore_not_found">Google Play не нашёл покупку Pro для этого аккаунта Google. Если вы купили Pro с другого аккаунта Google, переключитесь на него в Play Маркете и снова нажмите «Восстановить покупку».</string>
+    <string name="pro_restore_unreachable">Не удалось связаться с Google Play, поэтому ничего не проверено. Попробуйте позже.</string>
+    <string name="pro_price_refreshing">Цена обновляется. Через мгновение снова нажмите «Купить».</string>
+    <string name="pro_purchase_not_started">Google Play не смог открыть покупку. Попробуйте снова.</string>
+    <string name="pro_purchase_incomplete">Покупка не прошла.</string>
     <string name="export_creating_video">Создание видео</string>
     <string name="export_saving_to_movies">Сохранение в Movies</string>
     <string name="message_video_saved">Видео %1$d × %2$d сохранено в Movies/%3$s</string>

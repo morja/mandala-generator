@@ -84,8 +84,9 @@ dependencies {
     implementation("androidx.core:core-ktx:1.19.1")
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.11.0")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.11.0")
-    // One-time "Pro" purchase (ADR-0007, approved 20 October 2026).
-    implementation("com.android.billingclient:billing:8.3.0")
+    // One-time "Pro" purchase (ADR-0007) through the shared tearoom-android-kit (ADR-0022), which brings
+    // Google Play Billing 9.1.0.
+    implementation("one.tearoom:unlock:1.0.0")
     constraints {
         // Billing's Play Services pull in fragment 1.1.0, which Play Console flags as outdated.
         implementation("androidx.fragment:fragment:1.9.1")

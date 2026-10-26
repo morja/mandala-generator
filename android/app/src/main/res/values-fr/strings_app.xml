@@ -91,12 +91,17 @@
     <!-- %1$s is the import message, %2$s how many were already there -->
     <string name="message_favourites_imported_note">%1$s (%2$s)</string>
 
-    <!-- Google Play purchase of Pro (ADR-0007); %1$s is Google Play's reason, %1$d its code -->
-    <string name="pro_purchase_failed">L\'achat n\'a pas abouti (%1$s).</string>
-    <string name="pro_purchase_code">code %1$d</string>
-    <string name="pro_unavailable">Pro ne peut pas être acheté ici pour le moment. Il est vendu via Google Play.</string>
+    <!-- Google Play purchase of Pro (ADR-0007, ADR-0022): texts for the codes of one.tearoom.unlock -->
     <string name="pro_unlocked">Merci ! Pro est débloqué.</string>
     <string name="pro_pending">L\'achat est en attente. Pro sera débloqué une fois le paiement effectué.</string>
+    <string name="pro_product_unavailable">Google Play ne propose pas Pro à ce compte pour le moment. Veuillez réessayer plus tard.</string>
+    <string name="pro_play_unavailable">Google Play est injoignable pour le moment, le prix n’est donc pas encore disponible. Vérifiez la connexion et réessayez.</string>
+    <string name="pro_restore_active">Pro est actif sur cet appareil.</string>
+    <string name="pro_restore_not_found">Google Play n’a trouvé aucun achat de Pro pour ce compte Google. Si vous avez acheté Pro avec un autre compte Google, passez à ce compte dans le Play Store et touchez à nouveau « Restaurer l’achat ».</string>
+    <string name="pro_restore_unreachable">Google Play n’a pas pu être joint, rien n’a donc été vérifié. Veuillez réessayer plus tard.</string>
+    <string name="pro_price_refreshing">Le prix est en cours de mise à jour. Touchez à nouveau Acheter dans un instant.</string>
+    <string name="pro_purchase_not_started">Google Play n’a pas pu ouvrir l’achat. Veuillez réessayer.</string>
+    <string name="pro_purchase_incomplete">L’achat n’a pas abouti.</string>
     <string name="export_creating_video">Création de la vidéo</string>
     <string name="export_saving_to_movies">Enregistrement dans Movies</string>
     <string name="message_video_saved">Vidéo %1$d × %2$d enregistrée dans Movies/%3$s</string>

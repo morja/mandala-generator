@@ -43,6 +43,8 @@
     <string name="editor_pro_without">%1$s without them</string>
     <string name="editor_pro_remove">Remove them</string>
     <string name="editor_pro_unavailable">Pro is sold through Google Play and is not available in this installation right now.</string>
+    <string name="editor_pro_retry">Try again</string>
+    <string name="editor_pro_restore">Restore purchase</string>
 
     <!-- Editor: favourites sheet -->
     <string name="editor_favourites_add">Add current</string>

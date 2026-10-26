@@ -43,6 +43,8 @@
     <string name="editor_pro_without">%1$s（不含这些功能）</string>
     <string name="editor_pro_remove">移除这些功能</string>
     <string name="editor_pro_unavailable">Pro 通过 Google Play 销售，当前安装版本暂时无法购买。</string>
+    <string name="editor_pro_retry">重试</string>
+    <string name="editor_pro_restore">恢复购买</string>
 
     <!-- Editor: favourites sheet -->
     <string name="editor_favourites_add">添加当前</string>

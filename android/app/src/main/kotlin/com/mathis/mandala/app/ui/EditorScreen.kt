@@ -12,7 +12,11 @@ import com.mathis.mandala.app.PreviewSize
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.ui.semantics.onClick
 import androidx.activity.compose.LocalActivity
-import com.mathis.mandala.app.ProState
+import one.tearoom.unlock.UnlockMessage
+import one.tearoom.unlock.UnlockState
+import com.mathis.mandala.app.textRes
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import com.mathis.mandala.app.ProRequest
 import androidx.compose.material3.OutlinedButton
 import com.mathis.mandala.app.screenAspect
@@ -145,6 +149,8 @@ fun EditorScreen(
     val moveTarget by vm.moveTarget.collectAsStateWithLifecycle()
     val history by vm.historyState.collectAsStateWithLifecycle()
     val pro by vm.proState.collectAsStateWithLifecycle()
+    // Google's guidance: ask Play on every resume (purchases made elsewhere, payments completed, refunds).
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { vm.refreshPro() }
     val saveChoice by vm.saveChoice.collectAsStateWithLifecycle()
     val framePreview by vm.framePreview.collectAsStateWithLifecycle()
     val shownFraming by vm.shownFraming.collectAsStateWithLifecycle()
@@ -165,8 +171,8 @@ fun EditorScreen(
     val daily by vm.daily.collectAsStateWithLifecycle()
     LaunchedEffect(showPair) { vm.setPairOpen(showPair) }
     // The wallpaper pair is Pro; without it the entry opens the Pro sheet.
-    val openPair = { if (pro.owned) showPair = true else vm.showPro() }
-    val openLive = { if (pro.owned) showLive = true else vm.showPro() }
+    val openPair = { if (pro.unlocked) showPair = true else vm.showPro() }
+    val openLive = { if (pro.unlocked) showLive = true else vm.showPro() }
     // Kept when Android recreates the screen, which setting a wallpaper does.
     var showSave by rememberSaveable { mutableStateOf(false) }
     val snackbar = remember { SnackbarHostState() }
@@ -239,7 +245,7 @@ fun EditorScreen(
             framing = shownFraming,
             preview = framePreview,
             screenAspect = phoneAspect,
-            proOwned = pro.owned,
+            proOwned = pro.unlocked,
             hasQuote = params.textLayer.isEnabled && params.textLayer.text.isNotEmpty(),
             busy = busy,
             export = export,
@@ -288,9 +294,16 @@ fun EditorScreen(
         )
     }
     proRequest?.let { request ->
-        ProSheet(pro, request, onBuy = { activity?.let(vm::buyPro) }, onWithout = vm::continueWithoutPro, onDismiss = vm::closePro)
+        ProSheet(
+            pro, request,
+            onBuy = { activity?.let(vm::buyPro) },
+            onRetry = vm::refreshPro,
+            onRestore = vm::restorePro,
+            onWithout = vm::continueWithoutPro,
+            onDismiss = vm::closePro,
+        )
     }
-    LaunchedEffect(pro.owned) { if (pro.owned) vm.closePro() }
+    LaunchedEffect(pro.unlocked) { if (pro.unlocked) vm.closePro() }
 
     if (showMenu) {
         // Every entry but the dice closes the sheet, so its result or message shows.
@@ -307,24 +320,24 @@ fun EditorScreen(
                 onShare = closing(vm::shareImage),
                 onWallpaper = { target -> showMenu = false; vm.closeCandidate(); vm.setWallpaper(target, filled = true) },
                 onPair = { showMenu = false; vm.closeCandidate(); openPair() },
-                pairLabel = pairLabel(pro.owned),
+                pairLabel = pairLabel(pro.unlocked),
                 onLive = { showMenu = false; vm.closeCandidate(); openLive() },
-                liveLabel = liveLabel(pro.owned),
+                liveLabel = liveLabel(pro.unlocked),
                 dailyOn = daily.on,
                 dailySubtitle = when {
-                    !pro.owned -> stringResource(R.string.editor_daily_pro)
+                    !pro.unlocked -> stringResource(R.string.editor_daily_pro)
                     daily.on && daily.lastName != null -> stringResource(R.string.editor_daily_today, daily.lastName.orEmpty())
                     else -> stringResource(R.string.editor_daily_off)
                 },
-                onDaily = { on -> if (pro.owned) vm.setDaily(on) else vm.showPro() },
+                onDaily = { on -> if (pro.unlocked) vm.setDaily(on) else vm.showPro() },
                 favourites = favorites,
                 dailyChosen = daily.chosen,
                 onToggleDaily = vm::toggleDailyFavourite,
                 onChooseAllDaily = vm::chooseAllDailyFavourites,
-                lineDrawingPro = pro.owned,
+                lineDrawingPro = pro.unlocked,
                 hasPointLayers = VectorExport.hasPointLayers(params),
                 onLineDrawing = { look ->
-                    if (pro.owned) {
+                    if (pro.unlocked) {
                         showMenu = false
                         lineDrawingLook = look
                         saveLineDrawing.launch(vm.suggestedLineDrawingName(look))
@@ -403,7 +416,7 @@ fun EditorScreen(
                         Canvas(preview, Modifier.width(side), drawing(params, drawTool, vm), moving(params, selected, moveTarget, vm),
                             compare = compare, proMark = if (missingPro.isNotEmpty()) vm::showPro else null)
                     }
-                    ControlTabs(params, selected, vm, Modifier.width(Spacing.controlsWidth).fillMaxHeight(), pro.owned, onShowPro = { vm.showPro() })
+                    ControlTabs(params, selected, vm, Modifier.width(Spacing.controlsWidth).fillMaxHeight(), pro.unlocked, onShowPro = { vm.showPro() })
                 }
             } else {
                 // The canvas stays in view; only the open tab scrolls, so every change is visible.
@@ -420,7 +433,7 @@ fun EditorScreen(
                     move = moving(params, selected, moveTarget, vm),
                     proMark = if (missingPro.isNotEmpty()) vm::showPro else null,
                 ) { modifier ->
-                    ControlTabs(params, selected, vm, modifier, pro.owned, onShowPro = { vm.showPro() }, onHeader = { header = it })
+                    ControlTabs(params, selected, vm, modifier, pro.unlocked, onShowPro = { vm.showPro() }, onHeader = { header = it })
                 }
             }
         }
@@ -851,7 +864,15 @@ private fun MoveOverlay(input: MoveInput, guide: Color, halo: Color) {
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun ProSheet(pro: ProState, request: ProRequest, onBuy: () -> Unit, onWithout: () -> Unit, onDismiss: () -> Unit) {
+private fun ProSheet(
+    pro: UnlockState,
+    request: ProRequest,
+    onBuy: () -> Unit,
+    onRetry: () -> Unit,
+    onRestore: () -> Unit,
+    onWithout: () -> Unit,
+    onDismiss: () -> Unit,
+) {
     val t = LocalTokens.current
     ModalBottomSheet(onDismissRequest = onDismiss) {
         Column(Modifier.padding(horizontal = Spacing.lg).padding(bottom = Spacing.xl), verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
@@ -872,7 +893,7 @@ private fun ProSheet(pro: ProState, request: ProRequest, onBuy: () -> Unit, onWi
                 style = MaterialTheme.typography.bodySmall,
                 color = t.textMuted,
             )
-            Button(onClick = onBuy, enabled = pro.available, modifier = Modifier.fillMaxWidth()) {
+            Button(onClick = onBuy, enabled = pro.canBuy, modifier = Modifier.fillMaxWidth()) {
                 Text(pro.price?.let { stringResource(R.string.editor_pro_buy_for, it) } ?: stringResource(R.string.editor_pro_buy))
             }
             if (request.features.isNotEmpty()) {
@@ -880,10 +901,21 @@ private fun ProSheet(pro: ProState, request: ProRequest, onBuy: () -> Unit, onWi
                     Text(request.action?.let { stringResource(R.string.editor_pro_without, it) } ?: stringResource(R.string.editor_pro_remove))
                 }
             }
-            if (!pro.available) {
-                Text(stringResource(R.string.editor_pro_unavailable),
-                    style = MaterialTheme.typography.bodySmall, color = t.textMuted)
+            // Feedback from Google Play: a pending payment, why there is no price, the last purchase or restore.
+            if (pro.pending) {
+                Text(stringResource(R.string.pro_pending), style = MaterialTheme.typography.bodySmall, color = t.textMuted)
             }
+            pro.priceProblem?.takeIf { !pro.loadingPrice }?.let { problem ->
+                Text(stringResource(problem.textRes), style = MaterialTheme.typography.bodySmall, color = t.textMuted)
+            }
+            pro.message?.takeIf { !(it == UnlockMessage.PENDING && pro.pending) }?.let { message ->
+                Text(stringResource(message.textRes), style = MaterialTheme.typography.bodyMedium)
+            }
+            // One per line, so long translations fit at 360 dp.
+            if (pro.priceProblem != null && !pro.loadingPrice) {
+                TextButton(onClick = onRetry) { Text(stringResource(R.string.editor_pro_retry)) }
+            }
+            TextButton(onClick = onRestore, enabled = !pro.busy) { Text(stringResource(R.string.editor_pro_restore)) }
         }
     }
 }

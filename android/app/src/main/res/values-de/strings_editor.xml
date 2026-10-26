@@ -43,6 +43,8 @@
     <string name="editor_pro_without">%1$s ohne diese Funktionen</string>
     <string name="editor_pro_remove">Entfernen</string>
     <string name="editor_pro_unavailable">Pro wird über Google Play verkauft und ist in dieser Installation gerade nicht verfügbar.</string>
+    <string name="editor_pro_retry">Erneut versuchen</string>
+    <string name="editor_pro_restore">Kauf wiederherstellen</string>
 
     <!-- Editor: favourites sheet -->
     <string name="editor_favourites_add">Aktuelles hinzufügen</string>
