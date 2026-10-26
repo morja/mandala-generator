@@ -78,7 +78,7 @@ On 23 October 2026 the pages moved to `/apps/dahlia` and `/apps/privacy/dahlia` 
 
 | Field | Value |
 |---|---|
-| Product ID | `pro` (must match `ProPurchases.kt`) |
+| Product ID | `pro`, purchase option `buy` (must match `Pro.kt`, ADR-0022) |
 | Type | One-time product, non-consumable |
 | Name (EN / DE) | Dahlia Pro |
 | Description (EN) | Up to five layers, emblems, text, moving layers, 2048 px, framing and finish, SVG, wallpaper pair, daily and live wallpaper. One-time purchase. |
