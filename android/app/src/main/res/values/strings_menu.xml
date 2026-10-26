@@ -115,7 +115,7 @@
     <string name="save_length">Length</string>
     <string name="save_choose_size">Choose size</string>
     <string name="save_format">Format</string>
-    <string name="save_save_pro">Save · Pro</string>
     <string name="save_adjust_pro_quote">Brightness, contrast, saturation and the quote moving with the mandala come with Pro.</string>
     <string name="save_adjust_quote_moves">quote moves along</string>
+    <string name="menu_daily_short">New every day</string>
 </resources>

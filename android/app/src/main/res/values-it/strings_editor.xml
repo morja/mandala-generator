@@ -33,10 +33,10 @@
 
     <!-- Editor: Pro sheet -->
     <string name="editor_pro_title">Dahlia Pro</string>
-    <string name="editor_pro_uses_keep">Questo mandala usa funzioni incluse in Pro. Per tenerlo così com\'è, passa a Pro:</string>
+    <string name="editor_pro_uses_keep">Questo mandala usa funzioni Pro. Per salvarlo, condividerlo o impostarlo come sfondo così com’è, passa a Pro:</string>
     <string name="editor_pro_uses">Questo mandala usa funzioni incluse in Pro:</string>
     <string name="editor_pro_feature_item">· %1$s</string>
-    <string name="editor_pro_summary">Pro aggiunge fino a cinque livelli, emblemi, testo e citazioni, e la possibilità di spostare i livelli e l\'emblema. Salva a 2048 pixel di larghezza con il mandala posizionato a mano e regolato, e come disegno al tratto. Sfondi: Home e blocco in coppia, uno nuovo ogni giorno e uno sfondo animato. Prova più livelli, emblemi e citazioni nell\'editor prima di acquistare. Un solo acquisto, nessun abbonamento.</string>
+    <string name="editor_pro_summary">Pro aggiunge fino a cinque livelli, emblemi, testo e citazioni, e la possibilità di spostare i livelli e l’emblema. Salva a 2048 pixel di larghezza con il mandala posizionato a mano e regolato, come video che ruota e come disegno al tratto. Sfondi: Home e blocco in coppia, uno nuovo ogni giorno e uno sfondo animato. Prova tutto nell’editor e tienilo tra i preferiti prima di acquistare. Un solo acquisto, nessun abbonamento.</string>
     <string name="editor_pro_buy_for">Acquista per %1$s</string>
     <string name="editor_pro_buy">Acquista Pro</string>
     <string name="editor_pro_without">%1$s senza queste funzioni</string>

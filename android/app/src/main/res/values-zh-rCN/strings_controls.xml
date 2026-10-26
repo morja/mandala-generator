@@ -61,11 +61,11 @@
     <string name="controls_draw_show_spray">显示喷绘</string>
 
     <!-- Layers tab: group titles, sliders and notes (some shared with other tabs) -->
-    <string name="controls_pro_note_layers">三个以上图层需要 Pro。你可以随意试用，但要保留此曼陀罗需要 Pro。</string>
+    <string name="controls_pro_note_layers">三个以上图层需要 Pro。你可以随意试用，但要保留此曼陀罗需要 Pro。可随意试用并保留为收藏；保存、分享和壁纸需要 Pro。试用和保留为收藏无需 Pro。</string>
     <string name="controls_delete">删除</string>
     <string name="controls_about_pro">关于 Pro</string>
     <string name="controls_position">位置</string>
-    <string name="controls_pro_note_position">移动图层需要 Pro。你可以随意试用，但要保留此曼陀罗需要 Pro。</string>
+    <string name="controls_pro_note_position">移动图层需要 Pro。你可以随意试用，但要保留此曼陀罗需要 Pro。可随意试用并保留为收藏；保存、分享和壁纸需要 Pro。试用和保留为收藏无需 Pro。</string>
     <string name="controls_position_hidden_note">此图层已隐藏。显示后即可看到它移动到哪里。</string>
     <string name="controls_across">水平</string>
     <string name="controls_up_and_down">垂直</string>
@@ -135,7 +135,7 @@
     <!-- Emblem tab -->
     <string name="controls_random_emblem">随机徽标</string>
     <string name="controls_emblem_off_note">在中心绘制一个大图案：唵、生命之树、生命之花、莲花等。</string>
-    <string name="controls_pro_note_emblem">徽标需要 Pro。你可以随意试用，但要保留此曼陀罗需要 Pro。</string>
+    <string name="controls_pro_note_emblem">徽标需要 Pro。你可以随意试用，但要保留此曼陀罗需要 Pro。可随意试用并保留为收藏；保存、分享和壁纸需要 Pro。试用和保留为收藏无需 Pro。</string>
     <string name="controls_motif">图案</string>
     <string name="controls_variant">变体</string>
     <string name="controls_petals">花瓣</string>
@@ -159,7 +159,7 @@
     <string name="controls_new_quote">换一句</string>
     <string name="controls_keep">收藏</string>
     <string name="controls_kept">已收藏</string>
-    <string name="controls_pro_note_text">文字和名言需要 Pro。你可以随意试用，但要保留此曼陀罗需要 Pro。</string>
+    <string name="controls_pro_note_text">文字和名言需要 Pro。你可以随意试用，但要保留此曼陀罗需要 Pro。可随意试用并保留为收藏；保存、分享和壁纸需要 Pro。试用和保留为收藏无需 Pro。</string>
     <string name="controls_text_field">文字</string>
     <string name="controls_author">作者</string>
     <string name="controls_show_author">显示作者</string>

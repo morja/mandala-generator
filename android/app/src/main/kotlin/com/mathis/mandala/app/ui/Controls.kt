@@ -212,14 +212,13 @@ private fun LayersTab(params: MandalaParameters, selected: Int, vm: EditorViewMo
     }
     // Without Pro a fourth visible layer can be tried; keeping the mandala then needs Pro (ADR-0016).
     val shown = layers.count { it.isEnabled }
-    val proMark = !position.proOwned && shown >= ProFeatures.FREE_LAYERS
     if (!position.proOwned && shown > ProFeatures.FREE_LAYERS) {
         ProNote(stringResource(R.string.controls_pro_note_layers), position.showPro)
     }
     // Actions on the selected (highlighted) layer; its settings follow below.
     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-        TextButton(onClick = vm::addLayer, enabled = layers.size < Editing.MAX_LAYERS) { Text(stringResource(R.string.controls_layers_add).let { if (proMark) withPro(it) else it }) }
-        TextButton(onClick = vm::duplicateSelected, enabled = layers.size < Editing.MAX_LAYERS) { Text(stringResource(R.string.controls_layers_duplicate).let { if (proMark) withPro(it) else it }) }
+        TextButton(onClick = vm::addLayer, enabled = layers.size < Editing.MAX_LAYERS) { Text(stringResource(R.string.controls_layers_add)) }
+        TextButton(onClick = vm::duplicateSelected, enabled = layers.size < Editing.MAX_LAYERS) { Text(stringResource(R.string.controls_layers_duplicate)) }
         TextButton(onClick = vm::removeSelected, enabled = layers.size > 1) { Text(stringResource(R.string.controls_delete)) }
         Box(Modifier.weight(1f))
         IconButton(onClick = vm::randomizeSelected) { Icon(EditorIcons.DieOne, contentDescription = stringResource(R.string.controls_layers_randomize, selected + 1), tint = LocalTokens.current.accent) }
@@ -230,7 +229,8 @@ private fun LayersTab(params: MandalaParameters, selected: Int, vm: EditorViewMo
 /** A muted line saying what comes with Pro, with a link to the Pro sheet. */
 @Composable
 private fun ProNote(text: String, showPro: () -> Unit) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
+    // Its own room above, so it does not read as part of the row before it.
+    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = Spacing.sm)) {
         Text(text, style = MaterialTheme.typography.bodySmall, color = LocalTokens.current.textMuted, modifier = Modifier.weight(1f))
         TextButton(onClick = showPro) { Text(stringResource(R.string.controls_about_pro)) }
     }
@@ -586,7 +586,8 @@ private fun EmblemTab(em: EmblemLayerSettings, vm: EditorViewModel, position: Po
     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
         // The label switches too; the dice and reset buttons beside it keep their own taps.
         Text(
-            stringResource(R.string.controls_emblem_show).let { if (position.proOwned) it else withPro(it) }, style = MaterialTheme.typography.bodyMedium,
+            // Marked only while off: switched on, the note below says it, and the row needs the room.
+            stringResource(R.string.controls_emblem_show).let { if (position.proOwned || em.isEnabled) it else withPro(it) }, style = MaterialTheme.typography.bodyMedium,
             modifier = Modifier.weight(1f).toggleable(value = em.isEnabled, role = Role.Switch) { on -> update { it.switched(on) } },
         )
         if (em.isEnabled) {
@@ -692,7 +693,7 @@ private fun TextTab(text: TextLayerSettings, vm: EditorViewModel, position: Posi
     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
         // The label switches too; the die and reset beside it keep their own taps (as in the emblem tab).
         Text(
-            stringResource(R.string.controls_text_show).let { if (position.proOwned) it else withPro(it) }, style = MaterialTheme.typography.bodyMedium,
+            stringResource(R.string.controls_text_show).let { if (position.proOwned || text.isEnabled) it else withPro(it) }, style = MaterialTheme.typography.bodyMedium,
             modifier = Modifier.weight(1f).toggleable(value = text.isEnabled, role = Role.Switch, onValueChange = switch),
         )
         if (text.isEnabled) {

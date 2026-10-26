@@ -33,10 +33,10 @@
 
     <!-- Editor: Pro sheet -->
     <string name="editor_pro_title">Dahlia Pro</string>
-    <string name="editor_pro_uses_keep">This mandala uses what comes with Pro. To keep it as it is, get Pro:</string>
+    <string name="editor_pro_uses_keep">This mandala uses what comes with Pro. To save, share or set it as wallpaper as it is, get Pro:</string>
     <string name="editor_pro_uses">This mandala uses what comes with Pro:</string>
     <string name="editor_pro_feature_item">· %1$s</string>
-    <string name="editor_pro_summary">Pro adds up to five layers, emblems, text and quotes, and moving layers and the emblem. Save at 2048 pixels wide with the mandala placed by hand and adjusted, and as a line drawing. Wallpapers: home and lock as a pair, a new one every day, and a live wallpaper. Try more layers, emblems and quotes in the editor before you buy. One purchase, no subscription.</string>
+    <string name="editor_pro_summary">Pro adds up to five layers, emblems, text and quotes, and moving layers and the emblem. Save at 2048 pixels wide with the mandala placed by hand and adjusted, as a turning video, and as a line drawing. Wallpapers: home and lock as a pair, a new one every day, and a live wallpaper. Try everything in the editor and keep it as a favourite before you buy. One purchase, no subscription.</string>
     <string name="editor_pro_buy_for">Buy for %1$s</string>
     <string name="editor_pro_buy">Buy Pro</string>
     <string name="editor_pro_without">%1$s without them</string>

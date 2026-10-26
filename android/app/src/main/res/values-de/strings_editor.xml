@@ -33,10 +33,10 @@
 
     <!-- Editor: Pro sheet -->
     <string name="editor_pro_title">Dahlia Pro</string>
-    <string name="editor_pro_uses_keep">Dieses Mandala nutzt, was es mit Pro gibt. Um es so zu behalten, hol dir Pro:</string>
+    <string name="editor_pro_uses_keep">Dieses Mandala nutzt, was es mit Pro gibt. Um es so zu speichern, zu teilen oder als Hintergrund zu setzen, hol dir Pro:</string>
     <string name="editor_pro_uses">Dieses Mandala nutzt, was es mit Pro gibt:</string>
     <string name="editor_pro_feature_item">· %1$s</string>
-    <string name="editor_pro_summary">Pro bietet bis zu fünf Ebenen, Embleme, Text und Zitate sowie verschiebbare Ebenen und Embleme. Speichern mit 2048 Pixeln Breite, mit von Hand platziertem und angepasstem Mandala, und als Strichzeichnung. Hintergründe: Start- und Sperrbildschirm als Paar, jeden Tag ein neuer und ein Live-Hintergrund. Probier mehr Ebenen, Embleme und Zitate im Editor aus, bevor du kaufst. Einmal kaufen, kein Abo.</string>
+    <string name="editor_pro_summary">Pro bietet bis zu fünf Ebenen, Embleme, Text und Zitate sowie verschiebbare Ebenen und Embleme. Speichern mit 2048 Pixeln Breite, mit von Hand platziertem und angepasstem Mandala, als drehendes Video und als Strichzeichnung. Hintergründe: Start- und Sperrbildschirm als Paar, jeden Tag ein neuer und ein Live-Hintergrund. Probier alles im Editor aus und behalte es als Favorit, bevor du kaufst. Einmal kaufen, kein Abo.</string>
     <string name="editor_pro_buy_for">Für %1$s kaufen</string>
     <string name="editor_pro_buy">Pro kaufen</string>
     <string name="editor_pro_without">%1$s ohne diese Funktionen</string>

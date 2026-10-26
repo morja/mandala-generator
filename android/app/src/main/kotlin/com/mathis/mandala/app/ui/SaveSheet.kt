@@ -247,8 +247,9 @@ internal fun SaveSheet(
                     }
                     SaveButton(
                         // The tab already says Video; the short label leaves room for the size.
-                        stringResource(if (proOwned) R.string.save_save else R.string.save_save_pro), sizes, chosen, enabled = !busy,
-                        onSave = { onSaveVideo(large && proOwned, false) }, onSize = pick, modifier = Modifier.weight(1f),
+                        // Without Pro the mark goes into the size line, where it has room.
+                        stringResource(R.string.save_save), sizes, chosen, enabled = !busy, pro = proOwned,
+                        onSave = { onSaveVideo(large && proOwned, false) }, onSize = pick, modifier = Modifier.weight(SAVE_WEIGHT),
                     )
                 } else Row(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
                     // A wallpaper fills the screen, so it is set in the phone screen format; the frame shows it first.
@@ -264,7 +265,7 @@ internal fun SaveSheet(
                     )
                     SaveButton(
                         stringResource(R.string.save_save), sizes, chosen, enabled = !busy,
-                        onSave = { onSave(large && proOwned) }, onSize = pick, modifier = Modifier.weight(1f),
+                        onSave = { onSave(large && proOwned) }, onSize = pick, modifier = Modifier.weight(SAVE_WEIGHT),
                     )
                 }
             }
@@ -336,7 +337,7 @@ private fun FormatMenu(format: SaveFormat, onFormat: (SaveFormat) -> Unit) {
 
 /** Save with the size in a second line, and an arrow beside it that picks the size. */
 @Composable
-private fun SaveButton(label: String, sizes: List<String>, chosen: Int, enabled: Boolean, onSave: () -> Unit, onSize: (Int) -> Unit, modifier: Modifier) {
+private fun SaveButton(label: String, sizes: List<String>, chosen: Int, enabled: Boolean, onSave: () -> Unit, onSize: (Int) -> Unit, modifier: Modifier, pro: Boolean = true) {
     var open by remember { mutableStateOf(false) }
     Row(modifier.height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(Spacing.xs)) {
         Button(
@@ -346,7 +347,7 @@ private fun SaveButton(label: String, sizes: List<String>, chosen: Int, enabled:
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(label, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                Text(sizes[chosen], style = MaterialTheme.typography.labelSmall, maxLines = 1)
+                Text(if (pro) sizes[chosen] else stringResource(R.string.controls_with_pro, sizes[chosen]), style = MaterialTheme.typography.labelSmall, maxLines = 1)
             }
         }
         Box {
@@ -585,3 +586,6 @@ private fun Modifier.fullBleed(padding: androidx.compose.ui.unit.Dp) = layout { 
     val placeable = measurable.measure(constraints.copy(minWidth = constraints.maxWidth + extra, maxWidth = constraints.maxWidth + extra))
     layout(constraints.maxWidth, placeable.height) { placeable.place(-extra / 2, 0) }
 }
+
+/** The save button with its size line and arrow is wider than the button beside it. */
+private const val SAVE_WEIGHT = 1.4f

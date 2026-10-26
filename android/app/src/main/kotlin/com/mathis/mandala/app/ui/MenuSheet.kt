@@ -181,7 +181,8 @@ private fun KeepRow(busy: Boolean, actions: MenuActions, onDailyPage: () -> Unit
                 DropdownMenuItem(text = { Text(actions.pairLabel) }, onClick = { open = false; actions.onPair() })
                 DropdownMenuItem(text = { Text(actions.liveLabel) }, onClick = { open = false; actions.onLive() })
                 DropdownMenuItem(
-                    text = { Text(stringResource(R.string.menu_daily_wallpaper)) },
+                    // Marked like the pair and the live wallpaper, which are Pro too (ADR-0014); shorter, so it fits the menu.
+                    text = { Text(if (actions.lineDrawingPro) stringResource(R.string.menu_daily_wallpaper) else stringResource(R.string.controls_with_pro, stringResource(R.string.menu_daily_short))) },
                     trailingIcon = { if (actions.dailyOn) Icon(EditorIcons.Check, contentDescription = null, tint = LocalTokens.current.accent) },
                     onClick = { open = false; onDailyPage() },
                 )

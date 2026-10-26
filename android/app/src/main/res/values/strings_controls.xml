@@ -63,11 +63,11 @@
     <string name="controls_draw_show_spray">Show spray</string>
 
     <!-- Layers tab: group titles, sliders and notes (some shared with other tabs) -->
-    <string name="controls_pro_note_layers">More than three layers come with Pro. Try them as you like; keeping the mandala needs Pro.</string>
+    <string name="controls_pro_note_layers">More than three layers come with Pro. You can try it and keep it as a favourite without Pro.</string>
     <string name="controls_delete">Delete</string>
     <string name="controls_about_pro">About Pro</string>
     <string name="controls_position">Position</string>
-    <string name="controls_pro_note_position">Moving layers comes with Pro. Try it as you like; keeping the mandala needs Pro.</string>
+    <string name="controls_pro_note_position">Moving layers comes with Pro. You can try it and keep it as a favourite without Pro.</string>
     <string name="controls_position_hidden_note">This layer is hidden. Show it to see where it moves.</string>
     <string name="controls_across">Across</string>
     <string name="controls_up_and_down">Up and down</string>
@@ -137,7 +137,7 @@
     <!-- Emblem tab -->
     <string name="controls_random_emblem">Random emblem</string>
     <string name="controls_emblem_off_note">One motif drawn large in the centre: Om, Tree of Life, Flower of Life, Lotus and more.</string>
-    <string name="controls_pro_note_emblem">The emblem comes with Pro. Try it as you like; keeping the mandala needs Pro.</string>
+    <string name="controls_pro_note_emblem">The emblem comes with Pro. You can try it and keep it as a favourite without Pro.</string>
     <string name="controls_motif">Motif</string>
     <string name="controls_variant">Variant</string>
     <string name="controls_petals">Petals</string>
@@ -161,7 +161,7 @@
     <string name="controls_new_quote">New quote</string>
     <string name="controls_keep">Keep</string>
     <string name="controls_kept">Kept</string>
-    <string name="controls_pro_note_text">Text and quotes come with Pro. Try them as you like; keeping the mandala needs Pro.</string>
+    <string name="controls_pro_note_text">Text and quotes come with Pro. You can try it and keep it as a favourite without Pro.</string>
     <string name="controls_text_field">Text</string>
     <string name="controls_author">Author</string>
     <string name="controls_show_author">Show author</string>
