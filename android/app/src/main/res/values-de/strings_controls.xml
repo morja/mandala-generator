@@ -201,4 +201,5 @@
     <string name="controls_smoother">Glätten</string>
     <string name="controls_applies_to">Wirkt auf</string>
     <string name="controls_reach_mandala">Mandala</string>
+    <string name="controls_effects_hold_hint">Halte die Vorschau gedrückt, um sie ohne Effekte zu sehen.</string>
 </resources>
