@@ -187,7 +187,7 @@ internal fun SaveSheet(
                     HorizontalDivider(color = t.outline)
                     Group(
                         stringResource(R.string.save_adjust),
-                        summary = finishSummary(choice.finish, proOwned),
+                        summary = finishSummary(choice.finish, proOwned, quoteMoves = hasQuote && choice.textFollowsMandala),
                         // Reset in the heading, only when something is changed; it saves the frame a line. Plain
                         // text, not a button, so the heading keeps its height and the frame does not jump.
                         trailing = if (proOwned && !choice.finish.isIdentity) {
@@ -207,11 +207,12 @@ internal fun SaveSheet(
                         // Adjust uses the sheet's surrounding dividers instead of a second frame.
                         framed = false,
                     ) {
-                        FinishControls(choice.finish, proOwned, enabled = !busy, onFinish = onFinish, onShowPro = onShowPro)
+                        FinishControls(choice.finish, proOwned, enabled = !busy, onFinish = onFinish, onShowPro = onShowPro, hasQuote = hasQuote)
+                        // The quote's place is part of Adjust (Pro, ADR-0016), so it costs the frame no line of its own.
+                        if (hasQuote && proOwned) SwitchRow(stringResource(R.string.save_quote_follows), choice.textFollowsMandala, onTextFollows)
                     }
                 }
                 if (moving) LengthRow(choice.videoSeconds, enabled = !busy, onVideoSeconds)
-                if (hasQuote) SwitchRow(stringResource(R.string.save_quote_follows), choice.textFollowsMandala, onTextFollows)
             }
             HorizontalDivider(color = t.outline)
             Column(
@@ -507,24 +508,28 @@ private fun Frame(
 
 /** What "Adjust" shows while folded: the changed values, or that nothing is changed. */
 @Composable
-private fun finishSummary(finish: Finish, proOwned: Boolean): String = when {
-    !proOwned -> stringResource(R.string.save_adjust_with_pro)
-    finish.isIdentity -> stringResource(R.string.save_adjust_unchanged)
-    else -> stringResource(R.string.save_adjust_summary, percent(finish.brightness), percent(finish.contrast), percent(finish.saturation))
+private fun finishSummary(finish: Finish, proOwned: Boolean, quoteMoves: Boolean): String {
+    if (!proOwned) return stringResource(R.string.save_adjust_with_pro)
+    val parts = listOfNotNull(
+        if (finish.isIdentity) null else stringResource(R.string.save_adjust_summary, percent(finish.brightness), percent(finish.contrast), percent(finish.saturation)),
+        if (quoteMoves) stringResource(R.string.save_adjust_quote_moves) else null,
+    )
+    return if (parts.isEmpty()) stringResource(R.string.save_adjust_unchanged) else parts.joinToString(", ")
 }
 
 private fun percent(v: Double) = "${(v * 100).roundToInt()} %"
 
 /**
  * The last adjustment of the saved image or wallpaper (ADR-0014): brightness, contrast and
- * saturation, applied to the frame at once. Without Pro a line says so and opens the Pro sheet.
+ * saturation, applied to the frame at once, and below them whether the quote moves with the mandala.
+ * Without Pro a line says so and opens the Pro sheet.
  */
 @Composable
-private fun FinishControls(finish: Finish, proOwned: Boolean, enabled: Boolean, onFinish: (Finish) -> Unit, onShowPro: () -> Unit) {
+private fun FinishControls(finish: Finish, proOwned: Boolean, enabled: Boolean, onFinish: (Finish) -> Unit, onShowPro: () -> Unit, hasQuote: Boolean) {
     val t = LocalTokens.current
     if (!proOwned) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(stringResource(R.string.save_adjust_pro), style = MaterialTheme.typography.bodySmall, color = t.textMuted, modifier = Modifier.weight(1f))
+            Text(stringResource(if (hasQuote) R.string.save_adjust_pro_quote else R.string.save_adjust_pro), style = MaterialTheme.typography.bodySmall, color = t.textMuted, modifier = Modifier.weight(1f))
             TextButton(onClick = onShowPro) { Text(stringResource(R.string.save_about_pro)) }
         }
         return

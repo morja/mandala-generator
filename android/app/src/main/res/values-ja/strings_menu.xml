@@ -112,4 +112,6 @@
     <string name="save_choose_size">サイズを選択</string>
     <string name="save_format">形式</string>
     <string name="save_save_pro">保存 · Pro</string>
+    <string name="save_adjust_pro_quote">明るさ、コントラスト、彩度、マンダラと一緒に動く引用はPro機能です。</string>
+    <string name="save_adjust_quote_moves">引用も一緒に動く</string>
 </resources>

@@ -292,7 +292,13 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         if (pro.state.value.owned) _saveChoice.update { it.copy(framing = framing.clamped(), fit = Fit.HAND, framedByHand = true) }
     }
 
-    fun setTextFollowsMandala(follows: Boolean) = _saveChoice.update { it.copy(textFollowsMandala = follows) }
+    /** The quote moving with the mandala, part of "Adjust" and of Pro (ADR-0016). */
+    fun setTextFollowsMandala(follows: Boolean) {
+        if (pro.state.value.owned) _saveChoice.update { it.copy(textFollowsMandala = follows) }
+    }
+
+    /** Whether the quote moves with the mandala in exports: as chosen with Pro, never without. */
+    private fun effectiveTextFollows(): Boolean = pro.state.value.owned && _saveChoice.value.textFollowsMandala
 
     /** A picture or a video of the layers turning (UX-1 12); anyone may look, keeping the video is Pro. */
     fun setMoving(moving: Boolean) = _saveChoice.update { it.copy(moving = moving) }
@@ -918,7 +924,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         val (w, h) = Editing.exportSize(choice.format, _screenAspect.value, large)
         val params = _params.value
         val framing: suspend () -> Framing = { framingFor(choice, params, aspectOf(choice.format), pro.state.value.owned) }
-        renderFullSize(string(R.string.export_creating_image), w, h, large, framing, choice.textFollowsMandala, finish = effectiveFinish()) { image, fileName ->
+        renderFullSize(string(R.string.export_creating_image), w, h, large, framing, effectiveTextFollows(), finish = effectiveFinish()) { image, fileName ->
             exportStep(string(R.string.export_saving_to_pictures))
             withContext(Dispatchers.IO) { GalleryExport.savePng(getApplication(), image, fileName) }
             message(string(R.string.message_saved_to_pictures, w, h, GalleryExport.FOLDER))
@@ -942,10 +948,10 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         val shown = choice.withFormat(Editing.SaveFormat.SCREEN)
         val framing: suspend () -> Framing = { framingFor(if (filled) shown.copy(fit = Fit.FILL) else shown, params, screen, large) }
         val reuse = { k: ExportKey, f: Framing ->
-            k.params == params && k.framing == f && k.textFollows == choice.textFollowsMandala && k.finish == effectiveFinish() &&
+            k.params == params && k.framing == f && k.textFollows == effectiveTextFollows() && k.finish == effectiveFinish() &&
                 k.width >= screenShortSide && kotlin.math.abs(k.height.toDouble() / k.width - h.toDouble() / w) < 0.002
         }
-        renderFullSize(string(R.string.export_creating_wallpaper), w, h, large, framing, choice.textFollowsMandala, reuse, effectiveFinish()) { image, _ ->
+        renderFullSize(string(R.string.export_creating_wallpaper), w, h, large, framing, effectiveTextFollows(), reuse, effectiveFinish()) { image, _ ->
             exportStep(string(R.string.export_setting_wallpaper))
             withContext(Dispatchers.IO) { Wallpapers.set(getApplication(), image, target) }
             _export.value = null
@@ -1004,7 +1010,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
                     val job = coroutineContext.job
                     val options = LayerAnimation.options(
                         RenderOptions(
-                            width = w, height = h, framing = framing, textFollowsMandala = choice.textFollowsMandala,
+                            width = w, height = h, framing = framing, textFollowsMandala = pro.state.value.owned && choice.textFollowsMandala,
                             supersample = false, finish = choice.finish, threads = threads,
                             textRenderer = textRenderer, imageLoader = imageLoader, isCancelled = { !job.isActive },
                         ),
@@ -1100,7 +1106,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         val (w, h) = Editing.exportSize(Editing.SaveFormat.SCREEN, _screenAspect.value, large = true)
         val params = _params.value
         val framing: suspend () -> Framing = { framingFor(choice.copy(fit = Fit.FILL), params, aspectOf(Editing.SaveFormat.SCREEN), pro = true) }
-        renderFullSize(string(R.string.export_creating_wallpapers), w, h, large = true, framing, choice.textFollowsMandala, finish = effectiveFinish()) { image, _ ->
+        renderFullSize(string(R.string.export_creating_wallpapers), w, h, large = true, framing, effectiveTextFollows(), finish = effectiveFinish()) { image, _ ->
             exportStep(string(R.string.export_setting_both_wallpapers))
             val home = withContext(Dispatchers.Default) { Finish(brightness = choice.homeBrightness).apply(image, threads) }
             withContext(Dispatchers.IO) { Wallpapers.setPair(getApplication(), image, home) }
@@ -1331,7 +1337,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
                 MandalaRenderer.render(
                     request.params,
                     RenderOptions(
-                        width = w, height = h, framing = framing, textFollowsMandala = request.choice.textFollowsMandala,
+                        width = w, height = h, framing = framing, textFollowsMandala = request.pro && request.choice.textFollowsMandala,
                         threads = threads, textRenderer = textRenderer, imageLoader = imageLoader, isCancelled = { !job.isActive },
                     ),
                 ).image
@@ -1363,7 +1369,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
                 val job = coroutineContext.job
                 val options = LayerAnimation.options(
                     RenderOptions(
-                        width = w, height = h, framing = framing, textFollowsMandala = request.choice.textFollowsMandala,
+                        width = w, height = h, framing = framing, textFollowsMandala = request.pro && request.choice.textFollowsMandala,
                         supersample = false, finish = finish, threads = threads, glowReferenceWidth = Editing.FAST_GLOW_REFERENCE,
                         textRenderer = textRenderer, imageLoader = imageLoader, isCancelled = { !job.isActive },
                     ),

@@ -116,4 +116,6 @@
     <string name="save_choose_size">Choisir la taille</string>
     <string name="save_format">Format</string>
     <string name="save_save_pro">Enregistrer · Pro</string>
+    <string name="save_adjust_pro_quote">La luminosité, le contraste, la saturation et la citation qui suit le mandala sont inclus avec Pro.</string>
+    <string name="save_adjust_quote_moves">la citation suit</string>
 </resources>

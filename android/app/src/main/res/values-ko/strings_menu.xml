@@ -112,4 +112,6 @@
     <string name="save_choose_size">크기 선택</string>
     <string name="save_format">형식</string>
     <string name="save_save_pro">저장 · Pro</string>
+    <string name="save_adjust_pro_quote">밝기, 대비, 채도, 만다라와 함께 움직이는 인용문은 Pro 기능입니다.</string>
+    <string name="save_adjust_quote_moves">인용문도 함께 이동</string>
 </resources>
