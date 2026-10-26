@@ -44,6 +44,8 @@ On 23 October 2026 the pages moved to `/apps/dahlia` and `/apps/privacy/dahlia` 
 >
 > No account, no ads, no tracking. Your mandalas stay on your device.
 >
+> Guide and answers to common questions: https://www.tearoom.one/en/apps/dahlia/help
+>
 > Dahlia is open source under the GNU GPL 3.0: https://github.com/morja/mandala-generator
 
 ## Store listing, German
@@ -67,6 +69,8 @@ On 23 October 2026 the pages moved to `/apps/dahlia` and `/apps/privacy/dahlia` 
 > Die App ist kostenlos: alle Stile und Paletten, alle Effekte, drei Ebenen, beliebig viele Favoriten und Speichern und Teilen in Bildschirmgröße ohne Wasserzeichen. Pro ist ein optionaler einmaliger Kauf ohne Abo: bis zu fünf Ebenen, Embleme, Text und Zitate sowie Ebenen und Emblem verschieben. Damit speicherst du mit 2048 px für Drucke und Hintergrundbilder, richtest das Mandala im Bildausschnitt aus, stimmst Helligkeit, Kontrast und Sättigung fein ab und exportierst eine SVG-Strichzeichnung. Dazu kommen Hintergründe, die sich verändern: ein Live-Hintergrund, der sich langsam dreht, jeden Morgen ein neues Hintergrundbild aus deinen Favoriten und Start- und Sperrbildschirm als passendes Paar. Mehr Ebenen, Embleme und Zitate kannst du im Editor vor dem Kauf ausprobieren.
 >
 > Kein Konto, keine Werbung, kein Tracking. Deine Mandalas bleiben auf deinem Gerät.
+>
+> Anleitung und Antworten auf häufige Fragen: https://www.tearoom.one/de/apps/dahlia/help
 >
 > Dahlia ist Open Source unter der GNU GPL 3.0: https://github.com/morja/mandala-generator
 

@@ -26,6 +26,8 @@ La app es gratuita: todos los estilos y paletas, todos los efectos, tres capas, 
 
 Sin cuenta, sin anuncios, sin rastreo. Tus mandalas se quedan en tu dispositivo.
 
+Guía (en inglés) y preguntas frecuentes: https://www.tearoom.one/en/apps/dahlia/help
+
 Dahlia es de código abierto bajo la GNU GPL 3.0: https://github.com/morja/mandala-generator"""},
 "pt-BR": {"title": "Dahlia – Criador de Mandalas",
  "short": "Crie mandalas e papéis de parede animados: curvas, camadas, geometria sagrada.",
@@ -42,6 +44,8 @@ Salve suas mandalas na galeria em formato quadrado, no formato da sua tela ou em
 O app é gratuito: todos os estilos e paletas, todos os efeitos, três camadas, favoritos sem limite e salvar e compartilhar no tamanho da tela sem marca d'água. O Pro é uma compra única opcional, sem assinatura: até cinco camadas, emblemas, texto e citações, e mover camadas e emblema. Salva em 2048 px para impressões e papéis de parede, com a mandala posicionada à mão e brilho, contraste e saturação ajustados, e exporta um desenho de linhas em SVG. O Pro também traz papéis de parede que mudam: um papel de parede animado que gira devagar, um novo dos seus favoritos toda manhã, e telas inicial e de bloqueio combinando. Experimente mais camadas, emblemas e citações no editor antes de comprar.
 
 Sem conta, sem anúncios, sem rastreamento. Suas mandalas ficam no seu aparelho.
+
+Guia (em inglês) e perguntas frequentes: https://www.tearoom.one/en/apps/dahlia/help
 
 Dahlia é código aberto sob a GNU GPL 3.0: https://github.com/morja/mandala-generator"""},
 "fr-FR": {"title": "Dahlia – Créateur de mandalas",
@@ -60,6 +64,8 @@ L'application est gratuite : tous les styles et palettes, tous les effets, trois
 
 Pas de compte, pas de publicité, pas de suivi. Vos mandalas restent sur votre appareil.
 
+Guide (en anglais) et questions fréquentes : https://www.tearoom.one/en/apps/dahlia/help
+
 Dahlia est open source sous licence GNU GPL 3.0 : https://github.com/morja/mandala-generator"""},
 "zh-CN": {"title": "Dahlia – 曼陀罗制作",
  "short": "制作曼陀罗和动态壁纸：曲线、图层与神圣几何。",
@@ -77,6 +83,8 @@ Dahlia est open source sous licence GNU GPL 3.0 : https://github.com/morja/manda
 
 无需账号，无广告，无跟踪。你的曼陀罗只保存在你的设备上。
 
+使用指南与常见问题（英文）：https://www.tearoom.one/en/apps/dahlia/help
+
 Dahlia 是开源软件，采用 GNU GPL 3.0 许可：https://github.com/morja/mandala-generator"""},
 "ja-JP": {"title": "Dahlia – マンダラメーカー",
  "short": "曼荼羅メーカーとライブ壁紙：曲線、レイヤー、神聖幾何学。",
@@ -93,6 +101,8 @@ Dahlia 是开源软件，采用 GNU GPL 3.0 许可：https://github.com/morja/ma
 アプリは無料です：すべてのスタイルとパレット、すべてのエフェクト、3 つのレイヤー、無制限のお気に入り、画面サイズでの保存と共有、透かしなし。Pro は任意の買い切り購入で、サブスクリプションはありません：最大 5 レイヤー、エンブレム、テキストと名言、レイヤーとエンブレムの移動。印刷や壁紙向けに 2048 px で保存し、曼荼羅を手動で配置して明るさ、コントラスト、彩度を調整し、SVG の線画を書き出せます。さらに変化する壁紙も：ゆっくり回転するライブ壁紙、毎朝お気に入りから届く新しい壁紙、ホーム画面とロック画面のペア。購入前に、追加レイヤー、エンブレム、名言をエディターで試せます。
 
 アカウント不要、広告なし、トラッキングなし。曼荼羅はあなたの端末にだけ保存されます。
+
+ガイドとよくある質問（英語）：https://www.tearoom.one/en/apps/dahlia/help
 
 Dahlia は GNU GPL 3.0 のオープンソースです：https://github.com/morja/mandala-generator"""},
 }
