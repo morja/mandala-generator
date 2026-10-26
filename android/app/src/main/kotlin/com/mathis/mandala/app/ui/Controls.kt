@@ -730,7 +730,7 @@ private fun TextTab(text: TextLayerSettings, vm: EditorViewModel, position: Posi
 
 /**
  * Language chips (only with more than one collection), then your own quotes (with a remove button), then
- * the built-in public-domain collections of the languages switched on (ADR-0018).
+ * the built-in public-domain collections of the languages switched on (ADR-0019).
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Texts of the control tabs below or beside the canvas (Controls.kt, Parts.kt; ADR-0018). -->
+<!-- Texts of the control tabs below or beside the canvas (Controls.kt, Parts.kt; ADR-0019). -->
 <resources>
 
     <!-- Tab row and the header beside the folded image -->

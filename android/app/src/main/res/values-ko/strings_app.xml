@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Texts of the app outside the ui package: save formats, tools, messages, wallpapers, Pro (ADR-0018). -->
+<!-- Texts of the app outside the ui package: save formats, tools, messages, wallpapers, Pro (ADR-0019). -->
 <resources>
     <!-- Save formats (ADR-0010) -->
     <string name="format_square">정사각형</string>

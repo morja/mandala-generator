@@ -1,4 +1,4 @@
-# ADR-0018 · App languages and quotes per language
+# ADR-0019 · App languages and quotes per language
 
 Status: accepted, 26 October 2026 (Mathis, in conversation). Adds to ADR-0007 (public-domain quotes) and deviates from ADR-0008 (Mac first) for this feature.
 

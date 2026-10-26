@@ -1,6 +1,6 @@
 # QUOTES-1 · Candidates for the quote collections
 
-Public-domain candidates for ADR-0018, each checked word for word against a fetched edition (26 October 2026). Mathis picks; picked ones go into `android/core/.../quotes/`. Already in the app: 38, 40 and 42.
+Public-domain candidates for ADR-0019, each checked word for word against a fetched edition (26 October 2026). Mathis picks; picked ones go into `android/core/.../quotes/`. Already in the app: 38, 40 and 42.
 
 Fetched 26 October 2026. Word counts include every word in the quote. "Trim" means the quote is part of a longer sentence or verse, cut at a punctuation or verse boundary. No words were left out inside a quote.
 

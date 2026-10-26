@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Texts of the editor screen, the wallpaper pair and the live wallpaper sheets (ADR-0018). -->
+<!-- Texts of the editor screen, the wallpaper pair and the live wallpaper sheets (ADR-0019). -->
 <resources>
     <!-- Editor: messages and export progress -->
     <string name="editor_undo">Annulla</string>

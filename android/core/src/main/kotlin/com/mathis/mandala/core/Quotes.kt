@@ -3,7 +3,7 @@ package com.mathis.mandala.core
 import com.mathis.mandala.core.quotes.quotesDe
 import com.mathis.mandala.core.quotes.quotesEn
 
-// Quotes offered by the text layer, one collection per language (ADR-0018). The macOS app's original
+// Quotes offered by the text layer, one collection per language (ADR-0019). The macOS app's original
 // collection is not shipped: most of its wordings are modern translations or by living authors
 // (ADR-0007). Users add their own in the app.
 
@@ -27,7 +27,7 @@ object Quotes {
 
     /**
      * The languages offered when the user has not chosen: the device's [preferred] languages (ISO 639
-     * codes, most preferred first) that have a collection, then English (ADR-0018).
+     * codes, most preferred first) that have a collection, then English (ADR-0019).
      */
     fun defaultLanguages(preferred: List<String>): List<String> =
         (preferred.map { it.lowercase() } + "en").distinct().filter { code -> collections.any { it.language == code } }
