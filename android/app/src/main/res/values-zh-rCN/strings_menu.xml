@@ -59,6 +59,7 @@
     <string name="save_fit_whole">完整</string>
     <string name="save_fit_fill">填满</string>
     <string name="save_frame_hint">拖动可移动，双指捏合可缩放，点按两次可居中。</string>
+    <string name="save_placed_by_hand">已手动放置</string>
     <string name="save_frame_pro">移动和缩放曼陀罗需要 Pro。</string>
     <string name="save_about_pro">关于 Pro</string>
     <string name="save_preview_description">保存图片的预览</string>

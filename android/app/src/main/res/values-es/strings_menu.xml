@@ -63,6 +63,7 @@
     <string name="save_fit_whole">Completo</string>
     <string name="save_fit_fill">Rellenar</string>
     <string name="save_frame_hint">Arrastra para mover, pellizca para ampliar, toca dos veces para centrar.</string>
+    <string name="save_placed_by_hand">Colocado a mano</string>
     <string name="save_frame_pro">Mover y ampliar el mandala viene con Pro.</string>
     <string name="save_about_pro">Acerca de Pro</string>
     <string name="save_preview_description">Vista previa de la imagen guardada</string>

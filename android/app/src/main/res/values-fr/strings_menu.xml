@@ -63,6 +63,7 @@
     <string name="save_fit_whole">Entier</string>
     <string name="save_fit_fill">Remplir</string>
     <string name="save_frame_hint">Faites glisser pour déplacer, pincez pour zoomer, appuyez deux fois pour centrer.</string>
+    <string name="save_placed_by_hand">Placé à la main</string>
     <string name="save_frame_pro">Déplacer et zoomer le mandala, c\'est avec Pro.</string>
     <string name="save_about_pro">À propos de Pro</string>
     <string name="save_preview_description">Aperçu de l\'image enregistrée</string>

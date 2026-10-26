@@ -61,6 +61,7 @@
     <string name="save_fit_whole">Whole</string>
     <string name="save_fit_fill">Fill</string>
     <string name="save_frame_hint">Drag to move, pinch to zoom, double tap to centre.</string>
+    <string name="save_placed_by_hand">Placed by hand</string>
     <string name="save_frame_pro">Moving and zooming the mandala come with Pro.</string>
     <string name="save_about_pro">About Pro</string>
     <string name="save_preview_description">Preview of the saved image</string>

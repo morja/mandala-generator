@@ -61,6 +61,7 @@
     <string name="save_fit_whole">Ganz</string>
     <string name="save_fit_fill">Füllen</string>
     <string name="save_frame_hint">Ziehen zum Verschieben, mit zwei Fingern zoomen, doppelt tippen zum Zentrieren.</string>
+    <string name="save_placed_by_hand">Von Hand platziert</string>
     <string name="save_frame_pro">Mandala verschieben und zoomen gibt es mit Pro.</string>
     <string name="save_about_pro">Über Pro</string>
     <string name="save_preview_description">Vorschau des gespeicherten Bildes</string>
