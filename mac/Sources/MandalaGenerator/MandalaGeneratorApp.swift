@@ -63,6 +63,16 @@ struct MandalaGeneratorApp: App {
                     appState.randomizeSeed()
                 }
             }
+
+            // The guide on the website, in German when the Mac prefers German.
+            CommandGroup(replacing: .help) {
+                Button("Mandala Generator Guide") {
+                    let language = Locale.preferredLanguages.first?.hasPrefix("de") == true ? "de" : "en"
+                    if let url = URL(string: "https://www.tearoom.one/\(language)/apps/dahlia/help") {
+                        NSWorkspace.shared.open(url)
+                    }
+                }
+            }
         }
     }
 }
