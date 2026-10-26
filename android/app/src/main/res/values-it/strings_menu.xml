@@ -40,6 +40,7 @@
     <string name="menu_daily_some">%1$d di %2$d</string>
     <string name="menu_daily_pick_about">Si alternano solo i preferiti spuntati, nell\'ordine dei tuoi preferiti. Un preferito aggiunto dopo entra quando lo spunti qui.</string>
     <string name="menu_daily_choose_all">Spunta tutti</string>
+    <string name="menu_daily_widget_note">Il widget «Mandala del giorno» mostra gli stessi preferiti; con Pro cambia ogni mattina, anche quando lo sfondo del giorno è spento.</string>
     <string name="menu_open_file_detail">Impostazioni di mandala salvate come file, da questa app o dall\'app per macOS</string>
     <string name="menu_save_settings_detail">Questo mandala come file, da conservare o da aprire sul Mac</string>
     <string name="menu_more">Altro</string>

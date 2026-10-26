@@ -84,6 +84,8 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.util.UUID
@@ -341,6 +343,59 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
     /** Whether the preview blurs its glow at a smaller size (quicker, a touch softer; saved images never). */
     val fastPreview: StateFlow<Boolean> = _fastPreview.asStateFlow()
 
+    private val _previewSize = MutableStateFlow(appearance.previewSize)
+
+    /** How large the phone preview stands above the controls; kept across starts (UX-1 11). */
+    val previewSize: StateFlow<PreviewSize> = _previewSize.asStateFlow()
+
+    fun setPreviewSize(size: PreviewSize) {
+        appearance.previewSize = size
+        _previewSize.value = size
+    }
+
+    /** The preview without the scene effects, what it was drawn from, and how (UX-1 16). */
+    private class Plain(val params: MandalaParameters, val fast: Boolean, val image: ImageBitmap)
+
+    private val _plain = MutableStateFlow<Plain?>(null)
+    private var plainJob: Job? = null
+    private var plainFor: MandalaParameters? = null
+
+    /** The preview without the scene effects, while it matches the settings; null until drawn. */
+    val plainPreview: StateFlow<ImageBitmap?> = combine(_params, _fastPreview, _plain) { p, fast, plain ->
+        plain?.takeIf { it.params == p && it.fast == fast }?.image
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, null)
+
+    /**
+     * Draws the preview without the scene effects once, when a finger starts holding the preview;
+     * kept until the settings change. The layer images come from the preview's cache, so only the
+     * picture is put together again.
+     */
+    fun preparePlainPreview() {
+        val p = _params.value
+        val fast = _fastPreview.value
+        if (!p.effectsLayer.isEnabled || plainPreview.value != null || plainJob?.isActive == true && plainFor == p) return
+        plainJob?.cancel()
+        plainFor = p
+        plainJob = viewModelScope.launch {
+            try {
+                val result = previewLock.withLock {
+                    withContext(Dispatchers.Default) {
+                        val job = coroutineContext.job
+                        MandalaRenderer.render(
+                            p.copy(effectsLayer = p.effectsLayer.copy(isEnabled = false)),
+                            previewOptions(fast) { !job.isActive },
+                        )
+                    }
+                }
+                _plain.value = Plain(p, fast, result.image.toBitmap().asImageBitmap())
+            } catch (e: RenderCancelledException) {
+                // The settings changed while it was drawn.
+            } catch (e: OutOfMemoryError) {
+                previewCache.clear()
+            }
+        }
+    }
+
     fun setFastPreview(on: Boolean) {
         appearance.fastPreview = on
         // The kept previews were drawn with the other glow.
@@ -356,6 +411,8 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
 
     /** The layer images of the last rendered preview, so a change to one layer redraws only that one. */
     private val previewCache = LayerCache()
+    /** The preview and the one without effects share [previewCache], so they never draw at once. */
+    private val previewLock = Mutex()
 
     /** Save sheet previews rendered recently, by everything they were rendered from. */
     private val recentFrames = RecentImages<FrameRequest, FramePreviewState>(RECENT_FRAMES)
@@ -747,6 +804,11 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         message(string(R.string.message_favourite_added))
     }
 
+    /** Opens a favourite by id, as the home screen widget asks for with a tap (ADR-0020). */
+    fun applyFavoriteId(id: String) {
+        _favorites.value.firstOrNull { it.id == id }?.let(::applyFavorite)
+    }
+
     fun applyFavorite(favorite: Favorite) {
         // Its thumbnail stands in until the preview is rendered.
         if (recentPreviews[favorite.parameters] == null) {
@@ -982,7 +1044,9 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         _export.value = ExportProgress(string(R.string.export_setting_daily))
         viewModelScope.launch {
             try {
-                val name = withContext(Dispatchers.Default) { DailyWallpaper.setNext(app, threads) }
+                val name = withContext(Dispatchers.Default) {
+                    DailyWallpaper.setNext(app, threads).also { runCatching { MandalaWidget.refresh(app) } }
+                }
                 _daily.update { it.copy(lastName = DailyWallpaper.lastName(app)) }
                 _export.value = null
                 delay(WALLPAPER_MESSAGE_DELAY_MS)
@@ -1202,19 +1266,20 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
+    private fun previewOptions(fast: Boolean, isCancelled: () -> Boolean) = RenderOptions(
+        outputSize = Editing.PREVIEW_SIZE, threads = threads, textRenderer = textRenderer, imageLoader = imageLoader,
+        isCancelled = isCancelled, layerCache = previewCache,
+        glowReferenceWidth = if (fast) Editing.FAST_GLOW_REFERENCE else RenderOptions().glowReferenceWidth,
+    )
+
     private suspend fun renderPreview(params: MandalaParameters, fast: Boolean, redrawn: Int) {
         _preview.update { it.copy(rendering = true, error = null) }
         try {
-            val result = withContext(Dispatchers.Default) {
-                val job = coroutineContext.job
-                MandalaRenderer.render(
-                    params,
-                    RenderOptions(
-                        outputSize = Editing.PREVIEW_SIZE, threads = threads, textRenderer = textRenderer, imageLoader = imageLoader,
-                        isCancelled = { !job.isActive }, layerCache = previewCache,
-                        glowReferenceWidth = if (fast) Editing.FAST_GLOW_REFERENCE else RenderOptions().glowReferenceWidth,
-                    ),
-                )
+            val result = previewLock.withLock {
+                withContext(Dispatchers.Default) {
+                    val job = coroutineContext.job
+                    MandalaRenderer.render(params, previewOptions(fast) { !job.isActive })
+                }
             }
             val bitmap = result.image.toBitmap().asImageBitmap()
             _preview.value = PreviewState(image = bitmap, rendering = false, millis = result.millis, warnings = result.warnings)

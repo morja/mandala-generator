@@ -527,6 +527,8 @@ private fun Effects(
                 color = LocalTokens.current.textMuted)
             return@Column
         }
+        Text(stringResource(R.string.controls_effects_hold_hint), style = MaterialTheme.typography.bodySmall,
+            color = LocalTokens.current.textMuted)
         Group(stringResource(R.string.glow_light), initiallyOpen = true) {
             ValueSlider(stringResource(R.string.save_brightness), fx.brightness, default = EffectsLayerSettings().brightness) { v -> update { it.copy(brightness = v) } }
             ValueSlider(stringResource(R.string.save_contrast), fx.contrast, default = EffectsLayerSettings().contrast) { v -> update { it.copy(contrast = v) } }

@@ -199,6 +199,7 @@
     <string name="controls_smoother">平滑</string>
     <string name="controls_applies_to">应用于</string>
     <string name="controls_reach_mandala">曼陀罗</string>
+    <string name="controls_effects_hold_hint">长按预览可查看无效果的样子。</string>
 
     <!-- Own palettes (ADR-0021) -->
     <string name="controls_my_palettes">我的调色板</string>

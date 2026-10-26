@@ -203,6 +203,7 @@
     <string name="controls_smoother">Lissage</string>
     <string name="controls_applies_to">S\'applique à</string>
     <string name="controls_reach_mandala">Mandala</string>
+    <string name="controls_effects_hold_hint">Maintenez l\'aperçu appuyé pour le voir sans effets.</string>
 
     <!-- Own palettes (ADR-0021) -->
     <string name="controls_my_palettes">Mes palettes</string>

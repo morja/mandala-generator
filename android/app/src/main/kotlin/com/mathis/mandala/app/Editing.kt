@@ -175,8 +175,6 @@ object Editing {
     const val QUICK_SIZE = 160
     const val QUICK_GLOW_REFERENCE = 320
 
-    /** Side of the small image above the controls, as a fraction of the full one. */
-    const val COMPACT_CANVAS_FRACTION = 0.32f
     const val EXPORT_SIZE = 1024
 
     /** Pro export (ADR-0007). */
@@ -475,3 +473,14 @@ enum class MoveTarget { LAYER, EMBLEM }
 
 /** The two hand-drawing tools of the macOS app: glowing lines (drawing layer) and spray paint (graffiti layer). */
 enum class DrawTool(@StringRes val label: Int) { LINES(R.string.draw_tool_lines), SPRAY(R.string.draw_tool_spray) }
+
+/**
+ * How large the phone preview stands above the controls, as a fraction of its full side (UX-1 11):
+ * full, a middle size that leaves the controls more room while the picture still shows its detail,
+ * and small, a thumbnail with what the open tab is about beside it.
+ */
+enum class PreviewSize(val fraction: Float) {
+    FULL(1f),
+    MIDDLE(0.6f),
+    SMALL(0.32f),
+}

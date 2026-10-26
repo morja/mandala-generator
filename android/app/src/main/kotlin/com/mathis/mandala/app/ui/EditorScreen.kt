@@ -8,6 +8,9 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.runtime.saveable.rememberSaveable
 import kotlin.math.roundToInt
 import com.mathis.mandala.app.Editing
+import com.mathis.mandala.app.PreviewSize
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.ui.semantics.onClick
 import androidx.activity.compose.LocalActivity
 import com.mathis.mandala.app.ProState
 import com.mathis.mandala.app.ProRequest
@@ -136,6 +139,10 @@ fun EditorScreen(
     val shownFraming by vm.shownFraming.collectAsStateWithLifecycle()
     val phoneAspect by vm.screenAspect.collectAsStateWithLifecycle()
     val fastPreview by vm.fastPreview.collectAsStateWithLifecycle()
+    val previewSize by vm.previewSize.collectAsStateWithLifecycle()
+    val plainPreview by vm.plainPreview.collectAsStateWithLifecycle()
+    // Holding the preview shows it without the scene effects, only while they are on (UX-1 16).
+    val compare = if (params.effectsLayer.isEnabled) Compare(plainPreview, vm::preparePlainPreview) else null
     val candidate by vm.candidate.collectAsStateWithLifecycle()
     var showMenu by remember { mutableStateOf(false) }
     val proRequest by vm.proRequest.collectAsStateWithLifecycle()
@@ -363,7 +370,7 @@ fun EditorScreen(
                     BoxWithConstraints(Modifier.weight(1f).fillMaxHeight(), contentAlignment = Alignment.TopCenter) {
                         val side = minOf(maxWidth, maxHeight - Sizes.statusLine)
                         Canvas(preview, Modifier.width(side), drawing(params, drawTool, vm), moving(params, selected, moveTarget, vm),
-                            proMark = if (missingPro.isNotEmpty()) vm::showPro else null)
+                            compare = compare, proMark = if (missingPro.isNotEmpty()) vm::showPro else null)
                     }
                     ControlTabs(params, selected, vm, Modifier.width(Spacing.controlsWidth).fillMaxHeight(), pro.owned, onShowPro = { vm.showPro() })
                 }
@@ -375,6 +382,9 @@ fun EditorScreen(
                     preview = preview,
                     header = header,
                     fullSide = minOf(maxWidth - Spacing.lg * 2, canvasMax),
+                    size = previewSize,
+                    onSize = vm::setPreviewSize,
+                    compare = compare,
                     drawing = drawing(params, drawTool, vm),
                     move = moving(params, selected, moveTarget, vm),
                     proMark = if (missingPro.isNotEmpty()) vm::showPro else null,
@@ -440,68 +450,91 @@ private fun moving(params: MandalaParameters, selected: Int, target: MoveTarget?
     }
 }
 
+/** The preview without the scene effects, shown while a finger holds the canvas (UX-1 16). */
+private class Compare(
+    /** Null until drawn; the preview with effects stays until then. */
+    val image: androidx.compose.ui.graphics.ImageBitmap?,
+    /** Called when a finger goes down, so the image is usually ready when the hold counts. */
+    val prepare: () -> Unit,
+)
+
 /**
- * Phones: a button in the image's bottom right corner folds it into a small square at the top left,
- * with what the open tab is about beside it, so the controls get the room; the button, a tap on the
- * small image, or pulling the controls down once they are at the top brings it back (DM-4, variant
- * B). The size stays as chosen while the controls scroll. Folding only scales the shown preview,
- * so it never renders. Drawing and moving keep it large.
+ * Phones: a button in the image's bottom right corner steps it down from full to a middle size and
+ * to a small square at the top left, with what the open tab is about beside it, so the controls get
+ * the room (DM-4, variant B; UX-1 11). The button on the small image, a tap on a smaller image, or
+ * pulling the controls down once they are at the top brings it back; a pull stops at the nearest
+ * size. The size stays as chosen while the controls scroll and across starts. Folding only scales
+ * the shown preview, so it never renders. Drawing and moving keep it large.
  */
 @Composable
 private fun FoldingCanvas(
     preview: PreviewState,
     header: ControlHeader?,
     fullSide: androidx.compose.ui.unit.Dp,
+    size: PreviewSize,
+    onSize: (PreviewSize) -> Unit,
+    compare: Compare?,
     drawing: DrawingInput?,
     move: MoveInput?,
     proMark: (() -> Unit)?,
     controls: @Composable (Modifier) -> Unit,
 ) {
     val t = LocalTokens.current
-    var small by rememberSaveable { mutableStateOf(false) }
     val pinned = drawing != null || move != null
-    // 0 = full image, 1 = small; follows a pull while the finger is down.
-    val foldAnim = remember { androidx.compose.animation.core.Animatable(if (small) 1f else 0f) }
-    LaunchedEffect(small, pinned) { foldAnim.animateTo(if (small && !pinned) 1f else 0f) }
-    val fold = foldAnim.value
-    val compactSide = fullSide * Editing.COMPACT_CANVAS_FRACTION
-    val range = with(androidx.compose.ui.platform.LocalDensity.current) { (fullSide - compactSide).toPx() }
+    val shown = if (pinned) PreviewSize.FULL else size
+    // The shown side as a fraction of the full one; follows a pull while the finger is down.
+    val scale = remember { androidx.compose.animation.core.Animatable(shown.fraction) }
+    LaunchedEffect(shown) { scale.animateTo(shown.fraction) }
+    val fraction = scale.value
+    val fullPx = with(androidx.compose.ui.platform.LocalDensity.current) { fullSide.toPx() }
     val scope = androidx.compose.runtime.rememberCoroutineScope()
-    // Pulling down past the top of the controls grows the small image with the finger; let go past a
-    // third of the way and it becomes large. Only a drag counts, not a fling that reaches the top.
+    val latestSize by rememberUpdatedState(size)
+    // Pulling down past the top of the controls grows the image with the finger; let go and it takes
+    // the nearest size. Only a drag counts, not a fling that reaches the top.
     val pull = remember { floatArrayOf(0f) }
-    val connection = remember(small, pinned, range) {
+    val connection = remember(pinned, fullPx) {
         object : androidx.compose.ui.input.nestedscroll.NestedScrollConnection {
+            fun follow() {
+                val f = (latestSize.fraction + pull[0] / fullPx).coerceIn(latestSize.fraction, 1f)
+                scope.launch { scale.snapTo(f) }
+            }
+
             override fun onPreScroll(available: Offset, source: androidx.compose.ui.input.nestedscroll.NestedScrollSource): Offset {
                 if (pull[0] <= 0f || available.y >= 0f) return Offset.Zero
                 val used = maxOf(available.y, -pull[0])
                 pull[0] += used
-                scope.launch { foldAnim.snapTo((1f - pull[0] / range).coerceIn(0f, 1f)) }
+                follow()
                 return Offset(0f, used)
             }
 
             override fun onPostScroll(consumed: Offset, available: Offset, source: androidx.compose.ui.input.nestedscroll.NestedScrollSource): Offset {
-                if (!small || pinned || range <= 0f || available.y <= 0f ||
+                if (latestSize == PreviewSize.FULL || pinned || fullPx <= 0f || available.y <= 0f ||
                     source != androidx.compose.ui.input.nestedscroll.NestedScrollSource.UserInput
                 ) return Offset.Zero
                 pull[0] += available.y
-                scope.launch { foldAnim.snapTo((1f - pull[0] / range).coerceIn(0f, 1f)) }
+                follow()
                 return Offset(0f, available.y)
             }
 
             override suspend fun onPreFling(available: androidx.compose.ui.unit.Velocity): androidx.compose.ui.unit.Velocity {
                 if (pull[0] <= 0f) return androidx.compose.ui.unit.Velocity.Zero
-                val enough = pull[0] > range / 3f
                 pull[0] = 0f
-                if (enough) small = false else foldAnim.animateTo(1f)
+                val f = scale.value
+                val nearest = PreviewSize.entries.filter { it.fraction >= latestSize.fraction }.minBy { kotlin.math.abs(it.fraction - f) }
+                if (nearest != latestSize) onSize(nearest) else scale.animateTo(latestSize.fraction)
                 return available
             }
         }
     }
+    // Past halfway from full to the middle size the status gives way to the tab's title beside the
+    // image; past halfway from the middle to the small size the Pro mark is too small to tap.
+    val towardsMiddle = (PreviewSize.FULL.fraction + PreviewSize.MIDDLE.fraction) / 2f
+    val towardsSmall = (PreviewSize.MIDDLE.fraction + PreviewSize.SMALL.fraction) / 2f
+    val headerAlpha = ((towardsMiddle - fraction) / (towardsMiddle - PreviewSize.MIDDLE.fraction)).coerceIn(0f, 1f)
     BoxWithConstraints(Modifier.fillMaxSize().padding(horizontal = Spacing.lg)) {
-        val side = fullSide + (compactSide - fullSide) * fold
-        // Centred when full (if narrower than the screen), at the left when small.
-        val inset = (maxWidth - fullSide) / 2 * (1f - fold)
+        val side = fullSide * fraction
+        // Centred when full (if narrower than the screen), at the left when smaller.
+        val inset = (maxWidth - fullSide) / 2 * ((fraction - PreviewSize.SMALL.fraction) / (1f - PreviewSize.SMALL.fraction))
         Column(Modifier.fillMaxSize().nestedScroll(connection)) {
             Row(verticalAlignment = Alignment.Top, modifier = Modifier.fillMaxWidth().padding(start = inset)) {
                 Canvas(
@@ -509,20 +542,25 @@ private fun FoldingCanvas(
                     Modifier.width(side),
                     drawing,
                     move,
-                    showStatus = fold < 0.5f,
-                    onTap = if (small && !pinned) ({ small = false }) else null,
-                    // Too small to tap when folded; the controls still carry their marks.
-                    proMark = proMark.takeIf { fold < 0.5f },
+                    compare = compare,
+                    showStatus = fraction > towardsMiddle,
+                    // The small image is too small for the labels on it; the controls still carry their marks.
+                    showLabels = fraction > towardsSmall,
+                    onTap = if (size != PreviewSize.FULL && !pinned) ({ onSize(PreviewSize.FULL) }) else null,
+                    proMark = proMark,
                 ) {
                     // Bottom right, where the thumb reaches it.
                     if (!pinned) {
+                        val small = size == PreviewSize.SMALL
                         Box(
                             Modifier
                                 .align(Alignment.BottomEnd)
                                 .padding(Spacing.xs)
                                 .clip(CircleShape)
                                 .background(t.surface)
-                                .clickable(onClickLabel = if (small) stringResource(R.string.editor_show_large) else stringResource(R.string.editor_make_small)) { small = !small }
+                                .clickable(onClickLabel = if (small) stringResource(R.string.editor_show_large) else stringResource(R.string.editor_make_small)) {
+                                    onSize(if (small) PreviewSize.FULL else PreviewSize.entries[size.ordinal + 1])
+                                }
                                 .padding(Spacing.xs),
                         ) {
                             Icon(
@@ -534,9 +572,9 @@ private fun FoldingCanvas(
                         }
                     }
                 }
-                if (fold > 0.5f && header != null) {
+                if (headerAlpha > 0f && header != null) {
                     Column(
-                        Modifier.padding(start = Spacing.md).alpha(((fold - 0.5f) * 2f).coerceIn(0f, 1f)),
+                        Modifier.padding(start = Spacing.md).alpha(headerAlpha),
                         verticalArrangement = Arrangement.spacedBy(Spacing.xs),
                     ) {
                         Text(header.title, style = MaterialTheme.typography.bodyMedium, maxLines = 1)
@@ -555,7 +593,9 @@ private fun Canvas(
     modifier: Modifier,
     drawing: DrawingInput? = null,
     move: MoveInput? = null,
+    compare: Compare? = null,
     showStatus: Boolean = true,
+    showLabels: Boolean = true,
     onTap: (() -> Unit)? = null,
     /** Shown while the mandala uses Pro features the user does not own (ADR-0016); opens the Pro sheet. */
     proMark: (() -> Unit)? = null,
@@ -565,18 +605,42 @@ private fun Canvas(
     val showLarge = stringResource(R.string.editor_show_large)
     val proMarkAction = stringResource(R.string.editor_pro_mark_action)
     val proMarkDescription = stringResource(R.string.editor_pro_mark_description)
+    // Drawing and moving take the fingers; holding only counts outside them.
+    val holdable = compare.takeIf { drawing == null && move == null }
+    var holding by remember { mutableStateOf(false) }
+    val comparing = holding && holdable != null
+    val latestCompare by rememberUpdatedState(holdable)
+    val latestTap by rememberUpdatedState(onTap)
     Column(modifier.padding(bottom = Spacing.xs), verticalArrangement = Arrangement.spacedBy(Spacing.xs)) {
         Box(
-            Modifier.fillMaxWidth().aspectRatio(1f).clip(RoundedCornerShape(Radius.md)).background(t.canvas)
-                .then(if (onTap != null) Modifier.clickable(onClickLabel = showLarge, onClick = onTap) else Modifier),
+            Modifier.fillMaxWidth().aspectRatio(1f).clip(RoundedCornerShape(Radius.md)).background(t.canvas),
             contentAlignment = Alignment.BottomCenter,
         ) {
-            preview.image?.let {
-                Image(it, contentDescription = stringResource(R.string.editor_preview), contentScale = ContentScale.Fit, modifier = Modifier.fillMaxSize())
+            // A tap shows a smaller image large; a long press shows it without the scene effects until
+            // the finger lifts. The buttons and overlays on top keep their own touches.
+            Box(
+                Modifier.fillMaxSize()
+                    .then(
+                        if (onTap != null || holdable != null) Modifier.pointerInput(onTap != null, holdable != null) {
+                            detectTapGestures(
+                                onPress = {
+                                    latestCompare?.prepare?.invoke()
+                                    try { tryAwaitRelease() } finally { holding = false }
+                                },
+                                onLongPress = if (holdable != null) ({ holding = true }) else null,
+                                onTap = if (onTap != null) ({ latestTap?.invoke() }) else null,
+                            )
+                        } else Modifier,
+                    )
+                    .then(if (onTap != null) Modifier.semantics { onClick(label = showLarge) { onTap(); true } } else Modifier),
+            ) {
+                (if (comparing) holdable?.image ?: preview.image else preview.image)?.let {
+                    Image(it, contentDescription = stringResource(R.string.editor_preview), contentScale = ContentScale.Fit, modifier = Modifier.fillMaxSize())
+                }
             }
             if (drawing != null) DrawingOverlay(drawing, t.accent)
             if (move != null) MoveOverlay(move, t.accent, t.canvas)
-            if (proMark != null) {
+            if (proMark != null && showLabels) {
                 Text(
                     "Pro",
                     style = MaterialTheme.typography.labelLarge,
@@ -591,8 +655,21 @@ private fun Canvas(
                         .semantics { contentDescription = proMarkDescription },
                 )
             }
+            if (comparing && showLabels) {
+                Text(
+                    stringResource(R.string.editor_without_effects),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = t.textMuted,
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(Spacing.sm)
+                        .clip(CircleShape)
+                        .background(t.surface)
+                        .padding(horizontal = Spacing.md, vertical = Spacing.xs),
+                )
+            }
             corner()
-            if (preview.rendering) {
+            if (preview.rendering || comparing && holdable?.image == null) {
                 LinearProgressIndicator(Modifier.fillMaxWidth().height(Sizes.progress))
             }
         }

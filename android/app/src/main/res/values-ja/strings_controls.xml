@@ -199,6 +199,7 @@
     <string name="controls_smoother">スムーズ</string>
     <string name="controls_applies_to">適用先</string>
     <string name="controls_reach_mandala">曼荼羅</string>
+    <string name="controls_effects_hold_hint">プレビューを長押しすると、エフェクトなしで表示されます。</string>
 
     <!-- Own palettes (ADR-0021) -->
     <string name="controls_my_palettes">マイパレット</string>

@@ -203,6 +203,7 @@
     <string name="controls_smoother">Suavizado</string>
     <string name="controls_applies_to">Se aplica a</string>
     <string name="controls_reach_mandala">Mandala</string>
+    <string name="controls_effects_hold_hint">Mantén pulsada la vista previa para verla sin efectos.</string>
 
     <!-- Own palettes (ADR-0021) -->
     <string name="controls_my_palettes">Mis paletas</string>
