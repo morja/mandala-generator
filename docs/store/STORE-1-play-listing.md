@@ -99,7 +99,9 @@ The Reddit and launch plan is [MKT-1](../MKT-1-reddit-and-launch-plan.md).
 
 ## Release notes for 1.7.0 (code 13)
 
-Prepared 26 October 2026 on `main` after `android/scripts/check-full`. Changes since 1.6.0: UI in ten languages (ADR-0017, ADR-0019), home screen widget (ADR-0020), own palettes (ADR-0021), moving picture as MP4 and live wallpaper layers turning on their own (Pro, ADR-0014), calmer save sheet, Scene and Text tabs, and a Guide entry in the menu that opens the website guide.
+**Submitted to production on 26 October 2026** through the API (`docs/store/play/play_release.py`), with a full rollout (`completed`). A fresh API read verified code 13 on the production track with English and German notes. Public store availability remains subject to Google's review. Public source tag: `android-v1.7.0` at `725db7d`. Validation: `android/scripts/check-full` on `main`, signed `bundleRelease` (upload key CN=Mathis Koblin), package and version checked in the bundle manifest. Bundle SHA-256: `bd354593ac4bd22be776ae5259e2628cb2d4a199a8d32eb09044f20d24f0e198`.
+
+The same evening every store listing (29 languages) got a paragraph with the guide link before the open-source line (`docs/store/play/play_guide_line.py`); German links to the German guide, the others to the English one, saying so. A fresh read verified the link in all 29. Changes since 1.6.0: UI in ten languages (ADR-0017, ADR-0019), home screen widget (ADR-0020), own palettes (ADR-0021), moving picture as MP4 and live wallpaper layers turning on their own (Pro, ADR-0014), calmer save sheet, Scene and Text tabs, and a Guide entry in the menu that opens the website guide.
 
 English:
 
