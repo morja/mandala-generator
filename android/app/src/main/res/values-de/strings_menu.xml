@@ -45,6 +45,7 @@
     <string name="menu_theme">Design</string>
     <string name="menu_theme_dark">Dunkel</string>
     <string name="menu_theme_light">Hell</string>
+    <string name="menu_guide">Anleitung</string>
     <string name="menu_about">Über</string>
 
     <!-- Menu: comparing the new mandala with the current one -->

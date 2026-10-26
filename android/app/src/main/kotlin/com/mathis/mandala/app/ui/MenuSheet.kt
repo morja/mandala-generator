@@ -1,8 +1,5 @@
 package com.mathis.mandala.app.ui
 
-import com.mathis.mandala.core.Favorite
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.material3.TextButton
 import androidx.annotation.StringRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -12,6 +9,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -36,6 +34,7 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -49,6 +48,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -62,6 +63,7 @@ import com.mathis.mandala.app.ui.theme.LocalTokens
 import com.mathis.mandala.app.ui.theme.Radius
 import com.mathis.mandala.app.ui.theme.Sizes
 import com.mathis.mandala.app.ui.theme.Spacing
+import com.mathis.mandala.core.Favorite
 import com.mathis.mandala.core.MandalaParameters
 import com.mathis.mandala.core.VectorExport
 
@@ -276,8 +278,18 @@ private fun MainRows(lightTheme: Boolean, actions: MenuActions, onPage: (MenuPag
             ThemeChoice(lightTheme, actions.onLightTheme)
         }
         HorizontalDivider(color = t.outline)
+        GuideRow()
+        HorizontalDivider(color = t.outline)
         MenuRow(EditorIcons.Info, stringResource(R.string.menu_about), onClick = actions.onAbout) { Chevron() }
     }
+}
+
+/** The guide on the website: German pages for German, English for every other language. */
+@Composable
+private fun GuideRow() {
+    val uriHandler = LocalUriHandler.current
+    val language = if (LocalConfiguration.current.locales[0].language == "de") "de" else "en"
+    MenuRow(EditorIcons.Help, stringResource(R.string.menu_guide), onClick = { uriHandler.openUri("https://www.tearoom.one/$language/apps/dahlia/help") }) { Chevron() }
 }
 
 /** A page's top: back to the menu, its title, and a few lines on what it is for. */

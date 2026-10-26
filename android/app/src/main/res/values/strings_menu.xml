@@ -45,6 +45,7 @@
     <string name="menu_theme">Theme</string>
     <string name="menu_theme_dark">Dark</string>
     <string name="menu_theme_light">Light</string>
+    <string name="menu_guide">Guide</string>
     <string name="menu_about">About</string>
 
     <!-- Menu: comparing the new mandala with the current one -->

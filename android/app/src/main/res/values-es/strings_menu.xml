@@ -47,6 +47,7 @@
     <string name="menu_theme">Tema</string>
     <string name="menu_theme_dark">Oscuro</string>
     <string name="menu_theme_light">Claro</string>
+    <string name="menu_guide">Guía</string>
     <string name="menu_about">Información</string>
 
     <!-- Menu: comparing the new mandala with the current one -->
