@@ -199,4 +199,21 @@
     <string name="controls_smoother">부드럽게</string>
     <string name="controls_applies_to">적용 대상</string>
     <string name="controls_reach_mandala">만다라</string>
+
+    <!-- Own palettes (ADR-0020) -->
+    <string name="controls_my_palettes">내 팔레트</string>
+    <string name="controls_in_this_picture">이 이미지에 있음</string>
+    <string name="controls_palette_new">새 팔레트</string>
+    <string name="controls_palette_edit">팔레트 편집</string>
+    <string name="controls_edit">편집</string>
+    <string name="controls_palette_keep">내 팔레트에 추가</string>
+    <string name="controls_palette_name">이름</string>
+    <string name="controls_palette_default_name">내 팔레트 %1$d</string>
+    <string name="controls_palette_from_picture">이미지에서</string>
+    <string name="controls_palette_add_colour">색 추가</string>
+    <string name="controls_palette_remove_colour">색 삭제</string>
+    <string name="controls_palette_hint">색을 탭하여 바꾸고, 끌어서 옮기세요.</string>
+    <string name="controls_palette_colour">색 %1$d</string>
+    <string name="controls_cancel">취소</string>
+    <string name="controls_palette_save">저장</string>
 </resources>

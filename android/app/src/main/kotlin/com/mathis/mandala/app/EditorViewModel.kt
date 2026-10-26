@@ -9,6 +9,7 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.mathis.mandala.app.Editing.addLayer
+import com.mathis.mandala.app.Editing.changeOwnPalettes
 import com.mathis.mandala.app.Randomize.randomAll
 import com.mathis.mandala.app.Randomize.randomLayer
 import com.mathis.mandala.app.Randomize.randomVariant
@@ -47,6 +48,9 @@ import com.mathis.mandala.core.Framing
 import com.mathis.mandala.core.Image8
 import com.mathis.mandala.core.LayerCache
 import com.mathis.mandala.core.MacFile
+import com.mathis.mandala.core.CustomPalette
+import com.mathis.mandala.core.CustomPaletteStop
+import com.mathis.mandala.core.OwnPalettes
 import com.mathis.mandala.core.Quote
 import com.mathis.mandala.core.Quotes
 import com.mathis.mandala.core.TextLayerSettings
@@ -507,6 +511,57 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         val next = change(_myQuotes.value)
         _myQuotes.value = next
         viewModelScope.launch(Dispatchers.IO) { runCatching { myQuotesStore.save(next) } }
+    }
+
+    private val myPalettesStore = MyPalettesStore(File(application.filesDir, "palettes.json"))
+    private val _myPalettes = MutableStateFlow(myPalettesStore.load())
+
+    /** The user's own palettes, in the order made (ADR-0020). */
+    val myPalettes: StateFlow<List<CustomPalette>> = _myPalettes.asStateFlow()
+
+    /** A new id in the Mac's form (an upper-case UUID). */
+    fun newPaletteId(): String = UUID.randomUUID().toString().uppercase()
+
+    /** Saves an own palette, new or changed; layers and the emblem using it take the new version. */
+    fun saveMyPalette(edited: CustomPalette) {
+        // The Mac's palettes.json needs an id on every stop.
+        val palette = edited.copy(stops = edited.stops.map { if (it.id.isEmpty()) it.copy(id = newPaletteId()) else it })
+        changeMyPalettes { MyPalettes.put(it, palette) }
+        _params.update { p -> p.changeOwnPalettes { if (it.id == palette.id) palette else it } }
+    }
+
+    /** Deletes an own palette; layers using it go back to the built-in palette that looks most like it. */
+    fun deleteMyPalette(id: String) {
+        changeMyPalettes { MyPalettes.remove(it, id) }
+        _params.update { p -> p.changeOwnPalettes { if (it.id == id) null else it } }
+    }
+
+    /** Keeps a palette that came with a favourite or a file; a new id if one of the user's has its id. */
+    fun keepPalette(palette: CustomPalette) {
+        val known = _myPalettes.value.any { it.id == palette.id } || palette.id.isEmpty()
+        val kept = (if (known) palette.copy(id = newPaletteId()) else palette)
+            .let { p -> p.copy(stops = p.stops.map { if (it.id.isEmpty()) it.copy(id = newPaletteId()) else it }) }
+        changeMyPalettes { MyPalettes.put(it, kept) }
+        _params.update { p -> p.changeOwnPalettes { if (it == palette) kept else it } }
+    }
+
+    /** Colours from the picture as it is shown now, dark to bright; nothing while there is no picture. */
+    fun coloursFromPicture(onResult: (List<CustomPaletteStop>) -> Unit) {
+        val image = _preview.value.image ?: return
+        viewModelScope.launch {
+            val stops = withContext(Dispatchers.Default) {
+                val pixels = IntArray(image.width * image.height)
+                image.readPixels(pixels)
+                OwnPalettes.fromPixels(pixels).map { it.copy(id = newPaletteId()) }
+            }
+            onResult(stops)
+        }
+    }
+
+    private fun changeMyPalettes(change: (List<CustomPalette>) -> List<CustomPalette>) {
+        val next = change(_myPalettes.value)
+        _myPalettes.value = next
+        viewModelScope.launch(Dispatchers.IO) { runCatching { myPalettesStore.save(next) } }
     }
 
     /** Uses a picked photo as the background (copied into the app's files). */

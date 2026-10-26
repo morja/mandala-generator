@@ -83,6 +83,7 @@ import com.mathis.mandala.app.ui.theme.Spacing
 import com.mathis.mandala.core.BaseLayerSettings
 import com.mathis.mandala.core.BaseLayerType
 import com.mathis.mandala.core.BuiltInPalettes
+import com.mathis.mandala.core.OwnPalettes
 import com.mathis.mandala.core.DrawingLayerSettings
 import com.mathis.mandala.core.EffectsLayerSettings
 import com.mathis.mandala.core.EmblemFlowerVariant
@@ -223,7 +224,7 @@ private fun LayersTab(params: MandalaParameters, selected: Int, vm: EditorViewMo
         Box(Modifier.weight(1f))
         IconButton(onClick = vm::randomizeSelected) { Icon(EditorIcons.DieOne, contentDescription = stringResource(R.string.controls_layers_randomize, selected + 1), tint = LocalTokens.current.accent) }
     }
-    LayerControls(layers[selected], vm::updateSelected, position, onVary = vm::varySelected, onReseed = vm::reseedSelected)
+    LayerControls(layers[selected], selected, vm, vm::updateSelected, position, onVary = vm::varySelected, onReseed = vm::reseedSelected)
 }
 
 /** A muted line saying what comes with Pro, with a link to the Pro sheet. */
@@ -290,7 +291,7 @@ private fun LayerRow(
     onMoveDown: () -> Unit,
 ) {
     val t = LocalTokens.current
-    val palette = BuiltInPalettes.all[layer.paletteIndex.coerceIn(0, BuiltInPalettes.all.lastIndex)]
+    val palette = OwnPalettes.resolve(layer.paletteIndex, layer.customPalette, BuiltInPalettes.all)
     Row(
         Modifier
             .fillMaxWidth()
@@ -322,7 +323,7 @@ private fun LayerRow(
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun LayerControls(layer: StyleLayer, update: ((StyleLayer) -> StyleLayer) -> Unit, position: PositionInput, onVary: () -> Unit, onReseed: () -> Unit) {
+private fun LayerControls(layer: StyleLayer, layerIndex: Int, vm: EditorViewModel, update: ((StyleLayer) -> StyleLayer) -> Unit, position: PositionInput, onVary: () -> Unit, onReseed: () -> Unit) {
     val t = LocalTokens.current
     Group(stringResource(R.string.controls_style), summary = stringResource(layer.style.labelRes)) {
         RandomActionRow(stringResource(R.string.menu_die_variation), stringResource(R.string.controls_variation_detail), stringResource(R.string.controls_variation_description), onVary)
@@ -348,10 +349,10 @@ private fun LayerControls(layer: StyleLayer, update: ((StyleLayer) -> StyleLayer
             }
         }
     }
-    val palette = BuiltInPalettes.all[layer.paletteIndex.coerceIn(0, BuiltInPalettes.all.lastIndex)]
-    Group(stringResource(R.string.controls_palette), summary = palette.name) {
-        PaletteSwatches(layer.paletteIndex) { index -> update { it.copy(paletteIndex = index) } }
-    }
+    PaletteGroup(
+        stringResource(R.string.controls_palette), layer.paletteIndex, layer.customPalette, vm, editorKey = layerIndex,
+        apply = { index, own -> update { it.copy(paletteIndex = index, customPalette = own) } },
+    )
     Group(stringResource(R.string.controls_blending), summary = blendSummary(layer.blendMode, layer.opacity)) {
         BlendChips(layer.blendMode) { m -> update { it.copy(blendMode = m) } }
         ValueSlider(stringResource(R.string.controls_opacity), layer.opacity, default = StyleLayer().opacity) { v -> update { it.copy(opacity = v) } }
@@ -643,9 +644,10 @@ private fun EmblemTab(em: EmblemLayerSettings, vm: EditorViewModel, position: Po
         }
     }
     PositionGroup(em.offsetX, em.offsetY, MoveTarget.EMBLEM, position) { x, y -> update { it.copy(offsetX = x, offsetY = y) } }
-    val palette = BuiltInPalettes.all[em.paletteIndex.coerceIn(0, BuiltInPalettes.all.lastIndex)]
-    Group(stringResource(R.string.controls_colour), summary = palette.name) {
-        PaletteSwatches(em.paletteIndex) { index -> update { it.copy(paletteIndex = index) } }
+    PaletteGroup(
+        stringResource(R.string.controls_colour), em.paletteIndex, em.customPalette, vm, editorKey = "emblem",
+        apply = { index, own -> update { it.copy(paletteIndex = index, customPalette = own) } },
+    ) {
         ValueSlider(stringResource(R.string.controls_position), em.colorPosition, default = defaults.colorPosition) { v -> update { it.copy(colorPosition = v) } }
         ValueSlider(stringResource(R.string.controls_spread), em.colorSpread, default = defaults.colorSpread) { v -> update { it.copy(colorSpread = v) } }
         ValueSlider(stringResource(R.string.controls_glow), em.glow, default = defaults.glow) { v -> update { it.copy(glow = v) } }
@@ -867,26 +869,12 @@ private fun Words(
             }
         }
         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.sm), modifier = Modifier.padding(top = Spacing.md, bottom = Spacing.sm)) {
-            WordsAction(EditorIcons.QuoteList, stringResource(R.string.controls_collection), enabled = true, onClick = onChoose)
-            WordsAction(EditorIcons.NewQuote, stringResource(R.string.controls_new_quote), enabled = true) { editing = false; onNewQuote() }
-            WordsAction(if (saved) EditorIcons.Kept else EditorIcons.Keep, stringResource(if (saved) R.string.controls_kept else R.string.controls_keep),
+            ActionTile(EditorIcons.QuoteList, stringResource(R.string.controls_collection), enabled = true, onClick = onChoose)
+            ActionTile(EditorIcons.NewQuote, stringResource(R.string.controls_new_quote), enabled = true) { editing = false; onNewQuote() }
+            ActionTile(if (saved) EditorIcons.Kept else EditorIcons.Keep, stringResource(if (saved) R.string.controls_kept else R.string.controls_keep),
                 enabled = text.text.isNotBlank() && !saved, onClick = onKeep)
         }
         SwitchRow(stringResource(R.string.controls_show_author), text.showAuthor) { a -> update { it.copy(showAuthor = a) } }
-    }
-}
-
-@Composable
-private fun RowScope.WordsAction(icon: ImageVector, label: String, enabled: Boolean, onClick: () -> Unit) {
-    val t = LocalTokens.current
-    Column(
-        Modifier.weight(1f).clip(RoundedCornerShape(Radius.md)).background(t.surfaceRaised)
-            .clickable(enabled = enabled, role = Role.Button, onClick = onClick).padding(vertical = Spacing.md),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(Spacing.xs),
-    ) {
-        Icon(icon, contentDescription = null, tint = if (enabled) t.accent else t.textMuted)
-        Text(label, style = MaterialTheme.typography.labelMedium, color = if (enabled) t.text else t.textMuted, maxLines = 1)
     }
 }
 

@@ -199,4 +199,21 @@
     <string name="controls_smoother">平滑</string>
     <string name="controls_applies_to">应用于</string>
     <string name="controls_reach_mandala">曼陀罗</string>
+
+    <!-- Own palettes (ADR-0020) -->
+    <string name="controls_my_palettes">我的调色板</string>
+    <string name="controls_in_this_picture">此图片中</string>
+    <string name="controls_palette_new">新建调色板</string>
+    <string name="controls_palette_edit">编辑调色板</string>
+    <string name="controls_edit">编辑</string>
+    <string name="controls_palette_keep">加入我的调色板</string>
+    <string name="controls_palette_name">名称</string>
+    <string name="controls_palette_default_name">我的调色板 %1$d</string>
+    <string name="controls_palette_from_picture">取自图片</string>
+    <string name="controls_palette_add_colour">添加颜色</string>
+    <string name="controls_palette_remove_colour">移除颜色</string>
+    <string name="controls_palette_hint">轻点颜色可更改，拖动可移动。</string>
+    <string name="controls_palette_colour">颜色 %1$d</string>
+    <string name="controls_cancel">取消</string>
+    <string name="controls_palette_save">保存</string>
 </resources>

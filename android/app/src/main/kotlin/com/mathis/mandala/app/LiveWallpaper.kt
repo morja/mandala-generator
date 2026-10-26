@@ -300,11 +300,11 @@ class LiveWallpaperService : WallpaperService() {
         /** Fewer threads, less memory at once; the wallpaper is not in a hurry. */
         const val MAX_THREADS = 4
 
-        /** All layers `steps` palettes on; the mandala's colours change, its lines stay. */
+        /** All layers `steps` palettes on (own palettes give way to built-in ones); the mandala's colours change, its lines stay. */
         fun shifted(params: MandalaParameters, steps: Int): MandalaParameters {
             if (steps == 0) return params
             val n = BuiltInPalettes.all.size
-            return params.copy(layers = params.layers.map { it.copy(paletteIndex = (it.paletteIndex + steps).mod(n)) })
+            return params.copy(layers = params.layers.map { it.copy(paletteIndex = (it.paletteIndex + steps).mod(n), customPalette = null) })
         }
 
         /**
