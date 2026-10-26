@@ -30,6 +30,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -380,12 +381,30 @@ private fun LayerControls(layer: StyleLayer, update: ((StyleLayer) -> StyleLayer
 
 @Composable
 private fun SceneTab(params: MandalaParameters, vm: EditorViewModel) {
-    // Effects are used far more than the background, so they come first and open.
+    // Effects are used far more than the background, so they come first; the tab starts with their
+    // switch, as the emblem and text tabs do (DM-12), and the background follows as its own part.
     val base = params.baseLayer
-    EffectsGroup(params.effectsLayer, vm::updateEffects, vm::newEffectsPattern, vm::resetEffects)
-    Group(stringResource(R.string.controls_background), summary = if (base.isEnabled) backgroundName(base.type) else stringResource(R.string.controls_off)) {
-        BackgroundControls(base, vm::updateBackground, vm::useBackgroundImage)
+    val t = LocalTokens.current
+    Effects(params.effectsLayer, vm::updateEffects, vm::newEffectsPattern, vm::resetEffects)
+    HorizontalDivider(color = t.outline, modifier = Modifier.padding(top = Spacing.md))
+    val switchBackground: (Boolean) -> Unit = { on ->
+        vm.updateBackground { b ->
+            when {
+                !on -> b.copy(isEnabled = false)
+                // A picture background without its picture starts as Auto instead.
+                b.type == BaseLayerType.IMAGE && b.imageURL == null || b.type !in Editing.backgrounds -> b.switchedTo(BaseLayerType.AUTO)
+                else -> b.switchedTo(b.type)
+            }
+        }
     }
+    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(top = Spacing.sm)) {
+        Text(
+            stringResource(R.string.controls_background), style = MaterialTheme.typography.bodyMedium,
+            modifier = Modifier.weight(1f).toggleable(value = base.isEnabled, role = Role.Switch, onValueChange = switchBackground),
+        )
+        Switch(checked = base.isEnabled, onCheckedChange = switchBackground)
+    }
+    if (base.isEnabled) BackgroundControls(base, vm::updateBackground, vm::useBackgroundImage)
 }
 
 /** Background behind all layers: off or one of the macOS types, with the fitting sliders. */
@@ -399,7 +418,6 @@ private fun BackgroundControls(
     val pickImage = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri -> uri?.let(useImage) }
     fun choose() = pickImage.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
     FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
-        FilterChip(selected = !base.isEnabled, onClick = { update { it.copy(isEnabled = false) } }, label = { Text(stringResource(R.string.controls_off)) })
         for (type in Editing.backgroundChoices(base)) {
             FilterChip(
                 selected = base.isEnabled && base.type == type,
@@ -467,14 +485,15 @@ private fun backgroundName(type: BaseLayerType) = stringResource(when (type) {
 })
 
 /**
- * Scene effects over the mandala, by default also over the emblem and behind the text (ADR-0018), switched on inside the section; the quick, reliable sliders in
- * four groups and the rarer ones under "More" (TUNE-1). "Fade" sets the `wash` field; the old `fade`
+ * Scene effects over the mandala, by default also over the emblem and behind the text (ADR-0018): their
+ * switch heads the tab, and the quick, reliable sliders follow in four groups, the rarer ones under
+ * "More" (TUNE-1). "Fade" sets the `wash` field; the old `fade`
  * field does almost the same and gets its own slider ("Old fade") only in settings that use it.
- * The die in the heading moves highlights, dimming, erasure, stars and glitter to new places, as the
+ * The die beside the switch moves highlights, dimming, erasure, stars and glitter to new places, as the
  * one on the Mac's card does; it used to sit under "Sparkle", where it read as a glitter-only button.
  */
 @Composable
-private fun EffectsGroup(
+private fun Effects(
     fx: EffectsLayerSettings,
     update: ((EffectsLayerSettings) -> EffectsLayerSettings) -> Unit,
     newPattern: () -> Unit,
@@ -484,42 +503,44 @@ private fun EffectsGroup(
     var showOldFade by rememberSaveable { mutableStateOf(false) }
     LaunchedEffect(fx.fade > 0) { if (fx.fade > 0) showOldFade = true }
     val t = LocalTokens.current
-    Group(stringResource(R.string.controls_effects), summary = if (fx.isEnabled) stringResource(R.string.controls_on) else stringResource(R.string.controls_off), initiallyOpen = true) {
-        // Keep actions inside the section so its closed header is as compact as every other one.
+    val switch: (Boolean) -> Unit = { on -> update { it.copy(isEnabled = on) } }
+    Column {
+        // The label switches too; the die and reset beside it keep their own taps (as in the text tab).
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            Text(stringResource(R.string.controls_show_effects), style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
+            Text(stringResource(R.string.controls_show_effects), style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.weight(1f).toggleable(value = fx.isEnabled, role = Role.Switch, onValueChange = switch))
             if (fx.isEnabled) {
                 IconButton(onClick = newPattern) { Icon(EditorIcons.DieOne,
                     contentDescription = stringResource(R.string.controls_effects_new_pattern), tint = t.accent) }
                 TextButton(onClick = resetAll) { Text(stringResource(R.string.save_reset)) }
             }
-            Switch(checked = fx.isEnabled, onCheckedChange = { on -> update { it.copy(isEnabled = on) } })
+            Switch(checked = fx.isEnabled, onCheckedChange = switch)
         }
         if (!fx.isEnabled) {
             Text(stringResource(R.string.controls_effects_off_note), style = MaterialTheme.typography.bodySmall,
                 color = LocalTokens.current.textMuted)
-            return@Group
+            return@Column
         }
-        Group(stringResource(R.string.glow_light), inset = true, initiallyOpen = true) {
+        Group(stringResource(R.string.glow_light), initiallyOpen = true) {
             ValueSlider(stringResource(R.string.save_brightness), fx.brightness, default = EffectsLayerSettings().brightness) { v -> update { it.copy(brightness = v) } }
             ValueSlider(stringResource(R.string.save_contrast), fx.contrast, default = EffectsLayerSettings().contrast) { v -> update { it.copy(contrast = v) } }
             ValueSlider(stringResource(R.string.controls_vignette), fx.vignette, Editing.Ranges.effectsVignette.floats(), default = EffectsLayerSettings().vignette) { v -> update { it.copy(vignette = v) } }
             ValueSlider(stringResource(R.string.controls_bloom), fx.bloom, Editing.Ranges.effectsBloom.floats(), default = EffectsLayerSettings().bloom) { v -> update { it.copy(bloom = v) } }
         }
-        Group(stringResource(R.string.controls_tone), inset = true) {
+        Group(stringResource(R.string.controls_tone)) {
             ValueSlider(stringResource(R.string.controls_sepia), fx.sepia, default = EffectsLayerSettings().sepia) { v -> update { it.copy(sepia = v) } }
             ValueSlider(stringResource(R.string.controls_fade), fx.wash, default = EffectsLayerSettings().wash) { v -> update { it.copy(wash = v) } }
         }
-        Group(stringResource(R.string.controls_texture), inset = true) {
+        Group(stringResource(R.string.controls_texture)) {
             ValueSlider(stringResource(R.string.controls_clarity), fx.localContrast, default = EffectsLayerSettings().localContrast) { v -> update { it.copy(localContrast = v) } }
             ValueSlider(stringResource(R.string.controls_background_grain), fx.grain, Editing.Ranges.effectsGrain.floats(), default = EffectsLayerSettings().grain) { v -> update { it.copy(grain = v) } }
             ValueSlider(stringResource(R.string.controls_smoother), fx.smoother, default = EffectsLayerSettings().smoother) { v -> update { it.copy(smoother = v) } }
         }
-        Group(stringResource(R.string.controls_sparkle), inset = true) {
+        Group(stringResource(R.string.controls_sparkle)) {
             ValueSlider(stringResource(R.string.controls_stars), fx.stars, default = EffectsLayerSettings().stars) { v -> update { it.copy(stars = v) } }
             ValueSlider(stringResource(R.string.controls_glitter), fx.glitter, Editing.Ranges.effectsGlitter.floats(), default = EffectsLayerSettings().glitter) { v -> update { it.copy(glitter = v) } }
         }
-        Group(stringResource(R.string.editor_more), inset = true) {
+        Group(stringResource(R.string.editor_more)) {
             ValueSlider(stringResource(R.string.controls_highlights), fx.highlights, default = EffectsLayerSettings().highlights) { v -> update { it.copy(highlights = v) } }
             ValueSlider(stringResource(R.string.controls_dimming), fx.dimming, default = EffectsLayerSettings().dimming) { v -> update { it.copy(dimming = v) } }
             ValueSlider(stringResource(R.string.controls_erasure), fx.erasure, default = EffectsLayerSettings().erasure) { v -> update { it.copy(erasure = v) } }
@@ -532,7 +553,7 @@ private fun EffectsGroup(
         val emblem = stringResource(R.string.controls_tab_emblem)
         val text = stringResource(R.string.controls_tab_text)
         val reach = listOfNotNull(stringResource(R.string.controls_reach_mandala), emblem.takeIf { fx.affectsEmblem }, text.takeIf { fx.affectsText })
-        Group(stringResource(R.string.controls_applies_to), summary = reach.joinToString(", "), inset = true) {
+        Group(stringResource(R.string.controls_applies_to), summary = reach.joinToString(", ")) {
             Column(verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
                 SwitchRow(emblem, fx.affectsEmblem) { on -> update { it.withEmblem(on) } }
                 SwitchRow(text, fx.affectsText) { on -> update { it.withText(on) } }
