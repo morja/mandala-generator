@@ -289,7 +289,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
 
     /** Moving and zooming the mandala is part of Pro; without it the mandala stays on its preset. */
     fun setFraming(framing: Framing) {
-        if (pro.state.value.owned) _saveChoice.update { it.copy(framing = framing.clamped(), fit = Fit.HAND) }
+        if (pro.state.value.owned) _saveChoice.update { it.copy(framing = framing.clamped(), fit = Fit.HAND, framedByHand = true) }
     }
 
     fun setTextFollowsMandala(follows: Boolean) = _saveChoice.update { it.copy(textFollowsMandala = follows) }

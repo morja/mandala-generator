@@ -33,6 +33,8 @@ data class SaveChoice(
     val moving: Boolean = false,
     /** The video's length, one of [LayerAnimation.SECONDS]. */
     val videoSeconds: Int = LayerAnimation.DEFAULT_SECONDS,
+    /** Placed by hand at least once; the sheet's hint on how to do it shows until then. */
+    val framedByHand: Boolean = false,
 ) {
     /** The same choice in another format, with the placement that format had last ("Whole" the first time). */
     fun withFormat(next: SaveFormat): SaveChoice {
@@ -94,7 +96,7 @@ class SaveChoiceStore(context: Context) {
             )
         }
         val seconds = prefs.getInt(KEY_VIDEO_SECONDS, LayerAnimation.DEFAULT_SECONDS).takeIf { it in LayerAnimation.SECONDS } ?: LayerAnimation.DEFAULT_SECONDS
-        return SaveChoice(format, framing, prefs.getBoolean(KEY_TEXT_FOLLOWS, false), fit, finish, home, placements, prefs.getBoolean(KEY_MOVING, false), seconds)
+        return SaveChoice(format, framing, prefs.getBoolean(KEY_TEXT_FOLLOWS, false), fit, finish, home, placements, prefs.getBoolean(KEY_MOVING, false), seconds, prefs.getBoolean(KEY_FRAMED_BY_HAND, false))
     }
 
     fun save(choice: SaveChoice) = prefs.edit()
@@ -118,6 +120,7 @@ class SaveChoiceStore(context: Context) {
         .putFloat(KEY_HOME_BRIGHTNESS, choice.homeBrightness.toFloat())
         .putBoolean(KEY_MOVING, choice.moving)
         .putInt(KEY_VIDEO_SECONDS, choice.videoSeconds)
+        .putBoolean(KEY_FRAMED_BY_HAND, choice.framedByHand)
         .apply()
 
     private companion object {
@@ -133,6 +136,7 @@ class SaveChoiceStore(context: Context) {
         const val KEY_HOME_BRIGHTNESS = "home_brightness"
         const val KEY_MOVING = "moving"
         const val KEY_VIDEO_SECONDS = "video_seconds"
+        const val KEY_FRAMED_BY_HAND = "framed_by_hand"
     }
 }
 

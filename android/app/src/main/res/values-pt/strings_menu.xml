@@ -108,10 +108,12 @@
     <string name="about_libraries">Bibliotecas de código aberto</string>
     <string name="about_full_text">Texto completo</string>
     <string name="save_still">Imagem</string>
-    <string name="save_moving">Em movimento</string>
+    <string name="save_moving">Vídeo</string>
     <string name="save_video_seconds">%1$d s</string>
     <string name="save_video">Salvar vídeo</string>
     <string name="save_video_pro_label">Salvar vídeo · Pro</string>
     <string name="save_cancel">Cancelar</string>
     <string name="save_video_pro">Salvar e compartilhar a mandala girando como vídeo faz parte do Pro.</string>
+    <string name="save_length">Duração</string>
+    <string name="save_choose_size">Escolher tamanho</string>
 </resources>
