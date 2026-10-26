@@ -33,10 +33,10 @@
 
     <!-- Editor: Pro sheet -->
     <string name="editor_pro_title">Dahlia Pro</string>
-    <string name="editor_pro_uses_keep">このマンダラはPro機能を使っています。このまま残すにはProを入手してください:</string>
+    <string name="editor_pro_uses_keep">このマンダラはPro機能を使っています。このまま保存、共有、壁紙に設定するにはProを入手してください:</string>
     <string name="editor_pro_uses">このマンダラが使っているPro機能:</string>
     <string name="editor_pro_feature_item">· %1$s</string>
-    <string name="editor_pro_summary">Proでは、最大5つのレイヤー、エンブレム、テキストと引用、レイヤーとエンブレムの移動が使えます。幅2048ピクセルでの保存（マンダラの配置と調整は自由）や、線画としての保存も可能です。壁紙は、ホームとロックのペア、毎日新しい壁紙、ライブ壁紙に対応します。購入前にエディタでレイヤーの追加、エンブレム、引用をお試しいただけます。1回の購入のみで、サブスクリプションはありません。</string>
+    <string name="editor_pro_summary">Proでは、最大5つのレイヤー、エンブレム、テキストと引用、レイヤーとエンブレムの移動が使えます。幅2048ピクセルでの保存（マンダラの配置と調整は自由）、回転する動画、線画としての保存も可能です。壁紙は、ホームとロックのペア、毎日新しい壁紙、ライブ壁紙に対応します。購入前にエディタですべて試し、お気に入りに残せます。1回の購入のみで、サブスクリプションはありません。</string>
     <string name="editor_pro_buy_for">%1$sで購入</string>
     <string name="editor_pro_buy">Proを購入</string>
     <string name="editor_pro_without">Pro機能を外して%1$s</string>

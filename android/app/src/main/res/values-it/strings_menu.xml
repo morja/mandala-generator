@@ -117,7 +117,7 @@
     <string name="save_length">Durata</string>
     <string name="save_choose_size">Scegli dimensione</string>
     <string name="save_format">Formato</string>
-    <string name="save_save_pro">Salva · Pro</string>
     <string name="save_adjust_pro_quote">Luminosità, contrasto, saturazione e la citazione che segue il mandala sono inclusi in Pro.</string>
     <string name="save_adjust_quote_moves">la citazione segue</string>
+    <string name="menu_daily_short">Nuovo ogni giorno</string>
 </resources>

@@ -65,11 +65,11 @@
     <string name="controls_draw_show_spray">Mostrar spray</string>
 
     <!-- Layers tab: group titles, sliders and notes (some shared with other tabs) -->
-    <string name="controls_pro_note_layers">Más de tres capas vienen con Pro. Pruébalas cuanto quieras; para conservar el mandala necesitas Pro.</string>
+    <string name="controls_pro_note_layers">Más de tres capas vienen con Pro. Probarlo y guardarlo como favorito es posible sin Pro.</string>
     <string name="controls_delete">Eliminar</string>
     <string name="controls_about_pro">Acerca de Pro</string>
     <string name="controls_position">Posición</string>
-    <string name="controls_pro_note_position">Mover capas viene con Pro. Pruébalo cuanto quieras; para conservar el mandala necesitas Pro.</string>
+    <string name="controls_pro_note_position">Mover capas viene con Pro. Probarlo y guardarlo como favorito es posible sin Pro.</string>
     <string name="controls_position_hidden_note">Esta capa está oculta. Muéstrala para ver adónde se mueve.</string>
     <string name="controls_across">Horizontal</string>
     <string name="controls_up_and_down">Vertical</string>
@@ -139,7 +139,7 @@
     <!-- Emblem tab -->
     <string name="controls_random_emblem">Emblema al azar</string>
     <string name="controls_emblem_off_note">Un motivo grande en el centro: Om, Árbol de la vida, Flor de la vida, Loto y más.</string>
-    <string name="controls_pro_note_emblem">El emblema viene con Pro. Pruébalo cuanto quieras; para conservar el mandala necesitas Pro.</string>
+    <string name="controls_pro_note_emblem">El emblema viene con Pro. Probarlo y guardarlo como favorito es posible sin Pro.</string>
     <string name="controls_motif">Motivo</string>
     <string name="controls_variant">Variante</string>
     <string name="controls_petals">Pétalos</string>
@@ -163,7 +163,7 @@
     <string name="controls_new_quote">Otra cita</string>
     <string name="controls_keep">Guardar</string>
     <string name="controls_kept">Guardada</string>
-    <string name="controls_pro_note_text">El texto y las citas vienen con Pro. Pruébalos cuanto quieras; para conservar el mandala necesitas Pro.</string>
+    <string name="controls_pro_note_text">El texto y las citas vienen con Pro. Probarlo y guardarlo como favorito es posible sin Pro.</string>
     <string name="controls_text_field">Texto</string>
     <string name="controls_author">Autor</string>
     <string name="controls_show_author">Mostrar autor</string>

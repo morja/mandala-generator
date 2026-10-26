@@ -61,11 +61,11 @@
     <string name="controls_draw_show_spray">스프레이 표시</string>
 
     <!-- Layers tab: group titles, sliders and notes (some shared with other tabs) -->
-    <string name="controls_pro_note_layers">레이어 네 개부터는 Pro 기능입니다. 마음껏 사용해 보세요. 만다라를 간직하려면 Pro가 필요합니다.</string>
+    <string name="controls_pro_note_layers">레이어 네 개부터는 Pro 기능입니다. 사용해 보고 즐겨찾기에 남기는 것은 Pro 없이도 됩니다.</string>
     <string name="controls_delete">삭제</string>
     <string name="controls_about_pro">Pro 정보</string>
     <string name="controls_position">위치</string>
-    <string name="controls_pro_note_position">레이어 이동은 Pro 기능입니다. 마음껏 사용해 보세요. 만다라를 간직하려면 Pro가 필요합니다.</string>
+    <string name="controls_pro_note_position">레이어 이동은 Pro 기능입니다. 사용해 보고 즐겨찾기에 남기는 것은 Pro 없이도 됩니다.</string>
     <string name="controls_position_hidden_note">숨겨진 레이어입니다. 어디로 움직이는지 보려면 레이어를 표시하세요.</string>
     <string name="controls_across">가로</string>
     <string name="controls_up_and_down">세로</string>
@@ -135,7 +135,7 @@
     <!-- Emblem tab -->
     <string name="controls_random_emblem">무작위 엠블럼</string>
     <string name="controls_emblem_off_note">가운데에 크게 그려지는 하나의 모티프: 옴, 생명의 나무, 생명의 꽃, 연꽃 등.</string>
-    <string name="controls_pro_note_emblem">엠블럼은 Pro 기능입니다. 마음껏 사용해 보세요. 만다라를 간직하려면 Pro가 필요합니다.</string>
+    <string name="controls_pro_note_emblem">엠블럼은 Pro 기능입니다. 사용해 보고 즐겨찾기에 남기는 것은 Pro 없이도 됩니다.</string>
     <string name="controls_motif">모티프</string>
     <string name="controls_variant">변형</string>
     <string name="controls_petals">꽃잎</string>
@@ -159,7 +159,7 @@
     <string name="controls_new_quote">다른 명언</string>
     <string name="controls_keep">저장</string>
     <string name="controls_kept">저장됨</string>
-    <string name="controls_pro_note_text">텍스트와 명언은 Pro 기능입니다. 마음껏 사용해 보세요. 만다라를 간직하려면 Pro가 필요합니다.</string>
+    <string name="controls_pro_note_text">텍스트와 명언은 Pro 기능입니다. 사용해 보고 즐겨찾기에 남기는 것은 Pro 없이도 됩니다.</string>
     <string name="controls_text_field">텍스트</string>
     <string name="controls_author">저자</string>
     <string name="controls_show_author">저자 표시</string>

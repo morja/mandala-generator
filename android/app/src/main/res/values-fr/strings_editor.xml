@@ -33,10 +33,10 @@
 
     <!-- Editor: Pro sheet -->
     <string name="editor_pro_title">Dahlia Pro</string>
-    <string name="editor_pro_uses_keep">Ce mandala utilise des fonctionnalités Pro. Pour le garder tel quel, passez à Pro :</string>
+    <string name="editor_pro_uses_keep">Ce mandala utilise des fonctionnalités Pro. Pour l’enregistrer, le partager ou en faire un fond d’écran tel quel, passez à Pro :</string>
     <string name="editor_pro_uses">Ce mandala utilise des fonctionnalités Pro :</string>
     <string name="editor_pro_feature_item">· %1$s</string>
-    <string name="editor_pro_summary">Pro ajoute jusqu\'à cinq calques, des emblèmes, du texte et des citations, ainsi que le déplacement des calques et de l\'emblème. Enregistrez en 2048 pixels de large avec le mandala placé à la main et ajusté, ainsi qu\'en dessin au trait. Fonds d\'écran : accueil et verrouillage en duo, un nouveau chaque jour et un fond d\'écran animé. Essayez plus de calques, des emblèmes et des citations dans l\'éditeur avant d\'acheter. Un seul achat, sans abonnement.</string>
+    <string name="editor_pro_summary">Pro ajoute jusqu’à cinq calques, des emblèmes, du texte et des citations, ainsi que le déplacement des calques et de l’emblème. Enregistrez en 2048 pixels de large avec le mandala placé à la main et ajusté, en vidéo qui tourne et en dessin au trait. Fonds d’écran : accueil et verrouillage en duo, un nouveau chaque jour et un fond d’écran animé. Essayez tout dans l’éditeur et gardez-le en favori avant d’acheter. Un seul achat, sans abonnement.</string>
     <string name="editor_pro_buy_for">Acheter pour %1$s</string>
     <string name="editor_pro_buy">Acheter Pro</string>
     <string name="editor_pro_without">%1$s sans elles</string>

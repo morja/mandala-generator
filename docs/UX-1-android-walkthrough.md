@@ -33,6 +33,7 @@ Layout and consistency
 16. **Compare:** press and hold the preview to see it without scene effects, to judge how much they add.
 17. **Text around the circle:** a quote set along a ring around the mandala, as a text layout next to the centred one.
 18. **History strip:** the states the editor keeps for undo as small pictures to jump back to, like the dice comparison in the menu.
+19. **Play field (Mathis, 26 October 2026):** a square under the picture where one finger, moved around, changes many of a layer's settings at once (top left one look, bottom right another), as a simpler mode, for example for children. Thoughts: two axes can only carry two values, so each corner would be a set of settings and the field blends between them; the corners could come from the dice (four variations of the current layer), so the field explores around what is there. Needs care that it stays one gesture and does not hide the normal controls.
 
 ## Decisions (Mathis, 26 October 2026)
 

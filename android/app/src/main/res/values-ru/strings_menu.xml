@@ -119,7 +119,7 @@
     <string name="save_length">Длина</string>
     <string name="save_choose_size">Выбрать размер</string>
     <string name="save_format">Формат</string>
-    <string name="save_save_pro">Сохранить · Pro</string>
     <string name="save_adjust_pro_quote">Яркость, контраст, насыщенность и цитата, движущаяся с мандалой, доступны в Pro.</string>
     <string name="save_adjust_quote_moves">цитата движется вместе</string>
+    <string name="menu_daily_short">Новые каждый день</string>
 </resources>

@@ -63,11 +63,11 @@
     <string name="controls_draw_show_spray">Spray anzeigen</string>
 
     <!-- Layers tab: group titles, sliders and notes (some shared with other tabs) -->
-    <string name="controls_pro_note_layers">Mehr als drei Ebenen gibt es mit Pro. Probier sie nach Belieben aus; um das Mandala zu behalten, brauchst du Pro.</string>
+    <string name="controls_pro_note_layers">Mehr als drei Ebenen gibt es mit Pro. Ausprobieren und als Favorit behalten geht auch ohne.</string>
     <string name="controls_delete">Löschen</string>
     <string name="controls_about_pro">Über Pro</string>
     <string name="controls_position">Position</string>
-    <string name="controls_pro_note_position">Ebenen verschieben gibt es mit Pro. Probier es nach Belieben aus; um das Mandala zu behalten, brauchst du Pro.</string>
+    <string name="controls_pro_note_position">Ebenen verschieben gibt es mit Pro. Ausprobieren und als Favorit behalten geht auch ohne.</string>
     <string name="controls_position_hidden_note">Diese Ebene ist ausgeblendet. Blende sie ein, um zu sehen, wohin sie sich bewegt.</string>
     <string name="controls_across">Waagerecht</string>
     <string name="controls_up_and_down">Senkrecht</string>
@@ -137,7 +137,7 @@
     <!-- Emblem tab -->
     <string name="controls_random_emblem">Zufälliges Emblem</string>
     <string name="controls_emblem_off_note">Ein großes Motiv in der Mitte: Om, Lebensbaum, Blume des Lebens, Lotus und mehr.</string>
-    <string name="controls_pro_note_emblem">Das Emblem gibt es mit Pro. Probier es nach Belieben aus; um das Mandala zu behalten, brauchst du Pro.</string>
+    <string name="controls_pro_note_emblem">Das Emblem gibt es mit Pro. Ausprobieren und als Favorit behalten geht auch ohne.</string>
     <string name="controls_motif">Motiv</string>
     <string name="controls_variant">Variante</string>
     <string name="controls_petals">Blütenblätter</string>
@@ -161,7 +161,7 @@
     <string name="controls_new_quote">Neues Zitat</string>
     <string name="controls_keep">Merken</string>
     <string name="controls_kept">Gemerkt</string>
-    <string name="controls_pro_note_text">Text und Zitate gibt es mit Pro. Probier sie nach Belieben aus; um das Mandala zu behalten, brauchst du Pro.</string>
+    <string name="controls_pro_note_text">Text und Zitate gibt es mit Pro. Ausprobieren und als Favorit behalten geht auch ohne.</string>
     <string name="controls_text_field">Text</string>
     <string name="controls_author">Autor</string>
     <string name="controls_show_author">Autor anzeigen</string>

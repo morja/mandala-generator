@@ -61,11 +61,11 @@
     <string name="controls_draw_show_spray">スプレーを表示</string>
 
     <!-- Layers tab: group titles, sliders and notes (some shared with other tabs) -->
-    <string name="controls_pro_note_layers">4つ以上のレイヤーはPro機能です。自由にお試しいただけますが、マンダラを残すにはProが必要です。</string>
+    <string name="controls_pro_note_layers">4つ以上のレイヤーはPro機能です。自由にお試しいただけますが、マンダラを残すにはProが必要です。お試しとお気に入りへの保存は自由です。画像保存・共有・壁紙はProで。試すこととお気に入りへの保存はProなしでもできます。</string>
     <string name="controls_delete">削除</string>
     <string name="controls_about_pro">Proについて</string>
     <string name="controls_position">位置</string>
-    <string name="controls_pro_note_position">レイヤーの移動はPro機能です。自由にお試しいただけますが、マンダラを残すにはProが必要です。</string>
+    <string name="controls_pro_note_position">レイヤーの移動はPro機能です。自由にお試しいただけますが、マンダラを残すにはProが必要です。お試しとお気に入りへの保存は自由です。画像保存・共有・壁紙はProで。試すこととお気に入りへの保存はProなしでもできます。</string>
     <string name="controls_position_hidden_note">このレイヤーは非表示です。表示すると移動先を確認できます。</string>
     <string name="controls_across">左右</string>
     <string name="controls_up_and_down">上下</string>
@@ -135,7 +135,7 @@
     <!-- Emblem tab -->
     <string name="controls_random_emblem">ランダムなエンブレム</string>
     <string name="controls_emblem_off_note">中央に大きく描くモチーフ: オーム、生命の樹、フラワーオブライフ、蓮など。</string>
-    <string name="controls_pro_note_emblem">エンブレムはPro機能です。自由にお試しいただけますが、マンダラを残すにはProが必要です。</string>
+    <string name="controls_pro_note_emblem">エンブレムはPro機能です。自由にお試しいただけますが、マンダラを残すにはProが必要です。お試しとお気に入りへの保存は自由です。画像保存・共有・壁紙はProで。試すこととお気に入りへの保存はProなしでもできます。</string>
     <string name="controls_motif">モチーフ</string>
     <string name="controls_variant">バリエーション</string>
     <string name="controls_petals">花びら</string>
@@ -159,7 +159,7 @@
     <string name="controls_new_quote">別の引用</string>
     <string name="controls_keep">保存</string>
     <string name="controls_kept">保存済み</string>
-    <string name="controls_pro_note_text">テキストと引用はPro機能です。自由にお試しいただけますが、マンダラを残すにはProが必要です。</string>
+    <string name="controls_pro_note_text">テキストと引用はPro機能です。自由にお試しいただけますが、マンダラを残すにはProが必要です。お試しとお気に入りへの保存は自由です。画像保存・共有・壁紙はProで。試すこととお気に入りへの保存はProなしでもできます。</string>
     <string name="controls_text_field">テキスト</string>
     <string name="controls_author">著者</string>
     <string name="controls_show_author">著者を表示</string>
