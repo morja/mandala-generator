@@ -203,4 +203,5 @@
     <string name="controls_smoother">Ammorbidisci</string>
     <string name="controls_applies_to">Si applica a</string>
     <string name="controls_reach_mandala">Mandala</string>
+    <string name="controls_effects_hold_hint">Tieni premuta l\'anteprima per vederla senza effetti.</string>
 </resources>

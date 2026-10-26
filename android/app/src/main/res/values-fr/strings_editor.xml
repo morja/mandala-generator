@@ -68,4 +68,5 @@
     <string name="live_palettes_in_turn">Palettes à tour de rôle : la suivante apparaît toutes les dix minutes</string>
     <string name="live_daily_note">Avec le fond d\'écran quotidien activé, le fond d\'écran animé passe en fondu au favori suivant chaque matin.</string>
     <string name="live_set">Définir le fond d\'écran animé</string>
+    <string name="editor_without_effects">Sans effets</string>
 </resources>

@@ -68,4 +68,5 @@
     <string name="live_palettes_in_turn">Paletas em sequência: a próxima surge a cada dez minutos</string>
     <string name="live_daily_note">Com o plano de fundo diário ativado, o plano de fundo animado passa suavemente para o próximo favorito toda manhã.</string>
     <string name="live_set">Definir plano de fundo animado</string>
+    <string name="editor_without_effects">Sem efeitos</string>
 </resources>

@@ -205,4 +205,5 @@
     <string name="controls_smoother">Сглаживание</string>
     <string name="controls_applies_to">Применяется к</string>
     <string name="controls_reach_mandala">Мандала</string>
+    <string name="controls_effects_hold_hint">Удерживайте превью, чтобы увидеть его без эффектов.</string>
 </resources>
