@@ -53,7 +53,7 @@ class MandalaWidget : AppWidgetProvider() {
     companion object {
         const val EXTRA_FAVOURITE_ID = "com.mathis.mandala.app.favourite_id"
 
-        /** Side of the rendered picture: sharp on a 4×4 widget, small enough for a RemoteViews bitmap. */
+        /** Longer side of the rendered picture: sharp on a 4×4 widget, small enough for a RemoteViews bitmap. */
         private const val SIDE = 512
 
         /** Wider than this (width over height) counts as the wide layout with words. */
@@ -76,34 +76,36 @@ class MandalaWidget : AppWidgetProvider() {
             val manager = AppWidgetManager.getInstance(context)
             val favourite = DailyWallpaper.today(context)
             for (id in ids) {
-                val views = if (favourite == null) empty(context) else picture(context, favourite, isWide(manager.getAppWidgetOptions(id)))
+                val views = if (favourite == null) empty(context) else picture(context, favourite, manager.getAppWidgetOptions(id))
                 manager.updateAppWidget(id, views)
             }
         }
 
-        private fun isWide(options: Bundle): Boolean {
-            // In portrait the widget is as wide as its smallest width and as high as its largest height.
+        /** Height over width of the placed widget; in portrait it is as wide as its smallest width and as high as its largest height. */
+        private fun aspect(options: Bundle): Double {
             val width = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH)
             val height = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT)
-            return height > 0 && width.toDouble() / height > WIDE_RATIO
+            return if (width > 0 && height > 0) height.toDouble() / width else 1.0
         }
 
         private fun empty(context: Context) = RemoteViews(context.packageName, R.layout.widget_empty).apply {
             setOnClickPendingIntent(R.id.widget_root, open(context, null))
         }
 
-        private fun picture(context: Context, favourite: Favorite, wide: Boolean): RemoteViews {
+        private fun picture(context: Context, favourite: Favorite, options: Bundle): RemoteViews {
             val params = favourite.parameters
-            return if (!wide) {
+            val aspect = aspect(options)
+            return if (1 / aspect <= WIDE_RATIO) {
                 RemoteViews(context.packageName, R.layout.widget_square).apply {
-                    setImageViewBitmap(R.id.widget_image, render(params))
+                    // Launcher cells are rarely square: the whole mandala in the widget's own shape, the background going on.
+                    setImageViewBitmap(R.id.widget_image, render(params, aspect))
                     setOnClickPendingIntent(R.id.widget_root, open(context, favourite.id))
                 }
             } else {
                 val words = words(context, params)
                 RemoteViews(context.packageName, R.layout.widget_wide).apply {
                     // The words stand beside the picture, so the picture goes without them.
-                    setImageViewBitmap(R.id.widget_image, render(params.copy(textLayer = params.textLayer.copy(isEnabled = false))))
+                    setImageViewBitmap(R.id.widget_image, render(params.copy(textLayer = params.textLayer.copy(isEnabled = false)), 1.0))
                     setTextViewText(R.id.widget_quote, words.text)
                     setTextViewText(R.id.widget_author, if (words.author.isBlank()) "" else "— " + words.author)
                     setViewVisibility(R.id.widget_author, if (words.author.isBlank()) View.GONE else View.VISIBLE)
@@ -112,11 +114,15 @@ class MandalaWidget : AppWidgetProvider() {
             }
         }
 
-        private fun render(params: MandalaParameters) = MandalaRenderer.render(
-            params,
-            RenderOptions(outputSize = SIDE, supersample = false, threads = Runtime.getRuntime().availableProcessors(),
-                textRenderer = AndroidTextRenderer(), imageLoader = AndroidImageLoader()),
-        ).image.toBitmap()
+        /** The picture with `aspect` as height over width, its longer side [SIDE]. */
+        private fun render(params: MandalaParameters, aspect: Double): android.graphics.Bitmap {
+            val (w, h) = if (aspect >= 1) (SIDE / aspect).toInt() to SIDE else SIDE to (SIDE * aspect).toInt()
+            return MandalaRenderer.render(
+                params,
+                RenderOptions(width = w, height = h, supersample = false, threads = Runtime.getRuntime().availableProcessors(),
+                    textRenderer = AndroidTextRenderer(), imageLoader = AndroidImageLoader()),
+            ).image.toBitmap()
+        }
 
         /** The favourite's own words; without any, a quote of the day in the chosen quote languages. */
         internal fun words(context: Context, params: MandalaParameters): Quote {
