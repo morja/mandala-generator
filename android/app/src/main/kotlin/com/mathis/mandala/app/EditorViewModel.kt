@@ -796,7 +796,9 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         val (w, h) = Editing.exportSize(Editing.SaveFormat.SCREEN, _screenAspect.value, large)
         val screen = aspectOf(Editing.SaveFormat.SCREEN)
         val params = _params.value
-        val framing: suspend () -> Framing = { framingFor(if (filled) choice.copy(fit = Fit.FILL) else choice, params, screen, large) }
+        // A wallpaper is always in the screen format, even when the sheet was last left on the square.
+        val shown = choice.copy(format = Editing.SaveFormat.SCREEN)
+        val framing: suspend () -> Framing = { framingFor(if (filled) shown.copy(fit = Fit.FILL) else shown, params, screen, large) }
         val reuse = { k: ExportKey, f: Framing ->
             k.params == params && k.framing == f && k.textFollows == choice.textFollowsMandala && k.finish == effectiveFinish() &&
                 k.width >= screenShortSide && kotlin.math.abs(k.height.toDouble() / k.width - h.toDouble() / w) < 0.002

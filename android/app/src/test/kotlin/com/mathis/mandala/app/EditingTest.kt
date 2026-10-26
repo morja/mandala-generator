@@ -274,6 +274,7 @@ class EditingTest {
         val byHand = Framing(0.4, 0.6, 2.0)
         assertEquals(Framing(), Editing.framingFor(SaveChoice(fit = Fit.WHOLE, framing = byHand), fillZoom = 1.6, pro = true))
         assertEquals(Framing(zoom = 1.6), Editing.framingFor(SaveChoice(fit = Fit.FILL), fillZoom = 1.6, pro = false))
+        assertEquals(Framing(), Editing.framingFor(SaveChoice(format = Editing.SaveFormat.SQUARE, fit = Fit.FILL), fillZoom = 1.6, pro = false))
         // Placed by hand: kept with Pro, "Show whole" without.
         assertEquals(byHand, Editing.framingFor(SaveChoice(fit = Fit.HAND, framing = byHand), fillZoom = 1.6, pro = true))
         assertEquals(Framing(), Editing.framingFor(SaveChoice(fit = Fit.HAND, framing = byHand), fillZoom = 1.6, pro = false))

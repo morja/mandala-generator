@@ -3,7 +3,7 @@
 <resources>
     <!-- Save formats (ADR-0010) -->
     <string name="format_square">Quadratisch</string>
-    <string name="format_screen">Dieser Bildschirm</string>
+    <string name="format_screen">Bildschirm</string>
     <string name="format_4_5">4:5</string>
     <string name="format_3_4">3:4</string>
     <string name="format_2_3">2:3</string>

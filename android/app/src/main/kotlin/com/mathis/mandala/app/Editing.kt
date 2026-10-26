@@ -412,7 +412,8 @@ object Editing {
      */
     fun framingFor(choice: SaveChoice, fillZoom: Double, pro: Boolean): Framing = when {
         choice.fit == Fit.HAND && pro -> choice.framing
-        choice.fit == Fit.FILL -> Framing(zoom = fillZoom)
+        // The square offers no "Fill" (ADR-0010), so a Fill chosen in another shape does not zoom it.
+        choice.fit == Fit.FILL && choice.format != SaveFormat.SQUARE -> Framing(zoom = fillZoom)
         else -> Framing()
     }
 
