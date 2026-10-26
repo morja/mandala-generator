@@ -97,6 +97,10 @@ Since 23 October 2026 the listing exists in seven languages: English (default), 
 
 The Reddit and launch plan is [MKT-1](../MKT-1-reddit-and-launch-plan.md).
 
+## Release notes for 1.7.1 (code 14)
+
+Prepared 26 October 2026 on `main` after `android/scripts/check-full`, on Mathis' release request the same evening. Changes since 1.7.0: the notes on Pro say that trying and keeping as a favourite are free (ADR-0016), and the Pro marks fit a 360 dp phone. Since 1.7.0 may still be in review, the notes repeat its changes. Notes: `docs/store/play/release-notes-1.7.1-en.txt` and `-de.txt`.
+
 ## Release notes for 1.7.0 (code 13)
 
 **Submitted to production on 26 October 2026** through the API (`docs/store/play/play_release.py`), with a full rollout (`completed`). A fresh API read verified code 13 on the production track with English and German notes. Public store availability remains subject to Google's review. Public source tag: `android-v1.7.0` at `725db7d`. Validation: `android/scripts/check-full` on `main`, signed `bundleRelease` (upload key CN=Mathis Koblin), package and version checked in the bundle manifest. Bundle SHA-256: `bd354593ac4bd22be776ae5259e2628cb2d4a199a8d32eb09044f20d24f0e198`.
