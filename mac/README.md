@@ -35,8 +35,8 @@ Find more samples [here](samples/).
 
 - **33 drawing styles** organised into five categories:
   - *Parametric Curves* — Spirograph, Rose Curves, Floral, Butterfly, Epitrochoid, Lissajous, Hypocycloid, Phyllotaxis, Fractal, Superformula, Waves
-  - *Geometric & Pattern* — Geometric, Sacred, Sunburst, Star Burst, String Art, Spider Web, Weave, Radial Mesh, Moiré
-  - *Organic & Flow* — Flow Field, Tendril, Voronoi, **Attractor** (Clifford / De Jong / Bedhead / Hopalong with 30 presets)
+  - *Geometric & Pattern* — Geometric, Sacred, Sunburst, Starburst, String Art, Spider Web, Weave, Radial Mesh, Moiré
+  - *Organic & Flow* — Flow, Tendril, Voronoi, **Attractor** (Clifford / De Jong / Bedhead / Hopalong with 30 presets)
   - *3D* — **Hyperboloid** (ruled surface), **Torus** (parametric wireframe), **Nautilus Shell** (logarithmic spiral), Torus Knot, Sphere Grid, Tesseract
   - *Special* — Universe, Symbols, Mixed
 - **3D styles** — Hyperboloid, Torus, and Nautilus Shell are rendered as tilted wireframe / spiral projections with depth shading (front faces bright, back faces dim at 8%) and per-symmetry brightness normalisation to prevent centre overexposure at high symmetry counts

@@ -14,19 +14,19 @@
     <string name="style_wave_interference">Волны</string>
     <string name="style_geometric">Геометрия</string>
     <string name="style_sacred_geometry">Сакральная</string>
-    <string name="style_sunburst">Солнечные лучи</string>
-    <string name="style_star_burst">Звёздная вспышка</string>
+    <string name="style_sunburst">Солнце</string>
+    <string name="style_star_burst">Звезда</string>
     <string name="style_string_art">Стринг-арт</string>
     <string name="style_spider_web">Паутина</string>
     <string name="style_weave">Плетение</string>
     <string name="style_radial_mesh">Радиальная сетка</string>
     <string name="style_moire">Муар</string>
-    <string name="style_flow_field">Поле течений</string>
+    <string name="style_flow_field">Течение</string>
     <string name="style_tendril">Усики</string>
     <string name="style_voronoi">Вороной</string>
     <string name="style_strange_attractor">Аттрактор</string>
     <string name="style_constellation_web">Созвездие</string>
-    <string name="style_deep_nebula">Глубокая туманность</string>
+    <string name="style_deep_nebula">Туманность</string>
     <string name="style_interference_bloom">Интерференция</string>
     <string name="style_hyperboloid">Гиперболоид</string>
     <string name="style_torus">Тор</string>
@@ -70,6 +70,6 @@
     <string name="pro_feature_emblem">Эмблема</string>
     <string name="pro_feature_text">Текст</string>
     <string name="pro_feature_moved_layers">Перемещённые слои</string>
-    <string name="style_petal_rings">Кольца лепестков</string>
-    <string name="style_loop_rings">Кольца петель</string>
+    <string name="style_petal_rings">Лепестки</string>
+    <string name="style_loop_rings">Петли</string>
 </resources>

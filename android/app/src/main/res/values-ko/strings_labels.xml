@@ -15,18 +15,18 @@
     <string name="style_geometric">기하학</string>
     <string name="style_sacred_geometry">신성</string>
     <string name="style_sunburst">햇살</string>
-    <string name="style_star_burst">별빛 폭발</string>
+    <string name="style_star_burst">별</string>
     <string name="style_string_art">스트링 아트</string>
     <string name="style_spider_web">거미줄</string>
     <string name="style_weave">직조</string>
     <string name="style_radial_mesh">방사형 그물</string>
     <string name="style_moire">무아레</string>
-    <string name="style_flow_field">흐름장</string>
+    <string name="style_flow_field">흐름</string>
     <string name="style_tendril">덩굴손</string>
     <string name="style_voronoi">보로노이</string>
     <string name="style_strange_attractor">끌개</string>
     <string name="style_constellation_web">별자리</string>
-    <string name="style_deep_nebula">깊은 성운</string>
+    <string name="style_deep_nebula">성운</string>
     <string name="style_interference_bloom">간섭</string>
     <string name="style_hyperboloid">쌍곡면</string>
     <string name="style_torus">토러스</string>
@@ -70,6 +70,6 @@
     <string name="pro_feature_emblem">엠블럼</string>
     <string name="pro_feature_text">텍스트</string>
     <string name="pro_feature_moved_layers">이동한 레이어</string>
-    <string name="style_petal_rings">꽃잎 고리</string>
-    <string name="style_loop_rings">루프 고리</string>
+    <string name="style_petal_rings">꽃잎</string>
+    <string name="style_loop_rings">루프</string>
 </resources>

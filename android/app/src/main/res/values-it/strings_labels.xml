@@ -15,18 +15,18 @@
     <string name="style_geometric">Geometrico</string>
     <string name="style_sacred_geometry">Sacra</string>
     <string name="style_sunburst">Raggiera</string>
-    <string name="style_star_burst">Esplosione stellare</string>
+    <string name="style_star_burst">Stella</string>
     <string name="style_string_art">String art</string>
     <string name="style_spider_web">Ragnatela</string>
     <string name="style_weave">Intreccio</string>
     <string name="style_radial_mesh">Rete radiale</string>
     <string name="style_moire">Moiré</string>
-    <string name="style_flow_field">Campo di flusso</string>
+    <string name="style_flow_field">Flusso</string>
     <string name="style_tendril">Viticcio</string>
     <string name="style_voronoi">Voronoi</string>
     <string name="style_strange_attractor">Attrattore</string>
     <string name="style_constellation_web">Costellazione</string>
-    <string name="style_deep_nebula">Nebulosa profonda</string>
+    <string name="style_deep_nebula">Nebulosa</string>
     <string name="style_interference_bloom">Interferenza</string>
     <string name="style_hyperboloid">Iperboloide</string>
     <string name="style_torus">Toro</string>
@@ -70,6 +70,6 @@
     <string name="pro_feature_emblem">Emblema</string>
     <string name="pro_feature_text">Testo</string>
     <string name="pro_feature_moved_layers">Livelli spostati</string>
-    <string name="style_petal_rings">Anelli di petali</string>
-    <string name="style_loop_rings">Anelli di cerchi</string>
+    <string name="style_petal_rings">Petali</string>
+    <string name="style_loop_rings">Cerchi</string>
 </resources>

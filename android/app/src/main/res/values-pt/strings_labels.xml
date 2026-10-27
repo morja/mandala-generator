@@ -14,19 +14,19 @@
     <string name="style_wave_interference">Ondas</string>
     <string name="style_geometric">Geométrico</string>
     <string name="style_sacred_geometry">Sagrada</string>
-    <string name="style_sunburst">Raios de sol</string>
-    <string name="style_star_burst">Explosão estelar</string>
+    <string name="style_sunburst">Sol</string>
+    <string name="style_star_burst">Estrela</string>
     <string name="style_string_art">Arte com fios</string>
     <string name="style_spider_web">Teia de aranha</string>
     <string name="style_weave">Trama</string>
     <string name="style_radial_mesh">Malha radial</string>
     <string name="style_moire">Moiré</string>
-    <string name="style_flow_field">Campo de fluxo</string>
+    <string name="style_flow_field">Fluxo</string>
     <string name="style_tendril">Gavinha</string>
     <string name="style_voronoi">Voronoi</string>
     <string name="style_strange_attractor">Atrator</string>
     <string name="style_constellation_web">Constelação</string>
-    <string name="style_deep_nebula">Nebulosa profunda</string>
+    <string name="style_deep_nebula">Nebulosa</string>
     <string name="style_interference_bloom">Interferência</string>
     <string name="style_hyperboloid">Hiperboloide</string>
     <string name="style_torus">Toro</string>
@@ -70,6 +70,6 @@
     <string name="pro_feature_emblem">Emblema</string>
     <string name="pro_feature_text">Texto</string>
     <string name="pro_feature_moved_layers">Camadas movidas</string>
-    <string name="style_petal_rings">Anéis de pétalas</string>
-    <string name="style_loop_rings">Anéis de laços</string>
+    <string name="style_petal_rings">Pétalas</string>
+    <string name="style_loop_rings">Laços</string>
 </resources>
