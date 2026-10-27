@@ -956,12 +956,10 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
 
     /** The mandala when the field opened: its middle, and what Reset goes back to. */
     private var playBase: MandalaParameters? = null
-    private var playLayer = 0
     private var playLand: PlayField.Landscape? = null
 
     fun openPlay() {
         playBase = _params.value
-        playLayer = _selected.value.coerceIn(0, _params.value.layers.lastIndex)
         _play.value = PlayState()
         newPlayLandscape()
     }
@@ -1003,15 +1001,15 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
 
     /** A new landscape around the mandala as it is now; it is explored by moving, not shown in advance. */
     private fun newPlayLandscape() {
-        val layer = playBase?.layers?.getOrNull(playLayer) ?: return
-        playLand = PlayField.Landscape(System.nanoTime(), layer.style, layer.paletteIndex, BuiltInPalettes.all.size)
+        val base = playBase ?: return
+        playLand = PlayField.Landscape(System.nanoTime(), base, BuiltInPalettes.all.size)
     }
 
     private fun applyPlay() {
         val base = playBase ?: return
         val land = playLand ?: return
         val state = _play.value ?: return
-        _params.value = PlayField.apply(base, playLayer, state.mode, land, state.touch)
+        _params.value = PlayField.apply(base, state.mode, land, state.touch)
     }
 
     // ── Images ──
