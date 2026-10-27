@@ -133,7 +133,7 @@ document.write(`<script src="texts/${TEXT_NAME}.js"><\/script><script src="rende
 // (what render-share-images.sh screenshots); without parameters it is the viewer with a switcher.
 const SIZES = { portrait: [1080, 1350], story: [1080, 1920], landscape: [1920, 1080], square: [1080, 1080], mandala: [1080, 1350], wide: [1920, 1080], teaser: [1080, 1920], wallpaper: [1080, 1920] };
 const LABELS = { portrait: "A · Portrait 4:5", story: "B · Story 9:16", landscape: "C · Landscape 16:9", square: "D · Square", mandala: "E · Mandala portrait", wide: "F · Wide 16:9, large", teaser: "G · Teaser story", wallpaper: "H · Wallpaper story" };
-// Image sets per variant: which screenshots (../store/screenshots/phone-<n>.png) and which background (renders/<art>.jpg).
+// Image sets per variant: which screenshots (../../store/android/screenshots/phone-<n>.png) and which background (renders/<art>.jpg).
 const H = "hypocycloid", F = "flower-of-life", R = "ribbon";
 // Teaser mandalas come from renders/story/ (take a line) and renders/story-quote/ (own text, never a line);
 // render-share-images.sh writes renders/story-list.js from those folders before every run.
@@ -196,7 +196,7 @@ function pickLine(entry, seq) {
 }
 const teaserLine = (t, position, seq) => pickLine(Array.isArray(t.teaser) ? t.teaser[position - 1] : null, seq);
 const PLAY = "https://play.google.com/store/apps/details?id=one.tearoom.mandala";
-const SHOT = n => `../store/screenshots/phone-${n}.png`;
+const SHOT = n => `../../store/android/screenshots/phone-${n}.png`;
 const ICON = "../store/play-icon-512.png";
 
 const params = new URLSearchParams(location.search);

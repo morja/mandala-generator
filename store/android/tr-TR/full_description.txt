@@ -1,0 +1,17 @@
+Dahlia, bir mandala oluşturma uygulamasıdır: resimler, duvar kağıtları ve canlı duvar kağıdı için matematiksel eğriler, ışık ve kutsal semboller kullanarak parıldayan mandalalar çizer.
+
+Her mandalayı en fazla beş katmandan oluşturabilirsiniz. Her katmanın kendine özgü bir stili vardır – spirograflar, gül eğrileri, kutsal geometri, akış alanları, 3D formlar ve daha fazlası, toplamda 36 farklı stil – kendi simetrisi, renk paleti ve parlaklığı ile. Yeni kombinasyonlar için zarları atabilir, geçmiş oklarıyla geri dönebilirsiniz.
+
+Merkeze büyük bir sembol yerleştirin: Om, Yaşam Ağacı, Yaşam Çiçeği, nilüfer, yin ve yang, Dharma çarkı, unalome, üçlü ay veya Sri Yantra. Bu sembolü çizgi, dış hat, dolu veya boncuklu olarak çizebilir, bir halka, nilüfer halkası, kare kapılar veya ensō ile çerçeveleyebilir ve ona daha organik, el çizimi bir görünüm kazandırabilirsiniz.
+
+Arka plan olarak bir gradyan, güneş patlaması, gren veya kendi resimlerinizden birini seçin. Parlama, yıldızlar veya vinyet ekleyebilir, yumuşak bir parıltılı alıntı ekleyebilir veya döndürülmüş simetri ile elle çizebilirsiniz.
+
+Mandalalarınızı galeriye kare olarak, ekranınızın boyutunda veya 4:5, 2:3 ve 16:9 gibi dikey ve yatay oranlarda kaydedebilirsiniz. Mandalayı tam olarak gösterebilir veya resmi doldurabilirsiniz. Kaydettiğiniz mandalalardan birini duvar kağıdı yapabilir veya paylaşabilirsiniz. Uygulamaya 23 örnek favori ile başlayabilir, kendi favorilerinizi kaydedebilir ve bunları telefonunuz ile Mac sürümü arasında taşıyabilirsiniz.
+
+Uygulama ücretsizdir: tüm stiller ve paletler, tüm efektler, üç katman, istediğiniz kadar favori ve filigran olmadan ekran boyutunda kaydetme ve paylaşma özellikleri ücretsizdir. Pro, isteğe bağlı tek seferlik bir satın almadır, abonelik gerektirmez: en fazla beş katman, amblemler, metin ve alıntılar ekleme, katmanları ve amblemi taşıma imkanı sunar. Baskılar ve duvar kağıtları için 2048 pikselde kaydeder, mandalayı elle yerleştirme ve parlaklık, kontrast ve doygunluk ayarlarını yapma olanağı sağlar ve SVG çizgi çizimi olarak dışa aktarır. Pro ayrıca değişen duvar kağıtları sunar: yavaşça dönen bir canlı duvar kağıdı, her sabah favorilerinizden yeni bir duvar kağıdı ve ana ekran ile kilit ekranı için eşleşen bir çift. Satın almadan önce düzenleyicide daha fazla katman, amblem ve alıntı deneme imkanınız vardır.
+
+Hesap gerekmez, reklam yoktur, takip yapılmaz. Mandalalarınız cihazınızda güvende kalır.
+
+Kılavuz ve sık sorulan sorular (İngilizce): https://www.tearoom.one/en/apps/dahlia/help
+
+Dahlia, GNU GPL 3.0 lisansı altında açık kaynaktır: https://github.com/morja/mandala-generator

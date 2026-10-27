@@ -1,0 +1,17 @@
+A Dahlia egy mandalakészítő alkalmazás: ragyogó mandalákat hoz létre matematikai görbék, fény és szent szimbólumok felhasználásával, melyeket aztán képekként, háttérképként vagy akár élő háttérképként is használhatsz.
+
+Minden mandalát akár öt rétegből építhetsz fel. Minden rétegnek saját stílusa van – spirográfok, rózsagörbék, szent geometria, áramlási mezők, 3D formák és még sok más, összesen 36 –, saját szimmetriával, színpalettával és ragyogással. Dobj a kockával új kombinációkért; a visszanyilak segítségével visszaléphetsz a korábbi állapotokhoz.
+
+Helyezz egy hangsúlyos szimbólumot a középpontba: Om, az Élet Fája, az Élet Virága, egy lótusz, jin és jang, a Dharma kerék, egy unalome, a hármas hold vagy a Sri Yantra. Rajzold meg vonalként, körvonalként, kitöltve vagy gyöngyökből, keretezd gyűrűvel, lótuszgyűrűvel, négyzetes kapukkal vagy egy ensō-val, és adj neki organikusabb, kézzel rajzolt jelleget.
+
+Válassz hátteret egy színátmenetből, napkitörésből, szemcsés textúrából vagy saját képeid közül. Adj hozzá virágzást, csillagokat vagy egy vignettát, egy lágyan ragyogó idézetet, vagy rajzolj kézzel forgatott szimmetriában.
+
+Mentsd el mandaláidat a galériába négyzet alakban, a képernyőd méretében vagy portré és tájkép arányokban, mint például 4:5, 2:3 és 16:9, megmutatva a teljes mandalát vagy kitöltve a képet. Állíts be egyet háttérképként, vagy oszd meg másokkal. Kezdj 23 előre elkészített kedvenccel, mentsd el saját alkotásaidat, és mozgasd őket telefonod és a Mac verzió között.
+
+Az alkalmazás ingyenes: minden stílus és paletta, minden effekt, három réteg, tetszőleges számú kedvenc, valamint mentés és megosztás képernyőméretben vízjel nélkül. A Pro egy opcionális, egyszeri vásárlás, nincs előfizetés: akár öt réteg, emblémák, szöveg és idézetek, valamint a rétegek és az embléma mozgatása. 2048 px-ben ment nyomtatásokhoz és háttérképekhez, a mandalát kézzel helyezve el, a fényerőt, kontrasztot és telítettséget finomhangolva, és exportál egy SVG vonalrajzot. A Pro változó háttérképeket is kínál: egy lassan forgó élő háttérképet, egy új háttérképet a kedvenceidből minden reggel, valamint a kezdőképernyő és a zárolási képernyő illeszkedő párként történő beállítását. Vásárlás előtt kipróbálhatsz több réteget, emblémát és idézetet a szerkesztőben.
+
+Nincs szükség fiókra, nincsenek hirdetések, nincs követés. Mandaláid az eszközödön maradnak.
+
+Útmutató és gyakori kérdések (angolul): https://www.tearoom.one/en/apps/dahlia/help
+
+A Dahlia nyílt forráskódú a GNU GPL 3.0 licenc alatt: https://github.com/morja/mandala-generator

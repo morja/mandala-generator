@@ -1,0 +1,17 @@
+Dahlia je aplikace pro tvorbu mandal: kreslí zářivé mandaly z matematických křivek, světla a posvátných symbolů, které můžete použít jako obrázky, tapety nebo živou tapetu.
+
+Každou mandalu můžete sestavit až z pěti vrstev. Každá vrstva má svůj vlastní styl – spirografy, růžové křivky, posvátná geometrie, pole proudění, 3D formy a další, celkem 36 stylů – s vlastní symetrií, paletou a zářením. Hoďte kostkou pro nové kombinace; šipky historie vás vrátí zpět.
+
+Do středu můžete umístit velký symbol: Om, Strom života, Květ života, lotos, jin a jang, Kolo Dharmy, unalome, trojitý měsíc nebo Sri Yantra. Můžete jej nakreslit jako čáru, obrys, vyplněný nebo v korálcích, orámovat jej prstenem, lotosovým prstenem, čtvercovými branami nebo ensō a dodat mu organičtější, ručně kreslený vzhled.
+
+Jako pozadí si vyberte gradient, sluneční paprsky, zrno nebo jeden z vašich vlastních obrázků. Přidejte rozkvět, hvězdy nebo vinětu, citát s jemným zářením, nebo kreslete ručně v otočené symetrii.
+
+Své mandaly si můžete uložit do galerie jako čtverec, ve tvaru obrazovky nebo v poměrech na výšku a na šířku, jako jsou 4:5, 2:3 a 16:9. Můžete zobrazit celou mandalu nebo vyplnit obrázek, nastavit si ji jako tapetu nebo ji sdílet. Začněte s 23 ukázkovými oblíbenými, ukládejte si vlastní a přenášejte je mezi telefonem a verzí pro Mac.
+
+Aplikace je zdarma: všechny styly a palety, všechny efekty, tři vrstvy, neomezený počet oblíbených a ukládání a sdílení ve velikosti obrazovky bez vodoznaku. Verze Pro je volitelný jednorázový nákup, bez předplatného: získáte až pět vrstev, emblémy, text a citáty a možnost přesouvat vrstvy a emblém. Ukládá v rozlišení 2048 px pro tisky a tapety, s možností ručního umístění mandaly a jemného doladění jasu, kontrastu a sytosti, a exportuje SVG čárovou kresbu. Pro také nabízí měnící se tapety: živou tapetu, která se pomalu otáčí, novou tapetu z vašich oblíbených každé ráno a sladěnou dvojici pro domovskou a zamykací obrazovku. Před nákupem si můžete v editoru vyzkoušet více vrstev, emblémů a citátů.
+
+Žádný účet, žádné reklamy, žádné sledování. Vaše mandaly zůstávají na vašem zařízení.
+
+Návod a časté dotazy (v angličtině): https://www.tearoom.one/en/apps/dahlia/help
+
+Dahlia je open source pod licencí GNU GPL 3.0: https://github.com/morja/mandala-generator

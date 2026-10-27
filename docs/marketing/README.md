@@ -37,7 +37,7 @@ Or ask Claude to render a starter favourite in that format; that is how the curr
 
 ## Add an app screenshot
 
-1. Save it as PNG, 1080 × 2160, to `../store/screenshots/phone-<n>-<name>.png`.
+1. Save it as PNG, 1080 × 2160, to `../../store/android/screenshots/phone-<n>-<name>.png`.
 2. In `MKT-2-share-images.html`, add it to `SETS` under `story` (app card) or `wallpaper` (lock screen card).
 3. Proof, then run.
 

@@ -1,0 +1,17 @@
+Dahlia é um criador de mandalas: ele desenha mandalas luminosas a partir de curvas matemáticas, luz e símbolos sagrados, ideais para fotos, papéis de parede e até um papel de parede animado.
+
+Crie cada mandala com até cinco camadas. Cada camada tem seu próprio estilo – espirografos, curvas de rosa, geometria sagrada, campos de fluxo, formas 3D e mais, totalizando 36 opções – com simetria, paleta e brilho próprios. Use os dados para novas combinações; as setas de histórico permitem voltar atrás.
+
+Posicione um símbolo de destaque no centro: Om, a Árvore da Vida, a Flor da Vida, um lótus, yin e yang, a roda do Dharma, um unalome, a lua tripla ou o Sri Yantra. Desenhe-o como linha, contorno, preenchido ou em contas, enquadre-o com um anel, anel de lótus, portões quadrados ou um ensō, e dê a ele um toque mais orgânico, como se fosse desenhado à mão.
+
+Escolha um gradiente, um efeito de raio de sol, textura granulada ou uma de suas próprias fotos como fundo. Adicione efeitos de florescimento, estrelas ou vinheta, uma citação com brilho suave, ou desenhe à mão com simetria rotacionada.
+
+Salve suas mandalas na galeria em formato quadrado, no tamanho da sua tela ou em proporções retrato e paisagem como 4:5, 2:3 e 16:9, exibindo a mandala completa ou preenchendo a imagem. Defina uma como seu papel de parede ou compartilhe. Comece com 23 exemplos favoritos, salve os seus e transfira-os entre seu telefone e a versão para Mac.
+
+O aplicativo é gratuito: todos os estilos e paletas, todos os efeitos, três camadas, quantos favoritos quiser, e salvamento e compartilhamento no tamanho da tela sem marca d'água. O Pro é uma compra única opcional, sem assinatura: permite até cinco camadas, emblemas, texto e citações, além de mover camadas e o emblema. Ele salva em 2048 px para impressões e papéis de parede, com a mandala posicionada manualmente e ajustes finos de brilho, contraste e saturação, e exporta um desenho de linha em SVG. O Pro também oferece papéis de parede dinâmicos: um papel de parede animado que gira lentamente, um novo papel de parede dos seus favoritos a cada manhã, e tela inicial e de bloqueio como um par combinado. Experimente mais camadas, emblemas e citações no editor antes de comprar.
+
+Sem necessidade de conta, sem anúncios, sem rastreamento. Suas mandalas ficam no seu dispositivo.
+
+Guia e perguntas frequentes (em inglês): https://www.tearoom.one/en/apps/dahlia/help
+
+Dahlia é código aberto sob a licença GNU GPL 3.0: https://github.com/morja/mandala-generator

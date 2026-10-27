@@ -1,0 +1,17 @@
+Dahlia è un creatore di mandala: disegna mandala luminosi partendo da curve matematiche, luce e simboli sacri, perfetti per immagini, sfondi e come live wallpaper.
+
+Ogni mandala può essere composto da un massimo di cinque livelli. Ogni livello ha il suo stile – spirografi, curve a rosa, geometria sacra, campi di flusso, forme 3D e altro ancora, 36 in totale – con la propria simmetria, palette e luminosità. Tira i dadi per creare nuove combinazioni; le frecce della cronologia ti permettono di tornare indietro.
+
+Posiziona un simbolo grande al centro: Om, l'Albero della Vita, il Fiore della Vita, un loto, yin e yang, la ruota del Dharma, un unalome, la tripla luna o lo Sri Yantra. Disegnalo come linea, contorno, riempito o con perline, incornicialo con un anello, un anello di loto, cancelli quadrati o un ensō, e conferiscigli un aspetto più organico, come disegnato a mano.
+
+Scegli un gradiente, un raggio di sole, una texture granulosa o una delle tue immagini come sfondo. Aggiungi effetti di fioritura, stelle o una vignetta, una citazione con una luce soffusa, oppure disegna a mano con simmetria rotazionale.
+
+Salva i tuoi mandala nella galleria in formato quadrato, con le dimensioni dello schermo o in rapporti verticali e orizzontali come 4:5, 2:3 e 16:9, mostrando l'intero mandala o riempiendo l'immagine. Impostane uno come sfondo o condividilo. Inizia con 23 esempi predefiniti, salva i tuoi preferiti e spostali tra il tuo telefono e la versione per Mac.
+
+L'app è gratuita: include tutti gli stili e le palette, tutti gli effetti, tre livelli, un numero illimitato di preferiti e la possibilità di salvare e condividere a dimensione schermo senza watermark. La versione Pro è un acquisto opzionale una tantum, senza abbonamento: offre fino a cinque livelli, emblemi, testo e citazioni, e la possibilità di spostare livelli ed emblemi. Salva a 2048 px per stampe e sfondi, con il mandala posizionato manualmente e luminosità, contrasto e saturazione finemente regolati, ed esporta un disegno a linee in formato SVG. La versione Pro include anche sfondi dinamici: un live wallpaper che ruota lentamente, un nuovo sfondo dai tuoi preferiti ogni mattina, e la possibilità di impostare schermata iniziale e di blocco come coppia abbinata. Prova più livelli, emblemi e citazioni nell'editor prima di acquistare.
+
+Nessun account, nessuna pubblicità, nessun tracciamento. I tuoi mandala rimangono sul tuo dispositivo.
+
+Guida e domande frequenti (in inglese): https://www.tearoom.one/en/apps/dahlia/help
+
+Dahlia è open source sotto licenza GNU GPL 3.0: https://github.com/morja/mandala-generator

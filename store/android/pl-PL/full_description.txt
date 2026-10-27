@@ -1,0 +1,17 @@
+Dahlia to kreator mandali: rysuje świetliste mandale z krzywych matematycznych, światła i świętych symboli, tworząc obrazy, tapety i żywą tapetę.
+
+Każdą mandalę możesz zbudować z maksymalnie pięciu warstw. Każda warstwa ma swój własny styl – spirografy, krzywe różane, święta geometria, pola przepływu, formy 3D i wiele innych, łącznie 36 – z własną symetrią, paletą i blaskiem. Rzuć kostką, aby uzyskać nowe kombinacje; strzałki historii pozwolą Ci wrócić do poprzednich.
+
+Umieść duży symbol w centrum: Om, Drzewo Życia, Kwiat Życia, lotos, yin i yang, koło Dharmy, unalome, potrójny księżyc lub Sri Yantra. Narysuj go jako linię, kontur, wypełniony lub w formie koralików, obramuj go pierścieniem, pierścieniem lotosu, kwadratowymi bramami lub ensō, i nadaj mu bardziej organiczny, ręcznie rysowany charakter.
+
+Wybierz gradient, rozbłysk słońca, teksturę ziarna lub jedno z własnych zdjęć jako tło. Dodaj efekt rozkwitu, gwiazdy lub winietę, cytat z delikatnym blaskiem lub rysuj ręcznie w obróconej symetrii.
+
+Zapisz swoje mandale w galerii jako kwadrat, w kształcie ekranu lub w proporcjach pionowych i poziomych, takich jak 4:5, 2:3 i 16:9, pokazując całą mandalę lub wypełniając obraz. Ustaw jedną jako tapetę lub udostępnij ją. Zacznij od 23 przykładowych ulubionych, zachowaj własne i przenoś je między telefonem a wersją na Maca.
+
+Aplikacja jest darmowa: wszystkie style i palety, wszystkie efekty, trzy warstwy, dowolna liczba ulubionych oraz zapisywanie i udostępnianie w rozmiarze ekranu bez znaku wodnego. Wersja Pro to opcjonalny jednorazowy zakup, bez subskrypcji: do pięciu warstw, emblematy, tekst i cytaty, a także możliwość przenoszenia warstw i emblematu. Zapisuje w rozdzielczości 2048 px do wydruków i tapet, z ręcznie umieszczoną mandalą i precyzyjnie dostrojonymi jasnością, kontrastem i nasyceniem, oraz eksportuje rysunek liniowy w formacie SVG. Wersja Pro oferuje również zmieniające się tapety: żywą tapetę, która powoli się obraca, nową tapetę z ulubionych każdego ranka, oraz pasującą parę na ekran główny i ekran blokady. Wypróbuj więcej warstw, emblematów i cytatów w edytorze przed zakupem.
+
+Bez konta, bez reklam, bez śledzenia. Twoje mandale pozostają na Twoim urządzeniu.
+
+Przewodnik i najczęstsze pytania (po angielsku): https://www.tearoom.one/en/apps/dahlia/help
+
+Dahlia jest projektem open source na licencji GNU GPL 3.0: https://github.com/morja/mandala-generator

@@ -1,0 +1,17 @@
+Dahlia là ứng dụng tạo mandala: vẽ nên những mandala rực rỡ từ các đường cong toán học, ánh sáng và biểu tượng thiêng liêng, dùng làm ảnh, hình nền hoặc hình nền động.
+
+Tạo mỗi mandala với tối đa năm lớp. Mỗi lớp có phong cách riêng – spirograph, đường cong hoa hồng, hình học thiêng liêng, trường dòng chảy, hình dạng 3D và nhiều hơn nữa, tổng cộng 36 kiểu – với đối xứng, bảng màu và hiệu ứng phát sáng riêng. Lắc xúc xắc để thử các kết hợp mới; mũi tên lịch sử giúp bạn quay lại.
+
+Đặt một biểu tượng lớn ở trung tâm: Om, Cây Sự Sống, Hoa Sự Sống, hoa sen, âm dương, bánh xe Pháp, unalome, mặt trăng ba hoặc Sri Yantra. Vẽ biểu tượng dưới dạng đường nét, viền, tô đầy hoặc hạt, đóng khung bằng vòng tròn, vòng hoa sen, cổng vuông hoặc ensō, tạo nét vẽ tay tự nhiên và độc đáo hơn.
+
+Chọn nền là gradient, tia nắng, hạt hoặc ảnh của riêng bạn. Thêm hiệu ứng nở, sao hoặc họa tiết góc, một câu trích dẫn phát sáng nhẹ nhàng, hoặc vẽ tay với đối xứng xoay.
+
+Lưu mandala vào thư viện dưới dạng hình vuông, theo kích thước màn hình hoặc các tỷ lệ dọc/ngang như 4:5, 2:3 và 16:9, hiển thị toàn bộ mandala hoặc lấp đầy khung hình. Bạn có thể đặt làm hình nền hoặc chia sẻ. Bắt đầu với 23 mẫu yêu thích có sẵn, lưu lại các thiết kế của riêng bạn và di chuyển chúng giữa điện thoại và phiên bản Mac.
+
+Ứng dụng miễn phí: bao gồm mọi phong cách và bảng màu, tất cả hiệu ứng, ba lớp, số lượng mục yêu thích không giới hạn, lưu và chia sẻ ở kích thước màn hình mà không có hình mờ. Phiên bản Pro là tùy chọn mua một lần, không cần đăng ký: mở khóa tối đa năm lớp, biểu tượng, văn bản và trích dẫn, cùng khả năng di chuyển các lớp và biểu tượng. Pro lưu ảnh ở độ phân giải 2048 px phù hợp cho in ấn và hình nền, cho phép đặt mandala thủ công và tinh chỉnh độ sáng, độ tương phản, độ bão hòa, đồng thời xuất bản vẽ đường SVG. Pro còn có các tính năng hình nền thay đổi: hình nền động xoay chậm, hình nền mới từ mục yêu thích mỗi sáng, và cặp hình nền màn hình chính/màn hình khóa đồng bộ. Hãy thử thêm lớp, biểu tượng và trích dẫn trong trình chỉnh sửa trước khi quyết định mua.
+
+Không yêu cầu tài khoản, không quảng cáo, không theo dõi. Mandala của bạn luôn được lưu trên thiết bị.
+
+Hướng dẫn và câu hỏi thường gặp (tiếng Anh): https://www.tearoom.one/en/apps/dahlia/help
+
+Dahlia là mã nguồn mở theo giấy phép GNU GPL 3.0: https://github.com/morja/mandala-generator

@@ -1,0 +1,17 @@
+Dahlia este un creator de mandale: desenează mandale luminoase din curbe matematice, lumină și simboluri sacre, perfecte pentru imagini, imagini de fundal și chiar un tapet animat.
+
+Creează fiecare mandala din până la cinci straturi. Fiecare strat are stilul său unic – spirografe, curbe de trandafir, geometrie sacră, câmpuri de flux, forme 3D și multe altele, 36 în total – cu simetrie, paletă și strălucire proprii. Aruncă zarurile pentru combinații noi; săgețile de istoric te ajută să revii la pașii anteriori.
+
+Plasează un simbol mare în centru: Om, Arborele Vieții, Floarea Vieții, un lotus, yin și yang, Roata Dharma, un unalome, luna triplă sau Sri Yantra. Desenează-l ca o linie, un contur, umplut sau din mărgele, încadrează-l cu un inel, un inel de lotus, porți pătrate sau un ensō și oferă-i un aspect mai organic, desenat de mână.
+
+Alege un gradient, o explozie solară, o textură granulată sau una dintre propriile tale imagini ca fundal. Adaugă efecte de înflorire, stele sau o vignetă, un citat cu o strălucire discretă sau desenează manual cu simetrie rotită.
+
+Salvează mandalele în galerie ca imagine pătrată, la dimensiunea ecranului sau în formate portret și peisaj precum 4:5, 2:3 și 16:9, afișând întreaga mandala sau umplând cadrul. Setează una ca tapet sau partajeaz-o. Începe cu 23 de exemple favorite, păstrează-le pe ale tale și mută-le între telefon și versiunea pentru Mac.
+
+Aplicația este gratuită: include toate stilurile și paletele, toate efectele, trei straturi, oricâte favorite dorești și salvarea și partajarea la dimensiunea ecranului fără filigran. Versiunea Pro este o achiziție opțională, unică, fără abonament: oferă până la cinci straturi, embleme, text și citate, precum și posibilitatea de a muta straturile și emblema. Salvează la rezoluție de 2048 px pentru printuri și imagini de fundal, cu mandala poziționată manual și ajustări fine ale luminozității, contrastului și saturației, și exportă un desen liniar SVG. Pro aduce și imagini de fundal dinamice: un tapet animat care se rotește lent, un nou tapet din favoritele tale în fiecare dimineață și posibilitatea de a seta ecranul de pornire și cel de blocare ca o pereche asortată. Poți încerca mai multe straturi, embleme și citate în editor înainte de a cumpăra.
+
+Fără cont, fără reclame, fără urmărire. Mandalele tale rămân pe dispozitivul tău.
+
+Ghid și întrebări frecvente (în engleză): https://www.tearoom.one/en/apps/dahlia/help
+
+Dahlia este open source sub licența GNU GPL 3.0: https://github.com/morja/mandala-generator

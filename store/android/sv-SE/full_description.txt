@@ -1,0 +1,17 @@
+Dahlia är en mandalaskapare: den ritar lysande mandalas från matematiska kurvor, ljus och heliga symboler, för bilder, bakgrundsbilder och en levande bakgrund.
+
+Bygg varje mandala med upp till fem lager. Varje lager har sin egen stil – spirografer, roskurvor, helig geometri, flödesfält, 3D-former och mer, 36 totalt – med egen symmetri, palett och lyster. Slå tärningen för nya kombinationer; historikpilarna tar dig tillbaka.
+
+Placera en stor symbol i mitten: Om, Livets träd, Livets blomma, en lotus, yin och yang, Dharmas hjul, en unalome, trippel måne eller Sri Yantra. Rita den som en linje, en kontur, fylld eller med pärlor, rama in den med en ring, en lotusring, fyrkantiga portar eller en ensō, och ge den en mer organisk, handritad karaktär.
+
+Välj en gradient, en solstråle, korn eller en av dina egna bilder som bakgrund. Lägg till blomning, stjärnor eller en vinjett, ett citat med mjuk lyster, eller rita för hand med roterad symmetri.
+
+Spara dina mandalas i galleriet som en kvadrat, i skärmens form eller i stående och liggande format som 4:5, 2:3 och 16:9, visa hela mandalan eller fyll bilden, ställ in en som bakgrundsbild, eller dela den. Börja med 23 exempelfavoriter, spara dina egna, och flytta dem mellan din telefon och Mac-versionen.
+
+Appen är gratis: alla stilar och paletter, alla effekter, tre lager, hur många favoriter du vill, och spara och dela i skärmstorlek utan vattenstämpel. Pro är ett valfritt engångsköp, ingen prenumeration: upp till fem lager, emblem, text och citat, samt flytta lager och emblemet. Den sparar i 2048 px för utskrifter och bakgrundsbilder, med mandalan placerad för hand och finjusterad ljusstyrka, kontrast och mättnad, och exporterar en SVG-linjeteckning. Pro ger också bakgrundsbilder som ändras: en levande bakgrund som roterar långsamt, en ny bakgrund från dina favoriter varje morgon, och hem- och låsskärm som ett matchande par. Prova fler lager, emblem och citat i redigeraren innan du köper.
+
+Inget konto, inga annonser, ingen spårning. Dina mandalas stannar på din enhet.
+
+Guide och vanliga frågor (på engelska): https://www.tearoom.one/en/apps/dahlia/help
+
+Dahlia är öppen källkod under GNU GPL 3.0: https://github.com/morja/mandala-generator

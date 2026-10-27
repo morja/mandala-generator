@@ -1,0 +1,17 @@
+Dahlia is a mandala maker: it draws glowing mandalas from mathematical curves, light and sacred symbols, for pictures, wallpapers and a live wallpaper.
+
+Build each mandala from up to five layers. Every layer has its own style – spirographs, rose curves, sacred geometry, flow fields, 3D forms and more, 36 in all – with its own symmetry, palette and glow. Roll the dice for new combinations; the history arrows take you back.
+
+Place a symbol large in the centre: Om, the Tree of Life, the Flower of Life, a lotus, yin and yang, the Dharma wheel, an unalome, the triple moon or the Sri Yantra. Draw it as a line, an outline, filled or in beads, frame it with a ring, a lotus ring, square gates or an ensō, and give it a more organic, hand-drawn character.
+
+Choose a gradient, a sunburst, grain or one of your own pictures as background. Add bloom, stars or a vignette, a quote with a soft glow, or draw by hand in rotated symmetry.
+
+Save your mandalas to the gallery as a square, in the shape of your screen or in portrait and landscape ratios such as 4:5, 2:3 and 16:9, showing the whole mandala or filling the picture, set one as your wallpaper, or share it. Start with 23 example favourites, keep your own, and move them between your phone and the Mac version.
+
+The app is free: every style and palette, all effects, three layers, as many favourites as you like, and saving and sharing at screen size without a watermark. Pro is an optional one-time purchase, no subscription: up to five layers, emblems, text and quotes, and moving layers and the emblem. It saves at 2048 px for prints and wallpapers, with the mandala placed by hand and brightness, contrast and saturation fine-tuned, and exports an SVG line drawing. Pro also brings wallpapers that change: a live wallpaper that turns slowly, a new wallpaper from your favourites every morning, and home and lock screen as a matching pair. Try more layers, emblems and quotes in the editor before you buy.
+
+No account, no ads, no tracking. Your mandalas stay on your device.
+
+Guide and answers to common questions: https://www.tearoom.one/en/apps/dahlia/help
+
+Dahlia is open source under the GNU GPL 3.0: https://github.com/morja/mandala-generator

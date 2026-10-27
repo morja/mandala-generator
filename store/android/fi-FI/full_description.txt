@@ -1,0 +1,17 @@
+Dahlia on mandala-luoja: se piirtää hehkuvia mandaloita matemaattisista käyristä, valosta ja pyhistä symboleista, luoden kuvia, taustakuvia ja live-taustakuvan.
+
+Rakenna jokainen mandala jopa viidestä kerroksesta. Jokaisella kerroksella on oma tyylinsä – spirografiat, ruusukäyrät, pyhä geometria, virtauskentät, 3D-muodot ja paljon muuta, yhteensä 36 erilaista – omalla symmetriallaan, väripaletillaan ja hehkullaan. Heitä noppaa saadaksesi uusia yhdistelmiä; historianuolilla pääset takaisin.
+
+Aseta suuri symboli keskelle: Om, Elämän puu, Elämän kukka, lootus, yin ja yang, Dharman pyörä, unalome, kolmoiskuu tai Sri Yantra. Piirrä se viivana, ääriviivana, täytettynä tai helminä, kehystä se renkaalla, lootusrenkaalla, neliöporteilla tai ensōlla, ja anna sille orgaanisempi, käsin piirretty ilme.
+
+Valitse taustaksi liukuvärjäys, auringonsäde, rakeisuus tai jokin omista kuvistasi. Lisää hehkua, tähtiä tai vinjetti, lainaus pehmeällä hehkulla, tai piirrä käsin pyöritetyssä symmetriassa.
+
+Tallenna mandalasi galleriaan neliönä, näytön muodossa tai pysty- ja vaakasuhteissa, kuten 4:5, 2:3 ja 16:9, näyttäen koko mandalan tai täyttäen kuvan. Aseta jokin niistä taustakuvaksi tai jaa se. Aloita 23 esimerkkisuosikilla, tallenna omat luomuksesi ja siirrä niitä puhelimesi ja Mac-version välillä.
+
+Sovellus on ilmainen: kaikki tyylit ja paletit, kaikki efektit, kolme kerrosta, rajattomasti suosikkeja sekä tallennus ja jakaminen näytön koossa ilman vesileimaa. Pro on valinnainen kertaluonteinen osto, ei tilausta: jopa viisi kerrosta, tunnukset, teksti ja lainaukset sekä kerrosten ja tunnuksen siirtäminen. Se tallentaa 2048 pikselin tarkkuudella tulosteita ja taustakuvia varten, mahdollistaen mandalan käsin sijoittamisen sekä kirkkauden, kontrastin ja kylläisyyden hienosäädön, ja vie SVG-viivapiirroksen. Pro tuo myös muuttuvia taustakuvia: hitaasti pyörivän live-taustakuvan, uuden taustakuvan suosikeistasi joka aamu sekä koti- ja lukitusnäytön yhteensopivana parina. Kokeile lisää kerroksia, tunnuksia ja lainauksia editorissa ennen ostoa.
+
+Ei tiliä, ei mainoksia, ei seurantaa. Mandalasi pysyvät laitteellasi.
+
+Opas ja usein kysytyt kysymykset (englanniksi): https://www.tearoom.one/en/apps/dahlia/help
+
+Dahlia on avoimen lähdekoodin ohjelmisto GNU GPL 3.0 -lisenssillä: https://github.com/morja/mandala-generator

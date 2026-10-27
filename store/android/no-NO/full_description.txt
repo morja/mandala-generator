@@ -1,0 +1,17 @@
+Dahlia er en mandala-skaper: den tegner glødende mandalaer basert på matematiske kurver, lys og hellige symboler, perfekt for bilder, bakgrunnsbilder og levende bakgrunner.
+
+Bygg hver mandala med opptil fem lag. Hvert lag har sin egen unike stil – spirografer, rosekurver, hellig geometri, flytfelt, 3D-former og mer, hele 36 forskjellige stiler – med egen symmetri, fargepalett og glød. Rull terningene for å prøve nye kombinasjoner; historikkpilene lar deg gå tilbake.
+
+Plasser et symbol sentralt og stort: Om, Livets Tre, Livets Blomst, en lotus, yin og yang, Dharma-hjulet, en unalome, trippel-månen eller Sri Yantra. Tegn det som en linje, omriss, fylt eller i perler, ram det inn med en ring, en lotusring, firkantede porter eller en ensō, og gi det et mer organisk, håndtegnet preg.
+
+Velg en gradient, en solstråle, korn eller et av dine egne bilder som bakgrunn. Legg til blomstring, stjerner eller en vignett, et sitat med en myk glød, eller tegn for hånd med rotert symmetri.
+
+Lagre mandalaene dine i galleriet som en firkant, i skjermens form eller i portrett- og landskapsformat som 4:5, 2:3 og 16:9. Du kan vise hele mandalaen eller fylle bildet, sette en som bakgrunnsbilde, eller dele den. Start med 23 eksempelfavoritter, lagre dine egne, og flytt dem mellom telefonen og Mac-versjonen.
+
+Appen er gratis: alle stiler og paletter, alle effekter, tre lag, så mange favoritter du ønsker, og lagring og deling i skjermstørrelse uten vannmerke. Pro er et valgfritt engangskjøp, ingen abonnement: gir opptil fem lag, emblemer, tekst og sitater, samt mulighet til å flytte lag og emblemet. Den lagrer i 2048 px for utskrifter og bakgrunnsbilder, med mulighet til å plassere mandalaen for hånd og finjustere lysstyrke, kontrast og metning. Den eksporterer også en SVG-linjetegning. Pro inkluderer også bakgrunnsbilder som endrer seg: en levende bakgrunn som roterer sakte, en ny bakgrunn fra favorittene dine hver morgen, og hjem- og låseskjerm som et matchende par. Prøv flere lag, emblemer og sitater i redigeringsprogrammet før du kjøper.
+
+Ingen konto, ingen annonser, ingen sporing. Mandalaene dine forblir på enheten din.
+
+Veiledning og vanlige spørsmål (på engelsk): https://www.tearoom.one/en/apps/dahlia/help
+
+Dahlia er åpen kildekode under GNU GPL 3.0: https://github.com/morja/mandala-generator

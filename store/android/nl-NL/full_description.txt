@@ -1,0 +1,17 @@
+Dahlia is een mandala-maker: de app tekent gloeiende mandala's op basis van wiskundige curves, licht en heilige symbolen, voor afbeeldingen, achtergronden en een live wallpaper.
+
+Bouw elke mandala op uit maximaal vijf lagen. Elke laag heeft een eigen stijl – spirografen, rooscurves, heilige geometrie, stroomvelden, 3D-vormen en meer, 36 in totaal – met een eigen symmetrie, palet en gloed. Gooi de dobbelstenen voor nieuwe combinaties; de geschiedenis-pijlen brengen je terug.
+
+Plaats een groot symbool in het midden: Om, de Levensboom, de Levensbloem, een lotus, yin en yang, het Dharmachakra, een unalome, de drievoudige maan of de Sri Yantra. Teken het als een lijn, een omtrek, gevuld of met kralen, omlijst het met een ring, een lotusring, vierkante poorten of een ensō, en geef het een meer organisch, handgetekend karakter.
+
+Kies een verloop, een zonnestraal, korrel of een van je eigen foto's als achtergrond. Voeg bloei, sterren of een vignet toe, een citaat met een zachte gloed, of teken met de hand in gedraaide symmetrie.
+
+Sla je mandala's op in de galerij als een vierkant, in de vorm van je scherm of in portret- en landschapverhoudingen zoals 4:5, 2:3 en 16:9, waarbij de hele mandala wordt getoond of de afbeelding wordt gevuld. Stel er een in als je achtergrond, of deel hem. Begin met 23 voorbeeld-favorieten, bewaar je eigen creaties en verplaats ze tussen je telefoon en de Mac-versie.
+
+De app is gratis: elke stijl en elk palet, alle effecten, drie lagen, zoveel favorieten als je wilt, en opslaan en delen op schermformaat zonder watermerk. Pro is een optionele eenmalige aankoop, geen abonnement: tot vijf lagen, emblemen, tekst en citaten, en het verplaatsen van lagen en het embleem. Het slaat op in 2048 px voor prints en achtergronden, waarbij de mandala handmatig wordt geplaatst en helderheid, contrast en verzadiging nauwkeurig worden afgesteld. Ook exporteert het een SVG-lijn tekening. Pro biedt ook achtergronden die veranderen: een live wallpaper die langzaam draait, elke ochtend een nieuwe achtergrond uit je favorieten, en een bijpassend paar voor het thuis- en vergrendelscherm. Probeer meer lagen, emblemen en citaten uit in de editor voordat je koopt.
+
+Geen account, geen advertenties, geen tracking. Je mandala's blijven op je apparaat.
+
+Handleiding en veelgestelde vragen (in het Engels): https://www.tearoom.one/en/apps/dahlia/help
+
+Dahlia is open source onder de GNU GPL 3.0: https://github.com/morja/mandala-generator

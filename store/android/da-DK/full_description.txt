@@ -1,0 +1,17 @@
+Dahlia er en mandala-skaber: Den tegner glødende mandalaer baseret på matematiske kurver, lys og hellige symboler. Brug dem til billeder, baggrunde og som levende baggrund.
+
+Byg hver mandala op af op til fem lag. Hvert lag har sin egen stil – spirografer, rosenkurver, hellig geometri, flow-felter, 3D-former og mere, 36 i alt – med sin egen symmetri, farvepalet og glød. Slå med terningerne for nye kombinationer; historiepilene tager dig tilbage.
+
+Placer et stort symbol i midten: Om, Livets Træ, Livets Blomst, en lotus, yin og yang, Dharma-hjulet, en unalome, den tredobbelte måne eller Sri Yantra. Tegn det som en linje, en omrids, fyldt eller i perler, indram det med en ring, en lotusring, firkantede porte eller en ensō, og giv det et mere organisk, håndtegnet udtryk.
+
+Vælg en gradient, en solstråle, korn eller et af dine egne billeder som baggrund. Tilføj blomstring, stjerner eller en vignet, et citat med en blød glød, eller tegn i hånden med roteret symmetri.
+
+Gem dine mandalaer i galleriet som en firkant, i skærmens format eller i portræt- og landskabsforhold som 4:5, 2:3 og 16:9. Vis hele mandalaen eller fyld billedet, sæt en som din baggrund, eller del den. Start med 23 eksempelfavoritter, gem dine egne, og flyt dem mellem din telefon og Mac-versionen.
+
+Appen er gratis: Alle stilarter og paletter, alle effekter, tre lag, så mange favoritter du ønsker, og gemning og deling i skærmstørrelse uden vandmærke. Pro er et valgfrit engangskøb uden abonnement: Op til fem lag, emblemer, tekst og citater, samt mulighed for at flytte lag og emblemet. Den gemmer i 2048 px til print og baggrunde, med mulighed for at placere mandalaen manuelt og finjustere lysstyrke, kontrast og mætning. Den eksporterer også en SVG-linjetegning. Pro giver også baggrunde, der skifter: en levende baggrund, der drejer langsomt, en ny baggrund fra dine favoritter hver morgen, og hjemme- og låseskærm som et matchende par. Prøv flere lag, emblemer og citater i redigeringsprogrammet, før du køber.
+
+Ingen konto, ingen annoncer, ingen sporing. Dine mandalaer forbliver på din enhed.
+
+Vejledning og ofte stillede spørgsmål (på engelsk): https://www.tearoom.one/en/apps/dahlia/help
+
+Dahlia er open source under GNU GPL 3.0: https://github.com/morja/mandala-generator

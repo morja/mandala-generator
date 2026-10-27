@@ -1,0 +1,17 @@
+Dahlia ist ein Mandala-Generator: Er erschafft leuchtende Mandalas aus mathematischen Kurven, Licht und heiligen Symbolen – ideal für Bilder, Hintergründe und als Live-Wallpaper.
+
+Jedes Mandala kann aus bis zu fünf Ebenen aufgebaut werden. Jede Ebene hat ihren eigenen Stil – Spirographen, Rosenkurven, heilige Geometrie, Flussfelder, 3D-Formen und mehr, insgesamt 36 – mit individueller Symmetrie, Farbpalette und Leuchten. Würfeln Sie für neue Kombinationen; die Verlaufspfeile bringen Sie zurück.
+
+Platzieren Sie ein großes Symbol in der Mitte: Om, den Baum des Lebens, die Blume des Lebens, einen Lotus, Yin und Yang, das Dharma-Rad, ein Unalome, den dreifachen Mond oder das Sri Yantra. Zeichnen Sie es als Linie, Umriss, gefüllt oder in Perlen, rahmen Sie es mit einem Ring, einem Lotusring, quadratischen Toren oder einem Ensō ein und verleihen Sie ihm einen organischeren, handgezeichneten Charakter.
+
+Wählen Sie einen Farbverlauf, einen Sonnenstrahl, eine Körnung oder eines Ihrer eigenen Bilder als Hintergrund. Fügen Sie Bloom-Effekte, Sterne oder eine Vignette hinzu, ein Zitat mit sanftem Leuchten, oder zeichnen Sie von Hand mit rotierender Symmetrie.
+
+Speichern Sie Ihre Mandalas in der Galerie als Quadrat, in Bildschirmgröße oder in Hoch- und Querformaten wie 4:5, 2:3 und 16:9, entweder das ganze Mandala zeigend oder das Bild füllend. Legen Sie eines als Hintergrundbild fest oder teilen Sie es. Beginnen Sie mit 23 Beispiel-Favoriten, speichern Sie Ihre eigenen und verschieben Sie sie zwischen Ihrem Telefon und der Mac-Version.
+
+Die App ist kostenlos: Alle Stile und Paletten, alle Effekte, drei Ebenen, beliebig viele Favoriten sowie Speichern und Teilen in Bildschirmgröße ohne Wasserzeichen. Pro ist ein optionaler Einmalkauf, kein Abonnement: bis zu fünf Ebenen, Embleme, Text und Zitate sowie das Verschieben von Ebenen und des Emblems. Es speichert mit 2048 px für Drucke und Hintergrundbilder, wobei das Mandala manuell platziert und Helligkeit, Kontrast und Sättigung fein abgestimmt werden. Außerdem exportiert es eine SVG-Strichzeichnung. Pro bietet auch wechselnde Hintergrundbilder: ein Live-Wallpaper, das sich langsam dreht, jeden Morgen ein neues Hintergrundbild aus Ihren Favoriten und Start- und Sperrbildschirm als passendes Paar. Probieren Sie mehr Ebenen, Embleme und Zitate im Editor aus, bevor Sie kaufen.
+
+Kein Konto, keine Werbung, kein Tracking. Ihre Mandalas bleiben auf Ihrem Gerät.
+
+Anleitung und Antworten auf häufige Fragen: https://www.tearoom.one/de/apps/dahlia/help
+
+Dahlia ist Open Source unter der GNU GPL 3.0: https://github.com/morja/mandala-generator

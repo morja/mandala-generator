@@ -1,0 +1,17 @@
+Dahlia adalah pembuat mandala: aplikasi ini menggambar mandala bercahaya dari kurva matematika, cahaya, dan simbol sakral, untuk membuat gambar, wallpaper, dan wallpaper hidup.
+
+Buat setiap mandala dari hingga lima lapisan. Setiap lapisan memiliki gayanya sendiri – spirograf, kurva mawar, geometri sakral, medan aliran, bentuk 3D, dan lainnya, total 36 gaya – dengan simetri, palet, dan cahaya yang berbeda. Kocok dadu untuk mendapatkan kombinasi baru; panah riwayat akan membawa Anda kembali.
+
+Tempatkan simbol besar di tengah: Om, Pohon Kehidupan, Bunga Kehidupan, teratai, yin dan yang, roda Dharma, unalome, bulan tiga, atau Sri Yantra. Gambarlah sebagai garis, garis luar, terisi, atau dalam bentuk manik-manik, bingkai dengan cincin, cincin teratai, gerbang persegi, atau ensō, dan berikan sentuhan yang lebih organik, seperti digambar tangan.
+
+Pilih gradien, semburan matahari, tekstur butiran, atau salah satu gambar Anda sendiri sebagai latar belakang. Tambahkan efek mekar, bintang, atau vinyet, kutipan dengan cahaya lembut, atau gambar secara manual dengan simetri yang diputar.
+
+Simpan mandala Anda ke galeri dalam bentuk persegi, sesuai ukuran layar Anda, atau dalam rasio potret dan lanskap seperti 4:5, 2:3, dan 16:9. Anda bisa menampilkan seluruh mandala atau mengisi gambar, menjadikannya sebagai wallpaper, atau membagikannya. Mulai dengan 23 contoh favorit, simpan kreasi Anda sendiri, dan pindahkan antara ponsel dan versi Mac.
+
+Aplikasi ini gratis: semua gaya dan palet, semua efek, tiga lapisan, favorit sebanyak yang Anda inginkan, serta menyimpan dan berbagi dalam ukuran layar tanpa tanda air. Versi Pro adalah pembelian satu kali opsional, tanpa langganan: Anda mendapatkan hingga lima lapisan, lambang, teks dan kutipan, serta kemampuan memindahkan lapisan dan lambang. Versi ini menyimpan gambar dalam resolusi 2048 px untuk cetakan dan wallpaper, dengan penempatan mandala yang bisa diatur secara manual serta penyesuaian kecerahan, kontras, dan saturasi yang lebih detail, dan dapat mengekspor gambar garis dalam format SVG. Pro juga menyediakan wallpaper yang berubah: wallpaper hidup yang berputar perlahan, wallpaper baru dari favorit Anda setiap pagi, serta layar beranda dan layar kunci yang serasi. Coba lebih banyak lapisan, lambang, dan kutipan di editor sebelum Anda memutuskan untuk membeli.
+
+Tidak perlu akun, tanpa iklan, tanpa pelacakan. Mandala Anda tetap tersimpan di perangkat Anda.
+
+Panduan dan pertanyaan umum (dalam bahasa Inggris): https://www.tearoom.one/en/apps/dahlia/help
+
+Dahlia adalah aplikasi sumber terbuka di bawah lisensi GNU GPL 3.0: https://github.com/morja/mandala-generator
