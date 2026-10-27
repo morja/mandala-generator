@@ -11,9 +11,9 @@
     <string name="style_phyllotaxis">잎차례</string>
     <string name="style_fractal">프랙털</string>
     <string name="style_superformula">슈퍼포뮬러</string>
-    <string name="style_wave_interference">파동 간섭</string>
+    <string name="style_wave_interference">파동</string>
     <string name="style_geometric">기하학</string>
-    <string name="style_sacred_geometry">신성 기하학</string>
+    <string name="style_sacred_geometry">신성</string>
     <string name="style_sunburst">햇살</string>
     <string name="style_star_burst">별빛 폭발</string>
     <string name="style_string_art">스트링 아트</string>
@@ -24,10 +24,10 @@
     <string name="style_flow_field">흐름장</string>
     <string name="style_tendril">덩굴손</string>
     <string name="style_voronoi">보로노이</string>
-    <string name="style_strange_attractor">기묘한 끌개</string>
-    <string name="style_constellation_web">별자리 그물</string>
+    <string name="style_strange_attractor">끌개</string>
+    <string name="style_constellation_web">별자리</string>
     <string name="style_deep_nebula">깊은 성운</string>
-    <string name="style_interference_bloom">간섭의 꽃</string>
+    <string name="style_interference_bloom">간섭</string>
     <string name="style_hyperboloid">쌍곡면</string>
     <string name="style_torus">토러스</string>
     <string name="style_nautilus">앵무조개</string>

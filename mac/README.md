@@ -34,13 +34,13 @@ Find more samples [here](samples/).
 ## Features
 
 - **33 drawing styles** organised into five categories:
-  - *Parametric Curves* — Spirograph, Rose Curves, Floral, Butterfly, Epitrochoid, Lissajous, Hypocycloid, Phyllotaxis, Fractal, Superformula, Wave Interference
-  - *Geometric & Pattern* — Geometric, Sacred Geometry, Sunburst, Star Burst, String Art, Spider Web, Weave, Radial Mesh, Moiré
-  - *Organic & Flow* — Flow Field, Tendril, Voronoi, **Strange Attractor** (Clifford / De Jong / Bedhead / Hopalong with 30 presets)
+  - *Parametric Curves* — Spirograph, Rose Curves, Floral, Butterfly, Epitrochoid, Lissajous, Hypocycloid, Phyllotaxis, Fractal, Superformula, Waves
+  - *Geometric & Pattern* — Geometric, Sacred, Sunburst, Star Burst, String Art, Spider Web, Weave, Radial Mesh, Moiré
+  - *Organic & Flow* — Flow Field, Tendril, Voronoi, **Attractor** (Clifford / De Jong / Bedhead / Hopalong with 30 presets)
   - *3D* — **Hyperboloid** (ruled surface), **Torus** (parametric wireframe), **Nautilus Shell** (logarithmic spiral), Torus Knot, Sphere Grid, Tesseract
   - *Special* — Universe, Symbols, Mixed
 - **3D styles** — Hyperboloid, Torus, and Nautilus Shell are rendered as tilted wireframe / spiral projections with depth shading (front faces bright, back faces dim at 8%) and per-symmetry brightness normalisation to prevent centre overexposure at high symmetry counts
-- **Strange Attractor style** — 30 presets across four attractor types; 500 k–1 M iterated points; colour LUT for performance; scale adapts to attractor bounds
+- **Attractor style** (strange attractors) — 30 presets across four attractor types; 500 k–1 M iterated points; colour LUT for performance; scale adapts to attractor bounds
 - **Superformula style** — 22 Gielis presets spanning sharp stars through smooth polygons; density-driven stroke weight
 - **Universe style** — density drives a 7-level cosmic progression: single planet → two planets → Saturn with rings → full solar system → Milky Way spiral galaxy → multiple galaxies → cosmic web with filaments and galaxy clusters; fully symmetry-aware
 - **Symbols style** — 20 sacred and universal symbols arranged in mandala rings: Heart, Peace, Infinity, Eye of Providence, Yin-Yang, Crescent, Star of David, Pentagram, Ankh, Om, Chakra Lotus, Flower of Life, Dharma Wheel, Merkaba, Triquetra, Ouroboros, Triskelion, Vesica Piscis, Hamsa, Sri Yantra, Eye of Horus, Star of Ishtar, Caduceus — seed-driven selection with concentric center symbol

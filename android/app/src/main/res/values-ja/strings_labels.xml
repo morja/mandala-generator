@@ -11,9 +11,9 @@
     <string name="style_phyllotaxis">葉序</string>
     <string name="style_fractal">フラクタル</string>
     <string name="style_superformula">スーパーフォーミュラ</string>
-    <string name="style_wave_interference">波の干渉</string>
+    <string name="style_wave_interference">波</string>
     <string name="style_geometric">幾何学模様</string>
-    <string name="style_sacred_geometry">神聖幾何学</string>
+    <string name="style_sacred_geometry">神聖</string>
     <string name="style_sunburst">サンバースト</string>
     <string name="style_star_burst">スターバースト</string>
     <string name="style_string_art">ストリングアート</string>
@@ -24,10 +24,10 @@
     <string name="style_flow_field">流れ場</string>
     <string name="style_tendril">巻きひげ</string>
     <string name="style_voronoi">ボロノイ</string>
-    <string name="style_strange_attractor">ストレンジアトラクター</string>
-    <string name="style_constellation_web">星座の網</string>
+    <string name="style_strange_attractor">アトラクター</string>
+    <string name="style_constellation_web">星座</string>
     <string name="style_deep_nebula">深宇宙の星雲</string>
-    <string name="style_interference_bloom">干渉の花</string>
+    <string name="style_interference_bloom">干渉</string>
     <string name="style_hyperboloid">双曲面</string>
     <string name="style_torus">トーラス</string>
     <string name="style_nautilus">オウムガイ</string>

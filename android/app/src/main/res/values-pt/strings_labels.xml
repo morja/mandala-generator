@@ -11,9 +11,9 @@
     <string name="style_phyllotaxis">Filotaxia</string>
     <string name="style_fractal">Fractal</string>
     <string name="style_superformula">Superfórmula</string>
-    <string name="style_wave_interference">Interferência de ondas</string>
+    <string name="style_wave_interference">Ondas</string>
     <string name="style_geometric">Geométrico</string>
-    <string name="style_sacred_geometry">Geometria sagrada</string>
+    <string name="style_sacred_geometry">Sagrada</string>
     <string name="style_sunburst">Raios de sol</string>
     <string name="style_star_burst">Explosão estelar</string>
     <string name="style_string_art">Arte com fios</string>
@@ -24,10 +24,10 @@
     <string name="style_flow_field">Campo de fluxo</string>
     <string name="style_tendril">Gavinha</string>
     <string name="style_voronoi">Voronoi</string>
-    <string name="style_strange_attractor">Atrator estranho</string>
-    <string name="style_constellation_web">Rede de constelações</string>
+    <string name="style_strange_attractor">Atrator</string>
+    <string name="style_constellation_web">Constelação</string>
     <string name="style_deep_nebula">Nebulosa profunda</string>
-    <string name="style_interference_bloom">Flor de interferência</string>
+    <string name="style_interference_bloom">Interferência</string>
     <string name="style_hyperboloid">Hiperboloide</string>
     <string name="style_torus">Toro</string>
     <string name="style_nautilus">Náutilo</string>

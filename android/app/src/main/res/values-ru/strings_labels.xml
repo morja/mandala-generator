@@ -11,9 +11,9 @@
     <string name="style_phyllotaxis">Филлотаксис</string>
     <string name="style_fractal">Фрактал</string>
     <string name="style_superformula">Суперформула</string>
-    <string name="style_wave_interference">Интерференция волн</string>
+    <string name="style_wave_interference">Волны</string>
     <string name="style_geometric">Геометрия</string>
-    <string name="style_sacred_geometry">Сакральная геометрия</string>
+    <string name="style_sacred_geometry">Сакральная</string>
     <string name="style_sunburst">Солнечные лучи</string>
     <string name="style_star_burst">Звёздная вспышка</string>
     <string name="style_string_art">Стринг-арт</string>
@@ -24,10 +24,10 @@
     <string name="style_flow_field">Поле течений</string>
     <string name="style_tendril">Усики</string>
     <string name="style_voronoi">Вороной</string>
-    <string name="style_strange_attractor">Странный аттрактор</string>
-    <string name="style_constellation_web">Сеть созвездий</string>
+    <string name="style_strange_attractor">Аттрактор</string>
+    <string name="style_constellation_web">Созвездие</string>
     <string name="style_deep_nebula">Глубокая туманность</string>
-    <string name="style_interference_bloom">Интерференционный цветок</string>
+    <string name="style_interference_bloom">Интерференция</string>
     <string name="style_hyperboloid">Гиперболоид</string>
     <string name="style_torus">Тор</string>
     <string name="style_nautilus">Наутилус</string>
