@@ -97,6 +97,10 @@ Since 23 October 2026 the listing exists in seven languages: English (default), 
 
 The Reddit and launch plan is [MKT-1](../MKT-1-reddit-and-launch-plan.md).
 
+## Release notes for 1.8.0 (code 15)
+
+**On the internal track since 27 October 2026** (`bin/release internal`, `completed`, notes in English and German; a fresh API read verified code 15 on internal). Production: pending Mathis' OK. Source tag: `android-v1.8.0` at `dc990cd`. Validation: `bin/check-full` on `main` (parity test and release build), signed `bundleRelease` (upload key CN=Mathis Koblin), signature verified. Bundle SHA-256: `6a470d0e13e6abf51dbbb517dd61460847c6708aca1d4aa50faa70b4af64fb8f`. Changes since 1.7.1: the play field (compass in the top bar; landscape and compass, DM-19 to DM-21), pictures beside the emblem motifs with a switch under More, the effects die rolls a new look and the arrangement sits per card, the quote is edited right in the text tab (DM-13 B), shorter style names, two preview sizes with a free pull, Pro through the shared tearoom-android-kit (ADR-0022). Notes: `store/android/en-US/changelogs/15.txt` and `de-DE/changelogs/15.txt`.
+
 ## Release notes for 1.7.1 (code 14)
 
 **Submitted to production on 26 October 2026** through the API (`docs/store/play/play_release.py`), full rollout (`completed`), replacing 1.7.0 on the track; a fresh API read verified code 14 on production. Public store availability remains subject to Google's review. Source tag: `android-v1.7.1` at `e59634b`. Validation: `android/scripts/check-full` on `main`, signed `bundleRelease` (upload key CN=Mathis Koblin), package and version checked in the bundle manifest. Bundle SHA-256: `3b95015fd10431510f6e049a92eac2fc290b53432017e61dac4ffe24eafb944c`. Prepared on Mathis' release request the same evening. Changes since 1.7.0: the notes on Pro say that trying and keeping as a favourite are free (ADR-0016), and the Pro marks fit a 360 dp phone. Since 1.7.0 may still be in review, the notes repeat its changes. Notes: `docs/store/play/release-notes-1.7.1-en.txt` and `-de.txt`.
