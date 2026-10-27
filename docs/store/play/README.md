@@ -13,7 +13,8 @@ bin/release status                 # releases per track
 bin/release read | pull            # print the listings, or write them into store/android/
 bin/release listing [--dry-run]    # upload texts, icon, feature graphic and phone screenshots
 bin/release internal               # build the bundle and upload it to internal testing with the release notes
+bin/release production [CODE] [--rollout N]   # the code on internal (or CODE) to production, with Mathis' OK
 bin/store-shots [--lang L]         # captioned screenshots from store/android/captions.json and store/android/screenshots/
 ```
 
-Production releases stay in the Play Console. The service account key is `~/.keystore/google-keys.json`. The old `release-notes-<version>-<lang>.txt` files here are the record of earlier releases; new notes go to `store/android/<lang>/changelogs/<code>.txt` (1.7.1 is code 14).
+Production: `bin/release production` (the code on internal with the same notes, full rollout, or `--rollout N` percent) on Mathis' OK; the Play Console only for what the API does not do. The service account key is `~/.keystore/google-keys.json`. The old `release-notes-<version>-<lang>.txt` files here are the record of earlier releases; new notes go to `store/android/<lang>/changelogs/<code>.txt` (1.7.1 is code 14).
