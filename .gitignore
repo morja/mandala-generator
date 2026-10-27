@@ -1,3 +1,6 @@
 .DS_Store
 .idea/
 .claude/
+
+# Python bytecode from the store tools
+__pycache__/
