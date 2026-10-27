@@ -7,6 +7,7 @@ import com.mathis.mandala.core.styles.DirectStyles
 import com.mathis.mandala.core.styles.LineList
 import com.mathis.mandala.core.styles.ParametricStyles
 import com.mathis.mandala.core.styles.PatternStyles
+import com.mathis.mandala.core.styles.RingStyles
 import com.mathis.mandala.core.styles.SolidStyles
 import com.mathis.mandala.core.styles.SymbolStyles
 import com.mathis.mandala.core.styles.ThreeDStyles
@@ -327,7 +328,6 @@ object MandalaRenderer {
                         view = keep
                     }
                 }
-                System.err.println("DBG layer $li size=$size view=${img.width}x${img.height} mandala=$mandalaSize margin=$margin used=${(Runtime.getRuntime().totalMemory()-Runtime.getRuntime().freeMemory())/1048576}")
                 if (cacheKey != null) cache.put(cacheKey, LayerCache.Entry(img, view[0], view[1], turnX, turnY))
                 composite = blendLayer(fx, composite, img, view[0], view[1], op, layer, rotated, turnX, turnY, kept = cacheKey != null)
             }
@@ -518,6 +518,8 @@ object MandalaRenderer {
         MandalaStyle.SPHERE_GRID -> 0.9
         MandalaStyle.TORUS_KNOT -> 0.9
         MandalaStyle.TESSERACT -> 2.2
+        MandalaStyle.PETAL_RINGS -> 1.15
+        MandalaStyle.LOOP_RINGS -> 1.05
         MandalaStyle.UNIVERSE -> 1.2
         MandalaStyle.SYMBOLS -> 1.2
         MandalaStyle.DEEP_NEBULA, MandalaStyle.MIXED -> STYLE_REACH_CAP
@@ -639,6 +641,8 @@ object MandalaRenderer {
             MandalaStyle.TENDRIL -> PatternStyles.tendril(tasks, cx, cy, radius, ctx, rng, symmetry, ripple, w)
             MandalaStyle.MOIRE -> PatternStyles.moire(tasks, cx, cy, radius, ctx, rng, symmetry, ripple, w)
             MandalaStyle.VORONOI -> PatternStyles.voronoi(tasks, cx, cy, radius, ctx, rng, symmetry, ripple, w)
+            MandalaStyle.PETAL_RINGS -> RingStyles.petalRings(tasks, cx, cy, radius, ctx, rng, symmetry, ripple, w)
+            MandalaStyle.LOOP_RINGS -> RingStyles.loopRings(tasks, cx, cy, radius, ctx, rng, symmetry, ripple, w)
             MandalaStyle.TORUS_KNOT -> ThreeDStyles.torusKnot(tasks, cx, cy, radius, ctx, rng, symmetry, ripple, w)
             MandalaStyle.SPHERE_GRID -> ThreeDStyles.sphereGrid(tasks, cx, cy, radius, ctx, rng, symmetry, ripple, w)
             MandalaStyle.TESSERACT -> ThreeDStyles.tesseract(tasks, cx, cy, radius, ctx, rng, symmetry, ripple, w)

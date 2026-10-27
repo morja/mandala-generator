@@ -70,4 +70,6 @@
     <string name="pro_feature_emblem">徽标</string>
     <string name="pro_feature_text">文字</string>
     <string name="pro_feature_moved_layers">移动过的图层</string>
+    <string name="style_petal_rings">花瓣环</string>
+    <string name="style_loop_rings">圆圈环</string>
 </resources>

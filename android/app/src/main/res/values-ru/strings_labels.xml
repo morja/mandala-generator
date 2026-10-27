@@ -70,4 +70,6 @@
     <string name="pro_feature_emblem">Эмблема</string>
     <string name="pro_feature_text">Текст</string>
     <string name="pro_feature_moved_layers">Перемещённые слои</string>
+    <string name="style_petal_rings">Кольца лепестков</string>
+    <string name="style_loop_rings">Кольца петель</string>
 </resources>

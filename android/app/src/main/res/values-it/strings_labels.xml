@@ -70,4 +70,6 @@
     <string name="pro_feature_emblem">Emblema</string>
     <string name="pro_feature_text">Testo</string>
     <string name="pro_feature_moved_layers">Livelli spostati</string>
+    <string name="style_petal_rings">Anelli di petali</string>
+    <string name="style_loop_rings">Anelli di cerchi</string>
 </resources>

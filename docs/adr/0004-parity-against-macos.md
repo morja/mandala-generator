@@ -49,3 +49,5 @@ Changed in the macOS renderer first and ported; details in `docs/TUNE-1-palettes
 ## Consequences
 
 A new fixture is added with every ported style or filter. Lowering a threshold needs a row in the table above.
+
+**Android first (27 October 2026, Mathis, AGENTS.md):** styles built on Android before the Mac (Petal Rings, Loop Rings) have no macOS reference; they get no parity fixture until the Mac app has them, and are covered meanwhile by `StyleReachTest`, `VectorExportTest` and `RingStylesTest`. Their style previews are rendered by the core with the Mac preview settings; `render-references.sh` leaves them in place.

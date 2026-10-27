@@ -70,4 +70,6 @@
     <string name="pro_feature_emblem">Emblem</string>
     <string name="pro_feature_text">Text</string>
     <string name="pro_feature_moved_layers">Verschobene Ebenen</string>
+    <string name="style_petal_rings">Blütenringe</string>
+    <string name="style_loop_rings">Schleifenringe</string>
 </resources>

@@ -70,4 +70,6 @@
     <string name="pro_feature_emblem">엠블럼</string>
     <string name="pro_feature_text">텍스트</string>
     <string name="pro_feature_moved_layers">이동한 레이어</string>
+    <string name="style_petal_rings">꽃잎 고리</string>
+    <string name="style_loop_rings">루프 고리</string>
 </resources>
