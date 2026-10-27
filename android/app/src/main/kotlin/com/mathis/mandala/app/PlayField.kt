@@ -79,31 +79,31 @@ object PlayField {
         return l.copy(
             style = zones?.let { it.styles[zone("style", it.styles.size)] } ?: l.style,
             paletteIndex = if (l.customPalette != null || zones == null) l.paletteIndex else zones.palettes[zone("palette", zones.palettes.size)],
-            symmetry = (l.symmetry + (w("symmetry") * 4).roundToInt()).coerceIn(1, 8),
-            complexity = (l.complexity + 0.5 * w("complexity")).coerceIn(0.05, 1.0),
-            density = (l.density + 0.5 * w("density")).coerceIn(0.05, 1.0),
-            ripple = (l.ripple + 0.6 * w("ripple")).coerceIn(0.0, 1.0),
-            scale = (l.scale + 0.3 * w("scale")).coerceIn(0.5, 1.15),
-            glowIntensity = (l.glowIntensity + 0.6 * w("glow")).coerceIn(0.0, 1.0),
-            colorDrift = (l.colorDrift + 0.6 * w("drift")).coerceIn(0.0, 1.0),
+            // The layers carry the play (Mathis, 27 October 2026: the scene effects were too much of it).
+            symmetry = (l.symmetry + (w("symmetry") * 5).roundToInt()).coerceIn(1, 8),
+            complexity = (l.complexity + 0.7 * w("complexity")).coerceIn(0.05, 1.0),
+            density = (l.density + 0.7 * w("density")).coerceIn(0.05, 1.0),
+            ripple = (l.ripple + 0.8 * w("ripple")).coerceIn(0.0, 1.0),
+            scale = (l.scale + 0.4 * w("scale")).coerceIn(0.5, 1.15),
+            glowIntensity = (l.glowIntensity + 0.7 * w("glow")).coerceIn(0.0, 1.0),
+            colorDrift = (l.colorDrift + 0.7 * w("drift")).coerceIn(0.0, 1.0),
             colorOffset = (l.colorOffset + 0.5 * w("offset")).mod(1.0),
-            saturation = (l.saturation + 0.4 * w("saturation")).coerceIn(0.2, 1.0),
-            brightness = (l.brightness + 0.25 * w("brightness")).coerceIn(0.25, 0.85),
+            saturation = (l.saturation + 0.5 * w("saturation")).coerceIn(0.2, 1.0),
+            brightness = (l.brightness + 0.3 * w("brightness")).coerceIn(0.25, 0.85),
             wash = (l.wash + 0.4 * w("wash")).coerceIn(0.0, 0.7),
+            abstractLevel = (l.abstractLevel + 0.3 * w("abstract")).coerceIn(0.0, 0.6),
         )
     }
 
     /**
-     * The landscape's weather: bloom and vignette follow their waves everywhere, while stars, grain,
-     * glitter and highlights each show only in their own region (about a quarter of the field), so
-     * most of a landscape is plain and each has its own weather (Mathis, 27 October 2026: stars
-     * everywhere grew dull).
+     * The landscape's weather, sparingly (Mathis, 27 October 2026: the scene effects were too much of
+     * the play, which the layers should carry): a little bloom and vignette follow their waves, and
+     * stars and grain each show only in a small region of their own, so most of a landscape is plain.
      */
     private fun mapScene(e: EffectsLayerSettings, land: Landscape, t: Touch) = scene(
         e,
         bloom = wave(land, t, "light"), vignette = wave(land, t, "depth"),
         stars = region(land, t, "stars"), grain = region(land, t, "grain"),
-        glitter = region(land, t, "glitter"), highlights = region(land, t, "highlights"),
     )
 
     /**
@@ -136,50 +136,46 @@ object PlayField {
         val depth = d.depth
         val colour = d.colour
         return l.copy(
-            symmetry = (l.symmetry + (shape * 3).roundToInt()).coerceIn(1, 8),
-            complexity = (l.complexity + 0.45 * shape).coerceIn(0.0, 1.0),
-            ripple = (l.ripple + 0.7 * shape).coerceIn(0.0, 1.0),
-            density = (l.density + 0.3 * shape).coerceIn(0.0, 1.0),
-            glowIntensity = (l.glowIntensity + 0.5 * light - 0.3 * depth).coerceIn(0.0, 1.0),
-            brightness = (l.brightness + 0.2 * light - 0.15 * depth).coerceIn(0.25, 0.85),
+            symmetry = (l.symmetry + (shape * 4).roundToInt()).coerceIn(1, 8),
+            complexity = (l.complexity + 0.6 * shape).coerceIn(0.0, 1.0),
+            ripple = (l.ripple + 0.8 * shape).coerceIn(0.0, 1.0),
+            density = (l.density + 0.4 * shape).coerceIn(0.0, 1.0),
+            glowIntensity = (l.glowIntensity + 0.6 * light - 0.3 * depth).coerceIn(0.0, 1.0),
+            brightness = (l.brightness + 0.25 * light - 0.15 * depth).coerceIn(0.25, 0.85),
             wash = (l.wash + 0.45 * depth).coerceIn(0.0, 0.7),
             colorOffset = (l.colorOffset + 0.5 * colour).mod(1.0),
-            colorDrift = (l.colorDrift + 0.5 * colour).coerceIn(0.0, 1.0),
-            saturation = (l.saturation + 0.3 * colour).coerceIn(0.2, 1.0),
+            colorDrift = (l.colorDrift + 0.6 * colour).coerceIn(0.0, 1.0),
+            saturation = (l.saturation + 0.4 * colour).coerceIn(0.2, 1.0),
         )
     }
 
-    /** Light: bloom and glitter on the lines (no stars); depth: vignette, grain and dimming. */
+    /** Light: a little bloom (the layers' glow carries it); depth: vignette and a little grain. No stars, no glitter. */
     private fun compassScene(e: EffectsLayerSettings, t: Touch): EffectsLayerSettings {
         val d = Directions(t)
-        return scene(e, bloom = d.light, glitter = d.light * 0.6, vignette = d.depth, grain = d.depth * 0.7, dimming = d.depth * 0.6)
+        return scene(e, bloom = d.light, vignette = d.depth, grain = d.depth * 0.5)
     }
 
     /** The scene effects, each raised by 0..1 of its play range; switched on only where the field changes something. */
     private fun scene(
         e: EffectsLayerSettings,
         bloom: Double = 0.0, vignette: Double = 0.0, stars: Double = 0.0, grain: Double = 0.0,
-        glitter: Double = 0.0, highlights: Double = 0.0, dimming: Double = 0.0,
     ): EffectsLayerSettings {
         val next = e.copy(
-            bloom = (e.bloom + 0.6 * bloom).coerceIn(0.0, 0.8),
-            vignette = (e.vignette + 0.6 * vignette).coerceIn(0.0, 0.9),
-            stars = (e.stars + 0.6 * stars).coerceIn(0.0, 0.8),
-            grain = (e.grain + 0.8 * grain).coerceIn(0.0, 1.0),
-            glitter = (e.glitter + 0.35 * glitter).coerceIn(0.0, 0.4),
-            highlights = (e.highlights + 0.5 * highlights).coerceIn(0.0, 0.6),
-            dimming = (e.dimming + 0.4 * dimming).coerceIn(0.0, 0.5),
+            bloom = (e.bloom + 0.4 * bloom).coerceIn(0.0, 0.6),
+            vignette = (e.vignette + 0.5 * vignette).coerceIn(0.0, 0.8),
+            stars = (e.stars + 0.4 * stars).coerceIn(0.0, 0.5),
+            grain = (e.grain + 0.5 * grain).coerceIn(0.0, 0.6),
         )
         // Switched on only where the field changes it, so the middle stays the mandala as it was.
         return next.copy(isEnabled = e.isEnabled || next != e)
     }
 
-    /** Where a scene wave starts to count (−1..1): above it in about a quarter of the field. */
-    private const val REGION_FROM = 0.45
+    /** Where a scene wave starts to count (−1..1): above it in about a tenth of the field. */
+    private const val REGION_FROM = 0.65
 
     private val SETTINGS = listOf(
         "style", "palette", "symmetry", "complexity", "density", "ripple", "scale", "glow", "drift", "offset",
-        "saturation", "brightness", "wash", "light", "depth", "stars", "grain", "glitter", "highlights",
+        "saturation", "brightness", "wash", "abstract", "light", "depth", "stars", "grain",
     )
 
     /** Styles the landscape's zones choose from: varied, quick to draw. */

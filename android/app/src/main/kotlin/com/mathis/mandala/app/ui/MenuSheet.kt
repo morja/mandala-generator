@@ -92,7 +92,6 @@ internal class MenuActions(
     val onLineDrawing: (VectorExport.Look) -> Unit,
     val onTryNew: (NewKind) -> Unit,
     /** Opens the play field (UX-1 19). */
-    val onPlay: () -> Unit,
     val onUseNew: () -> Unit,
     val onBackToMenu: () -> Unit,
     val onOpen: () -> Unit,
@@ -108,7 +107,7 @@ private enum class MenuPage { MAIN, LINE_DRAWING, DAILY, DAILY_FAVOURITES, MORE 
 
 /**
  * The menu as a sheet from below (DM-7 B): the mandala on screen with what keeps it, three dice for a
- * new one, then the line drawing, "More", the theme and About. A die shows its new mandala next to the current one
+ * new one, then "More" (files, the line drawing, switches), the theme and About. A die shows its new mandala next to the current one
  * in the same sheet; only "Use new" replaces it. The die in the top bar stays the quick way, without
  * asking. The rarer entries (files, fast preview) and the daily wallpaper have pages of their
  * own, each with a few lines on what it does, so the main page stays short.
@@ -132,10 +131,10 @@ internal fun MenuSheet(
         Column(Modifier.verticalScroll(rememberScrollState()).padding(horizontal = Spacing.lg).padding(bottom = Spacing.xl)) {
             when {
                 candidate != null -> Compare(image, candidate, actions)
-                page == MenuPage.LINE_DRAWING -> LineDrawingPage(busy, actions, back)
+                page == MenuPage.LINE_DRAWING -> LineDrawingPage(busy, actions) { page = MenuPage.MORE }
                 page == MenuPage.DAILY -> DailyPage(actions, back, onChoose = { page = MenuPage.DAILY_FAVOURITES })
                 page == MenuPage.DAILY_FAVOURITES -> DailyFavouritesPage(actions, onBack = { page = MenuPage.DAILY })
-                page == MenuPage.MORE -> MorePage(fastPreview, chipPreviews, actions, back)
+                page == MenuPage.MORE -> MorePage(fastPreview, chipPreviews, actions, back) { page = it }
                 else -> {
                     Current(params, image)
                     KeepRow(busy, actions, onDailyPage = { page = MenuPage.DAILY })
@@ -273,11 +272,7 @@ private fun MainRows(lightTheme: Boolean, actions: MenuActions, onPage: (MenuPag
     val t = LocalTokens.current
     Column(Modifier.padding(top = Spacing.md)) {
         HorizontalDivider(color = t.outline)
-        MenuRow(EditorIcons.Tune, stringResource(R.string.play_title), stringResource(R.string.play_menu_detail), onClick = actions.onPlay) { Chevron() }
-        HorizontalDivider(color = t.outline)
-        MenuRow(EditorIcons.LineArt, stringResource(if (actions.lineDrawingPro) R.string.save_line_drawing else R.string.save_line_drawing_pro),
-            onClick = { onPage(MenuPage.LINE_DRAWING) }) { Chevron() }
-        HorizontalDivider(color = t.outline)
+        // The play field opens from the top bar, the line drawing sits under More (Mathis, 27 October 2026).
         MenuRow(EditorIcons.Tune, stringResource(R.string.menu_more), onClick = { onPage(MenuPage.MORE) }) { Chevron() }
         HorizontalDivider(color = t.outline)
         // On the main page, since it is switched often, e.g. outdoors or at night.
@@ -370,10 +365,13 @@ private fun DailyFavouritesPage(actions: MenuActions, onBack: () -> Unit) {
 private const val DAILY_COLUMNS = 3
 
 @Composable
-private fun MorePage(fastPreview: Boolean, chipPreviews: Boolean, actions: MenuActions, onBack: () -> Unit) {
+private fun MorePage(fastPreview: Boolean, chipPreviews: Boolean, actions: MenuActions, onBack: () -> Unit, onPage: (MenuPage) -> Unit) {
     val t = LocalTokens.current
     PageTop(stringResource(R.string.menu_more), null, onBack)
     Column(Modifier.padding(top = Spacing.sm)) {
+        HorizontalDivider(color = t.outline)
+        MenuRow(EditorIcons.LineArt, stringResource(if (actions.lineDrawingPro) R.string.save_line_drawing else R.string.save_line_drawing_pro),
+            onClick = { onPage(MenuPage.LINE_DRAWING) }) { Chevron() }
         HorizontalDivider(color = t.outline)
         MenuRow(EditorIcons.Folder, stringResource(R.string.menu_open_file), stringResource(R.string.menu_open_file_detail), onClick = actions.onOpen) { Chevron() }
         HorizontalDivider(color = t.outline)
