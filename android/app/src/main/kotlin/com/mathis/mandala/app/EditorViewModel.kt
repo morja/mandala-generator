@@ -1015,12 +1015,13 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
 
     /**
      * The landscape: a new one around the same middle; the point stays where it is, so the picture shows
-     * the new landscape at once (in the middle there is nothing to show). The compass: start from here.
+     * the new landscape at once, and hops a step out of the middle, where it would show nothing. The
+     * compass: start from here.
      */
     fun playAgain() {
         val state = _play.value ?: return
         if (state.mode == PlayField.Mode.MAP) {
-            _play.value = state.copy(kept = false)
+            _play.value = state.copy(touch = PlayField.hopOutOfTheMiddle(state.touch, Random), kept = false)
             newPlayLandscape()
             applyPlay()
         } else {
