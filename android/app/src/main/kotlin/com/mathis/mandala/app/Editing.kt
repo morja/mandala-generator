@@ -21,6 +21,7 @@ import com.mathis.mandala.core.SprayStroke
 import com.mathis.mandala.core.Quote
 import com.mathis.mandala.core.StyleLayer
 import com.mathis.mandala.core.TextLayerSettings
+import kotlin.math.abs
 
 /**
  * Editing rules of the editor, following the macOS app where it has rules. Pure functions, so they
@@ -374,6 +375,15 @@ object Editing {
         rotation = ((rotation + turnDegrees + 180.0) % 360.0).let { if (it < 0) it + 360.0 else it } - 180.0,
     )
 
+    /** The text moved up or down by `dy` (fractions of the canvas, down positive) and its size multiplied by `zoom`. */
+    fun TextLayerSettings.movedBy(dy: Double, zoom: Double = 1.0): TextLayerSettings = copy(
+        offsetY = (offsetY - dy).coerceIn(0.0, 1.0),
+        fontSize = zoomedWithin(fontSize, zoom, Ranges.textSize),
+    )
+
+    /** How close (a fraction of the canvas) a part moved by hand comes to a centre line before it snaps onto it (UX-1 20). */
+    const val SNAP_DISTANCE = 0.02
+
     /**
      * `value` times `zoom`, kept within `range` like its slider; a saved value already outside the
      * range is never pushed further out nor snapped in by a move without zoom.
@@ -491,7 +501,25 @@ object Editing {
 }
 
 /** What drags on the canvas move in the move mode (ADR-0011). */
-enum class MoveTarget { LAYER, EMBLEM }
+enum class MoveTarget { LAYER, EMBLEM, TEXT }
+
+/**
+ * Snaps one axis of a part moved by hand onto a centre line (UX-1 20). It keeps where the fingers
+ * would have put the part apart from the snapped position, so a slow drag can leave the line again.
+ */
+class CentreSnap {
+    private var raw = 0.0
+    private var placed = Double.NaN
+
+    /** The position after a move by `delta` from `stored`, on `centre` when it comes within [Editing.SNAP_DISTANCE]. */
+    fun next(stored: Double, delta: Double, centre: Double, range: ClosedFloatingPointRange<Double>): Double {
+        // A position changed elsewhere (a slider, Centre, undo) starts afresh from there.
+        if (stored != placed) raw = stored
+        raw = (raw + delta).coerceIn(range)
+        placed = if (abs(raw - centre) < Editing.SNAP_DISTANCE) centre else raw
+        return placed
+    }
+}
 
 /** The two hand-drawing tools of the macOS app: glowing lines (drawing layer) and spray paint (graffiti layer). */
 enum class DrawTool(@StringRes val label: Int) { LINES(R.string.draw_tool_lines), SPRAY(R.string.draw_tool_spray) }

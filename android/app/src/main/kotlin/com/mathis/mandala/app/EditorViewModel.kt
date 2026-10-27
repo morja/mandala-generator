@@ -756,11 +756,26 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         if (target != null) _drawTool.value = null
     }
 
-    /** Moves, sizes and turns the move target by a gesture on the canvas (fractions of its width). */
+    private val snapX = CentreSnap()
+    private val snapY = CentreSnap()
+
+    /**
+     * Moves, sizes and turns the move target by a gesture on the canvas (fractions of its width),
+     * snapping it onto the centre lines (UX-1 20). The text only moves up and down and does not turn.
+     */
     fun moveBy(dx: Double, dy: Double, zoom: Double, turnDegrees: Double) {
+        val offsets = -Editing.MAX_OFFSET..Editing.MAX_OFFSET
         when (_moveTarget.value) {
-            MoveTarget.LAYER -> updateSelected { it.movedBy(dx, dy, zoom, turnDegrees) }
-            MoveTarget.EMBLEM -> updateEmblem { it.movedBy(dx, dy, zoom, turnDegrees) }
+            MoveTarget.LAYER -> updateSelected {
+                it.movedBy(0.0, 0.0, zoom, turnDegrees)
+                    .copy(offsetX = snapX.next(it.offsetX, dx, 0.0, offsets), offsetY = snapY.next(it.offsetY, dy, 0.0, offsets))
+            }
+            MoveTarget.EMBLEM -> updateEmblem {
+                it.movedBy(0.0, 0.0, zoom, turnDegrees)
+                    .copy(offsetX = snapX.next(it.offsetX, dx, 0.0, offsets), offsetY = snapY.next(it.offsetY, dy, 0.0, offsets))
+            }
+            // The text's height counts up from the bottom.
+            MoveTarget.TEXT -> updateText { it.movedBy(0.0, zoom).copy(offsetY = snapY.next(it.offsetY, -dy, 0.5, 0.0..1.0)) }
             null -> Unit
         }
     }

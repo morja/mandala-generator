@@ -30,6 +30,7 @@
     <string name="editor_draw_hint">Drag on the image to draw</string>
     <string name="editor_move_layer_hint">Drag to move layer %1$d, pinch to size and turn it</string>
     <string name="editor_move_emblem_hint">Drag to move the emblem, pinch to size and turn it</string>
+    <string name="editor_move_text_hint">Drag up or down to move the text, pinch to size it</string>
 
     <!-- Editor: Pro sheet -->
     <string name="editor_pro_title">Dahlia Pro</string>

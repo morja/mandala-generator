@@ -30,6 +30,7 @@
     <string name="editor_draw_hint">画像上をドラッグして描きます</string>
     <string name="editor_move_layer_hint">ドラッグでレイヤー%1$dを移動、ピンチで拡大縮小と回転</string>
     <string name="editor_move_emblem_hint">ドラッグでエンブレムを移動、ピンチで拡大縮小と回転</string>
+    <string name="editor_move_text_hint">上下にドラッグでテキストを移動、ピンチで拡大縮小</string>
 
     <!-- Editor: Pro sheet -->
     <string name="editor_pro_title">Dahlia Pro</string>

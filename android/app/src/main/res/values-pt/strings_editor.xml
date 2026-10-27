@@ -30,6 +30,7 @@
     <string name="editor_draw_hint">Arraste na imagem para desenhar</string>
     <string name="editor_move_layer_hint">Arraste para mover a camada %1$d, use o gesto de pinça para redimensionar e girar</string>
     <string name="editor_move_emblem_hint">Arraste para mover o emblema, use o gesto de pinça para redimensionar e girar</string>
+    <string name="editor_move_text_hint">Arraste para cima ou para baixo para mover o texto, use o gesto de pinça para redimensionar</string>
 
     <!-- Editor: Pro sheet -->
     <string name="editor_pro_title">Dahlia Pro</string>

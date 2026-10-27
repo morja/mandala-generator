@@ -30,6 +30,7 @@
     <string name="editor_draw_hint">在图片上拖动即可绘制</string>
     <string name="editor_move_layer_hint">拖动可移动图层 %1$d，双指捏合可缩放和旋转</string>
     <string name="editor_move_emblem_hint">拖动可移动徽标，双指捏合可缩放和旋转</string>
+    <string name="editor_move_text_hint">上下拖动可移动文字，双指捏合可缩放</string>
 
     <!-- Editor: Pro sheet -->
     <string name="editor_pro_title">Dahlia Pro</string>

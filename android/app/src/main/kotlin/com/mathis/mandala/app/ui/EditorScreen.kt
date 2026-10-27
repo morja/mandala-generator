@@ -93,6 +93,8 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.LaunchedEffect
@@ -445,22 +447,32 @@ private fun drawing(params: MandalaParameters, tool: DrawTool?, vm: EditorViewMo
 
 /** What the canvas needs in the move mode (ADR-0011): where the target sits, about how large it is, and where gestures go. */
 private class MoveInput(
-    /** Centre as fractions of the canvas, and a ring radius as a fraction of its width. */
+    /** Centre as fractions of the canvas, and a ring radius as a fraction of its width (for the text, half its box width). */
     val x: Float,
     val y: Float,
     val radius: Float,
-    /** The layer's number from 1, or null for the emblem. */
+    val target: MoveTarget,
+    /** The layer's number from 1, or null for the emblem and the text. */
     val layer: Int?,
+    /** Whether it sits on the vertical or the horizontal centre line, where moving snaps it (UX-1 20). */
+    val onCentreX: Boolean,
+    val onCentreY: Boolean,
     val onMove: (dx: Double, dy: Double, zoom: Double, turnDegrees: Double) -> Unit,
 )
 
 private fun moving(params: MandalaParameters, selected: Int, target: MoveTarget?, vm: EditorViewModel): MoveInput? = when (target) {
     null -> null
     MoveTarget.LAYER -> params.layers.getOrNull(selected)?.let { l ->
-        MoveInput((0.5 + l.offsetX).toFloat(), (0.5 + l.offsetY).toFloat(), (0.36 * l.scale).toFloat(), selected + 1, vm::moveBy)
+        MoveInput((0.5 + l.offsetX).toFloat(), (0.5 + l.offsetY).toFloat(), (0.36 * l.scale).toFloat(), target, selected + 1,
+            l.offsetX == 0.0, l.offsetY == 0.0, vm::moveBy)
     }
     MoveTarget.EMBLEM -> params.emblemLayer.let { e ->
-        MoveInput((0.5 + e.offsetX).toFloat(), (0.5 + e.offsetY).toFloat(), (0.5 * e.size).toFloat(), null, vm::moveBy)
+        MoveInput((0.5 + e.offsetX).toFloat(), (0.5 + e.offsetY).toFloat(), (0.5 * e.size).toFloat(), target, null,
+            e.offsetX == 0.0, e.offsetY == 0.0, vm::moveBy)
+    }
+    // The text stays centred across, so only its height has a line to snap to.
+    MoveTarget.TEXT -> params.textLayer.let { tx ->
+        MoveInput(0.5f, (1.0 - tx.offsetY).toFloat(), (tx.fontWidth / 2).toFloat(), target, null, false, tx.offsetY == 0.5, vm::moveBy)
     }
 }
 
@@ -690,7 +702,11 @@ private fun Canvas(
         val status = when {
             preview.error != null -> preview.error
             drawing != null -> stringResource(R.string.editor_draw_hint)
-            move != null -> move.layer?.let { stringResource(R.string.editor_move_layer_hint, it) } ?: stringResource(R.string.editor_move_emblem_hint)
+            move != null -> when (move.target) {
+                MoveTarget.LAYER -> stringResource(R.string.editor_move_layer_hint, move.layer ?: 1)
+                MoveTarget.EMBLEM -> stringResource(R.string.editor_move_emblem_hint)
+                MoveTarget.TEXT -> stringResource(R.string.editor_move_text_hint)
+            }
             else -> null
         }
         if (!showStatus) return@Column
@@ -769,12 +785,22 @@ private fun DrawingOverlay(input: DrawingInput, guide: Color) {
 }
 
 /**
- * Moves the selected layer or the emblem with the fingers: drag moves, pinch sizes, two fingers
- * turn. A ring shows where it is at once; the preview follows when the fingers rest.
+ * Moves the selected layer, the emblem or the text with the fingers: drag moves, pinch sizes, two
+ * fingers turn (not the text). A ring, or a line for the text, shows where it is at once; the
+ * preview follows when the fingers rest. On a centre line a guide crosses the image and the phone
+ * ticks once (UX-1 20).
  */
 @Composable
 private fun MoveOverlay(input: MoveInput, guide: Color, halo: Color) {
     val current by rememberUpdatedState(input)
+    val haptics = LocalHapticFeedback.current
+    var wasOnCentre by remember { mutableStateOf(input.onCentreX to input.onCentreY) }
+    LaunchedEffect(input.onCentreX, input.onCentreY) {
+        if (input.onCentreX && !wasOnCentre.first || input.onCentreY && !wasOnCentre.second) {
+            haptics.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+        }
+        wasOnCentre = input.onCentreX to input.onCentreY
+    }
     androidx.compose.foundation.Canvas(
         Modifier
             .fillMaxSize()
@@ -784,10 +810,21 @@ private fun MoveOverlay(input: MoveInput, guide: Color, halo: Color) {
                 }
             },
     ) {
+        // A dark edge under the accent keeps the marks visible over bright mandalas.
+        fun line(from: Offset, to: Offset, width: Float) {
+            drawLine(halo, from, to, strokeWidth = width + 4f, cap = StrokeCap.Round)
+            drawLine(guide, from, to, strokeWidth = width, cap = StrokeCap.Round)
+        }
+        if (current.onCentreX) line(Offset(size.width / 2, 0f), Offset(size.width / 2, size.height), 2f)
+        if (current.onCentreY) line(Offset(0f, size.height / 2), Offset(size.width, size.height / 2), 2f)
         val c = Offset(current.x * size.width, current.y * size.height)
-        // A dark edge under the accent keeps the ring visible over bright mandalas.
-        drawCircle(halo, current.radius * size.width, c, style = Stroke(width = 7f))
-        drawCircle(guide, current.radius * size.width, c, style = Stroke(width = 3f))
+        if (current.target == MoveTarget.TEXT) {
+            val half = current.radius * size.width
+            line(Offset(c.x - half, c.y), Offset(c.x + half, c.y), 3f)
+        } else {
+            drawCircle(halo, current.radius * size.width, c, style = Stroke(width = 7f))
+            drawCircle(guide, current.radius * size.width, c, style = Stroke(width = 3f))
+        }
         drawCircle(halo, 10f, c)
         drawCircle(guide, 7f, c)
     }

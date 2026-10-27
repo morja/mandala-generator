@@ -165,6 +165,7 @@ internal fun ControlTabs(
         if (tab != ControlTab.DRAW) vm.setDrawTool(null)
         if (tab != ControlTab.LAYERS && moveTarget == MoveTarget.LAYER) vm.setMoveTarget(null)
         if (tab != ControlTab.EMBLEM && moveTarget == MoveTarget.EMBLEM) vm.setMoveTarget(null)
+        if (tab != ControlTab.TEXT && moveTarget == MoveTarget.TEXT) vm.setMoveTarget(null)
     }
     val position = PositionInput(proOwned, moveTarget, vm::setMoveTarget, onShowPro)
     Column(modifier) {
@@ -269,12 +270,18 @@ private fun PositionGroup(
         Row(verticalAlignment = Alignment.CenterVertically) {
             TextButton(onClick = { onChange(0.0, 0.0) }, enabled = !centred) { Text(stringResource(R.string.controls_centre)) }
             Box(Modifier.weight(1f))
-            if (input.moveTarget == target) {
-                FilledTonalButton(onClick = { input.setMoveTarget(null) }) { Text(stringResource(R.string.controls_done)) }
-            } else {
-                Button(onClick = { input.setMoveTarget(target) }, enabled = !hidden) { Text(stringResource(R.string.controls_move_on_image)) }
-            }
+            MoveButton(target, input, enabled = !hidden)
         }
+    }
+}
+
+/** "Move on image", which turns drags on the canvas into moves of `target`, and "Done" while they are. */
+@Composable
+private fun MoveButton(target: MoveTarget, input: PositionInput, enabled: Boolean = true) {
+    if (input.moveTarget == target) {
+        FilledTonalButton(onClick = { input.setMoveTarget(null) }) { Text(stringResource(R.string.controls_done)) }
+    } else {
+        Button(onClick = { input.setMoveTarget(target) }, enabled = enabled) { Text(stringResource(R.string.controls_move_on_image)) }
     }
 }
 
@@ -734,6 +741,10 @@ private fun TextTab(text: TextLayerSettings, vm: EditorViewModel, position: Posi
         ValueSlider(stringResource(R.string.controls_width), text.fontWidth, Editing.Ranges.textWidth.floats(), default = TextLayerSettings().fontWidth) { v -> update { it.copy(fontWidth = v) } }
         ValueSlider(stringResource(R.string.controls_tracking), text.tracking, Editing.Ranges.textTracking.floats(), default = TextLayerSettings().tracking) { v -> update { it.copy(tracking = v) } }
         ValueSlider(stringResource(R.string.controls_height), text.offsetY, default = TextLayerSettings().offsetY) { v -> update { it.copy(offsetY = v) } }
+        // Moving by hand is free, like the height slider; the text only goes up and down (UX-1 20).
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+            MoveButton(MoveTarget.TEXT, position, enabled = text.isEnabled)
+        }
     }
     Group(stringResource(R.string.controls_light), changed = differs(text.glow to td.glow, text.cloudOpacity to td.cloudOpacity,
         text.cloudScale to td.cloudScale, text.shadowOpacity to td.shadowOpacity)) {

@@ -30,6 +30,7 @@
     <string name="editor_draw_hint">Arrastra sobre la imagen para dibujar</string>
     <string name="editor_move_layer_hint">Arrastra para mover la capa %1$d; pellizca para cambiar su tamaño y girarla</string>
     <string name="editor_move_emblem_hint">Arrastra para mover el emblema; pellizca para cambiar su tamaño y girarlo</string>
+    <string name="editor_move_text_hint">Arrastra hacia arriba o abajo para mover el texto; pellizca para cambiar su tamaño</string>
 
     <!-- Editor: Pro sheet -->
     <string name="editor_pro_title">Dahlia Pro</string>
