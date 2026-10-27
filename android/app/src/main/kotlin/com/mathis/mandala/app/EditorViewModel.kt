@@ -618,8 +618,9 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
     /** Keeps the text currently on the image (with its author) among the user's quotes. */
     fun saveTextAsMyQuote() {
         val text = _params.value.textLayer
+        // No message: the bookmark fills, as the star does (Mathis, 27 October 2026: a message that
+        // stayed after the quote was let go again misled).
         changeMyQuotes { MyQuotes.add(it, Quote(text.text, text.customAuthor)) }
-        message(string(R.string.message_quote_saved))
     }
 
     fun removeMyQuote(quote: Quote) = changeMyQuotes { MyQuotes.remove(it, quote) }

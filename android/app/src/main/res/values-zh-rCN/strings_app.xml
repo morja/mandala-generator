@@ -69,7 +69,6 @@
     <string name="message_favourite_added">已添加到收藏</string>
     <string name="message_favourite_deleted">收藏已删除</string>
     <string name="message_favourites_deleted">已删除的收藏：%d</string>
-    <string name="message_quote_saved">已保存到你的名言</string>
     <string name="message_picture_failed">无法打开图片：%1$s</string>
 
     <!-- Opening and saving files of the macOS app -->

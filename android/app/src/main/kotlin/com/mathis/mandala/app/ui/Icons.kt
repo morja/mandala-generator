@@ -53,7 +53,8 @@ object EditorIcons {
     val QuoteList = line("M5,6.5h14M5,12h14M5,17.5h9")
     val NewQuote = line("M4,8h11M12,5l3,3 -3,3M20,16H9M12,13l-3,3 3,3")
     val Keep = line("M7,4h10v16l-5,-4 -5,4z")
-    val Kept = line("M7,4h10v16l-5,-4 -5,4z", soft = "M7,4h10v16l-5,-4 -5,4z")
+    /** Kept: solid, like the filled star, so the state shows at a glance. */
+    val Kept = icon("M7,4h10v16l-5,-4 -5,4z")
     /** Save sheet: the whole mandala inside the frame, or the mandala filling it past its edges. */
     val FitWhole = line("M4.5,4.5h15v15h-15zM12,7.5a4.5,4.5 0 1,0 0,9a4.5,4.5 0 1,0 0,-9z")
     val FitFill = line("M4.5,4.5h15v15h-15zM12,2.5a9.5,9.5 0 1,0 0,19a9.5,9.5 0 1,0 0,-19z", soft = "M4.5,4.5h15v15h-15z")
