@@ -181,6 +181,16 @@ class EditingTest {
     }
 
     @Test
+    fun eachCardsArrangementMovesOnlyItsOwnEffects() {
+        val fx = com.mathis.mandala.core.EffectsLayerSettings(isEnabled = true, stars = 0.3, highlights = 0.2)
+        var next = 700uL
+        val sparkle = with(Editing) { fx.newSparklePattern { next++ } }
+        assertEquals(fx.copy(starsSeed = 700uL, glitterSeed = 701uL), sparkle)
+        val light = with(Editing) { fx.newLightPattern { next++ } }
+        assertEquals(fx.copy(dimmingSeed = 702uL, erasureSeed = 703uL, highlightsSeed = 704uL), light)
+    }
+
+    @Test
     fun fileNameFollowsTheMacScheme() {
         val p = start.updateLayer(0) { it.copy(style = MandalaStyle.ROSE_CURVES, paletteIndex = 5, symmetry = 6) }
         assertTrue(Editing.fileName(p), Regex("mandala-rose-p5-x6-[0-9a-f]{8}\\.png").matches(Editing.fileName(p)))

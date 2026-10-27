@@ -111,7 +111,10 @@
     <string name="controls_effects">Effekte</string>
     <string name="controls_on">An</string>
     <string name="controls_random_effects">Zufällige Effekte</string>
-    <string name="controls_effects_new_pattern">Neues Muster aus Lichtern, Abdunklung, Sternen und Glitzer</string>
+    <string name="controls_sparkle_arrangement_detail">Sterne und Glitzer</string>
+    <string name="controls_sparkle_arrangement_description">Neue Anordnung von Sternen und Glitzer</string>
+    <string name="controls_light_arrangement_detail">Lichter, Abdunklung und Abrieb</string>
+    <string name="controls_light_arrangement_description">Neue Anordnung von Lichtern, Abdunklung und Abrieb</string>
     <string name="controls_reset">Zurücksetzen</string>
     <string name="controls_effects_off_note">Schalte sie ein für Vignette, Bloom, Körnung, Sterne und mehr.</string>
     <string name="controls_light">Licht</string>

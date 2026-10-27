@@ -113,7 +113,10 @@
     <string name="controls_effects">Efeitos</string>
     <string name="controls_on">Ativado</string>
     <string name="controls_random_effects">Efeitos aleatórios</string>
-    <string name="controls_effects_new_pattern">Novo padrão de realces, escurecimento, estrelas e purpurina</string>
+    <string name="controls_sparkle_arrangement_detail">Estrelas e purpurina</string>
+    <string name="controls_sparkle_arrangement_description">Nova disposição de estrelas e purpurina</string>
+    <string name="controls_light_arrangement_detail">Realces, escurecimento e apagamento</string>
+    <string name="controls_light_arrangement_description">Nova disposição de realces, escurecimento e apagamento</string>
     <string name="controls_reset">Redefinir</string>
     <string name="controls_effects_off_note">Ative para usar vinheta, bloom, granulado, estrelas e mais.</string>
     <string name="controls_light">Luz</string>

@@ -26,7 +26,8 @@ import com.mathis.mandala.app.Editing.movedBy
 import com.mathis.mandala.app.Editing.newVariation
 import com.mathis.mandala.app.Editing.reseedLayer
 import com.mathis.mandala.app.Editing.removeLayer
-import com.mathis.mandala.app.Editing.newPattern
+import com.mathis.mandala.app.Editing.newLightPattern
+import com.mathis.mandala.app.Editing.newSparklePattern
 import com.mathis.mandala.app.Editing.updateBackground
 import com.mathis.mandala.app.Editing.updateEffects
 import com.mathis.mandala.app.Editing.updateLayer
@@ -101,9 +102,11 @@ import kotlin.random.Random
 data class PlayState(
     val mode: PlayField.Mode = PlayField.Mode.MAP,
     val touch: PlayField.Touch = PlayField.Touch(),
-    /** The picture as it is now was added to the favourites; the star stays filled until it changes. */
-    val kept: Boolean = false,
-)
+    /** The favourite made of the picture as it is now; the star stays filled until the picture changes. */
+    val keptId: String? = null,
+) {
+    val kept: Boolean get() = keptId != null
+}
 
 data class PreviewState(
     val image: ImageBitmap? = null,
@@ -561,7 +564,9 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
 
     fun resetEffects() = updateEffects { it.reset() }
 
-    fun newEffectsPattern() = updateEffects { it.newPattern(::randomSeed) }
+    fun newSparklePattern() = updateEffects { it.newSparklePattern(::randomSeed) }
+
+    fun newLightPattern() = updateEffects { it.newLightPattern(::randomSeed) }
 
     /** A new look of the effects, like the dice of the layers, the emblem and the text. */
     fun randomizeEffects() = updateEffects { it.randomized(Random) }
@@ -618,6 +623,12 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
     }
 
     fun removeMyQuote(quote: Quote) = changeMyQuotes { MyQuotes.remove(it, quote) }
+
+    /** The bookmark tapped again: the words as they stand leave my quotes. */
+    fun unsaveTextAsMyQuote() {
+        val text = _params.value.textLayer
+        changeMyQuotes { list -> list.filterNot { it.text == text.text.trim() && it.author == text.customAuthor.trim() } }
+    }
 
     private fun changeMyQuotes(change: (List<Quote>) -> List<Quote>) {
         val next = change(_myQuotes.value)
@@ -863,7 +874,12 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
 
     /** Favourites keep Pro features and open for everyone, like the starters (ADR-0016, 24 October 2026). */
     fun addFavorite() {
-        val image = _preview.value.image ?: return
+        keepFavorite(announce = true)
+    }
+
+    /** The new favourite's id, or null without a preview image to make its thumbnail from. */
+    private fun keepFavorite(announce: Boolean): String? {
+        val image = _preview.value.image ?: return null
         val favorite = Favorite(
             id = UUID.randomUUID().toString().uppercase(),
             parameters = _params.value,
@@ -871,7 +887,8 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
             createdAt = Favorite.createdNow(System.currentTimeMillis()),
         )
         _favorites.update { Favorites.add(it, favorite) }
-        message(string(R.string.message_favourite_added))
+        if (announce) message(string(R.string.message_favourite_added))
+        return favorite.id
     }
 
     /** Opens a favourite by id, as the home screen widget asks for with a tap (ADR-0020). */
@@ -988,29 +1005,37 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
 
     fun setPlayMode(mode: PlayField.Mode) {
         val state = _play.value ?: return
-        _play.value = state.copy(mode = mode, kept = false)
+        _play.value = state.copy(mode = mode, keptId = null)
         applyPlay()
     }
 
     /** One finger on the field, as fractions of its width and height. */
     fun playTouch(x: Double, y: Double) {
         val state = _play.value ?: return
-        _play.value = state.copy(touch = state.touch.copy(x = x.coerceIn(0.0, 1.0), y = y.coerceIn(0.0, 1.0)), kept = false)
+        _play.value = state.copy(touch = state.touch.copy(x = x.coerceIn(0.0, 1.0), y = y.coerceIn(0.0, 1.0)), keptId = null)
         applyPlay()
     }
 
     /** Back to the middle: the mandala as it was when the field opened. */
     fun resetPlay() {
         val base = playBase ?: return
-        _play.update { it?.copy(touch = PlayField.Touch(), kept = false) }
+        _play.update { it?.copy(touch = PlayField.Touch(), keptId = null) }
         _params.value = base
     }
 
-    /** Adds the picture as played to the favourites; the sheet's star fills until the picture changes. */
+    /**
+     * The star: adds the picture as played to the favourites and fills; tapped again it takes that
+     * favourite out again (Mathis, 27 October 2026, like the bookmark in the text tab).
+     */
     fun playKeep() {
-        if (_play.value == null) return
-        addFavorite()
-        _play.update { it?.copy(kept = true) }
+        val state = _play.value ?: return
+        val id = state.keptId
+        if (id != null) {
+            _favorites.update { Favorites.remove(it, id) }
+            _play.value = state.copy(keptId = null)
+        } else {
+            _play.value = state.copy(keptId = keepFavorite(announce = false) ?: return)
+        }
     }
 
     /**
@@ -1021,12 +1046,12 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
     fun playAgain() {
         val state = _play.value ?: return
         if (state.mode == PlayField.Mode.MAP) {
-            _play.value = state.copy(touch = PlayField.hopOutOfTheMiddle(state.touch, Random), kept = false)
+            _play.value = state.copy(touch = PlayField.hopOutOfTheMiddle(state.touch, Random), keptId = null)
             newPlayLandscape()
             applyPlay()
         } else {
             playBase = _params.value
-            _play.value = state.copy(touch = PlayField.Touch(), kept = false)
+            _play.value = state.copy(touch = PlayField.Touch(), keptId = null)
         }
     }
 

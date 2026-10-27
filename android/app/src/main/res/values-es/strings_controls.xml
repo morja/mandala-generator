@@ -113,7 +113,10 @@
     <string name="controls_effects">Efectos</string>
     <string name="controls_on">Activado</string>
     <string name="controls_random_effects">Efectos al azar</string>
-    <string name="controls_effects_new_pattern">Nuevo patrón de luces, atenuación, estrellas y purpurina</string>
+    <string name="controls_sparkle_arrangement_detail">Estrellas y purpurina</string>
+    <string name="controls_sparkle_arrangement_description">Nueva disposición de estrellas y purpurina</string>
+    <string name="controls_light_arrangement_detail">Luces, atenuación y borrado</string>
+    <string name="controls_light_arrangement_description">Nueva disposición de luces, atenuación y borrado</string>
     <string name="controls_reset">Restablecer</string>
     <string name="controls_effects_off_note">Actívalo para usar viñeta, resplandor, grano, estrellas y más.</string>
     <string name="controls_light">Luz</string>

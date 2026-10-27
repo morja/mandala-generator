@@ -399,7 +399,7 @@ private fun SceneTab(params: MandalaParameters, vm: EditorViewModel) {
     // switch, as the emblem and text tabs do (DM-12), and the background follows as its own part.
     val base = params.baseLayer
     val t = LocalTokens.current
-    Effects(params.effectsLayer, vm::updateEffects, vm::randomizeEffects, vm::newEffectsPattern, vm::resetEffects)
+    Effects(params.effectsLayer, vm::updateEffects, vm::randomizeEffects, vm::newSparklePattern, vm::newLightPattern, vm::resetEffects)
     HorizontalDivider(color = t.outline, modifier = Modifier.padding(top = Spacing.md))
     val switchBackground: (Boolean) -> Unit = { on ->
         vm.updateBackground { b ->
@@ -504,15 +504,17 @@ private fun backgroundName(type: BaseLayerType) = stringResource(when (type) {
  * "More" (TUNE-1). "Fade" sets the `wash` field; the old `fade`
  * field does almost the same and gets its own slider ("Old fade") only in settings that use it.
  * The die beside the switch rolls a new look of the effects, like the other dice (Mathis, 27 October 2026:
- * a die that only moved the pattern read as doing nothing). The pattern of highlights, dimming, erasure,
- * stars and glitter, as the Mac's die moves it, has a die of its own in the groups that hold them.
+ * a die that only moved the pattern read as doing nothing). The arrangement, as the Mac's die moves it,
+ * is a row with a die in the Sparkle and More cards, like a layer's Arrangement, and each moves only
+ * what its card holds: stars and glitter, or highlights, dimming and erasure.
  */
 @Composable
 private fun Effects(
     fx: EffectsLayerSettings,
     update: ((EffectsLayerSettings) -> EffectsLayerSettings) -> Unit,
     randomize: () -> Unit,
-    newPattern: () -> Unit,
+    newSparkle: () -> Unit,
+    newLight: () -> Unit,
     resetAll: () -> Unit,
 ) {
     // Once shown, the old fade slider stays while this screen is open, so it does not vanish at 0 mid-drag.
@@ -539,10 +541,6 @@ private fun Effects(
         }
         // Holding the preview shows it without effects; no hint says so (Mathis: the switch is right here).
         val d = EffectsLayerSettings()
-        val patternDie: @Composable () -> Unit = {
-            IconButton(onClick = newPattern) { Icon(EditorIcons.DieOne,
-                contentDescription = stringResource(R.string.controls_effects_new_pattern), tint = t.accent) }
-        }
         Group(stringResource(R.string.glow_light), initiallyOpen = true,
             changed = differs(fx.brightness to d.brightness, fx.contrast to d.contrast, fx.vignette to d.vignette, fx.bloom to d.bloom)) {
             ValueSlider(stringResource(R.string.save_brightness), fx.brightness, default = EffectsLayerSettings().brightness) { v -> update { it.copy(brightness = v) } }
@@ -559,12 +557,16 @@ private fun Effects(
             ValueSlider(stringResource(R.string.controls_background_grain), fx.grain, Editing.Ranges.effectsGrain.floats(), default = EffectsLayerSettings().grain) { v -> update { it.copy(grain = v) } }
             ValueSlider(stringResource(R.string.controls_smoother), fx.smoother, default = EffectsLayerSettings().smoother) { v -> update { it.copy(smoother = v) } }
         }
-        Group(stringResource(R.string.controls_sparkle), trailing = patternDie, changed = differs(fx.stars to d.stars, fx.glitter to d.glitter)) {
+        Group(stringResource(R.string.controls_sparkle), changed = differs(fx.stars to d.stars, fx.glitter to d.glitter)) {
+            RandomActionRow(stringResource(R.string.controls_seed_detail), stringResource(R.string.controls_sparkle_arrangement_detail),
+                stringResource(R.string.controls_sparkle_arrangement_description), newSparkle)
             ValueSlider(stringResource(R.string.controls_stars), fx.stars, default = EffectsLayerSettings().stars) { v -> update { it.copy(stars = v) } }
             ValueSlider(stringResource(R.string.controls_glitter), fx.glitter, Editing.Ranges.effectsGlitter.floats(), default = EffectsLayerSettings().glitter) { v -> update { it.copy(glitter = v) } }
         }
-        Group(stringResource(R.string.editor_more), trailing = patternDie, changed = differs(fx.highlights to d.highlights, fx.dimming to d.dimming,
+        Group(stringResource(R.string.editor_more), changed = differs(fx.highlights to d.highlights, fx.dimming to d.dimming,
             fx.erasure to d.erasure, fx.relief to d.relief, fx.chromatic to d.chromatic, fx.fade to d.fade)) {
+            RandomActionRow(stringResource(R.string.controls_seed_detail), stringResource(R.string.controls_light_arrangement_detail),
+                stringResource(R.string.controls_light_arrangement_description), newLight)
             ValueSlider(stringResource(R.string.controls_highlights), fx.highlights, default = EffectsLayerSettings().highlights) { v -> update { it.copy(highlights = v) } }
             ValueSlider(stringResource(R.string.controls_dimming), fx.dimming, default = EffectsLayerSettings().dimming) { v -> update { it.copy(dimming = v) } }
             ValueSlider(stringResource(R.string.controls_erasure), fx.erasure, default = EffectsLayerSettings().erasure) { v -> update { it.copy(erasure = v) } }
@@ -747,7 +749,7 @@ private fun TextTab(text: TextLayerSettings, vm: EditorViewModel, position: Posi
     }
     if (!position.proOwned) ProNote(stringResource(R.string.controls_pro_note_text), position.showPro)
     Words(text, saved = myQuotes.any { it.text == text.text.trim() && it.author == text.customAuthor.trim() },
-        update = update, onChoose = { choosing = true }, onNewQuote = vm::randomQuote, onKeep = vm::saveTextAsMyQuote)
+        update = update, onChoose = { choosing = true }, onNewQuote = vm::randomQuote, onKeep = vm::saveTextAsMyQuote, onUnkeep = vm::unsaveTextAsMyQuote)
     val td = TextLayerSettings()
     Group(stringResource(R.string.controls_font), changed = text.fontName != td.fontName, summary = Quotes.fonts.firstOrNull { it.first == text.fontName }?.second ?: text.fontName) {
         FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
@@ -861,7 +863,7 @@ private fun QuoteRow(q: Quote, onPick: (Quote) -> Unit, trailing: (@Composable (
 /**
  * The words (DM-13 B, Mathis 27 October 2026, after A's card with a tap to edit): the two fields are
  * always open, in the picture's font; Collection and New quote sit in the card's head, keeping the
- * quote is a bookmark in the text field.
+ * quote is a bookmark in the text field: filled once kept, and tapped again it lets the quote go.
  */
 @Composable
 private fun Words(
@@ -871,6 +873,7 @@ private fun Words(
     onChoose: () -> Unit,
     onNewQuote: () -> Unit,
     onKeep: () -> Unit,
+    onUnkeep: () -> Unit,
 ) {
     val t = LocalTokens.current
     val family = remember(text.fontName) { FontFamily(AndroidTextRenderer.typeface(text.fontName)) }
@@ -890,11 +893,11 @@ private fun Words(
             textStyle = MaterialTheme.typography.titleMedium.copy(fontFamily = family),
             maxLines = 6,
             trailingIcon = {
-                IconButton(onClick = onKeep, enabled = text.text.isNotBlank() && !saved) {
+                IconButton(onClick = if (saved) onUnkeep else onKeep, enabled = text.text.isNotBlank()) {
                     Icon(
                         if (saved) EditorIcons.Kept else EditorIcons.Keep,
                         contentDescription = stringResource(if (saved) R.string.controls_kept else R.string.controls_keep),
-                        tint = if (saved) t.textMuted else t.accent,
+                        tint = t.accent,
                     )
                 }
             },

@@ -109,7 +109,10 @@
     <string name="controls_effects">效果</string>
     <string name="controls_on">开启</string>
     <string name="controls_random_effects">随机效果</string>
-    <string name="controls_effects_new_pattern">新的高光、暗化、星星和闪粉图案</string>
+    <string name="controls_sparkle_arrangement_detail">星星和闪粉</string>
+    <string name="controls_sparkle_arrangement_description">星星和闪粉的新排列</string>
+    <string name="controls_light_arrangement_detail">高光、暗化和擦除</string>
+    <string name="controls_light_arrangement_description">高光、暗化和擦除的新排列</string>
     <string name="controls_reset">重置</string>
     <string name="controls_effects_off_note">开启后可使用暗角、泛光、颗粒、星星等效果。</string>
     <string name="controls_light">光线</string>

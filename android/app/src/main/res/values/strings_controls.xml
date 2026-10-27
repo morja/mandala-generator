@@ -111,7 +111,10 @@
     <string name="controls_effects">Effects</string>
     <string name="controls_on">On</string>
     <string name="controls_random_effects">Random effects look</string>
-    <string name="controls_effects_new_pattern">New pattern of highlights, dimming, stars and glitter</string>
+    <string name="controls_sparkle_arrangement_detail">Stars and glitter</string>
+    <string name="controls_sparkle_arrangement_description">New arrangement of the stars and glitter</string>
+    <string name="controls_light_arrangement_detail">Highlights, dimming and erasure</string>
+    <string name="controls_light_arrangement_description">New arrangement of the highlights, dimming and erasure</string>
     <string name="controls_reset">Reset</string>
     <string name="controls_effects_off_note">Switch on to use vignette, bloom, grain, stars and more.</string>
     <string name="controls_light">Light</string>

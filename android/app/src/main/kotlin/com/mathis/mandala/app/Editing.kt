@@ -240,10 +240,16 @@ object Editing {
         copy(effectsLayer = change(effectsLayer))
 
     /** New random positions for spots, highlights, stars and glitter; strengths stay. */
-    fun EffectsLayerSettings.newPattern(nextSeed: () -> ULong): EffectsLayerSettings = copy(
-        dimmingSeed = nextSeed(), erasureSeed = nextSeed(), highlightsSeed = nextSeed(),
-        starsSeed = nextSeed(), glitterSeed = nextSeed(),
-    )
+    fun EffectsLayerSettings.newPattern(nextSeed: () -> ULong): EffectsLayerSettings =
+        newLightPattern(nextSeed).newSparklePattern(nextSeed)
+
+    /** The Sparkle card's arrangement: where the stars and glitter sit. */
+    fun EffectsLayerSettings.newSparklePattern(nextSeed: () -> ULong): EffectsLayerSettings =
+        copy(starsSeed = nextSeed(), glitterSeed = nextSeed())
+
+    /** The More card's arrangement: where highlights, dimming and erasure sit (relief and chromatic have no places). */
+    fun EffectsLayerSettings.newLightPattern(nextSeed: () -> ULong): EffectsLayerSettings =
+        copy(dimmingSeed = nextSeed(), erasureSeed = nextSeed(), highlightsSeed = nextSeed())
 
     fun MandalaParameters.updateText(change: (TextLayerSettings) -> TextLayerSettings): MandalaParameters =
         copy(textLayer = change(textLayer))

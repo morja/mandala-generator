@@ -115,7 +115,10 @@
     <string name="controls_effects">Эффекты</string>
     <string name="controls_on">Вкл.</string>
     <string name="controls_random_effects">Случайные эффекты</string>
-    <string name="controls_effects_new_pattern">Новый узор бликов, затемнения, звёзд и блёсток</string>
+    <string name="controls_sparkle_arrangement_detail">Звёзды и блёстки</string>
+    <string name="controls_sparkle_arrangement_description">Новое расположение звёзд и блёсток</string>
+    <string name="controls_light_arrangement_detail">Блики, затемнение и стирание</string>
+    <string name="controls_light_arrangement_description">Новое расположение бликов, затемнения и стирания</string>
     <string name="controls_reset">Сбросить</string>
     <string name="controls_effects_off_note">Включите, чтобы использовать виньетку, ореол, зерно, звёзды и многое другое.</string>
     <string name="controls_light">Свет</string>

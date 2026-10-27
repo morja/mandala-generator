@@ -109,7 +109,10 @@
     <string name="controls_effects">エフェクト</string>
     <string name="controls_on">オン</string>
     <string name="controls_random_effects">ランダムな効果</string>
-    <string name="controls_effects_new_pattern">ハイライト、減光、星、きらめきの新しいパターン</string>
+    <string name="controls_sparkle_arrangement_detail">星ときらめき</string>
+    <string name="controls_sparkle_arrangement_description">星ときらめきの新しい配置</string>
+    <string name="controls_light_arrangement_detail">ハイライト、減光、かすれ</string>
+    <string name="controls_light_arrangement_description">ハイライト、減光、かすれの新しい配置</string>
     <string name="controls_reset">リセット</string>
     <string name="controls_effects_off_note">オンにすると、周辺減光、ブルーム、粒子、星などを使えます。</string>
     <string name="controls_light">光</string>
