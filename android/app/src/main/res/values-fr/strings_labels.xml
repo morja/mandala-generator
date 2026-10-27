@@ -14,19 +14,19 @@
     <string name="style_wave_interference">Ondes</string>
     <string name="style_geometric">Géométrique</string>
     <string name="style_sacred_geometry">Sacré</string>
-    <string name="style_sunburst">Soleil rayonnant</string>
-    <string name="style_star_burst">Explosion d\'étoiles</string>
+    <string name="style_sunburst">Soleil</string>
+    <string name="style_star_burst">Étoile</string>
     <string name="style_string_art">Art filaire</string>
     <string name="style_spider_web">Toile d\'araignée</string>
     <string name="style_weave">Tissage</string>
     <string name="style_radial_mesh">Maillage radial</string>
     <string name="style_moire">Moiré</string>
-    <string name="style_flow_field">Champ de flux</string>
+    <string name="style_flow_field">Flux</string>
     <string name="style_tendril">Vrilles</string>
     <string name="style_voronoi">Voronoï</string>
     <string name="style_strange_attractor">Attracteur</string>
     <string name="style_constellation_web">Constellation</string>
-    <string name="style_deep_nebula">Nébuleuse profonde</string>
+    <string name="style_deep_nebula">Nébuleuse</string>
     <string name="style_interference_bloom">Interférence</string>
     <string name="style_hyperboloid">Hyperboloïde</string>
     <string name="style_torus">Tore</string>
@@ -70,6 +70,6 @@
     <string name="pro_feature_emblem">Emblème</string>
     <string name="pro_feature_text">Texte</string>
     <string name="pro_feature_moved_layers">Calques déplacés</string>
-    <string name="style_petal_rings">Anneaux de pétales</string>
-    <string name="style_loop_rings">Anneaux de boucles</string>
+    <string name="style_petal_rings">Pétales</string>
+    <string name="style_loop_rings">Boucles</string>
 </resources>

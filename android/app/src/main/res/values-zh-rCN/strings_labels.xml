@@ -14,7 +14,7 @@
     <string name="style_wave_interference">波纹</string>
     <string name="style_geometric">几何</string>
     <string name="style_sacred_geometry">神圣</string>
-    <string name="style_sunburst">旭日光芒</string>
+    <string name="style_sunburst">旭日</string>
     <string name="style_star_burst">星芒</string>
     <string name="style_string_art">绕线画</string>
     <string name="style_spider_web">蛛网</string>
@@ -26,7 +26,7 @@
     <string name="style_voronoi">Voronoi</string>
     <string name="style_strange_attractor">吸引子</string>
     <string name="style_constellation_web">星座</string>
-    <string name="style_deep_nebula">深空星云</string>
+    <string name="style_deep_nebula">星云</string>
     <string name="style_interference_bloom">干涉</string>
     <string name="style_hyperboloid">双曲面</string>
     <string name="style_torus">圆环面</string>
@@ -70,6 +70,6 @@
     <string name="pro_feature_emblem">徽标</string>
     <string name="pro_feature_text">文字</string>
     <string name="pro_feature_moved_layers">移动过的图层</string>
-    <string name="style_petal_rings">花瓣环</string>
-    <string name="style_loop_rings">圆圈环</string>
+    <string name="style_petal_rings">花瓣</string>
+    <string name="style_loop_rings">圆圈</string>
 </resources>

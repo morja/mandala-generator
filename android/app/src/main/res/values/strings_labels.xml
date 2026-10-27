@@ -15,18 +15,18 @@
     <string name="style_geometric">Geometric</string>
     <string name="style_sacred_geometry">Sacred</string>
     <string name="style_sunburst">Sunburst</string>
-    <string name="style_star_burst">Star Burst</string>
+    <string name="style_star_burst">Starburst</string>
     <string name="style_string_art">String Art</string>
     <string name="style_spider_web">Spider Web</string>
     <string name="style_weave">Weave</string>
     <string name="style_radial_mesh">Radial Mesh</string>
     <string name="style_moire">Moiré</string>
-    <string name="style_flow_field">Flow Field</string>
+    <string name="style_flow_field">Flow</string>
     <string name="style_tendril">Tendril</string>
     <string name="style_voronoi">Voronoi</string>
     <string name="style_strange_attractor">Attractor</string>
     <string name="style_constellation_web">Constellation</string>
-    <string name="style_deep_nebula">Deep Nebula</string>
+    <string name="style_deep_nebula">Nebula</string>
     <string name="style_interference_bloom">Interference</string>
     <string name="style_hyperboloid">Hyperboloid</string>
     <string name="style_torus">Torus</string>
@@ -70,6 +70,6 @@
     <string name="pro_feature_emblem">Emblem</string>
     <string name="pro_feature_text">Text</string>
     <string name="pro_feature_moved_layers">Moved layers</string>
-    <string name="style_petal_rings">Petal Rings</string>
-    <string name="style_loop_rings">Loop Rings</string>
+    <string name="style_petal_rings">Petals</string>
+    <string name="style_loop_rings">Loops</string>
 </resources>

@@ -4,7 +4,7 @@
     <string name="style_spirograph">Spirograph</string>
     <string name="style_rose_curves">Rosenkurven</string>
     <string name="style_floral">Blumig</string>
-    <string name="style_butterfly">Schmetterling</string>
+    <string name="style_butterfly">Falter</string>
     <string name="style_epitrochoid">Epitrochoide</string>
     <string name="style_lissajous">Lissajous</string>
     <string name="style_hypocycloid">Hypozykloide</string>
@@ -14,19 +14,19 @@
     <string name="style_wave_interference">Wellen</string>
     <string name="style_geometric">Geometrisch</string>
     <string name="style_sacred_geometry">Sakral</string>
-    <string name="style_sunburst">Strahlenkranz</string>
-    <string name="style_star_burst">Sternenstrahlen</string>
+    <string name="style_sunburst">Sonne</string>
+    <string name="style_star_burst">Stern</string>
     <string name="style_string_art">Fadenbild</string>
     <string name="style_spider_web">Spinnennetz</string>
     <string name="style_weave">Geflecht</string>
     <string name="style_radial_mesh">Radialnetz</string>
     <string name="style_moire">Moiré</string>
-    <string name="style_flow_field">Strömungsfeld</string>
+    <string name="style_flow_field">Strömung</string>
     <string name="style_tendril">Ranken</string>
     <string name="style_voronoi">Voronoi</string>
     <string name="style_strange_attractor">Attraktor</string>
     <string name="style_constellation_web">Sternbild</string>
-    <string name="style_deep_nebula">Tiefer Nebel</string>
+    <string name="style_deep_nebula">Nebel</string>
     <string name="style_interference_bloom">Interferenz</string>
     <string name="style_hyperboloid">Hyperboloid</string>
     <string name="style_torus">Torus</string>
@@ -70,6 +70,6 @@
     <string name="pro_feature_emblem">Emblem</string>
     <string name="pro_feature_text">Text</string>
     <string name="pro_feature_moved_layers">Verschobene Ebenen</string>
-    <string name="style_petal_rings">Blütenringe</string>
-    <string name="style_loop_rings">Schleifenringe</string>
+    <string name="style_petal_rings">Blüten</string>
+    <string name="style_loop_rings">Schleifen</string>
 </resources>
