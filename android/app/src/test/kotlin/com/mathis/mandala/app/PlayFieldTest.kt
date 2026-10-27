@@ -6,7 +6,6 @@ import com.mathis.mandala.core.MandalaParameters
 import com.mathis.mandala.core.MandalaStyle
 import com.mathis.mandala.core.StyleLayer
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -39,12 +38,5 @@ class PlayFieldTest {
         val styles = (0..10).flatMap { i -> (0..10).map { j -> PlayField.apply(base, 0, Mode.MAP, land, Touch(i / 10.0, j / 10.0)).layers[0].style } }.toSet()
         assertTrue("only $styles", styles.size >= 3)
         assertEquals(MandalaStyle.FLORAL, PlayField.apply(base, 0, Mode.COMPASS, land, Touch(1.0, 0.0)).layers[0].style)
-    }
-
-    @Test
-    fun twoFingersMakeItDenserAndTurnTheColours() {
-        val denser = PlayField.apply(base, 0, Mode.MAP, land, Touch(denser = 1.0, turn = 0.25)).layers[0]
-        assertTrue(denser.complexity > base.layers[0].complexity && denser.density > base.layers[0].density)
-        assertNotEquals(base.layers[0].colorOffset, denser.colorOffset, 1e-9)
     }
 }

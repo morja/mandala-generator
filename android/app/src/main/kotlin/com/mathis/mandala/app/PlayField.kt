@@ -18,14 +18,13 @@ import kotlin.random.Random
  * The play field (UX-1 19, DM-20): one finger on a square moves many settings of the selected layer
  * and the scene at once. In the middle of the field is the mandala as it was; away from it,
  * [Mode.MAP] lets every setting follow a wave of its own (a landscape of mandalas), [Mode.COMPASS]
- * changes light, shape, depth or colour by direction, more the farther out. Two fingers add more:
- * spreading makes the layer denser, turning turns its colours.
+ * changes light, shape, depth or colour by direction, more the farther out.
  */
 object PlayField {
     enum class Mode { MAP, COMPASS }
 
-    /** Where the finger is (0..1 across and down) and what two fingers added. */
-    data class Touch(val x: Double = 0.5, val y: Double = 0.5, val denser: Double = 0.0, val turn: Double = 0.0)
+    /** Where the finger is (0..1 across and down). */
+    data class Touch(val x: Double = 0.5, val y: Double = 0.5)
 
     /** One landscape: a wave per setting, and the styles and palettes its zones offer. */
     class Landscape(seed: Long, baseStyle: MandalaStyle, basePalette: Int, paletteCount: Int) {
@@ -56,12 +55,7 @@ object PlayField {
             Mode.MAP -> map(l, base.effectsLayer, land, touch)
             Mode.COMPASS -> compass(l, base.effectsLayer, touch)
         }
-        val denser = moved.copy(
-            complexity = (moved.complexity + 0.4 * touch.denser).coerceIn(0.0, 1.0),
-            density = (moved.density + 0.3 * touch.denser).coerceIn(0.0, 1.0),
-            colorOffset = (moved.colorOffset + touch.turn).mod(1.0),
-        )
-        return base.copy(layers = base.layers.toMutableList().also { it[layer] = denser }, effectsLayer = effects)
+        return base.copy(layers = base.layers.toMutableList().also { it[layer] = moved }, effectsLayer = effects)
     }
 
     private fun map(l: StyleLayer, e: EffectsLayerSettings, land: Landscape, t: Touch): Pair<StyleLayer, EffectsLayerSettings> {

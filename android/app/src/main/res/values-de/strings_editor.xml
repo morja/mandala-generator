@@ -79,10 +79,10 @@
     <string name="play_map">Landkarte</string>
     <string name="play_compass">Kompass</string>
     <string name="play_done">Fertig</string>
-    <string name="play_hint">Mit einem Finger ziehen. Zwei Finger: auseinander für mehr, drehen für Farben.</string>
+    <string name="play_hint">Mit einem Finger ziehen.</string>
     <string name="play_new_map">Neue Landkarte</string>
     <string name="play_from_here">Von hier aus</string>
-    <string name="play_keep">Merken</string>
+    <string name="play_keep">Zu den Favoriten</string>
     <string name="play_light">Licht</string>
     <string name="play_shape">Form</string>
     <string name="play_depth">Tiefe</string>

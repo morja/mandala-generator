@@ -6,8 +6,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
-import androidx.compose.foundation.gestures.calculateRotation
-import androidx.compose.foundation.gestures.calculateZoom
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -57,9 +55,9 @@ import com.mathis.mandala.app.ui.theme.Spacing
 
 /**
  * The play field (UX-1 19, DM-20): the picture, and below it a field where one finger changes many
- * settings at once; two fingers spread for more and turn the colours. "Landscape" shows the field
- * as small pictures, "Compass" changes light, shape, depth or colour by direction. Closing keeps
- * the mandala as played; Back in the editor undoes it.
+ * settings at once. "Landscape" lets every setting follow a wave of its own, "Compass" changes
+ * light, shape, depth or colour by direction. Done or a swipe down closes it and keeps the mandala
+ * as played; Back in the editor undoes it.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -68,15 +66,14 @@ internal fun PlaySheet(
     image: ImageBitmap?,
     onMode: (PlayField.Mode) -> Unit,
     onTouch: (Double, Double) -> Unit,
-    onGesture: (Float, Float) -> Unit,
     onReset: () -> Unit,
     onAgain: () -> Unit,
     onKeep: () -> Unit,
     onDismiss: () -> Unit,
 ) {
     val t = LocalTokens.current
-    // A drag on the field must not close the sheet, so it opens fully and stays.
-    ModalBottomSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true), sheetGesturesEnabled = false) {
+    // Opens fully; the field takes its own touches, so only a swipe outside it closes the sheet.
+    ModalBottomSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
         Column(
             Modifier.fillMaxHeight().padding(horizontal = Spacing.lg).padding(bottom = Spacing.lg),
             verticalArrangement = Arrangement.spacedBy(Spacing.md),
@@ -100,7 +97,7 @@ internal fun PlaySheet(
                     image?.let { Image(it, contentDescription = stringResource(R.string.editor_preview), contentScale = ContentScale.Fit, modifier = Modifier.fillMaxSize()) }
                 }
             }
-            PlayPad(state, onTouch, onGesture)
+            PlayPad(state, onTouch)
             Text(
                 stringResource(R.string.play_hint), style = MaterialTheme.typography.bodySmall, color = t.textMuted,
                 textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth(),
@@ -115,12 +112,11 @@ internal fun PlaySheet(
     }
 }
 
-/** The field: one finger places the point, two fingers spread and turn. */
+/** The field: one finger places the point and drags it. */
 @Composable
-private fun PlayPad(state: PlayState, onTouch: (Double, Double) -> Unit, onGesture: (Float, Float) -> Unit) {
+private fun PlayPad(state: PlayState, onTouch: (Double, Double) -> Unit) {
     val t = LocalTokens.current
     val touch by rememberUpdatedState(onTouch)
-    val gesture by rememberUpdatedState(onGesture)
     val shape = RoundedCornerShape(Radius.md)
     val description = stringResource(R.string.play_field_description)
     BoxWithConstraints(
@@ -138,14 +134,8 @@ private fun PlayPad(state: PlayState, onTouch: (Double, Double) -> Unit, onGestu
                     down.consume()
                     while (true) {
                         val event = awaitPointerEvent()
-                        val pressed = event.changes.filter { it.pressed }
-                        if (pressed.isEmpty()) break
-                        if (pressed.size >= 2) {
-                            gesture(event.calculateZoom(), event.calculateRotation())
-                        } else {
-                            val p = pressed.first().position
-                            touch(p.x.toDouble() / size.width, p.y.toDouble() / size.height)
-                        }
+                        val p = event.changes.firstOrNull { it.pressed }?.position ?: break
+                        touch(p.x.toDouble() / size.width, p.y.toDouble() / size.height)
                         event.changes.forEach { it.consume() }
                     }
                 }
@@ -153,19 +143,7 @@ private fun PlayPad(state: PlayState, onTouch: (Double, Double) -> Unit, onGestu
     ) {
         val w = maxWidth
         val h = maxHeight
-        if (state.mode == PlayField.Mode.MAP) {
-            // The landscape seen from above: what lies where.
-            val columns = PLAY_COLUMNS
-            val rows = if (state.map.isEmpty()) 0 else state.map.size / columns
-            for ((i, tile) in state.map.withIndex()) {
-                val cx = w * ((i % columns + 0.5f) / columns)
-                val cy = h * ((i / columns + 0.5f) / rows)
-                Image(
-                    tile, contentDescription = null,
-                    modifier = Modifier.offset(cx - Sizes.icon, cy - Sizes.icon).size(Sizes.icon * 2).clip(CircleShape),
-                )
-            }
-        } else {
+        if (state.mode == PlayField.Mode.COMPASS) {
             val labels = listOf(
                 R.string.play_light to Alignment.TopCenter, R.string.play_shape to Alignment.CenterEnd,
                 R.string.play_depth to Alignment.BottomCenter, R.string.play_colour to Alignment.CenterStart,
@@ -191,6 +169,3 @@ private fun PlayPad(state: PlayState, onTouch: (Double, Double) -> Unit, onGestu
 
 /** Wider than tall, so picture and field both fit on a phone. */
 private const val PAD_ASPECT = 1.3f
-
-/** Matches the view model's landscape: five small pictures across. */
-private const val PLAY_COLUMNS = 5

@@ -79,10 +79,10 @@
     <string name="play_map">风景</string>
     <string name="play_compass">罗盘</string>
     <string name="play_done">完成</string>
-    <string name="play_hint">用一根手指拖动。两根手指：张开更密，旋转换色。</string>
+    <string name="play_hint">用一根手指拖动。</string>
     <string name="play_new_map">新风景</string>
     <string name="play_from_here">从这里开始</string>
-    <string name="play_keep">保留</string>
+    <string name="play_keep">加入收藏</string>
     <string name="play_light">光</string>
     <string name="play_shape">形状</string>
     <string name="play_depth">深度</string>
