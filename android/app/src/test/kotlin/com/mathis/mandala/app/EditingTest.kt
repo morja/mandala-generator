@@ -309,6 +309,30 @@ class EditingTest {
     }
 
     @Test
+    fun theTextMovesUpAndDownAndSizesWithinItsRanges() {
+        val text = com.mathis.mandala.core.TextLayerSettings(offsetY = 0.4, fontSize = 0.06).movedBy(0.1, zoom = 1.5)
+        assertEquals(0.3, text.offsetY, 1e-9) // a drag down lowers it; its height counts from the bottom
+        assertEquals(0.09, text.fontSize, 1e-9)
+        assertEquals(1.0, text.movedBy(-5.0).offsetY, 1e-9)
+        assertEquals(0.12, text.movedBy(0.0, zoom = 3.0).fontSize, 1e-9) // the Size slider's upper end
+    }
+
+    @Test
+    fun movingByHandSnapsOntoTheCentreAndCanLeaveItAgain() {
+        val snap = CentreSnap()
+        val range = -1.0..1.0
+        var x = snap.next(0.05, -0.04, 0.0, range)
+        assertEquals(0.0, x, 1e-9) // 0.01 is within the snap distance
+        x = snap.next(x, -0.005, 0.0, range)
+        assertEquals(0.0, x, 1e-9) // small steps stay on the line
+        x = snap.next(x, -0.03, 0.0, range)
+        assertEquals(-0.025, x, 1e-9) // but they add up and leave it
+        // A position set elsewhere (a slider) starts afresh.
+        assertEquals(0.5, snap.next(0.4, 0.1, 0.0, range), 1e-9)
+        assertEquals(1.0, snap.next(0.9, 0.5, 0.0, range), 1e-9)
+    }
+
+    @Test
     fun recentImagesKeepTheLastFewAndFindEqualSettings() {
         val recent = RecentImages<com.mathis.mandala.core.MandalaParameters, String>(2)
         val a = Editing.initial(1uL)

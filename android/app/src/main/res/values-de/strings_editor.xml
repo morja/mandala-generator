@@ -30,6 +30,7 @@
     <string name="editor_draw_hint">Zum Zeichnen über das Bild ziehen</string>
     <string name="editor_move_layer_hint">Ziehen, um Ebene %1$d zu verschieben; mit zwei Fingern skalieren und drehen</string>
     <string name="editor_move_emblem_hint">Ziehen, um das Emblem zu verschieben; mit zwei Fingern skalieren und drehen</string>
+    <string name="editor_move_text_hint">Nach oben oder unten ziehen, um den Text zu verschieben; mit zwei Fingern skalieren</string>
 
     <!-- Editor: Pro sheet -->
     <string name="editor_pro_title">Dahlia Pro</string>

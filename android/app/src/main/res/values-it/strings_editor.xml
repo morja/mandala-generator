@@ -30,6 +30,7 @@
     <string name="editor_draw_hint">Trascina sull\'immagine per disegnare</string>
     <string name="editor_move_layer_hint">Trascina per spostare il livello %1$d, pizzica per ridimensionarlo e ruotarlo</string>
     <string name="editor_move_emblem_hint">Trascina per spostare l\'emblema, pizzica per ridimensionarlo e ruotarlo</string>
+    <string name="editor_move_text_hint">Trascina in alto o in basso per spostare il testo, pizzica per ridimensionarlo</string>
 
     <!-- Editor: Pro sheet -->
     <string name="editor_pro_title">Dahlia Pro</string>

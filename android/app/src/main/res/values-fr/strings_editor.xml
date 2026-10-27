@@ -30,6 +30,7 @@
     <string name="editor_draw_hint">Faites glisser sur l\'image pour dessiner</string>
     <string name="editor_move_layer_hint">Faites glisser pour déplacer le calque %1$d, pincez pour le redimensionner et le faire pivoter</string>
     <string name="editor_move_emblem_hint">Faites glisser pour déplacer l\'emblème, pincez pour le redimensionner et le faire pivoter</string>
+    <string name="editor_move_text_hint">Faites glisser vers le haut ou le bas pour déplacer le texte, pincez pour le redimensionner</string>
 
     <!-- Editor: Pro sheet -->
     <string name="editor_pro_title">Dahlia Pro</string>

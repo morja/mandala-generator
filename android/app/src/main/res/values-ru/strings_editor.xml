@@ -30,6 +30,7 @@
     <string name="editor_draw_hint">Проведите по изображению, чтобы рисовать</string>
     <string name="editor_move_layer_hint">Перетащите, чтобы сдвинуть слой %1$d; сведите или разведите пальцы, чтобы изменить размер и повернуть</string>
     <string name="editor_move_emblem_hint">Перетащите, чтобы сдвинуть эмблему; сведите или разведите пальцы, чтобы изменить размер и повернуть</string>
+    <string name="editor_move_text_hint">Перетащите вверх или вниз, чтобы сдвинуть текст; сведите или разведите пальцы, чтобы изменить размер</string>
 
     <!-- Editor: Pro sheet -->
     <string name="editor_pro_title">Dahlia Pro</string>
