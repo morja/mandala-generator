@@ -10,6 +10,14 @@ Commands below run in `android/`. The reference renderer builds the macOS app's 
 
 JDK 21 (via jenv), the Android SDK (`local.properties` with `sdk.dir`, or `ANDROID_HOME`), and macOS for the reference renderer. Gradle comes with the wrapper.
 
+The in-app purchase comes from [tearoom-android-kit](https://github.com/morja/tearoom-android-kit) (Apache-2.0), included as a Gradle composite build. Clone it next to this repository:
+
+```sh
+git clone https://github.com/morja/tearoom-android-kit.git
+```
+
+Another location works with `tearoomKitPath=/path/to/tearoom-android-kit` in `~/.gradle/gradle.properties`.
+
 ## Run the app
 
 Android 10 or later. With an emulator or a phone connected:

@@ -13,13 +13,16 @@ dependencyResolutionManagement {
     }
 }
 
-// Shared tearoom.one Android code (one.tearoom:unlock, ADR-0022), included as a composite build. Path from
-// the Gradle property tearoomKitPath (e.g. in ~/.gradle/gradle.properties), else ~/Work/Projects/apps/tearoom-android-kit.
+// Shared tearoom.one Android code (one.tearoom:unlock, ADR-0022), included as a composite build from
+// https://github.com/morja/tearoom-android-kit: the Gradle property tearoomKitPath, else a checkout next to
+// this repository, else ~/Work/Projects/apps/tearoom-android-kit.
 val tearoomKit = providers.gradleProperty("tearoomKitPath").orNull
-    ?: "${System.getProperty("user.home")}/Work/Projects/apps/tearoom-android-kit"
-check(file(tearoomKit).resolve("settings.gradle.kts").isFile) {
-    "tearoom-android-kit not found at $tearoomKit; clone it there or set tearoomKitPath in ~/.gradle/gradle.properties"
-}
+    ?: listOf(
+        rootDir.resolve("../tearoom-android-kit"),
+        rootDir.resolve("../../tearoom-android-kit"),
+        file("${System.getProperty("user.home")}/Work/Projects/apps/tearoom-android-kit"),
+    ).firstOrNull { it.resolve("settings.gradle.kts").isFile }?.canonicalPath
+    ?: error("tearoom-android-kit not found: clone https://github.com/morja/tearoom-android-kit next to this repository or set tearoomKitPath")
 includeBuild(tearoomKit)
 
 rootProject.name = "mandala-app"
