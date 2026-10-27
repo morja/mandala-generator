@@ -69,7 +69,6 @@
     <string name="message_favourite_added">Zu Favoriten hinzugefügt</string>
     <string name="message_favourite_deleted">Favorit gelöscht</string>
     <string name="message_favourites_deleted">Favoriten gelöscht: %d</string>
-    <string name="message_quote_saved">In deinen Zitaten gespeichert</string>
     <string name="message_picture_failed">Bild konnte nicht geöffnet werden: %1$s</string>
 
     <!-- Opening and saving files of the macOS app -->
