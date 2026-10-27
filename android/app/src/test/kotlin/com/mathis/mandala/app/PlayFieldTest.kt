@@ -60,6 +60,21 @@ class PlayFieldTest {
     }
 
     @Test
+    fun theCompassLightHasNoStarsAndTheLandscapeHasStarsOnlyInRegions() {
+        val lit = PlayField.apply(base, Mode.COMPASS, land, Touch(0.5, 0.0)).effectsLayer
+        assertEquals(0.0, lit.stars, 0.0)
+        assertTrue("light brings bloom", lit.bloom > base.effectsLayer.bloom)
+        val deep = PlayField.apply(base, Mode.COMPASS, land, Touch(0.5, 1.0)).effectsLayer
+        assertTrue("depth brings grain", deep.grain > 0 && deep.vignette > base.effectsLayer.vignette)
+        val points = (0..20).flatMap { i -> (0..20).map { j -> Touch(i / 20.0, j / 20.0) } }
+        for (seed in 1..5) {
+            val land = PlayField.Landscape(seed = seed.toLong(), base = base, paletteCount = 30)
+            val starry = points.count { PlayField.apply(base, Mode.MAP, land, it).effectsLayer.stars > 0 }
+            assertTrue("seed $seed: stars on $starry of ${points.size}", starry < points.size / 2)
+        }
+    }
+
+    @Test
     fun theLandscapeChangesStylesAndTheCompassKeepsThem() {
         val styles = (0..10).flatMap { i -> (0..10).map { j -> PlayField.apply(base, Mode.MAP, land, Touch(i / 10.0, j / 10.0)).layers[0].style } }.toSet()
         assertTrue("only $styles", styles.size >= 3)

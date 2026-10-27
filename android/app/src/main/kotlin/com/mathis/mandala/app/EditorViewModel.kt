@@ -878,6 +878,11 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         keepFavorite(announce = true)
     }
 
+    /** From the favourites sheet, where the new favourite shows at once (Mathis: the message there only jumped). */
+    fun addFavoriteQuietly() {
+        keepFavorite(announce = false)
+    }
+
     /** The new favourite's id, or null without a preview image to make its thumbnail from. */
     private fun keepFavorite(announce: Boolean): String? {
         val image = _preview.value.image ?: return null
