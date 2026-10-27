@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+# Thin wrapper. The shared command lives in ~/Work/Cockpit/bin/android/install (docs: Cockpit/docs/android-scripts.md).
+PROJECT_ROOT="$(cd "$(dirname "$0")/.." && pwd -P)" exec "${COCKPIT_DIR:-$HOME/Work/Cockpit}/bin/android/install"  "$@"

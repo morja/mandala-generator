@@ -4,3 +4,8 @@
 
 # Python bytecode from the store tools
 __pycache__/
+media/
+store/
+
+# ui-check screenshots (keep only the ones a QA report references, in docs/qa/QA-n/)
+docs/qa/shots/
