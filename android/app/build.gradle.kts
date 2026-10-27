@@ -21,8 +21,8 @@ android {
         applicationId = "one.tearoom.mandala"
         minSdk = 29
         targetSdk = 36
-        versionCode = 14
-        versionName = "1.7.1"
+        versionCode = 15
+        versionName = "1.8.0"
     }
 
     signingConfigs {
