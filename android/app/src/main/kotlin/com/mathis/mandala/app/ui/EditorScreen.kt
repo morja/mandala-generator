@@ -232,7 +232,6 @@ fun EditorScreen(
             image = preview.image,
             onMode = vm::setPlayMode,
             onTouch = vm::playTouch,
-            onGesture = vm::playGesture,
             onReset = vm::resetPlay,
             onAgain = vm::playAgain,
             onKeep = vm::addFavorite,
@@ -373,7 +372,7 @@ fun EditorScreen(
 
     Scaffold(
         topBar = {
-            // Undo and redo on the left; dice, save, favourites and the menu on the right. The title
+            // Undo and redo on the left; play field, dice, save, favourites and the menu on the right. The title
             // only fits next to them on wide screens.
             val wide = LocalConfiguration.current.screenWidthDp.dp >= Spacing.twoPaneMinWidth
             TopAppBar(
@@ -387,6 +386,7 @@ fun EditorScreen(
                     }
                 },
                 actions = {
+                    IconButton(onClick = vm::openPlay) { Icon(EditorIcons.Play, contentDescription = stringResource(R.string.play_title)) }
                     IconButton(onClick = vm::surprise) { Icon(EditorIcons.DieFive, contentDescription = stringResource(R.string.menu_die_everything), tint = LocalTokens.current.accent) }
                     IconButton(onClick = { showSave = true }, enabled = !busy) {
                         if (busy) {

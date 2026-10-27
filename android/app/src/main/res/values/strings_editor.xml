@@ -79,10 +79,10 @@
     <string name="play_map">Landscape</string>
     <string name="play_compass">Compass</string>
     <string name="play_done">Done</string>
-    <string name="play_hint">Drag with one finger. Two fingers: spread for more, turn for colours.</string>
+    <string name="play_hint">Drag with one finger.</string>
     <string name="play_new_map">New landscape</string>
     <string name="play_from_here">Start from here</string>
-    <string name="play_keep">Keep</string>
+    <string name="play_keep">Add to favourites</string>
     <string name="play_light">Light</string>
     <string name="play_shape">Shape</string>
     <string name="play_depth">Depth</string>
