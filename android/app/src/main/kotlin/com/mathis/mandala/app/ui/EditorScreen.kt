@@ -347,7 +347,6 @@ fun EditorScreen(
                     }
                 },
                 onTryNew = vm::tryNew,
-                onPlay = closing(vm::openPlay),
                 onUseNew = { showMenu = false; vm.useCandidate() },
                 onBackToMenu = vm::closeCandidate,
                 onOpen = closing { openFile.launch(arrayOf("application/json", "text/plain", "application/octet-stream")) },
