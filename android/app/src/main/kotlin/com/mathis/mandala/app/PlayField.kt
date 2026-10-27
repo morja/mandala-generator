@@ -154,6 +154,25 @@ object PlayField {
         MandalaStyle.GEOMETRIC, MandalaStyle.SACRED_GEOMETRY, MandalaStyle.STRING_ART, MandalaStyle.SPIDER_WEB,
         MandalaStyle.SUPERFORMULA, MandalaStyle.PETAL_RINGS, MandalaStyle.LOOP_RINGS,
     )
+    /**
+     * The die with the point in the middle: there a new landscape shows nothing, so the point hops a
+     * step out, into the inner third, and the new landscape shows at once (Mathis, 27 October 2026).
+     * Elsewhere the point stays where it is.
+     */
+    fun hopOutOfTheMiddle(touch: Touch, random: Random): Touch {
+        if (hypot(touch.x - 0.5, touch.y - 0.5) > MIDDLE) return touch
+        val angle = random.nextDouble() * 2 * PI
+        val distance = random.nextDouble(HOP_MIN, HOP_MAX)
+        return Touch(0.5 + cos(angle) * distance, 0.5 + sin(angle) * distance)
+    }
+
+    /** This close to the middle the point counts as in the middle. */
+    private const val MIDDLE = 0.08
+
+    /** How far the hop goes, as a fraction of the field: into the inner third, enough to see a change. */
+    private const val HOP_MIN = 0.15
+    private const val HOP_MAX = 0.3
+
     private const val ZONE_STYLES = 5
     private const val ZONE_PALETTES = 5
     /** How many zones a wave crosses from the middle to its extremes. */

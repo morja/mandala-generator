@@ -8,6 +8,8 @@ import com.mathis.mandala.core.StyleLayer
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import kotlin.math.hypot
+import kotlin.random.Random
 
 /** The play field (UX-1 19): the middle is the mandala as it was, away from it many settings change, all within range. */
 class PlayFieldTest {
@@ -30,6 +32,17 @@ class PlayFieldTest {
             assertTrue("$mode leaves layer 2", moved.layers[1] != two.layers[1])
             assertTrue("$mode leaves layer 3", moved.layers[2] != two.layers[2])
         }
+    }
+
+    @Test
+    fun aNewLandscapeHopsOutOfTheMiddleAndStaysElsewhere() {
+        for (seed in 1..20) {
+            val hop = PlayField.hopOutOfTheMiddle(Touch(), Random(seed))
+            val distance = hypot(hop.x - 0.5, hop.y - 0.5)
+            assertTrue("seed $seed lands at $distance", distance in 0.15..0.3)
+        }
+        val away = Touch(0.8, 0.2)
+        assertEquals(away, PlayField.hopOutOfTheMiddle(away, Random(1)))
     }
 
     @Test
