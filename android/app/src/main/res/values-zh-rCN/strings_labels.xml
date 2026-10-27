@@ -11,9 +11,9 @@
     <string name="style_phyllotaxis">叶序</string>
     <string name="style_fractal">分形</string>
     <string name="style_superformula">超级公式</string>
-    <string name="style_wave_interference">波的干涉</string>
+    <string name="style_wave_interference">波纹</string>
     <string name="style_geometric">几何</string>
-    <string name="style_sacred_geometry">神圣几何</string>
+    <string name="style_sacred_geometry">神圣</string>
     <string name="style_sunburst">旭日光芒</string>
     <string name="style_star_burst">星芒</string>
     <string name="style_string_art">绕线画</string>
@@ -24,10 +24,10 @@
     <string name="style_flow_field">流场</string>
     <string name="style_tendril">卷须</string>
     <string name="style_voronoi">Voronoi</string>
-    <string name="style_strange_attractor">奇异吸引子</string>
-    <string name="style_constellation_web">星座网</string>
+    <string name="style_strange_attractor">吸引子</string>
+    <string name="style_constellation_web">星座</string>
     <string name="style_deep_nebula">深空星云</string>
-    <string name="style_interference_bloom">干涉之花</string>
+    <string name="style_interference_bloom">干涉</string>
     <string name="style_hyperboloid">双曲面</string>
     <string name="style_torus">圆环面</string>
     <string name="style_nautilus">鹦鹉螺</string>
