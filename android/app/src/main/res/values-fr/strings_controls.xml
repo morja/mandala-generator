@@ -113,7 +113,10 @@
     <string name="controls_effects">Effets</string>
     <string name="controls_on">Activé</string>
     <string name="controls_random_effects">Effets au hasard</string>
-    <string name="controls_effects_new_pattern">Nouvelle répartition des reflets, assombrissements, étoiles et paillettes</string>
+    <string name="controls_sparkle_arrangement_detail">Étoiles et paillettes</string>
+    <string name="controls_sparkle_arrangement_description">Nouvelle disposition des étoiles et paillettes</string>
+    <string name="controls_light_arrangement_detail">Reflets, assombrissement et effacement</string>
+    <string name="controls_light_arrangement_description">Nouvelle disposition des reflets, assombrissements et effacements</string>
     <string name="controls_reset">Réinitialiser</string>
     <string name="controls_effects_off_note">Activez pour utiliser vignette, halo, grain, étoiles et plus encore.</string>
     <string name="controls_light">Lumière</string>

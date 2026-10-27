@@ -108,10 +108,10 @@ internal fun PlaySheet(
                 } else {
                     IconButton(onClick = onAgain) { Icon(EditorIcons.Centre, contentDescription = stringResource(R.string.play_from_here), tint = t.accent) }
                 }
-                IconButton(onClick = onKeep, enabled = !state.kept) {
+                IconButton(onClick = onKeep) {
                     Icon(
                         if (state.kept) EditorIcons.Star else EditorIcons.StarLine,
-                        contentDescription = stringResource(if (state.kept) R.string.message_favourite_added else R.string.play_keep),
+                        contentDescription = stringResource(if (state.kept) R.string.editor_favourite_delete else R.string.play_keep),
                         tint = t.accent,
                     )
                 }

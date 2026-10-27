@@ -113,7 +113,10 @@
     <string name="controls_effects">Effetti</string>
     <string name="controls_on">On</string>
     <string name="controls_random_effects">Effetti casuali</string>
-    <string name="controls_effects_new_pattern">Nuova disposizione di luci, ombreggiature, stelle e glitter</string>
+    <string name="controls_sparkle_arrangement_detail">Stelle e glitter</string>
+    <string name="controls_sparkle_arrangement_description">Nuova disposizione di stelle e glitter</string>
+    <string name="controls_light_arrangement_detail">Luci, ombreggiatura e cancellatura</string>
+    <string name="controls_light_arrangement_description">Nuova disposizione di luci, ombreggiatura e cancellatura</string>
     <string name="controls_reset">Reimposta</string>
     <string name="controls_effects_off_note">Attiva per usare vignettatura, bloom, grana, stelle e altro.</string>
     <string name="controls_light">Luce</string>

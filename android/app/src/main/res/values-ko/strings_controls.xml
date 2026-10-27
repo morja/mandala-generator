@@ -109,7 +109,10 @@
     <string name="controls_effects">효과</string>
     <string name="controls_on">켜기</string>
     <string name="controls_random_effects">무작위 효과</string>
-    <string name="controls_effects_new_pattern">하이라이트, 어둡게, 별, 반짝이의 새 패턴</string>
+    <string name="controls_sparkle_arrangement_detail">별과 반짝이</string>
+    <string name="controls_sparkle_arrangement_description">별과 반짝이의 새 배치</string>
+    <string name="controls_light_arrangement_detail">하이라이트, 어둡게, 지우기</string>
+    <string name="controls_light_arrangement_description">하이라이트, 어둡게, 지우기의 새 배치</string>
     <string name="controls_reset">초기화</string>
     <string name="controls_effects_off_note">켜면 비네트, 블룸, 그레인, 별 등을 사용할 수 있습니다.</string>
     <string name="controls_light">빛</string>
