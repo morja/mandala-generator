@@ -23,14 +23,14 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -78,19 +78,16 @@ internal fun PlaySheet(
             Modifier.fillMaxHeight().padding(horizontal = Spacing.lg).padding(bottom = Spacing.lg),
             verticalArrangement = Arrangement.spacedBy(Spacing.md),
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                PrimaryTabRow(
-                    selectedTabIndex = state.mode.ordinal, modifier = Modifier.weight(1f),
-                    containerColor = BottomSheetDefaults.ContainerColor, divider = {},
-                ) {
-                    for ((mode, label) in listOf(PlayField.Mode.MAP to R.string.play_map, PlayField.Mode.COMPASS to R.string.play_compass)) {
-                        Tab(selected = state.mode == mode, onClick = { onMode(mode) }) {
-                            Text(stringResource(label), style = MaterialTheme.typography.titleSmall, maxLines = 1, modifier = Modifier.padding(vertical = Spacing.md))
-                        }
+            // The two views alone at the top (DM-21 D); every action sits in the row at the bottom.
+            PrimaryTabRow(
+                selectedTabIndex = state.mode.ordinal, modifier = Modifier.fillMaxWidth(),
+                containerColor = BottomSheetDefaults.ContainerColor, divider = {},
+            ) {
+                for ((mode, label) in listOf(PlayField.Mode.MAP to R.string.play_map, PlayField.Mode.COMPASS to R.string.play_compass)) {
+                    Tab(selected = state.mode == mode, onClick = { onMode(mode) }) {
+                        Text(stringResource(label), style = MaterialTheme.typography.titleSmall, maxLines = 1, modifier = Modifier.padding(vertical = Spacing.md))
                     }
                 }
-                TextButton(onClick = onReset) { Text(stringResource(R.string.save_reset)) }
-                TextButton(onClick = onDismiss) { Text(stringResource(R.string.play_done)) }
             }
             Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
                 Box(Modifier.aspectRatio(1f).clip(RoundedCornerShape(Radius.md)).background(t.canvas)) {
@@ -102,11 +99,17 @@ internal fun PlaySheet(
                 stringResource(R.string.play_hint), style = MaterialTheme.typography.bodySmall, color = t.textMuted,
                 textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth(),
             )
-            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
-                OutlinedButton(colors = outlinedColors(), onClick = onAgain, modifier = Modifier.weight(1f)) {
-                    Text(stringResource(if (state.mode == PlayField.Mode.MAP) R.string.play_new_map else R.string.play_from_here), maxLines = 1)
+            // Reset, a new landscape (in the compass: this point as the new middle) and the favourite as
+            // icons with their names on a long press; Done is the one filled button, where the thumb goes.
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+                IconButton(onClick = onReset) { Icon(EditorIcons.Reset, contentDescription = stringResource(R.string.save_reset), tint = t.accent) }
+                if (state.mode == PlayField.Mode.MAP) {
+                    IconButton(onClick = onAgain) { Icon(EditorIcons.DieOne, contentDescription = stringResource(R.string.play_new_map), tint = t.accent) }
+                } else {
+                    IconButton(onClick = onAgain) { Icon(EditorIcons.Centre, contentDescription = stringResource(R.string.play_from_here), tint = t.accent) }
                 }
-                Button(onClick = onKeep, modifier = Modifier.weight(1f)) { Text(stringResource(R.string.play_keep), maxLines = 1) }
+                IconButton(onClick = onKeep) { Icon(EditorIcons.StarLine, contentDescription = stringResource(R.string.play_keep), tint = t.accent) }
+                Button(onClick = onDismiss, modifier = Modifier.weight(1f)) { Text(stringResource(R.string.play_done), maxLines = 1) }
             }
         }
     }

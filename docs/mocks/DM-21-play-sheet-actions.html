@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DM-21 Spielfläche: Leisten</title>
+<style>
+  :root {
+    --bg: #0A0908; --surface: #121110; --raised: #1B1917; --text: #E6E1DB; --muted: #9C948B;
+    --outline: #2E2A26; --accent: #D9A15C; --on-accent: #241605; --accent-soft: #2A2117; --canvas: #000;
+    --page: #161412; --scrim: rgba(0,0,0,.55);
+  }
+  :root[data-theme="light"] {
+    --bg: #F7F4EF; --surface: #FFFDFA; --raised: #EFEAE3; --text: #221F1C; --muted: #5F5851;
+    --outline: #CFC7BD; --accent: #8A5210; --on-accent: #fff; --accent-soft: #F3E3CF; --page: #E9E4DC; --scrim: rgba(0,0,0,.35);
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--page); color: var(--text); font: 14px/1.4 Roboto, system-ui, -apple-system, "Segoe UI", sans-serif; }
+  header { padding: 16px; display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; }
+  header h1 { font-size: 17px; margin: 0 8px 0 0; font-weight: 600; }
+  .seg-ui { display: inline-flex; border: 1px solid var(--outline); border-radius: 999px; overflow: hidden; }
+  .seg-ui button { background: transparent; color: var(--text); border: 0; padding: 6px 14px; font: inherit; cursor: pointer; }
+  .seg-ui button[aria-pressed="true"] { background: var(--accent-soft); color: var(--accent); }
+  main { display: flex; flex-wrap: wrap; gap: 28px; padding: 0 16px 24px; justify-content: center; align-items: flex-start; }
+
+  /* The phone: the editor dimmed behind, the sheet in front with its handle. */
+  .phone { width: min(412px, 100%); height: 860px; background: var(--bg); border: 1px solid var(--outline); border-radius: 26px; position: relative; overflow: hidden; }
+  .editor { position: absolute; inset: 0; padding: 12px 16px; color: var(--muted); }
+  .editor .bar { display: flex; align-items: center; height: 40px; gap: 8px; }
+  .editor .bar b { color: var(--text); font-weight: 500; font-size: 16px; }
+  .editor .bar .sp { flex: 1; }
+  .scrim { position: absolute; inset: 0; background: var(--scrim); }
+  .sheet { position: absolute; left: 0; right: 0; bottom: 0; background: var(--surface); border-radius: 28px 28px 0 0; padding: 8px 16px 16px; display: flex; flex-direction: column; gap: 12px; }
+  .handle { width: 32px; height: 4px; border-radius: 2px; background: var(--outline); margin: 6px auto 2px; }
+  .icon { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 20px; color: var(--accent); cursor: pointer; flex: none; }
+  .icon svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  canvas.pic { width: 100%; aspect-ratio: 1; border-radius: 12px; background: var(--canvas); display: block; }
+
+  .modes { display: flex; border: 1px solid var(--outline); border-radius: 20px; height: 40px; overflow: hidden; }
+  .modes button { flex: 1; background: transparent; color: var(--text); border: 0; font: 500 14px/1 inherit; cursor: pointer; }
+  .modes button + button { border-left: 1px solid var(--outline); }
+  .modes button[aria-pressed="true"] { background: var(--accent-soft); color: var(--accent); }
+  .modes.narrow { width: 60%; margin: 0 auto; }
+
+  .pad { position: relative; width: 100%; aspect-ratio: 1.3; border-radius: 16px; border: 1px solid var(--outline); background: var(--raised); touch-action: none; cursor: crosshair; overflow: hidden; user-select: none; }
+  .pad .axis { position: absolute; color: var(--muted); font-size: 12.5px; pointer-events: none; }
+  .pad .ax-l { left: 10px; top: 50%; transform: translateY(-50%); } .pad .ax-r { right: 10px; top: 50%; transform: translateY(-50%); }
+  .pad .ax-t { top: 8px; left: 50%; transform: translateX(-50%); } .pad .ax-b { bottom: 8px; left: 50%; transform: translateX(-50%); }
+  .pad .axis[hidden] { display: none; }
+  .dot { position: absolute; width: 34px; height: 34px; margin: -17px 0 0 -17px; border-radius: 50%; border: 2px solid var(--accent); background: color-mix(in srgb, var(--accent) 22%, transparent); pointer-events: none; }
+  .hint { color: var(--muted); font-size: 12.5px; text-align: center; }
+
+  .actions { display: flex; gap: 8px; align-items: center; }
+  .btn { flex: 1; height: 40px; border-radius: 20px; border: 1px solid var(--outline); display: flex; align-items: center; justify-content: center; gap: 6px; font-weight: 500; cursor: pointer; background: transparent; color: var(--text); font-size: 14px; white-space: nowrap; }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+  .btn.text { border-color: transparent; color: var(--accent); }
+  .btn.icon-only { flex: none; width: 40px; padding: 0; }
+  .btn svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+  .btn.tall { height: 48px; }
+  .btn.icon-only.outlined { border-color: var(--outline); color: var(--accent); }
+  .labelled { flex: none; width: 64px; display: flex; flex-direction: column; align-items: center; gap: 2px; cursor: pointer; color: var(--accent); }
+  .labelled svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .labelled span { font-size: 11px; color: var(--muted); white-space: nowrap; }
+  .actions .grow { flex: 1; }
+  [hidden] { display: none !important; }
+
+  .note { max-width: 520px; color: var(--muted); font-size: 14px; }
+  .note h2 { font-size: 16px; color: var(--text); margin: 4px 0 8px; font-weight: 600; }
+  .note p { margin: 8px 0; }
+  .note b { color: var(--text); }
+  .note ol { padding-left: 20px; margin: 8px 0; }
+  .note li { margin: 6px 0; }
+</style>
+</head>
+<body>
+<header>
+  <h1>DM-21</h1>
+  <div class="seg-ui" id="variant">
+    <button aria-pressed="true" data-v="A">A · Eine Reihe</button>
+    <button aria-pressed="false" data-v="B">B · Fertig allein</button>
+    <button aria-pressed="false" data-v="C">C · Mit Stern</button>
+    <button aria-pressed="false" data-v="D">D · Icons</button>
+    <button aria-pressed="false" data-v="E">E · Icons mit Wort</button>
+  </div>
+  <div class="seg-ui" id="theme">
+    <button aria-pressed="true" data-v="dark">Dunkel</button>
+    <button aria-pressed="false" data-v="light">Hell</button>
+  </div>
+</header>
+
+<main>
+  <div class="phone">
+    <div class="editor">
+      <div class="bar"><b>Mandala</b><span class="sp"></span><span class="icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M15.6 8.4l-2.2 5-5 2.2 2.2-5z"/></svg></span><span class="icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg></span></div>
+    </div>
+    <div class="scrim"></div>
+    <div class="sheet">
+      <div class="handle"></div>
+      <div class="modes" id="modes">
+        <button aria-pressed="true" data-m="map">Landkarte</button>
+        <button aria-pressed="false" data-m="compass">Kompass</button>
+      </div>
+      <canvas class="pic" id="pic" width="760" height="760"></canvas>
+      <div class="pad" id="pad">
+        <span class="axis ax-t" hidden>Licht</span><span class="axis ax-r" hidden>Form</span>
+        <span class="axis ax-b" hidden>Tiefe</span><span class="axis ax-l" hidden>Farbe</span>
+        <div class="dot" id="dot"></div>
+      </div>
+      <div class="hint">Mit einem Finger ziehen.</div>
+
+      <!-- A: one row, Done filled on the right -->
+      <div class="actions" id="rowA">
+        <button class="btn text" id="resetA">Zurücksetzen</button>
+        <button class="btn again">Neue Landkarte</button>
+        <button class="btn primary">Fertig</button>
+      </div>
+
+      <!-- B and C: small helpers in a row, Done alone and full width below -->
+      <div class="actions" id="rowB" hidden>
+        <button class="btn text" id="resetB">Zurücksetzen</button>
+        <button class="btn again">Neue Landkarte</button>
+        <button class="btn icon-only" id="star" title="Zu den Favoriten" hidden><svg viewBox="0 0 24 24"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/></svg></button>
+      </div>
+      <button class="btn primary tall" id="doneB" hidden>Fertig</button>
+
+      <!-- D: three icons, Done filled fills the rest -->
+      <div class="actions" id="rowD" hidden>
+        <button class="btn icon-only" title="Zurücksetzen"><svg viewBox="0 0 24 24"><path d="M4 10a8 8 0 1 1 2.3 7.7"/><path d="M4 4v6h6"/></svg></button>
+        <button class="btn icon-only again-icon" title="Neue Landkarte"><svg viewBox="0 0 24 24" class="die"><rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="9" cy="9" r="1"/><circle cx="15" cy="15" r="1"/><circle cx="15" cy="9" r="1"/><circle cx="9" cy="15" r="1"/></svg><svg viewBox="0 0 24 24" class="here" hidden><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="1.5"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/></svg></button>
+        <button class="btn icon-only" title="Zu den Favoriten"><svg viewBox="0 0 24 24"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/></svg></button>
+        <button class="btn primary grow">Fertig</button>
+      </div>
+
+      <!-- E: icons with a word beneath, Done filled on the right -->
+      <div class="actions" id="rowE" hidden>
+        <div class="labelled"><svg viewBox="0 0 24 24"><path d="M4 10a8 8 0 1 1 2.3 7.7"/><path d="M4 4v6h6"/></svg><span>Zurück</span></div>
+        <div class="labelled again-icon"><svg viewBox="0 0 24 24" class="die"><rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="9" cy="9" r="1"/><circle cx="15" cy="15" r="1"/><circle cx="15" cy="9" r="1"/><circle cx="9" cy="15" r="1"/></svg><svg viewBox="0 0 24 24" class="here" hidden><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="1.5"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/></svg><span class="again-word">Neue Karte</span></div>
+        <div class="labelled"><svg viewBox="0 0 24 24"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/></svg><span>Favorit</span></div>
+        <button class="btn primary grow">Fertig</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="note">
+    <h2>Spielfläche: Ansichten oben, Aktionen unten</h2>
+    <p>Heute teilen sich Landkarte und Kompass eine Leiste mit Zurücksetzen und Fertig, und unten steht groß „Zu den Favoriten“. Hier stehen oben nur die zwei Ansichten, als Umschalter unter dem Griff; alle Aktionen stehen unten, mit Fertig als dem einen gefüllten Knopf. Zuziehen (Griff nach unten) schließt weiterhin. Zieh mit der Maus über die Fläche; der Umschalter wechselt die Beschriftung.</p>
+    <ol>
+      <li><b>A · Eine Reihe:</b> Zurücksetzen als Textknopf, „Neue Landkarte“ (im Kompass „Von hier aus“) mit Umriss, Fertig gefüllt. Favoriten kommen aus der Fläche heraus; merken geht danach in der Hauptansicht. Am kürzesten.</li>
+      <li><b>B · Fertig allein:</b> dieselben Helfer in einer Reihe, Fertig darunter allein über die ganze Breite. Eine Zeile höher, dafür ist Fertig nicht zu verfehlen, am Daumen.</li>
+      <li><b>C · Mit Stern:</b> wie B, mit einem Stern am Ende der Helferreihe, der den Stand als Favorit merkt, ohne die Fläche zu verlassen. Für das Spielen mit mehreren Treffern hintereinander; sonst wie B.</li>
+      <li><b>D · Icons:</b> eine Reihe: Zurücksetzen (Pfeil), Neue Landkarte (Würfel), Favorit (Stern) als Icon-Knöpfe, Fertig gefüllt nimmt den Rest. Im Kompass wird aus dem Würfel ein Fadenkreuz („Von hier aus“: der Punkt wird zur neuen Mitte). Langes Drücken zeigt den Namen, wie überall in Android. Passt in jeder Sprache.</li>
+      <li><b>E · Icons mit Wort:</b> wie D, mit einem kurzen Wort unter jedem Icon (Zurück, Neue Karte, Favorit). Selbsterklärend ohne Hinweistext, aber die Reihe wird höher und unruhiger als D.</li>
+    </ol>
+    <p><b>Meine Empfehlung:</b> D. Stern und Zurücksetzen sind bekannt, der Würfel ist in der App schon überall „neu würfeln“, und das Tooltip beim langen Drücken ersetzt einen Hinweistext. Statt einer Hinweiszeile könnte beim ersten Öffnen die Zeile unter der Fläche einmal „Würfel: neue Landkarte“ sagen und danach wieder „Mit einem Finger ziehen.“; ich würde es erst ohne probieren.</p>
+  </div>
+</main>
+
+<script>
+  // ── A small canvas mandala, only to feel the interaction; the app would use its renderer. ──
+  const pic = document.getElementById('pic');
+  const ctx = pic.getContext('2d');
+  let seed = 7;
+  const rand = () => { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; };
+  const lerp = (a, b, t) => a + (b - a) * t;
+
+  function draw(g, size, s, l) {
+    const c = size / 2;
+    g.save();
+    g.globalCompositeOperation = 'source-over';
+    g.fillStyle = `hsl(${s.hue}, 35%, ${l.light * 100}%)`;
+    g.fillRect(0, 0, size, size);
+    if (l.bloom > 0.02) {
+      const b = g.createRadialGradient(c, c, 0, c, c, size * 0.6);
+      b.addColorStop(0, `hsla(${s.hue + 30}, 90%, 60%, ${l.bloom * 0.55})`);
+      b.addColorStop(1, 'hsla(0, 0%, 0%, 0)');
+      g.fillStyle = b; g.fillRect(0, 0, size, size);
+    }
+    if (l.stars > 0.02) {
+      let st = 99;
+      const r2 = () => { st = (st * 16807) % 2147483647; return st / 2147483647; };
+      const n = Math.floor(l.stars * 160);
+      for (let i = 0; i < n; i++) {
+        g.fillStyle = `rgba(255, 245, 230, ${0.25 + r2() * 0.6})`;
+        const r = r2() * 1.6 * size / 760 + 0.4;
+        g.beginPath(); g.arc(r2() * size, r2() * size, r, 0, 7); g.fill();
+      }
+    }
+    g.globalCompositeOperation = 'lighter';
+    const sym = Math.max(3, Math.round(s.sym));
+    const rings = Math.max(1, Math.round(s.rings));
+    g.lineWidth = s.width * size / 760;
+    for (let r = 0; r < rings; r++) {
+      const t = rings === 1 ? 1 : r / (rings - 1);
+      const radius = size * (0.12 + 0.3 * t + 0.05);
+      const len = size * 0.16 * s.petal * (0.7 + 0.6 * t);
+      const hue = (s.hue + s.spread * t) % 360;
+      g.strokeStyle = `hsl(${hue}, 85%, 62%)`;
+      g.shadowColor = `hsl(${hue}, 90%, 60%)`;
+      g.shadowBlur = l.glow * 26 * size / 760;
+      const count = sym * (1 + (r % 2));
+      for (let k = 0; k < count; k++) {
+        const a = (k / count) * Math.PI * 2 + (r % 2) * Math.PI / count;
+        g.save();
+        g.translate(c, c); g.rotate(a);
+        g.beginPath();
+        const w = len * 0.42;
+        const wob = s.curl * len * 0.5;
+        g.moveTo(radius - len * 0.5, 0);
+        g.bezierCurveTo(radius - len * 0.2, -w - wob, radius + len * 0.4, -w + wob, radius + len * 0.6, 0);
+        g.bezierCurveTo(radius + len * 0.4, w - wob, radius - len * 0.2, w + wob, radius - len * 0.5, 0);
+        g.stroke();
+        g.restore();
+      }
+    }
+    g.shadowBlur = 0;
+    g.globalCompositeOperation = 'source-over';
+    g.fillStyle = `hsl(${s.hue + s.spread}, 90%, 75%)`;
+    g.beginPath(); g.arc(c, c, size * 0.012, 0, 7); g.fill();
+    if (l.vignette > 0.02) {
+      const v = g.createRadialGradient(c, c, size * 0.3, c, c, size * 0.72);
+      v.addColorStop(0, 'rgba(0,0,0,0)');
+      v.addColorStop(1, `rgba(0,0,0,${l.vignette * 0.9})`);
+      g.fillStyle = v; g.fillRect(0, 0, size, size);
+    }
+    g.restore();
+  }
+
+  // ── State: the middle is the mandala as it was; away from it the settings move. ──
+  const pad = document.getElementById('pad');
+  const dot = document.getElementById('dot');
+  let variant = 'A', mode = 'map';
+  let base = { sym: 8, rings: 3, petal: 0.7, curl: 0.3, width: 2, hue: 200, spread: 90 };
+  let pos = [0.5, 0.5];
+
+  function current() {
+    const [x, y] = pos;
+    const dx = (x - 0.5) * 2, dy = (0.5 - y) * 2;
+    if (mode === 'map') {
+      const s = { ...base, sym: base.sym + Math.round(dx * 5), rings: base.rings + Math.round(dy * 2), curl: Math.min(1, Math.max(0, base.curl + dx * 0.6)), petal: Math.min(1, Math.max(0.3, base.petal + dy * 0.3)), hue: (base.hue + dx * 60 + 360) % 360 };
+      const d = Math.min(1, Math.hypot(dx, dy));
+      return [s, { glow: 0.3 + d * 0.6, bloom: Math.max(0, dy) * 0.6, vignette: Math.max(0, -dy) * 0.7, stars: Math.max(0, dx) * 0.8, light: 0.03 + d * 0.04 }];
+    }
+    // Compass: up light, right shape, down depth, left colour.
+    const s = { ...base, sym: base.sym + Math.round(Math.max(0, dx) * 6), curl: Math.min(1, base.curl + Math.max(0, dx) * 0.7), hue: (base.hue + Math.max(0, -dx) * 120) % 360, spread: base.spread + Math.max(0, -dx) * 120 };
+    return [s, { glow: 0.3 + Math.max(0, dy) * 0.7, bloom: Math.max(0, dy) * 0.7, vignette: Math.max(0, -dy) * 0.9, stars: Math.max(0, dy) * 0.5, light: 0.03 + Math.max(0, -dy) * 0.06 }];
+  }
+
+  function render() {
+    const [s, l] = current();
+    draw(ctx, 760, s, l);
+    dot.style.left = (pos[0] * 100) + '%';
+    dot.style.top = (pos[1] * 100) + '%';
+  }
+
+  function move(e) {
+    const r = pad.getBoundingClientRect();
+    pos = [Math.min(1, Math.max(0, (e.clientX - r.left) / r.width)), Math.min(1, Math.max(0, (e.clientY - r.top) / r.height))];
+    render();
+  }
+  let dragging = false;
+  pad.addEventListener('pointerdown', e => { dragging = true; pad.setPointerCapture(e.pointerId); move(e); });
+  pad.addEventListener('pointermove', e => { if (dragging) move(e); });
+  pad.addEventListener('pointerup', () => { dragging = false; });
+
+  function layout() {
+    document.getElementById('rowA').hidden = variant !== 'A';
+    document.getElementById('rowB').hidden = variant === 'A';
+    document.getElementById('doneB').hidden = variant === 'A';
+    document.getElementById('rowB').hidden = !(variant === 'B' || variant === 'C');
+    document.getElementById('doneB').hidden = !(variant === 'B' || variant === 'C');
+    document.getElementById('rowD').hidden = variant !== 'D';
+    document.getElementById('rowE').hidden = variant !== 'E';
+    document.getElementById('star').hidden = variant !== 'C';
+    document.querySelectorAll('.again-icon').forEach(b => { b.querySelector('.die').hidden = mode !== 'map'; b.querySelector('.here').hidden = mode === 'map'; b.title = mode === 'map' ? 'Neue Landkarte' : 'Von hier aus'; });
+    document.querySelectorAll('.again-word').forEach(w => w.textContent = mode === 'map' ? 'Neue Karte' : 'Von hier');
+    pad.querySelectorAll('.axis').forEach(a => a.hidden = mode !== 'compass');
+    document.querySelectorAll('.again').forEach(b => b.textContent = mode === 'map' ? 'Neue Landkarte' : 'Von hier aus');
+  }
+  for (const id of ['resetA', 'resetB']) document.getElementById(id).addEventListener('click', () => { pos = [0.5, 0.5]; render(); });
+  document.querySelectorAll('[title="Zurücksetzen"], .labelled:first-child').forEach(b => b.addEventListener('click', () => { pos = [0.5, 0.5]; render(); }));
+  document.querySelectorAll('.again, .again-icon').forEach(b => b.addEventListener('click', () => {
+    if (mode === 'map') base = { ...base, hue: rand() * 360, spread: 40 + rand() * 160, sym: 5 + Math.floor(rand() * 8) };
+    else { const [s] = current(); base = s; pos = [0.5, 0.5]; }
+    render();
+  }));
+
+  function wire(id, fn) {
+    const el = document.getElementById(id);
+    el.addEventListener('click', e => {
+      const b = e.target.closest('button'); if (!b) return;
+      el.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+      fn(b.dataset);
+    });
+  }
+  wire('variant', d => { variant = d.v; layout(); });
+  wire('modes', d => { mode = d.m; layout(); render(); });
+  wire('theme', d => { document.documentElement.dataset.theme = d.v; });
+
+  layout(); render();
+</script>
+</body>
+</html>
