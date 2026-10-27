@@ -1,6 +1,7 @@
 package com.mathis.mandala.app
 
 import com.mathis.mandala.core.BaseLayerType
+import com.mathis.mandala.core.EffectsLayerSettings
 import com.mathis.mandala.core.EmblemFlowerVariant
 import com.mathis.mandala.core.EmblemFrame
 import com.mathis.mandala.core.EmblemGlowMode
@@ -164,6 +165,39 @@ object Randomize {
         organic = random.nextDouble(0.2, 1.0),
         flowerVariant = EmblemFlowerVariant.entries.random(random),
         petals = Editing.lotusPetals.random(random),
+    )
+
+    /**
+     * A new look for the scene effects (the die beside "Show effects"; Android first, the Mac's die only
+     * moves the pattern): two to four effects at a moderate strength, the rest at their defaults, and
+     * new positions. Brightness and contrast are corrections, not effects, and stay, as do the switches.
+     */
+    fun EffectsLayerSettings.randomized(random: Random): EffectsLayerSettings {
+        val picks = EFFECT_ROLLS.shuffled(random).take(random.nextInt(2, 5))
+        var next = EffectsLayerSettings().copy(
+            isEnabled = isEnabled, brightness = brightness, contrast = contrast, fade = fade,
+            affectsEmblem = affectsEmblem, affectsText = affectsText,
+        )
+        for (roll in picks) next = roll(next, random)
+        return with(Editing) { next.newPattern { random.nextLong().toULong() } }
+    }
+
+    /** Each roll sets one effect to a strength that shows without taking the picture over. */
+    private val EFFECT_ROLLS: List<(EffectsLayerSettings, Random) -> EffectsLayerSettings> = listOf(
+        { e, r -> e.copy(vignette = r.nextDouble(0.4, 1.3)) },
+        { e, r -> e.copy(bloom = r.nextDouble(0.3, 1.2)) },
+        { e, r -> e.copy(grain = r.nextDouble(0.3, 1.2)) },
+        { e, r -> e.copy(stars = r.nextDouble(0.3, 0.9)) },
+        { e, r -> e.copy(glitter = r.nextDouble(0.1, 0.4)) },
+        { e, r -> e.copy(highlights = r.nextDouble(0.3, 0.8)) },
+        { e, r -> e.copy(dimming = r.nextDouble(0.2, 0.6)) },
+        { e, r -> e.copy(erasure = r.nextDouble(0.1, 0.4)) },
+        { e, r -> e.copy(relief = r.nextDouble(0.3, 0.8), reliefAngle = r.nextDouble()) },
+        { e, r -> e.copy(sepia = r.nextDouble(0.3, 0.8)) },
+        { e, r -> e.copy(wash = r.nextDouble(0.1, 0.4)) },
+        { e, r -> e.copy(localContrast = r.nextDouble(0.3, 0.9)) },
+        { e, r -> e.copy(chromatic = r.nextDouble(0.1, 0.5)) },
+        { e, r -> e.copy(smoother = r.nextDouble(0.3, 0.9)) },
     )
 
     /** Like the macOS app: up to 20 tries for a value not used yet. */

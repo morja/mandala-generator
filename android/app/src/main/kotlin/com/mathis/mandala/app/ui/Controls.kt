@@ -334,6 +334,7 @@ private fun LayerControls(layer: StyleLayer, layerIndex: Int, vm: EditorViewMode
     val t = LocalTokens.current
     Group(stringResource(R.string.controls_style), summary = stringResource(layer.style.labelRes)) {
         RandomActionRow(stringResource(R.string.menu_die_variation), stringResource(R.string.controls_variation_detail), stringResource(R.string.controls_variation_description), onVary)
+        val pictures by vm.chipPreviews.collectAsStateWithLifecycle()
         FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
             for (style in Editing.stylesByName) {
                 FilterChip(
@@ -347,10 +348,10 @@ private fun LayerControls(layer: StyleLayer, layerIndex: Int, vm: EditorViewMode
                         if (layer.style == style) Sizes.swatchRing else Sizes.swatchRing / 2,
                         if (layer.style == style) t.accent else t.outline,
                     ),
-                    leadingIcon = {
+                    leadingIcon = if (pictures) ({
                         Image(painterResource(stylePreviewResource(style)), contentDescription = null,
                             modifier = Modifier.size(Sizes.swatchSmall).clip(RoundedCornerShape(Radius.sm)))
-                    },
+                    }) else null,
                     label = { Text(stringResource(style.labelRes)) },
                 )
             }
@@ -398,7 +399,7 @@ private fun SceneTab(params: MandalaParameters, vm: EditorViewModel) {
     // switch, as the emblem and text tabs do (DM-12), and the background follows as its own part.
     val base = params.baseLayer
     val t = LocalTokens.current
-    Effects(params.effectsLayer, vm::updateEffects, vm::newEffectsPattern, vm::resetEffects)
+    Effects(params.effectsLayer, vm::updateEffects, vm::randomizeEffects, vm::newEffectsPattern, vm::resetEffects)
     HorizontalDivider(color = t.outline, modifier = Modifier.padding(top = Spacing.md))
     val switchBackground: (Boolean) -> Unit = { on ->
         vm.updateBackground { b ->
@@ -502,13 +503,15 @@ private fun backgroundName(type: BaseLayerType) = stringResource(when (type) {
  * switch heads the tab, and the quick, reliable sliders follow in four groups, the rarer ones under
  * "More" (TUNE-1). "Fade" sets the `wash` field; the old `fade`
  * field does almost the same and gets its own slider ("Old fade") only in settings that use it.
- * The die beside the switch moves highlights, dimming, erasure, stars and glitter to new places, as the
- * one on the Mac's card does; it used to sit under "Sparkle", where it read as a glitter-only button.
+ * The die beside the switch rolls a new look of the effects, like the other dice (Mathis, 27 October 2026:
+ * a die that only moved the pattern read as doing nothing). The pattern of highlights, dimming, erasure,
+ * stars and glitter, as the Mac's die moves it, has a die of its own in the groups that hold them.
  */
 @Composable
 private fun Effects(
     fx: EffectsLayerSettings,
     update: ((EffectsLayerSettings) -> EffectsLayerSettings) -> Unit,
+    randomize: () -> Unit,
     newPattern: () -> Unit,
     resetAll: () -> Unit,
 ) {
@@ -523,8 +526,8 @@ private fun Effects(
             Text(stringResource(R.string.controls_show_effects), style = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier.weight(1f).toggleable(value = fx.isEnabled, role = Role.Switch, onValueChange = switch))
             if (fx.isEnabled) {
-                IconButton(onClick = newPattern) { Icon(EditorIcons.DieOne,
-                    contentDescription = stringResource(R.string.controls_effects_new_pattern), tint = t.accent) }
+                IconButton(onClick = randomize) { Icon(EditorIcons.DieOne,
+                    contentDescription = stringResource(R.string.controls_random_effects), tint = t.accent) }
                 TextButton(onClick = resetAll) { Text(stringResource(R.string.save_reset)) }
             }
             Switch(checked = fx.isEnabled, onCheckedChange = switch)
@@ -534,9 +537,12 @@ private fun Effects(
                 color = LocalTokens.current.textMuted)
             return@Column
         }
-        Text(stringResource(R.string.controls_effects_hold_hint), style = MaterialTheme.typography.bodySmall,
-            color = LocalTokens.current.textMuted)
+        // Holding the preview shows it without effects; no hint says so (Mathis: the switch is right here).
         val d = EffectsLayerSettings()
+        val patternDie: @Composable () -> Unit = {
+            IconButton(onClick = newPattern) { Icon(EditorIcons.DieOne,
+                contentDescription = stringResource(R.string.controls_effects_new_pattern), tint = t.accent) }
+        }
         Group(stringResource(R.string.glow_light), initiallyOpen = true,
             changed = differs(fx.brightness to d.brightness, fx.contrast to d.contrast, fx.vignette to d.vignette, fx.bloom to d.bloom)) {
             ValueSlider(stringResource(R.string.save_brightness), fx.brightness, default = EffectsLayerSettings().brightness) { v -> update { it.copy(brightness = v) } }
@@ -553,11 +559,11 @@ private fun Effects(
             ValueSlider(stringResource(R.string.controls_background_grain), fx.grain, Editing.Ranges.effectsGrain.floats(), default = EffectsLayerSettings().grain) { v -> update { it.copy(grain = v) } }
             ValueSlider(stringResource(R.string.controls_smoother), fx.smoother, default = EffectsLayerSettings().smoother) { v -> update { it.copy(smoother = v) } }
         }
-        Group(stringResource(R.string.controls_sparkle), changed = differs(fx.stars to d.stars, fx.glitter to d.glitter)) {
+        Group(stringResource(R.string.controls_sparkle), trailing = patternDie, changed = differs(fx.stars to d.stars, fx.glitter to d.glitter)) {
             ValueSlider(stringResource(R.string.controls_stars), fx.stars, default = EffectsLayerSettings().stars) { v -> update { it.copy(stars = v) } }
             ValueSlider(stringResource(R.string.controls_glitter), fx.glitter, Editing.Ranges.effectsGlitter.floats(), default = EffectsLayerSettings().glitter) { v -> update { it.copy(glitter = v) } }
         }
-        Group(stringResource(R.string.editor_more), changed = differs(fx.highlights to d.highlights, fx.dimming to d.dimming,
+        Group(stringResource(R.string.editor_more), trailing = patternDie, changed = differs(fx.highlights to d.highlights, fx.dimming to d.dimming,
             fx.erasure to d.erasure, fx.relief to d.relief, fx.chromatic to d.chromatic, fx.fade to d.fade)) {
             ValueSlider(stringResource(R.string.controls_highlights), fx.highlights, default = EffectsLayerSettings().highlights) { v -> update { it.copy(highlights = v) } }
             ValueSlider(stringResource(R.string.controls_dimming), fx.dimming, default = EffectsLayerSettings().dimming) { v -> update { it.copy(dimming = v) } }
@@ -609,10 +615,25 @@ private fun EmblemTab(em: EmblemLayerSettings, vm: EditorViewModel, position: Po
         return
     }
     if (!position.proOwned) ProNote(stringResource(R.string.controls_pro_note_emblem), position.showPro)
+    val pictures by vm.chipPreviews.collectAsStateWithLifecycle()
     Group(stringResource(R.string.controls_motif), summary = stringResource(em.motif.labelRes), initiallyOpen = true) {
+        // The motifs with a small picture each, like the styles (Mathis, 27 October 2026).
         FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
             for (motif in EmblemMotif.entries) {
-                FilterChip(selected = em.motif == motif, onClick = { update { it.copy(motif = motif) } }, label = { Text(stringResource(motif.labelRes)) })
+                FilterChip(
+                    selected = em.motif == motif,
+                    onClick = { update { it.copy(motif = motif) } },
+                    colors = FilterChipDefaults.filterChipColors(selectedContainerColor = t.accentSoft, selectedLabelColor = t.accent),
+                    border = BorderStroke(
+                        if (em.motif == motif) Sizes.swatchRing else Sizes.swatchRing / 2,
+                        if (em.motif == motif) t.accent else t.outline,
+                    ),
+                    leadingIcon = if (pictures) ({
+                        Image(painterResource(emblemPreviewResource(motif)), contentDescription = null,
+                            modifier = Modifier.size(Sizes.swatchSmall).clip(RoundedCornerShape(Radius.sm)))
+                    }) else null,
+                    label = { Text(stringResource(motif.labelRes)) },
+                )
             }
         }
         when (em.motif) {
@@ -838,9 +859,9 @@ private fun QuoteRow(q: Quote, onPick: (Quote) -> Unit, trailing: (@Composable (
 }
 
 /**
- * The words of the text layer as a card (DM-13 A): the quote large, in the picture's font, the author in
- * italics below; a tap opens the two fields. Below it the collection, a new quote and keeping the quote.
- * The die beside the tab's switch is the look (font, colour, light), not the words.
+ * The words (DM-13 B, Mathis 27 October 2026, after A's card with a tap to edit): the two fields are
+ * always open, in the picture's font; Collection and New quote sit in the card's head, keeping the
+ * quote is a bookmark in the text field.
  */
 @Composable
 private fun Words(
@@ -852,51 +873,41 @@ private fun Words(
     onKeep: () -> Unit,
 ) {
     val t = LocalTokens.current
-    var editing by rememberSaveable { mutableStateOf(false) }
     val family = remember(text.fontName) { FontFamily(AndroidTextRenderer.typeface(text.fontName)) }
-    Group(stringResource(R.string.controls_words), summary = text.customAuthor.ifBlank { null }, initiallyOpen = true) {
-        if (editing || text.text.isBlank()) {
-            OutlinedTextField(
-                value = text.text,
-                onValueChange = { v -> update { it.copy(text = v) } },
-                label = { Text(stringResource(R.string.controls_text_field)) },
-                textStyle = MaterialTheme.typography.titleMedium.copy(fontFamily = family),
-                maxLines = 6,
-                modifier = Modifier.fillMaxWidth(),
-            )
-            OutlinedTextField(
-                value = text.customAuthor,
-                onValueChange = { v -> update { it.copy(customAuthor = v) } },
-                label = { Text(stringResource(R.string.controls_author)) },
-                textStyle = MaterialTheme.typography.bodyLarge.copy(fontFamily = family, fontStyle = FontStyle.Italic),
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth(),
-            )
-            if (text.text.isNotBlank()) {
-                TextButton(onClick = { editing = false }, modifier = Modifier.align(Alignment.End)) { Text(stringResource(R.string.controls_done)) }
+    Group(
+        stringResource(R.string.controls_words), initiallyOpen = true,
+        trailing = {
+            Row {
+                IconButton(onClick = onChoose) { Icon(EditorIcons.QuoteList, contentDescription = stringResource(R.string.controls_collection), tint = t.accent) }
+                IconButton(onClick = onNewQuote) { Icon(EditorIcons.NewQuote, contentDescription = stringResource(R.string.controls_new_quote), tint = t.accent) }
             }
-        } else {
-            val editLabel = stringResource(R.string.controls_tap_to_edit)
-            Column(
-                Modifier.fillMaxWidth().clip(RoundedCornerShape(Radius.sm))
-                    .clickable(onClickLabel = editLabel) { editing = true }
-                    .padding(vertical = Spacing.xs),
-                verticalArrangement = Arrangement.spacedBy(Spacing.xs),
-            ) {
-                Text(text.text, style = MaterialTheme.typography.titleLarge.copy(fontFamily = family))
-                if (text.customAuthor.isNotBlank()) {
-                    Text("— " + text.customAuthor, color = t.textMuted,
-                        style = MaterialTheme.typography.bodyLarge.copy(fontFamily = family, fontStyle = FontStyle.Italic))
+        },
+    ) {
+        OutlinedTextField(
+            value = text.text,
+            onValueChange = { v -> update { it.copy(text = v) } },
+            label = { Text(stringResource(R.string.controls_text_field)) },
+            textStyle = MaterialTheme.typography.titleMedium.copy(fontFamily = family),
+            maxLines = 6,
+            trailingIcon = {
+                IconButton(onClick = onKeep, enabled = text.text.isNotBlank() && !saved) {
+                    Icon(
+                        if (saved) EditorIcons.Kept else EditorIcons.Keep,
+                        contentDescription = stringResource(if (saved) R.string.controls_kept else R.string.controls_keep),
+                        tint = if (saved) t.textMuted else t.accent,
+                    )
                 }
-                Text(editLabel, style = MaterialTheme.typography.bodySmall, color = t.textMuted)
-            }
-        }
-        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.sm), modifier = Modifier.padding(top = Spacing.md, bottom = Spacing.sm)) {
-            ActionTile(EditorIcons.QuoteList, stringResource(R.string.controls_collection), enabled = true, onClick = onChoose)
-            ActionTile(EditorIcons.NewQuote, stringResource(R.string.controls_new_quote), enabled = true) { editing = false; onNewQuote() }
-            ActionTile(if (saved) EditorIcons.Kept else EditorIcons.Keep, stringResource(if (saved) R.string.controls_kept else R.string.controls_keep),
-                enabled = text.text.isNotBlank() && !saved, onClick = onKeep)
-        }
+            },
+            modifier = Modifier.fillMaxWidth(),
+        )
+        OutlinedTextField(
+            value = text.customAuthor,
+            onValueChange = { v -> update { it.copy(customAuthor = v) } },
+            label = { Text(stringResource(R.string.controls_author)) },
+            textStyle = MaterialTheme.typography.bodyLarge.copy(fontFamily = family, fontStyle = FontStyle.Italic),
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth(),
+        )
         SwitchRow(stringResource(R.string.controls_show_author), text.showAuthor) { a -> update { it.copy(showAuthor = a) } }
     }
 }

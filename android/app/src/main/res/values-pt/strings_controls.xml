@@ -112,6 +112,7 @@
     <string name="controls_coloured_grain">Granulado colorido</string>
     <string name="controls_effects">Efeitos</string>
     <string name="controls_on">Ativado</string>
+    <string name="controls_random_effects">Efeitos aleatórios</string>
     <string name="controls_effects_new_pattern">Novo padrão de realces, escurecimento, estrelas e purpurina</string>
     <string name="controls_reset">Redefinir</string>
     <string name="controls_effects_off_note">Ative para usar vinheta, bloom, granulado, estrelas e mais.</string>
@@ -158,7 +159,6 @@
     <string name="controls_random_text_look">Visual de texto aleatório</string>
     <string name="controls_text_off_note">Uma citação ou suas próprias palavras na imagem, com o autor, se quiser.</string>
     <string name="controls_words">Palavras</string>
-    <string name="controls_tap_to_edit">Toque para editar</string>
     <string name="controls_collection">Coleção</string>
     <string name="controls_new_quote">Outra citação</string>
     <string name="controls_keep">Guardar</string>
@@ -204,7 +204,6 @@
     <string name="controls_smoother">Suavizar</string>
     <string name="controls_applies_to">Aplica-se a</string>
     <string name="controls_reach_mandala">Mandala</string>
-    <string name="controls_effects_hold_hint">Mantenha a pré-visualização pressionada para vê-la sem efeitos.</string>
 
     <!-- Own palettes (ADR-0021) -->
     <string name="controls_my_palettes">Minhas paletas</string>

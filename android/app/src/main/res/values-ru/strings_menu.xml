@@ -35,6 +35,8 @@
     <string name="menu_save_settings">Сохранить настройки</string>
     <string name="menu_fast_preview">Быстрый предпросмотр</string>
     <string name="menu_fast_preview_detail">Упрощённо и быстрее рисуется только предпросмотр в редакторе. Сохранённые изображения и обои всегда в полном качестве.</string>
+    <string name="menu_chip_previews">Картинки в списках</string>
+    <string name="menu_chip_previews_detail">Маленький пример рядом с каждым стилем и мотивом. Выключено, и списки становятся короче.</string>
     <string name="menu_daily_wallpaper">Новые обои каждый день</string>
     <string name="menu_daily_about">После включения следующий из ваших избранных сразу становится обоями: на экране блокировки и чуть темнее на главном экране. Затем каждое утро между 4 и 8 часами, лучше всего во время зарядки, появляется следующий. Если включены живые обои, они плавно переходят к следующему избранному.</string>
     <string name="menu_daily_favourites">Избранное</string>

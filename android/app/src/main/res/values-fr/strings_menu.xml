@@ -33,6 +33,8 @@
     <string name="menu_save_settings">Enregistrer les réglages</string>
     <string name="menu_fast_preview">Aperçu rapide</string>
     <string name="menu_fast_preview_detail">Seul l\'aperçu de l\'éditeur est dessiné plus simplement et plus vite. Les images enregistrées et les fonds d\'écran gardent toute leur qualité.</string>
+    <string name="menu_chip_previews">Images dans les listes</string>
+    <string name="menu_chip_previews_detail">Un petit exemple à côté de chaque style et motif. Désactivé, les listes sont plus courtes.</string>
     <string name="menu_daily_wallpaper">Nouveau fond d\'écran chaque jour</string>
     <string name="menu_daily_about">Une fois activé, le prochain de vos favoris devient aussitôt le fond d\'écran : sur l\'écran de verrouillage et, un peu plus sombre, sur l\'écran d\'accueil. Ensuite, le suivant arrive chaque matin entre 4 h et 8 h, de préférence pendant la charge. Si le fond d\'écran animé est actif, il passe en fondu au favori suivant.</string>
     <string name="menu_daily_favourites">Favoris</string>

@@ -98,6 +98,7 @@ internal class MenuActions(
     val onOpen: () -> Unit,
     val onSaveSettings: () -> Unit,
     val onFastPreview: (Boolean) -> Unit,
+    val onChipPreviews: (Boolean) -> Unit,
     val onLightTheme: (Boolean) -> Unit,
     val onAbout: () -> Unit,
 )
@@ -120,6 +121,7 @@ internal fun MenuSheet(
     candidate: Candidate?,
     busy: Boolean,
     fastPreview: Boolean,
+    chipPreviews: Boolean,
     lightTheme: Boolean,
     actions: MenuActions,
     onDismiss: () -> Unit,
@@ -133,7 +135,7 @@ internal fun MenuSheet(
                 page == MenuPage.LINE_DRAWING -> LineDrawingPage(busy, actions, back)
                 page == MenuPage.DAILY -> DailyPage(actions, back, onChoose = { page = MenuPage.DAILY_FAVOURITES })
                 page == MenuPage.DAILY_FAVOURITES -> DailyFavouritesPage(actions, onBack = { page = MenuPage.DAILY })
-                page == MenuPage.MORE -> MorePage(fastPreview, actions, back)
+                page == MenuPage.MORE -> MorePage(fastPreview, chipPreviews, actions, back)
                 else -> {
                     Current(params, image)
                     KeepRow(busy, actions, onDailyPage = { page = MenuPage.DAILY })
@@ -368,7 +370,7 @@ private fun DailyFavouritesPage(actions: MenuActions, onBack: () -> Unit) {
 private const val DAILY_COLUMNS = 3
 
 @Composable
-private fun MorePage(fastPreview: Boolean, actions: MenuActions, onBack: () -> Unit) {
+private fun MorePage(fastPreview: Boolean, chipPreviews: Boolean, actions: MenuActions, onBack: () -> Unit) {
     val t = LocalTokens.current
     PageTop(stringResource(R.string.menu_more), null, onBack)
     Column(Modifier.padding(top = Spacing.sm)) {
@@ -378,6 +380,8 @@ private fun MorePage(fastPreview: Boolean, actions: MenuActions, onBack: () -> U
         MenuRow(EditorIcons.FileSave, stringResource(R.string.menu_save_settings), stringResource(R.string.menu_save_settings_detail), onClick = actions.onSaveSettings) { Chevron() }
         HorizontalDivider(color = t.outline)
         SwitchMenuRow(EditorIcons.Bolt, stringResource(R.string.menu_fast_preview), stringResource(R.string.menu_fast_preview_detail), fastPreview, actions.onFastPreview)
+        HorizontalDivider(color = t.outline)
+        SwitchMenuRow(EditorIcons.Visible, stringResource(R.string.menu_chip_previews), stringResource(R.string.menu_chip_previews_detail), chipPreviews, actions.onChipPreviews)
     }
 }
 

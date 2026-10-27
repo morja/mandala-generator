@@ -108,6 +108,7 @@
     <string name="controls_coloured_grain">カラー粒子</string>
     <string name="controls_effects">エフェクト</string>
     <string name="controls_on">オン</string>
+    <string name="controls_random_effects">ランダムな効果</string>
     <string name="controls_effects_new_pattern">ハイライト、減光、星、きらめきの新しいパターン</string>
     <string name="controls_reset">リセット</string>
     <string name="controls_effects_off_note">オンにすると、周辺減光、ブルーム、粒子、星などを使えます。</string>
@@ -154,7 +155,6 @@
     <string name="controls_random_text_look">ランダムな文字デザイン</string>
     <string name="controls_text_off_note">画像に引用や自分の言葉を、必要なら著者名も添えて表示します。</string>
     <string name="controls_words">言葉</string>
-    <string name="controls_tap_to_edit">タップして編集</string>
     <string name="controls_collection">コレクション</string>
     <string name="controls_new_quote">別の引用</string>
     <string name="controls_keep">保存</string>
@@ -200,7 +200,6 @@
     <string name="controls_smoother">スムーズ</string>
     <string name="controls_applies_to">適用先</string>
     <string name="controls_reach_mandala">曼荼羅</string>
-    <string name="controls_effects_hold_hint">プレビューを長押しすると、エフェクトなしで表示されます。</string>
 
     <!-- Own palettes (ADR-0021) -->
     <string name="controls_my_palettes">マイパレット</string>
