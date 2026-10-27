@@ -51,7 +51,8 @@ object PlayField {
         /** −1..1 or a little beyond, 0 in the middle of the field. */
         fun at(x: Double, y: Double): Double = raw(x, y) - raw(0.5, 0.5)
 
-        private fun raw(x: Double, y: Double) =
+        /** −1..1 or a little beyond, as the wave stands, without the middle taken out. */
+        fun raw(x: Double, y: Double) =
             0.8 * sin(2 * PI * f * (cos(angle) * x + sin(angle) * y) + phase) + 0.25 * sin(2 * PI * f2 * (x - y) + phase2)
     }
 
@@ -92,8 +93,28 @@ object PlayField {
         )
     }
 
-    private fun mapScene(e: EffectsLayerSettings, land: Landscape, t: Touch) =
-        scene(e, light = wave(land, t, "light"), depth = wave(land, t, "depth"), stars = wave(land, t, "stars"))
+    /**
+     * The landscape's weather: bloom and vignette follow their waves everywhere, while stars, grain,
+     * glitter and highlights each show only in their own region (about a quarter of the field), so
+     * most of a landscape is plain and each has its own weather (Mathis, 27 October 2026: stars
+     * everywhere grew dull).
+     */
+    private fun mapScene(e: EffectsLayerSettings, land: Landscape, t: Touch) = scene(
+        e,
+        bloom = wave(land, t, "light"), vignette = wave(land, t, "depth"),
+        stars = region(land, t, "stars"), grain = region(land, t, "grain"),
+        glitter = region(land, t, "glitter"), highlights = region(land, t, "highlights"),
+    )
+
+    /**
+     * A region of the field: where the wave itself (not the middle taken out) is well above zero,
+     * 0..1 from there; fading in from the middle, which stays the mandala as it was.
+     */
+    private fun region(land: Landscape, t: Touch, name: String): Double {
+        val w = land.waves.getValue(name).raw(t.x, t.y)
+        val out = min(1.0, hypot(t.x - 0.5, t.y - 0.5) * 4)
+        return ((w - REGION_FROM) / (1 - REGION_FROM)).coerceIn(0.0, 1.0) * out
+    }
 
     /** The compass directions: light up, shape right, depth down, colour left, each 0..1. */
     private class Directions(t: Touch) {
@@ -128,24 +149,37 @@ object PlayField {
         )
     }
 
+    /** Light: bloom and glitter on the lines (no stars); depth: vignette, grain and dimming. */
     private fun compassScene(e: EffectsLayerSettings, t: Touch): EffectsLayerSettings {
         val d = Directions(t)
-        return scene(e, light = d.light, depth = d.depth, stars = d.light * 0.8)
+        return scene(e, bloom = d.light, glitter = d.light * 0.6, vignette = d.depth, grain = d.depth * 0.7, dimming = d.depth * 0.6)
     }
 
-    /** The scene's light: bloom and stars come up with light, the vignette with depth. */
-    private fun scene(e: EffectsLayerSettings, light: Double, depth: Double, stars: Double): EffectsLayerSettings {
-        val bloom = (e.bloom + 0.6 * light).coerceIn(0.0, 0.8)
-        val vignette = (e.vignette + 0.6 * depth).coerceIn(0.0, 0.9)
-        val star = (e.stars + 0.6 * stars).coerceIn(0.0, 0.8)
+    /** The scene effects, each raised by 0..1 of its play range; switched on only where the field changes something. */
+    private fun scene(
+        e: EffectsLayerSettings,
+        bloom: Double = 0.0, vignette: Double = 0.0, stars: Double = 0.0, grain: Double = 0.0,
+        glitter: Double = 0.0, highlights: Double = 0.0, dimming: Double = 0.0,
+    ): EffectsLayerSettings {
+        val next = e.copy(
+            bloom = (e.bloom + 0.6 * bloom).coerceIn(0.0, 0.8),
+            vignette = (e.vignette + 0.6 * vignette).coerceIn(0.0, 0.9),
+            stars = (e.stars + 0.6 * stars).coerceIn(0.0, 0.8),
+            grain = (e.grain + 0.8 * grain).coerceIn(0.0, 1.0),
+            glitter = (e.glitter + 0.35 * glitter).coerceIn(0.0, 0.4),
+            highlights = (e.highlights + 0.5 * highlights).coerceIn(0.0, 0.6),
+            dimming = (e.dimming + 0.4 * dimming).coerceIn(0.0, 0.5),
+        )
         // Switched on only where the field changes it, so the middle stays the mandala as it was.
-        val changed = bloom != e.bloom || star != e.stars || vignette != e.vignette
-        return e.copy(isEnabled = e.isEnabled || changed, bloom = bloom, vignette = vignette, stars = star)
+        return next.copy(isEnabled = e.isEnabled || next != e)
     }
+
+    /** Where a scene wave starts to count (−1..1): above it in about a quarter of the field. */
+    private const val REGION_FROM = 0.45
 
     private val SETTINGS = listOf(
         "style", "palette", "symmetry", "complexity", "density", "ripple", "scale", "glow", "drift", "offset",
-        "saturation", "brightness", "wash", "light", "depth", "stars",
+        "saturation", "brightness", "wash", "light", "depth", "stars", "grain", "glitter", "highlights",
     )
 
     /** Styles the landscape's zones choose from: varied, quick to draw. */

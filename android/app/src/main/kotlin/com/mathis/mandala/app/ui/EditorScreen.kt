@@ -365,7 +365,7 @@ fun EditorScreen(
         FavoritesSheet(
             favorites = favorites,
             canAdd = preview.image != null,
-            onAdd = vm::addFavorite,
+            onAdd = vm::addFavoriteQuietly,
             onApply = { vm.applyFavorite(it); showFavorites = false },
             onDelete = { ids -> if (ids.size == 1) vm.removeFavorite(ids.first()) else vm.removeFavorites(ids) },
             onDismiss = { showFavorites = false },
