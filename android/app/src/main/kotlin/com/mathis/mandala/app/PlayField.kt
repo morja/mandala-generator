@@ -15,10 +15,11 @@ import kotlin.math.sin
 import kotlin.random.Random
 
 /**
- * The play field (UX-1 19, DM-20): one finger on a square moves many settings of the selected layer
- * and the scene at once. In the middle of the field is the mandala as it was; away from it,
- * [Mode.MAP] lets every setting follow a wave of its own (a landscape of mandalas), [Mode.COMPASS]
- * changes light, shape, depth or colour by direction, more the farther out.
+ * The play field (UX-1 19, DM-20): one finger on a square moves many settings of every visible
+ * layer and the scene at once; hidden layers stay as they are. In the middle of the field is the
+ * mandala as it was; away from it, [Mode.MAP] lets every setting follow a wave of its own (a
+ * landscape of mandalas, each layer from its own starting point), [Mode.COMPASS] changes light,
+ * shape, depth or colour by direction, more the farther out.
  */
 object PlayField {
     enum class Mode { MAP, COMPASS }
@@ -26,12 +27,17 @@ object PlayField {
     /** Where the finger is (0..1 across and down). */
     data class Touch(val x: Double = 0.5, val y: Double = 0.5)
 
-    /** One landscape: a wave per setting, and the styles and palettes its zones offer. */
-    class Landscape(seed: Long, baseStyle: MandalaStyle, basePalette: Int, paletteCount: Int) {
+    /** One landscape: a wave per setting, shared by all layers, and per layer the styles and palettes its zones offer. */
+    class Landscape(seed: Long, base: MandalaParameters, paletteCount: Int) {
         private val rng = Random(seed)
         internal val waves: Map<String, Wave> = SETTINGS.associateWith { Wave(rng) }
-        internal val styles: List<MandalaStyle> = listOf(baseStyle) + (PLAY_STYLES - baseStyle).shuffled(rng).take(ZONE_STYLES - 1)
-        internal val palettes: List<Int> = listOf(basePalette) + (0 until paletteCount).filter { it != basePalette }.shuffled(rng).take(ZONE_PALETTES - 1)
+        internal val zones: List<Zones> = base.layers.map { Zones(it, paletteCount, rng) }
+    }
+
+    /** What a layer's zones offer: its own style and palette first, so the middle stays as it was. */
+    internal class Zones(layer: StyleLayer, paletteCount: Int, rng: Random) {
+        val styles: List<MandalaStyle> = listOf(layer.style) + (PLAY_STYLES - layer.style).shuffled(rng).take(ZONE_STYLES - 1)
+        val palettes: List<Int> = listOf(layer.paletteIndex) + (0 until paletteCount).filter { it != layer.paletteIndex }.shuffled(rng).take(ZONE_PALETTES - 1)
     }
 
     /** A long wave for the landscape and a short one for detail, in its own direction. */
@@ -49,22 +55,29 @@ object PlayField {
             0.8 * sin(2 * PI * f * (cos(angle) * x + sin(angle) * y) + phase) + 0.25 * sin(2 * PI * f2 * (x - y) + phase2)
     }
 
-    fun apply(base: MandalaParameters, layer: Int, mode: Mode, land: Landscape, touch: Touch): MandalaParameters {
-        val l = base.layers.getOrNull(layer) ?: return base
-        val (moved, effects) = when (mode) {
-            Mode.MAP -> map(l, base.effectsLayer, land, touch)
-            Mode.COMPASS -> compass(l, base.effectsLayer, touch)
+    fun apply(base: MandalaParameters, mode: Mode, land: Landscape, touch: Touch): MandalaParameters {
+        val layers = base.layers.mapIndexed { i, l ->
+            if (!l.isEnabled) l else when (mode) {
+                Mode.MAP -> map(l, land.zones.getOrNull(i), land, touch)
+                Mode.COMPASS -> compass(l, touch)
+            }
         }
-        return base.copy(layers = base.layers.toMutableList().also { it[layer] = moved }, effectsLayer = effects)
+        val effects = when (mode) {
+            Mode.MAP -> mapScene(base.effectsLayer, land, touch)
+            Mode.COMPASS -> compassScene(base.effectsLayer, touch)
+        }
+        return base.copy(layers = layers, effectsLayer = effects)
     }
 
-    private fun map(l: StyleLayer, e: EffectsLayerSettings, land: Landscape, t: Touch): Pair<StyleLayer, EffectsLayerSettings> {
-        fun w(name: String) = land.waves.getValue(name).at(t.x, t.y)
+    private fun wave(land: Landscape, t: Touch, name: String) = land.waves.getValue(name).at(t.x, t.y)
+
+    private fun map(l: StyleLayer, zones: Zones?, land: Landscape, t: Touch): StyleLayer {
+        fun w(name: String) = wave(land, t, name)
         // Zones: the index moves away from the middle's (0) in steps as the wave grows.
         fun zone(name: String, count: Int) = ((w(name) * ZONE_STEPS).roundToInt()).mod(count)
-        val layer = l.copy(
-            style = land.styles[zone("style", land.styles.size)],
-            paletteIndex = if (l.customPalette != null) l.paletteIndex else land.palettes[zone("palette", land.palettes.size)],
+        return l.copy(
+            style = zones?.let { it.styles[zone("style", it.styles.size)] } ?: l.style,
+            paletteIndex = if (l.customPalette != null || zones == null) l.paletteIndex else zones.palettes[zone("palette", zones.palettes.size)],
             symmetry = (l.symmetry + (w("symmetry") * 4).roundToInt()).coerceIn(1, 8),
             complexity = (l.complexity + 0.5 * w("complexity")).coerceIn(0.05, 1.0),
             density = (l.density + 0.5 * w("density")).coerceIn(0.05, 1.0),
@@ -77,20 +90,31 @@ object PlayField {
             brightness = (l.brightness + 0.25 * w("brightness")).coerceIn(0.25, 0.85),
             wash = (l.wash + 0.4 * w("wash")).coerceIn(0.0, 0.7),
         )
-        return layer to scene(e, light = w("light"), depth = w("depth"), stars = w("stars"))
     }
 
-    private fun compass(l: StyleLayer, e: EffectsLayerSettings, t: Touch): Pair<StyleLayer, EffectsLayerSettings> {
-        val dx = t.x - 0.5
-        val dy = 0.5 - t.y
-        val r = min(1.0, hypot(dx, dy) * 2)
-        val a = atan2(dy, dx)
-        fun toward(direction: Double) = max(0.0, cos(a - direction)) * r
+    private fun mapScene(e: EffectsLayerSettings, land: Landscape, t: Touch) =
+        scene(e, light = wave(land, t, "light"), depth = wave(land, t, "depth"), stars = wave(land, t, "stars"))
+
+    /** The compass directions: light up, shape right, depth down, colour left, each 0..1. */
+    private class Directions(t: Touch) {
+        private val dx = t.x - 0.5
+        private val dy = 0.5 - t.y
+        private val r = min(1.0, hypot(dx, dy) * 2)
+        private val a = atan2(dy, dx)
+        private fun toward(direction: Double) = max(0.0, cos(a - direction)) * r
         val light = toward(PI / 2)
         val shape = toward(0.0)
         val depth = toward(-PI / 2)
         val colour = toward(PI)
-        val layer = l.copy(
+    }
+
+    private fun compass(l: StyleLayer, t: Touch): StyleLayer {
+        val d = Directions(t)
+        val light = d.light
+        val shape = d.shape
+        val depth = d.depth
+        val colour = d.colour
+        return l.copy(
             symmetry = (l.symmetry + (shape * 3).roundToInt()).coerceIn(1, 8),
             complexity = (l.complexity + 0.45 * shape).coerceIn(0.0, 1.0),
             ripple = (l.ripple + 0.7 * shape).coerceIn(0.0, 1.0),
@@ -102,7 +126,11 @@ object PlayField {
             colorDrift = (l.colorDrift + 0.5 * colour).coerceIn(0.0, 1.0),
             saturation = (l.saturation + 0.3 * colour).coerceIn(0.2, 1.0),
         )
-        return layer to scene(e, light = light, depth = depth, stars = light * 0.8)
+    }
+
+    private fun compassScene(e: EffectsLayerSettings, t: Touch): EffectsLayerSettings {
+        val d = Directions(t)
+        return scene(e, light = d.light, depth = d.depth, stars = d.light * 0.8)
     }
 
     /** The scene's light: bloom and stars come up with light, the vignette with depth. */
