@@ -30,6 +30,7 @@
     <string name="editor_draw_hint">画像上をドラッグして描きます</string>
     <string name="editor_move_layer_hint">ドラッグでレイヤー%1$dを移動、ピンチで拡大縮小と回転</string>
     <string name="editor_move_emblem_hint">ドラッグでエンブレムを移動、ピンチで拡大縮小と回転</string>
+    <string name="editor_move_text_hint">上下にドラッグでテキストを移動、ピンチで拡大縮小</string>
 
     <!-- Editor: Pro sheet -->
     <string name="editor_pro_title">Dahlia Pro</string>
@@ -71,4 +72,18 @@
     <string name="live_daily_note">日替わり壁紙がオンのときは、毎朝ライブ壁紙が次のお気に入りへ切り替わります。</string>
     <string name="live_set">ライブ壁紙を設定</string>
     <string name="editor_without_effects">エフェクトなし</string>
+    <string name="play_title">プレイフィールド</string>
+    <string name="play_menu_detail">指1本で多くの設定を同時に</string>
+    <string name="play_map">風景</string>
+    <string name="play_compass">コンパス</string>
+    <string name="play_done">完了</string>
+    <string name="play_hint">指1本でドラッグ。2本指: 広げると密に、回すと色が変わります。</string>
+    <string name="play_new_map">新しい風景</string>
+    <string name="play_from_here">ここから</string>
+    <string name="play_keep">残す</string>
+    <string name="play_light">光</string>
+    <string name="play_shape">形</string>
+    <string name="play_depth">深さ</string>
+    <string name="play_colour">色</string>
+    <string name="play_field_description">プレイフィールド: ドラッグしてマンダラを変える</string>
 </resources>

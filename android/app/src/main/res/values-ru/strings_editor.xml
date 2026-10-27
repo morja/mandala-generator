@@ -30,6 +30,7 @@
     <string name="editor_draw_hint">Проведите по изображению, чтобы рисовать</string>
     <string name="editor_move_layer_hint">Перетащите, чтобы сдвинуть слой %1$d; сведите или разведите пальцы, чтобы изменить размер и повернуть</string>
     <string name="editor_move_emblem_hint">Перетащите, чтобы сдвинуть эмблему; сведите или разведите пальцы, чтобы изменить размер и повернуть</string>
+    <string name="editor_move_text_hint">Перетащите вверх или вниз, чтобы сдвинуть текст; сведите или разведите пальцы, чтобы изменить размер</string>
 
     <!-- Editor: Pro sheet -->
     <string name="editor_pro_title">Dahlia Pro</string>
@@ -71,4 +72,18 @@
     <string name="live_daily_note">Если включены ежедневные обои, живые обои каждое утро плавно переходят к следующей мандале из избранного.</string>
     <string name="live_set">Установить живые обои</string>
     <string name="editor_without_effects">Без эффектов</string>
+    <string name="play_title">Игровое поле</string>
+    <string name="play_menu_detail">Один палец — много настроек сразу</string>
+    <string name="play_map">Пейзаж</string>
+    <string name="play_compass">Компас</string>
+    <string name="play_done">Готово</string>
+    <string name="play_hint">Ведите одним пальцем. Двумя: разведите для плотности, поверните для цвета.</string>
+    <string name="play_new_map">Новый пейзаж</string>
+    <string name="play_from_here">Отсюда</string>
+    <string name="play_keep">Оставить</string>
+    <string name="play_light">Свет</string>
+    <string name="play_shape">Форма</string>
+    <string name="play_depth">Глубина</string>
+    <string name="play_colour">Цвет</string>
+    <string name="play_field_description">Игровое поле: ведите, чтобы менять мандалу</string>
 </resources>

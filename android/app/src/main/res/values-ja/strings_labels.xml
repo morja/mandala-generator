@@ -70,4 +70,6 @@
     <string name="pro_feature_emblem">エンブレム</string>
     <string name="pro_feature_text">テキスト</string>
     <string name="pro_feature_moved_layers">移動したレイヤー</string>
+    <string name="style_petal_rings">花びらの輪</string>
+    <string name="style_loop_rings">ループの輪</string>
 </resources>

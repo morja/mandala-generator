@@ -70,4 +70,6 @@
     <string name="pro_feature_emblem">Emblema</string>
     <string name="pro_feature_text">Texto</string>
     <string name="pro_feature_moved_layers">Camadas movidas</string>
+    <string name="style_petal_rings">Anéis de pétalas</string>
+    <string name="style_loop_rings">Anéis de laços</string>
 </resources>

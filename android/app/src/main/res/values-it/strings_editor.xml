@@ -30,6 +30,7 @@
     <string name="editor_draw_hint">Trascina sull\'immagine per disegnare</string>
     <string name="editor_move_layer_hint">Trascina per spostare il livello %1$d, pizzica per ridimensionarlo e ruotarlo</string>
     <string name="editor_move_emblem_hint">Trascina per spostare l\'emblema, pizzica per ridimensionarlo e ruotarlo</string>
+    <string name="editor_move_text_hint">Trascina in alto o in basso per spostare il testo, pizzica per ridimensionarlo</string>
 
     <!-- Editor: Pro sheet -->
     <string name="editor_pro_title">Dahlia Pro</string>
@@ -71,4 +72,18 @@
     <string name="live_daily_note">Con lo sfondo del giorno attivo, ogni mattina lo sfondo animato sfuma nel preferito successivo.</string>
     <string name="live_set">Imposta sfondo animato</string>
     <string name="editor_without_effects">Senza effetti</string>
+    <string name="play_title">Campo di gioco</string>
+    <string name="play_menu_detail">Un dito, tante regolazioni insieme</string>
+    <string name="play_map">Paesaggio</string>
+    <string name="play_compass">Bussola</string>
+    <string name="play_done">Fatto</string>
+    <string name="play_hint">Trascina con un dito. Due dita: allarga per di più, ruota per i colori.</string>
+    <string name="play_new_map">Nuovo paesaggio</string>
+    <string name="play_from_here">Da qui</string>
+    <string name="play_keep">Tieni</string>
+    <string name="play_light">Luce</string>
+    <string name="play_shape">Forma</string>
+    <string name="play_depth">Profondità</string>
+    <string name="play_colour">Colore</string>
+    <string name="play_field_description">Campo di gioco: trascina per cambiare il mandala</string>
 </resources>

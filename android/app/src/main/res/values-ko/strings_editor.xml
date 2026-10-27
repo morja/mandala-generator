@@ -30,6 +30,7 @@
     <string name="editor_draw_hint">이미지 위를 드래그하여 그리세요</string>
     <string name="editor_move_layer_hint">드래그하여 레이어 %1$d 이동, 손가락을 모으거나 벌려 크기 조절 및 회전</string>
     <string name="editor_move_emblem_hint">드래그하여 엠블럼 이동, 손가락을 모으거나 벌려 크기 조절 및 회전</string>
+    <string name="editor_move_text_hint">위아래로 드래그하여 텍스트 이동, 손가락을 모으거나 벌려 크기 조절</string>
 
     <!-- Editor: Pro sheet -->
     <string name="editor_pro_title">Dahlia Pro</string>
@@ -71,4 +72,18 @@
     <string name="live_daily_note">매일 배경화면을 켜 두면 라이브 배경화면이 매일 아침 다음 즐겨찾기로 서서히 바뀝니다.</string>
     <string name="live_set">라이브 배경화면 설정</string>
     <string name="editor_without_effects">효과 없이</string>
+    <string name="play_title">놀이판</string>
+    <string name="play_menu_detail">손가락 하나로 여러 설정을 한 번에</string>
+    <string name="play_map">풍경</string>
+    <string name="play_compass">나침반</string>
+    <string name="play_done">완료</string>
+    <string name="play_hint">한 손가락으로 끌어 보세요. 두 손가락: 벌리면 더 촘촘하게, 돌리면 색이 바뀝니다.</string>
+    <string name="play_new_map">새 풍경</string>
+    <string name="play_from_here">여기서부터</string>
+    <string name="play_keep">남기기</string>
+    <string name="play_light">빛</string>
+    <string name="play_shape">형태</string>
+    <string name="play_depth">깊이</string>
+    <string name="play_colour">색</string>
+    <string name="play_field_description">놀이판: 끌어서 만다라 바꾸기</string>
 </resources>

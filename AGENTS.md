@@ -2,7 +2,7 @@
 
 Mandala Generator for macOS and Android in one repository (ADR-0009): `mac/` is the Swift package of the macOS app, `android/` the Gradle project of the Android port (`core`, `cli`, `app`). Decisions for both are in `docs/adr/`, open approvals in `docs/APPROVALS.md`. Read the affected ADRs before building; do not reinvent decisions already made. Rules for the Android code are in `android/AGENTS.md`.
 
-- **Mac first, then port:** new features are built in the macOS app first, then ported to Android (ADR-0008). Mac favourites may change with new motifs; the Android parity references are re-rendered from `mac/` (`android/tools/reference-renderer/render-references.sh`).
+- **Android first, then Mac** (Mathis, 27 October 2026, replaces "Mac first"): new features, styles and motifs are built in the Android app first; the macOS app follows later (ADR-0008). A style that is new on Android has no macOS reference yet: it gets its own fixture and is left out of the parity test until it is ported (ADR-0004). Existing ported styles keep their parity against the references rendered from `mac/` (`android/tools/reference-renderer/render-references.sh`).
 - **Licence:** GPL-3.0 with the section 7 permission (`LICENSE`, `README.md`, ADR-0008). Ship only content that may be shipped in a public, sold app (public-domain quotes, ADR-0007).
 - **Language:** code, identifiers, UI and docs in English. Conversation with Mathis in German.
 - **Approval needed** for new packages, new design tokens, new root folders (in the repository and in `android/`) and any deviation from an ADR. **Stop rule:** do not build a workaround; add the question to `docs/APPROVALS.md` and continue elsewhere.

@@ -17,6 +17,8 @@ import com.mathis.mandala.core.ProFeature
 val MandalaStyle.labelRes: Int
     get() = when (this) {
         MandalaStyle.SPIROGRAPH -> R.string.style_spirograph
+        MandalaStyle.PETAL_RINGS -> R.string.style_petal_rings
+        MandalaStyle.LOOP_RINGS -> R.string.style_loop_rings
         MandalaStyle.ROSE_CURVES -> R.string.style_rose_curves
         MandalaStyle.FLORAL -> R.string.style_floral
         MandalaStyle.BUTTERFLY -> R.string.style_butterfly

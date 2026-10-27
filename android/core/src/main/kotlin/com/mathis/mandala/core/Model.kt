@@ -56,6 +56,9 @@ enum class MandalaStyle(val displayName: String) {
     @SerialName("universe") UNIVERSE("Universe"),
     @SerialName("symbols") SYMBOLS("Symbols"),
     @SerialName("mixed") MIXED("Mixed"),
+    // Built on Android first (AGENTS.md); the macOS app does not know them yet and falls back.
+    @SerialName("petalRings") PETAL_RINGS("Petal Rings"),
+    @SerialName("loopRings") LOOP_RINGS("Loop Rings"),
     ;
 }
 

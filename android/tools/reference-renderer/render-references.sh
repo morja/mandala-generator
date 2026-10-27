@@ -30,9 +30,13 @@ model = Path("core/src/main/kotlin/com/mathis/mandala/core/Model.kt").read_text(
 styles = re.findall(r'@SerialName\("([^"]+)"\) ([A-Z_]+)\(', model)
 target = Path("app/src/main/res/drawable-nodpi")
 target.mkdir(exist_ok=True)
+copied = 0
 for raw, name in styles:
-    shutil.copy(source / (raw + ".png"), target / ("style_preview_" + name.lower() + ".png"))
-print(f"Copied {len(styles)} Mac previews to Android")
+    # Styles built on Android first have no Mac preview yet; theirs stay as rendered by the core.
+    if (source / (raw + ".png")).exists():
+        shutil.copy(source / (raw + ".png"), target / ("style_preview_" + name.lower() + ".png"))
+        copied += 1
+print(f"Copied {copied} Mac previews to Android")
 PYTHON
 else
     for f in fixtures/settings/*.json; do

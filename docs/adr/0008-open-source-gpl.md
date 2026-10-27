@@ -17,7 +17,7 @@ The same text stands in both READMEs.
 ## Reasons
 
 - Mathis wants the work to stay open source. GPL rather than MIT: nobody may turn the code into a closed app; a copy must stay open.
-- Keeping only one app closed protects almost nothing: new features are built in the public macOS app first, the Android app ports them.
+- Keeping only one app closed protects almost nothing: new features are built in the public macOS app first, the Android app ports them. *Amended 27 October 2026 (Mathis):* the order is reversed: new features are built in the Android app first and the macOS app follows later; the argument stays the same, since both apps are in the same public repository.
 - The Google Play Billing Library is proprietary, and the App Store's terms add restrictions; without the permission, others could not legally ship builds with them. Mathis, as the only author, can ship his own builds either way.
 - Mathis is the only contributor of both repositories (checked 20 October 2026), so he can choose the licence and change it for later versions.
 

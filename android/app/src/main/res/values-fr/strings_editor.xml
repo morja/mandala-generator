@@ -30,6 +30,7 @@
     <string name="editor_draw_hint">Faites glisser sur l\'image pour dessiner</string>
     <string name="editor_move_layer_hint">Faites glisser pour déplacer le calque %1$d, pincez pour le redimensionner et le faire pivoter</string>
     <string name="editor_move_emblem_hint">Faites glisser pour déplacer l\'emblème, pincez pour le redimensionner et le faire pivoter</string>
+    <string name="editor_move_text_hint">Faites glisser vers le haut ou le bas pour déplacer le texte, pincez pour le redimensionner</string>
 
     <!-- Editor: Pro sheet -->
     <string name="editor_pro_title">Dahlia Pro</string>
@@ -71,4 +72,18 @@
     <string name="live_daily_note">Avec le fond d\'écran quotidien activé, le fond d\'écran animé passe en fondu au favori suivant chaque matin.</string>
     <string name="live_set">Définir le fond d\'écran animé</string>
     <string name="editor_without_effects">Sans effets</string>
+    <string name="play_title">Terrain de jeu</string>
+    <string name="play_menu_detail">Un doigt, plein de réglages à la fois</string>
+    <string name="play_map">Paysage</string>
+    <string name="play_compass">Boussole</string>
+    <string name="play_done">OK</string>
+    <string name="play_hint">Glissez avec un doigt. Deux doigts : écartez pour plus, tournez pour les couleurs.</string>
+    <string name="play_new_map">Nouveau paysage</string>
+    <string name="play_from_here">Partir d’ici</string>
+    <string name="play_keep">Garder</string>
+    <string name="play_light">Lumière</string>
+    <string name="play_shape">Forme</string>
+    <string name="play_depth">Profondeur</string>
+    <string name="play_colour">Couleur</string>
+    <string name="play_field_description">Terrain de jeu : glissez pour changer le mandala</string>
 </resources>

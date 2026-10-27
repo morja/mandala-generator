@@ -8,6 +8,9 @@ import com.mathis.mandala.core.MandalaStyle
 @DrawableRes
 internal fun stylePreviewResource(style: MandalaStyle): Int = when (style) {
     MandalaStyle.SPIROGRAPH -> R.drawable.style_preview_spirograph
+    // Android first: rendered by the core (cli, the Mac preview settings), until the Mac app has them.
+    MandalaStyle.PETAL_RINGS -> R.drawable.style_preview_petal_rings
+    MandalaStyle.LOOP_RINGS -> R.drawable.style_preview_loop_rings
     MandalaStyle.ROSE_CURVES -> R.drawable.style_preview_rose_curves
     MandalaStyle.FLORAL -> R.drawable.style_preview_floral
     MandalaStyle.BUTTERFLY -> R.drawable.style_preview_butterfly
