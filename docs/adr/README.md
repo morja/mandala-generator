@@ -27,4 +27,4 @@ ADR-0001 to ADR-0008 were written for the Android repository before both apps mo
 | [0019](0019-languages-and-quotes.md) | App languages and quotes per language | accepted |
 | [0020](0020-home-screen-widget.md) | Home screen widget "Mandala of the day" | accepted |
 | [0021](0021-own-palettes.md) | Own palettes on Android | accepted |
-| [0022](0022-shared-billing-library.md) | Pro purchase through the shared tearoom-android-kit | proposed |
+| [0022](0022-shared-billing-library.md) | Pro purchase through the shared tearoom-android-kit | accepted |

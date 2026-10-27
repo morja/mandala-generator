@@ -1,11 +1,11 @@
 # ADR-0022 · Pro purchase through the shared tearoom-android-kit
 
-Status: proposed, 26 October 2026. The library and the composite build are Mathis' decision of 26 October 2026 (tearoom-android-kit ADR-0001, ADR-0002); open for Mathis: the public build question under Consequences (`docs/APPROVALS.md`). Replaces the purchase part of ADR-0007 ("How it is built").
+Status: accepted, 27 October 2026 (Mathis' decision that Play Billing exists once, in the kit; written 26 October 2026). The library and the composite build are Mathis' decision of 26 October 2026 (tearoom-android-kit ADR-0001, ADR-0002); still open for Mathis: the public build question under Consequences (`docs/APPROVALS.md`). Replaces the purchase part of ADR-0007 ("How it is built").
 
 ## Decision
 
-1. **Shared code.** The Pro purchase uses `one.tearoom:unlock` from `~/Work/Projects/tearoom-android-kit`, the hardened Play Billing code of Lazy Moves (timeouts, bounded retries, late answers ignored, acknowledgement retries, refunds, pending payments, restore). `ProPurchases.kt` is gone; `Pro.kt` holds the one app-wide instance and maps the library's codes to Dahlia's strings.
-2. **Build.** `android/settings.gradle.kts` includes the library with `includeBuild`; the path comes from the Gradle property `tearoomKitPath` (e.g. in `~/.gradle/gradle.properties`), else `~/Work/Projects/tearoom-android-kit`. Google Play Billing moves from 8.3.0 to 9.1.0 (plain `billing`, through the library).
+1. **Shared code.** The Pro purchase uses `one.tearoom:unlock` from `~/Work/Projects/apps/tearoom-android-kit`, the hardened Play Billing code of Lazy Moves (timeouts, bounded retries, late answers ignored, acknowledgement retries, refunds, pending payments, restore). `ProPurchases.kt` is gone; `Pro.kt` holds the one app-wide instance and maps the library's codes to Dahlia's strings.
+2. **Build.** `android/settings.gradle.kts` includes the library with `includeBuild`; the path comes from the Gradle property `tearoomKitPath` (e.g. in `~/.gradle/gradle.properties`), else `~/Work/Projects/apps/tearoom-android-kit`. Google Play Billing moves from 8.3.0 to 9.1.0 (plain `billing`, through the library).
 3. **Unchanged:** product `pro` (purchase option `buy`, legacy compatible, checked read-only through the Play API on 26 October 2026); the cache in shared preferences `pro`, key `owned`, so a phone that owns Pro keeps it on update, also offline; `pro_for_testing` (debug and fast count as Pro, free does not) as the library's `debugUnlocked`; the daily wallpaper and the widget read the cache (`Pro.isUnlocked`); what is free and what is Pro (ADR-0016).
 4. **New for users:**
    - Play is asked on every resume, not only at start (Google's guidance: purchases on another device, completed pending payments, refunds).
