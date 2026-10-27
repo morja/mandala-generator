@@ -33,6 +33,8 @@
     <string name="menu_save_settings">Salvar configurações</string>
     <string name="menu_fast_preview">Prévia rápida</string>
     <string name="menu_fast_preview_detail">Só a prévia do editor é desenhada de forma mais simples e rápida. Imagens salvas e papéis de parede mantêm a qualidade total.</string>
+    <string name="menu_chip_previews">Imagens nas listas</string>
+    <string name="menu_chip_previews_detail">Um pequeno exemplo ao lado de cada estilo e motivo. Desligado, as listas ficam mais curtas.</string>
     <string name="menu_daily_wallpaper">Novo plano de fundo todo dia</string>
     <string name="menu_daily_about">Ao ativar, o próximo dos seus favoritos vira o papel de parede na hora: na tela de bloqueio e, um pouco mais escuro, na tela inicial. Depois, o seguinte chega toda manhã entre 4 e 8 horas, de preferência enquanto o telefone carrega. Com o papel de parede animado ativo, ele faz a transição para o próximo favorito.</string>
     <string name="menu_daily_favourites">Favoritos</string>

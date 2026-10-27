@@ -108,6 +108,7 @@
     <string name="controls_coloured_grain">彩色颗粒</string>
     <string name="controls_effects">效果</string>
     <string name="controls_on">开启</string>
+    <string name="controls_random_effects">随机效果</string>
     <string name="controls_effects_new_pattern">新的高光、暗化、星星和闪粉图案</string>
     <string name="controls_reset">重置</string>
     <string name="controls_effects_off_note">开启后可使用暗角、泛光、颗粒、星星等效果。</string>
@@ -154,7 +155,6 @@
     <string name="controls_random_text_look">随机文字样式</string>
     <string name="controls_text_off_note">在画面中显示一句名言或你自己的话，也可以附上作者。</string>
     <string name="controls_words">文字</string>
-    <string name="controls_tap_to_edit">轻点即可编辑</string>
     <string name="controls_collection">合集</string>
     <string name="controls_new_quote">换一句</string>
     <string name="controls_keep">收藏</string>
@@ -200,7 +200,6 @@
     <string name="controls_smoother">平滑</string>
     <string name="controls_applies_to">应用于</string>
     <string name="controls_reach_mandala">曼陀罗</string>
-    <string name="controls_effects_hold_hint">长按预览可查看无效果的样子。</string>
 
     <!-- Own palettes (ADR-0021) -->
     <string name="controls_my_palettes">我的调色板</string>

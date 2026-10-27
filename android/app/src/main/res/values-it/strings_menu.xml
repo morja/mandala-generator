@@ -33,6 +33,8 @@
     <string name="menu_save_settings">Salva impostazioni</string>
     <string name="menu_fast_preview">Anteprima rapida</string>
     <string name="menu_fast_preview_detail">Solo l\'anteprima nell\'editor viene disegnata in modo più semplice e veloce. Le immagini salvate e gli sfondi mantengono la piena qualità.</string>
+    <string name="menu_chip_previews">Immagini negli elenchi</string>
+    <string name="menu_chip_previews_detail">Un piccolo esempio accanto a ogni stile e motivo. Disattivato, gli elenchi sono più corti.</string>
     <string name="menu_daily_wallpaper">Nuovo sfondo ogni giorno</string>
     <string name="menu_daily_about">Quando lo attivi, il prossimo dei tuoi preferiti diventa subito lo sfondo: sulla schermata di blocco e, un po\' più scuro, sulla schermata Home. Poi arriva il successivo ogni mattina tra le 4 e le 8, preferibilmente mentre il telefono è in carica. Con lo sfondo animato attivo, sfuma invece al preferito successivo.</string>
     <string name="menu_daily_favourites">Preferiti</string>

@@ -29,6 +29,8 @@
     <string name="menu_save_settings">保存设置</string>
     <string name="menu_fast_preview">快速预览</string>
     <string name="menu_fast_preview_detail">只简化并加快编辑器中的预览绘制。保存的图片和壁纸始终保持完整质量。</string>
+    <string name="menu_chip_previews">列表中的图片</string>
+    <string name="menu_chip_previews_detail">在每个样式和图案旁显示小示例。关闭后列表更短。</string>
     <string name="menu_daily_wallpaper">每天换新壁纸</string>
     <string name="menu_daily_about">开启后，你的下一个收藏会立即成为壁纸：设为锁屏，并以稍暗的效果设为主屏幕。之后每天早上 4 点到 8 点之间（最好在充电时）换成下一个收藏。若动态壁纸已开启，则改由动态壁纸渐变到下一个收藏。</string>
     <string name="menu_daily_favourites">收藏</string>

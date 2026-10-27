@@ -156,6 +156,7 @@ fun EditorScreen(
     val shownFraming by vm.shownFraming.collectAsStateWithLifecycle()
     val phoneAspect by vm.screenAspect.collectAsStateWithLifecycle()
     val fastPreview by vm.fastPreview.collectAsStateWithLifecycle()
+    val chipPreviews by vm.chipPreviews.collectAsStateWithLifecycle()
     val previewSize by vm.previewSize.collectAsStateWithLifecycle()
     val plainPreview by vm.plainPreview.collectAsStateWithLifecycle()
     // Holding the preview shows it without the scene effects, only while they are on (UX-1 16).
@@ -234,7 +235,7 @@ fun EditorScreen(
             onTouch = vm::playTouch,
             onReset = vm::resetPlay,
             onAgain = vm::playAgain,
-            onKeep = vm::addFavorite,
+            onKeep = vm::playKeep,
             onDismiss = vm::closePlay,
         )
     }
@@ -313,6 +314,7 @@ fun EditorScreen(
             candidate = candidate,
             busy = busy,
             fastPreview = fastPreview,
+            chipPreviews = chipPreviews,
             lightTheme = lightTheme,
             actions = MenuActions(
                 onFavourite = closing(vm::addFavorite),
@@ -351,6 +353,7 @@ fun EditorScreen(
                 onOpen = closing { openFile.launch(arrayOf("application/json", "text/plain", "application/octet-stream")) },
                 onSaveSettings = closing { saveSettings.launch(vm.suggestedSettingsName()) },
                 onFastPreview = vm::setFastPreview,
+                onChipPreviews = vm::setChipPreviews,
                 onLightTheme = onLightTheme,
                 onAbout = closing(onAbout),
             ),
@@ -525,8 +528,8 @@ private fun FoldingCanvas(
     preview: PreviewState,
     header: ControlHeader?,
     fullSide: androidx.compose.ui.unit.Dp,
-    size: PreviewSize,
-    onSize: (PreviewSize) -> Unit,
+    size: Float,
+    onSize: (Float) -> Unit,
     compare: Compare?,
     drawing: DrawingInput?,
     move: MoveInput?,
@@ -537,19 +540,20 @@ private fun FoldingCanvas(
     val pinned = drawing != null || move != null
     val shown = if (pinned) PreviewSize.FULL else size
     // The shown side as a fraction of the full one; follows a pull while the finger is down.
-    val scale = remember { androidx.compose.animation.core.Animatable(shown.fraction) }
-    LaunchedEffect(shown) { scale.animateTo(shown.fraction) }
+    val scale = remember { androidx.compose.animation.core.Animatable(shown) }
+    LaunchedEffect(shown) { scale.animateTo(shown) }
     val fraction = scale.value
     val fullPx = with(androidx.compose.ui.platform.LocalDensity.current) { fullSide.toPx() }
     val scope = androidx.compose.runtime.rememberCoroutineScope()
     val latestSize by rememberUpdatedState(size)
-    // Pulling down past the top of the controls grows the image with the finger; let go and it takes
-    // the nearest size. Only a drag counts, not a fling that reaches the top.
+    // Pulling down past the top of the controls grows the image with the finger; let go and it stays
+    // there, or takes an end when it is close (Mathis, 27 October 2026: no middle size to land on).
+    // Only a drag counts, not a fling that reaches the top.
     val pull = remember { floatArrayOf(0f) }
     val connection = remember(pinned, fullPx) {
         object : androidx.compose.ui.input.nestedscroll.NestedScrollConnection {
             fun follow() {
-                val f = (latestSize.fraction + pull[0] / fullPx).coerceIn(latestSize.fraction, 1f)
+                val f = (latestSize + pull[0] / fullPx).coerceIn(latestSize, PreviewSize.FULL)
                 scope.launch { scale.snapTo(f) }
             }
 
@@ -562,7 +566,7 @@ private fun FoldingCanvas(
             }
 
             override fun onPostScroll(consumed: Offset, available: Offset, source: androidx.compose.ui.input.nestedscroll.NestedScrollSource): Offset {
-                if (latestSize == PreviewSize.FULL || pinned || fullPx <= 0f || available.y <= 0f ||
+                if (latestSize >= PreviewSize.FULL || pinned || fullPx <= 0f || available.y <= 0f ||
                     source != androidx.compose.ui.input.nestedscroll.NestedScrollSource.UserInput
                 ) return Offset.Zero
                 pull[0] += available.y
@@ -573,22 +577,21 @@ private fun FoldingCanvas(
             override suspend fun onPreFling(available: androidx.compose.ui.unit.Velocity): androidx.compose.ui.unit.Velocity {
                 if (pull[0] <= 0f) return androidx.compose.ui.unit.Velocity.Zero
                 pull[0] = 0f
-                val f = scale.value
-                val nearest = PreviewSize.entries.filter { it.fraction >= latestSize.fraction }.minBy { kotlin.math.abs(it.fraction - f) }
-                if (nearest != latestSize) onSize(nearest) else scale.animateTo(latestSize.fraction)
+                val f = PreviewSize.snapped(scale.value)
+                if (f != latestSize) onSize(f) else scale.animateTo(latestSize)
                 return available
             }
         }
     }
-    // Past halfway from full to the middle size the status gives way to the tab's title beside the
-    // image; past halfway from the middle to the small size the Pro mark is too small to tap.
-    val towardsMiddle = (PreviewSize.FULL.fraction + PreviewSize.MIDDLE.fraction) / 2f
-    val towardsSmall = (PreviewSize.MIDDLE.fraction + PreviewSize.SMALL.fraction) / 2f
-    val headerAlpha = ((towardsMiddle - fraction) / (towardsMiddle - PreviewSize.MIDDLE.fraction)).coerceIn(0f, 1f)
+    // Below 0.8 of full the status gives way to the tab's title beside the image, fully in by 0.6;
+    // below 0.46 the Pro mark is too small to tap.
+    val towardsMiddle = PreviewSize.STATUS_ABOVE
+    val towardsSmall = PreviewSize.LABELS_ABOVE
+    val headerAlpha = ((towardsMiddle - fraction) / (towardsMiddle - PreviewSize.HEADER_BELOW)).coerceIn(0f, 1f)
     BoxWithConstraints(Modifier.fillMaxSize().padding(horizontal = Spacing.lg)) {
         val side = fullSide * fraction
         // Centred when full (if narrower than the screen), at the left when smaller.
-        val inset = (maxWidth - fullSide) / 2 * ((fraction - PreviewSize.SMALL.fraction) / (1f - PreviewSize.SMALL.fraction))
+        val inset = (maxWidth - fullSide) / 2 * ((fraction - PreviewSize.SMALL) / (PreviewSize.FULL - PreviewSize.SMALL))
         Column(Modifier.fillMaxSize().nestedScroll(connection)) {
             Row(verticalAlignment = Alignment.Top, modifier = Modifier.fillMaxWidth().padding(start = inset)) {
                 Canvas(
@@ -600,12 +603,13 @@ private fun FoldingCanvas(
                     showStatus = fraction > towardsMiddle,
                     // The small image is too small for the labels on it; the controls still carry their marks.
                     showLabels = fraction > towardsSmall,
-                    onTap = if (size != PreviewSize.FULL && !pinned) ({ onSize(PreviewSize.FULL) }) else null,
+                    onTap = if (size < PreviewSize.FULL && !pinned) ({ onSize(PreviewSize.FULL) }) else null,
                     proMark = proMark,
                 ) {
                     // Bottom right, where the thumb reaches it.
                     if (!pinned) {
-                        val small = size == PreviewSize.SMALL
+                        // One tap makes it small; on the small image one tap makes it full again.
+                        val small = size <= PreviewSize.SMALL
                         Box(
                             Modifier
                                 .align(Alignment.BottomEnd)
@@ -613,7 +617,7 @@ private fun FoldingCanvas(
                                 .clip(CircleShape)
                                 .background(t.surface)
                                 .clickable(onClickLabel = if (small) stringResource(R.string.editor_show_large) else stringResource(R.string.editor_make_small)) {
-                                    onSize(if (small) PreviewSize.FULL else PreviewSize.entries[size.ordinal + 1])
+                                    onSize(if (small) PreviewSize.FULL else PreviewSize.SMALL)
                                 }
                                 .padding(Spacing.xs),
                         ) {

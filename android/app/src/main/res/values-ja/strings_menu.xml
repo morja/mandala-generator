@@ -29,6 +29,8 @@
     <string name="menu_save_settings">設定を保存</string>
     <string name="menu_fast_preview">高速プレビュー</string>
     <string name="menu_fast_preview_detail">エディタのプレビューだけを簡略化して速く描画します。保存する画像と壁紙は常にフル品質です。</string>
+    <string name="menu_chip_previews">リストの画像</string>
+    <string name="menu_chip_previews_detail">各スタイルとモチーフの横に小さな例を表示します。オフにするとリストが短くなります。</string>
     <string name="menu_daily_wallpaper">毎日新しい壁紙</string>
     <string name="menu_daily_about">オンにすると、お気に入りの次の1枚がすぐに壁紙になります。ロック画面に、ホーム画面には少し暗くして設定します。その後は毎朝4時から8時の間に、できれば充電中に、次のお気に入りに替わります。ライブ壁紙がオンのときは、代わりにライブ壁紙が次のお気に入りへフェードします。</string>
     <string name="menu_daily_favourites">お気に入り</string>

@@ -110,6 +110,7 @@
     <string name="controls_coloured_grain">Coloured grain</string>
     <string name="controls_effects">Effects</string>
     <string name="controls_on">On</string>
+    <string name="controls_random_effects">Random effects look</string>
     <string name="controls_effects_new_pattern">New pattern of highlights, dimming, stars and glitter</string>
     <string name="controls_reset">Reset</string>
     <string name="controls_effects_off_note">Switch on to use vignette, bloom, grain, stars and more.</string>
@@ -156,7 +157,6 @@
     <string name="controls_random_text_look">Random text look</string>
     <string name="controls_text_off_note">A quote or your own words in the picture, with the author if you like.</string>
     <string name="controls_words">Words</string>
-    <string name="controls_tap_to_edit">Tap to edit</string>
     <string name="controls_collection">Collection</string>
     <string name="controls_new_quote">New quote</string>
     <string name="controls_keep">Keep</string>
@@ -202,7 +202,6 @@
     <string name="controls_smoother">Smoother</string>
     <string name="controls_applies_to">Applies to</string>
     <string name="controls_reach_mandala">Mandala</string>
-    <string name="controls_effects_hold_hint">Hold the preview to see it without effects.</string>
 
     <!-- Own palettes (ADR-0021) -->
     <string name="controls_my_palettes">My palettes</string>

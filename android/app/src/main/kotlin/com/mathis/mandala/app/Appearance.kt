@@ -18,13 +18,21 @@ class Appearance(context: Context) {
         get() = prefs.getBoolean(KEY_FAST_PREVIEW, true)
         set(value) = prefs.edit().putBoolean(KEY_FAST_PREVIEW, value).apply()
 
-    var previewSize: PreviewSize
-        get() = PreviewSize.entries.firstOrNull { it.name == prefs.getString(KEY_PREVIEW_SIZE, null) } ?: PreviewSize.FULL
-        set(value) = prefs.edit().putString(KEY_PREVIEW_SIZE, value.name).apply()
+    /** Small pictures beside the names in the style and emblem lists; off, the lists are shorter. */
+    var chipPreviews: Boolean
+        get() = prefs.getBoolean(KEY_CHIP_PREVIEWS, true)
+        set(value) = prefs.edit().putBoolean(KEY_CHIP_PREVIEWS, value).apply()
+
+    /** The preview's side as a fraction of full ([PreviewSize]); an older build kept a name under another key. */
+    var previewSize: Float
+        get() = prefs.getFloat(KEY_PREVIEW_FRACTION, PreviewSize.FULL).coerceIn(PreviewSize.SMALL, PreviewSize.FULL)
+        set(value) = prefs.edit().putFloat(KEY_PREVIEW_FRACTION, value).remove(KEY_PREVIEW_SIZE).apply()
 
     private companion object {
         const val KEY_LIGHT = "light_theme"
         const val KEY_FAST_PREVIEW = "fast_preview"
         const val KEY_PREVIEW_SIZE = "preview_size"
+        const val KEY_PREVIEW_FRACTION = "preview_fraction"
+        const val KEY_CHIP_PREVIEWS = "chip_previews"
     }
 }

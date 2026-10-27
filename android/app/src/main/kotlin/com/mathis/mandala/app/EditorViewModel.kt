@@ -101,6 +101,8 @@ import kotlin.random.Random
 data class PlayState(
     val mode: PlayField.Mode = PlayField.Mode.MAP,
     val touch: PlayField.Touch = PlayField.Touch(),
+    /** The picture as it is now was added to the favourites; the star stays filled until it changes. */
+    val kept: Boolean = false,
 )
 
 data class PreviewState(
@@ -383,12 +385,22 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
     /** Whether the preview blurs its glow at a smaller size (quicker, a touch softer; saved images never). */
     val fastPreview: StateFlow<Boolean> = _fastPreview.asStateFlow()
 
+    private val _chipPreviews = MutableStateFlow(appearance.chipPreviews)
+
+    /** Small pictures in the style and emblem lists (Mathis, 27 October 2026: a switch, as they make the lists long). */
+    val chipPreviews: StateFlow<Boolean> = _chipPreviews.asStateFlow()
+
+    fun setChipPreviews(on: Boolean) {
+        appearance.chipPreviews = on
+        _chipPreviews.value = on
+    }
+
     private val _previewSize = MutableStateFlow(appearance.previewSize)
 
     /** How large the phone preview stands above the controls; kept across starts (UX-1 11). */
-    val previewSize: StateFlow<PreviewSize> = _previewSize.asStateFlow()
+    val previewSize: StateFlow<Float> = _previewSize.asStateFlow()
 
-    fun setPreviewSize(size: PreviewSize) {
+    fun setPreviewSize(size: Float) {
         appearance.previewSize = size
         _previewSize.value = size
     }
@@ -550,6 +562,9 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
     fun resetEffects() = updateEffects { it.reset() }
 
     fun newEffectsPattern() = updateEffects { it.newPattern(::randomSeed) }
+
+    /** A new look of the effects, like the dice of the layers, the emblem and the text. */
+    fun randomizeEffects() = updateEffects { it.randomized(Random) }
 
     fun updateText(change: (TextLayerSettings) -> TextLayerSettings) = _params.update { it.updateText(change) }
 
@@ -973,30 +988,45 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
 
     fun setPlayMode(mode: PlayField.Mode) {
         val state = _play.value ?: return
-        _play.value = state.copy(mode = mode)
+        _play.value = state.copy(mode = mode, kept = false)
         applyPlay()
     }
 
     /** One finger on the field, as fractions of its width and height. */
     fun playTouch(x: Double, y: Double) {
         val state = _play.value ?: return
-        _play.value = state.copy(touch = state.touch.copy(x = x.coerceIn(0.0, 1.0), y = y.coerceIn(0.0, 1.0)))
+        _play.value = state.copy(touch = state.touch.copy(x = x.coerceIn(0.0, 1.0), y = y.coerceIn(0.0, 1.0)), kept = false)
         applyPlay()
     }
 
     /** Back to the middle: the mandala as it was when the field opened. */
     fun resetPlay() {
         val base = playBase ?: return
-        _play.update { it?.copy(touch = PlayField.Touch()) }
+        _play.update { it?.copy(touch = PlayField.Touch(), kept = false) }
         _params.value = base
     }
 
-    /** The landscape: a new one around the mandala as it is now. The compass: start from here. */
-    fun playAgain() {
+    /** Adds the picture as played to the favourites; the sheet's star fills until the picture changes. */
+    fun playKeep() {
         if (_play.value == null) return
-        playBase = _params.value
-        _play.update { it?.copy(touch = PlayField.Touch()) }
-        if (_play.value?.mode == PlayField.Mode.MAP) newPlayLandscape()
+        addFavorite()
+        _play.update { it?.copy(kept = true) }
+    }
+
+    /**
+     * The landscape: a new one around the same middle; the point stays where it is, so the picture shows
+     * the new landscape at once (in the middle there is nothing to show). The compass: start from here.
+     */
+    fun playAgain() {
+        val state = _play.value ?: return
+        if (state.mode == PlayField.Mode.MAP) {
+            _play.value = state.copy(kept = false)
+            newPlayLandscape()
+            applyPlay()
+        } else {
+            playBase = _params.value
+            _play.value = state.copy(touch = PlayField.Touch(), kept = false)
+        }
     }
 
     /** A new landscape around the mandala as it is now; it is explored by moving, not shown in advance. */

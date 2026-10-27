@@ -112,6 +112,7 @@
     <string name="controls_coloured_grain">Grana colorata</string>
     <string name="controls_effects">Effetti</string>
     <string name="controls_on">On</string>
+    <string name="controls_random_effects">Effetti casuali</string>
     <string name="controls_effects_new_pattern">Nuova disposizione di luci, ombreggiature, stelle e glitter</string>
     <string name="controls_reset">Reimposta</string>
     <string name="controls_effects_off_note">Attiva per usare vignettatura, bloom, grana, stelle e altro.</string>
@@ -158,7 +159,6 @@
     <string name="controls_random_text_look">Stile testo casuale</string>
     <string name="controls_text_off_note">Una citazione o parole tue nell\'immagine, con l\'autore se vuoi.</string>
     <string name="controls_words">Parole</string>
-    <string name="controls_tap_to_edit">Tocca per modificare</string>
     <string name="controls_collection">Raccolta</string>
     <string name="controls_new_quote">Altra citazione</string>
     <string name="controls_keep">Salva</string>
@@ -204,7 +204,6 @@
     <string name="controls_smoother">Ammorbidisci</string>
     <string name="controls_applies_to">Si applica a</string>
     <string name="controls_reach_mandala">Mandala</string>
-    <string name="controls_effects_hold_hint">Tieni premuta l\'anteprima per vederla senza effetti.</string>
 
     <!-- Own palettes (ADR-0021) -->
     <string name="controls_my_palettes">Le mie palette</string>

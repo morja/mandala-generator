@@ -108,7 +108,13 @@ internal fun PlaySheet(
                 } else {
                     IconButton(onClick = onAgain) { Icon(EditorIcons.Centre, contentDescription = stringResource(R.string.play_from_here), tint = t.accent) }
                 }
-                IconButton(onClick = onKeep) { Icon(EditorIcons.StarLine, contentDescription = stringResource(R.string.play_keep), tint = t.accent) }
+                IconButton(onClick = onKeep, enabled = !state.kept) {
+                    Icon(
+                        if (state.kept) EditorIcons.Star else EditorIcons.StarLine,
+                        contentDescription = stringResource(if (state.kept) R.string.message_favourite_added else R.string.play_keep),
+                        tint = t.accent,
+                    )
+                }
                 Button(onClick = onDismiss, modifier = Modifier.weight(1f)) { Text(stringResource(R.string.play_done), maxLines = 1) }
             }
         }
