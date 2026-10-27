@@ -71,4 +71,18 @@
     <string name="live_daily_note">With the daily wallpaper on, the live wallpaper fades over to the next favourite every morning.</string>
     <string name="live_set">Set live wallpaper</string>
     <string name="editor_without_effects">Without effects</string>
+    <string name="play_title">Play field</string>
+    <string name="play_menu_detail">One finger, many settings at once</string>
+    <string name="play_map">Landscape</string>
+    <string name="play_compass">Compass</string>
+    <string name="play_done">Done</string>
+    <string name="play_hint">Drag with one finger. Two fingers: spread for more, turn for colours.</string>
+    <string name="play_new_map">New landscape</string>
+    <string name="play_from_here">Start from here</string>
+    <string name="play_keep">Keep</string>
+    <string name="play_light">Light</string>
+    <string name="play_shape">Shape</string>
+    <string name="play_depth">Depth</string>
+    <string name="play_colour">Colour</string>
+    <string name="play_field_description">Play field: drag to change the mandala</string>
 </resources>

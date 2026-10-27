@@ -71,4 +71,18 @@
     <string name="live_daily_note">Mit aktivem täglichem Hintergrund blendet der Live-Hintergrund jeden Morgen zum nächsten Favoriten über.</string>
     <string name="live_set">Live-Hintergrund festlegen</string>
     <string name="editor_without_effects">Ohne Effekte</string>
+    <string name="play_title">Spielfläche</string>
+    <string name="play_menu_detail">Ein Finger, viele Regler auf einmal</string>
+    <string name="play_map">Landkarte</string>
+    <string name="play_compass">Kompass</string>
+    <string name="play_done">Fertig</string>
+    <string name="play_hint">Mit einem Finger ziehen. Zwei Finger: auseinander für mehr, drehen für Farben.</string>
+    <string name="play_new_map">Neue Landkarte</string>
+    <string name="play_from_here">Von hier aus</string>
+    <string name="play_keep">Merken</string>
+    <string name="play_light">Licht</string>
+    <string name="play_shape">Form</string>
+    <string name="play_depth">Tiefe</string>
+    <string name="play_colour">Farbe</string>
+    <string name="play_field_description">Spielfläche: ziehen, um das Mandala zu verändern</string>
 </resources>

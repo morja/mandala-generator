@@ -217,6 +217,20 @@ fun EditorScreen(
     val activity = LocalActivity.current
     LaunchedEffect(activity) { activity?.let { vm.setScreen(screenAspect(it), screenSize(it).first) } }
     LaunchedEffect(showSave) { vm.setSaveOpen(showSave) }
+    val play by vm.play.collectAsStateWithLifecycle()
+    play?.let { state ->
+        PlaySheet(
+            state = state,
+            image = preview.image,
+            onMode = vm::setPlayMode,
+            onTouch = vm::playTouch,
+            onGesture = vm::playGesture,
+            onReset = vm::resetPlay,
+            onAgain = vm::playAgain,
+            onKeep = vm::addFavorite,
+            onDismiss = vm::closePlay,
+        )
+    }
     if (showSave) {
         SaveSheet(
             choice = saveChoice,
@@ -317,6 +331,7 @@ fun EditorScreen(
                     }
                 },
                 onTryNew = vm::tryNew,
+                onPlay = closing(vm::openPlay),
                 onUseNew = { showMenu = false; vm.useCandidate() },
                 onBackToMenu = vm::closeCandidate,
                 onOpen = closing { openFile.launch(arrayOf("application/json", "text/plain", "application/octet-stream")) },

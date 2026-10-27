@@ -38,6 +38,7 @@ import com.mathis.mandala.app.Randomize.randomized
 import com.mathis.mandala.app.Editing.withQuote
 import com.mathis.mandala.core.BaseLayerSettings
 import com.mathis.mandala.core.BaseLayerType
+import com.mathis.mandala.core.BuiltInPalettes
 import com.mathis.mandala.core.DrawingLayerSettings
 import com.mathis.mandala.core.EffectsLayerSettings
 import com.mathis.mandala.core.EmblemLayerSettings
@@ -94,6 +95,14 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import java.util.UUID
 import kotlin.random.Random
+
+/** The play field while it is open (UX-1 19): its mode, the finger, and the landscape's small pictures. */
+data class PlayState(
+    val mode: PlayField.Mode = PlayField.Mode.MAP,
+    val touch: PlayField.Touch = PlayField.Touch(),
+    /** The landscape seen from above, row by row; empty while drawn. */
+    val map: List<ImageBitmap> = emptyList(),
+)
 
 data class PreviewState(
     val image: ImageBitmap? = null,
@@ -911,6 +920,105 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
 
     fun suggestedSettingsName(): String = Editing.fileName(_params.value).removeSuffix(".png") + ".json"
 
+    // ── Play field (UX-1 19, DM-20) ──
+
+    private val _play = MutableStateFlow<PlayState?>(null)
+    val play: StateFlow<PlayState?> = _play.asStateFlow()
+
+    /** The mandala when the field opened: its middle, and what Reset goes back to. */
+    private var playBase: MandalaParameters? = null
+    private var playLayer = 0
+    private var playLand: PlayField.Landscape? = null
+    private var playMapJob: Job? = null
+
+    fun openPlay() {
+        playBase = _params.value
+        playLayer = _selected.value.coerceIn(0, _params.value.layers.lastIndex)
+        _play.value = PlayState()
+        newPlayLandscape()
+    }
+
+    /** Closes the field; the mandala stays as played, and Back in the editor undoes it. */
+    fun closePlay() {
+        playMapJob?.cancel()
+        _play.value = null
+        playBase = null
+        playLand = null
+    }
+
+    fun setPlayMode(mode: PlayField.Mode) {
+        val state = _play.value ?: return
+        _play.value = state.copy(mode = mode)
+        applyPlay()
+    }
+
+    /** One finger on the field, as fractions of its width and height. */
+    fun playTouch(x: Double, y: Double) {
+        val state = _play.value ?: return
+        _play.value = state.copy(touch = state.touch.copy(x = x.coerceIn(0.0, 1.0), y = y.coerceIn(0.0, 1.0)))
+        applyPlay()
+    }
+
+    /** Two fingers: spreading (`zoom` above 1) makes it denser, turning (degrees) turns the colours. */
+    fun playGesture(zoom: Float, rotation: Float) {
+        val state = _play.value ?: return
+        val t = state.touch
+        _play.value = state.copy(touch = t.copy(denser = (t.denser + (zoom - 1f) * PLAY_PINCH).coerceIn(0.0, 1.0), turn = (t.turn + rotation / 360.0).mod(1.0)))
+        applyPlay()
+    }
+
+    /** Back to the middle: the mandala as it was when the field opened. */
+    fun resetPlay() {
+        val base = playBase ?: return
+        _play.update { it?.copy(touch = PlayField.Touch()) }
+        _params.value = base
+    }
+
+    /** The landscape: a new one around the mandala as it is now. The compass: start from here. */
+    fun playAgain() {
+        if (_play.value == null) return
+        playBase = _params.value
+        _play.update { it?.copy(touch = PlayField.Touch()) }
+        if (_play.value?.mode == PlayField.Mode.MAP) newPlayLandscape()
+    }
+
+    private fun newPlayLandscape() {
+        val base = playBase ?: return
+        val layer = base.layers.getOrNull(playLayer) ?: return
+        val land = PlayField.Landscape(System.nanoTime(), layer.style, layer.paletteIndex, BuiltInPalettes.all.size)
+        playLand = land
+        _play.update { it?.copy(map = emptyList()) }
+        playMapJob?.cancel()
+        playMapJob = viewModelScope.launch {
+            // Small pictures of the landscape, without text and emblem, drawn quickly.
+            val tiles = withContext(Dispatchers.Default) {
+                val job = coroutineContext.job
+                val plain = base.copy(textLayer = base.textLayer.copy(isEnabled = false), emblemLayer = base.emblemLayer.copy(isEnabled = false))
+                (0 until PLAY_MAP_ROWS).flatMap { j ->
+                    (0 until PLAY_MAP_COLUMNS).map { i ->
+                        val touch = PlayField.Touch((i + 0.5) / PLAY_MAP_COLUMNS, (j + 0.5) / PLAY_MAP_ROWS)
+                        val p = PlayField.apply(plain, playLayer, PlayField.Mode.MAP, land, touch)
+                        MandalaRenderer.render(
+                            p,
+                            RenderOptions(
+                                outputSize = PLAY_TILE_SIZE, supersample = false, threads = threads,
+                                glowReferenceWidth = Editing.FAST_GLOW_REFERENCE, imageLoader = imageLoader, isCancelled = { !job.isActive },
+                            ),
+                        ).image.toBitmap().asImageBitmap()
+                    }
+                }
+            }
+            if (playLand === land) _play.update { it?.copy(map = tiles) }
+        }
+    }
+
+    private fun applyPlay() {
+        val base = playBase ?: return
+        val land = playLand ?: return
+        val state = _play.value ?: return
+        _params.value = PlayField.apply(base, playLayer, state.mode, land, state.touch)
+    }
+
     // ── Images ──
 
     /**
@@ -1458,6 +1566,12 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         const val MOVING_PAUSE_MS = 300L
         /** Frames made before the video's progress says how many minutes are left. */
         const val TIME_LEFT_AFTER_FRAMES = 5
+        /** The play field's landscape preview: columns, rows and the side of each small picture. */
+        const val PLAY_MAP_COLUMNS = 5
+        const val PLAY_MAP_ROWS = 4
+        const val PLAY_TILE_SIZE = 72
+        /** How much denser a spread of two fingers to twice their distance makes it. */
+        const val PLAY_PINCH = 0.8
         const val UNDER_A_MINUTE_MS = 50_000L
         const val RECENT_PREVIEWS = 30
         const val RECENT_FRAMES = 6

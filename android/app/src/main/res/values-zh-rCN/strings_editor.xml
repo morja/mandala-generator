@@ -71,4 +71,18 @@
     <string name="live_daily_note">开启每日壁纸后，动态壁纸每天早上会渐变到下一个收藏。</string>
     <string name="live_set">设置动态壁纸</string>
     <string name="editor_without_effects">无效果</string>
+    <string name="play_title">游戏场</string>
+    <string name="play_menu_detail">一根手指，同时调整多项设置</string>
+    <string name="play_map">风景</string>
+    <string name="play_compass">罗盘</string>
+    <string name="play_done">完成</string>
+    <string name="play_hint">用一根手指拖动。两根手指：张开更密，旋转换色。</string>
+    <string name="play_new_map">新风景</string>
+    <string name="play_from_here">从这里开始</string>
+    <string name="play_keep">保留</string>
+    <string name="play_light">光</string>
+    <string name="play_shape">形状</string>
+    <string name="play_depth">深度</string>
+    <string name="play_colour">颜色</string>
+    <string name="play_field_description">游戏场：拖动以改变曼陀罗</string>
 </resources>

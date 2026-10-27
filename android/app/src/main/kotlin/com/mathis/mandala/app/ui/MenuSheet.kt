@@ -91,6 +91,8 @@ internal class MenuActions(
     val hasPointLayers: Boolean,
     val onLineDrawing: (VectorExport.Look) -> Unit,
     val onTryNew: (NewKind) -> Unit,
+    /** Opens the play field (UX-1 19). */
+    val onPlay: () -> Unit,
     val onUseNew: () -> Unit,
     val onBackToMenu: () -> Unit,
     val onOpen: () -> Unit,
@@ -268,6 +270,8 @@ private fun SwitchMenuRow(icon: ImageVector, title: String, subtitle: String?, c
 private fun MainRows(lightTheme: Boolean, actions: MenuActions, onPage: (MenuPage) -> Unit) {
     val t = LocalTokens.current
     Column(Modifier.padding(top = Spacing.md)) {
+        HorizontalDivider(color = t.outline)
+        MenuRow(EditorIcons.Tune, stringResource(R.string.play_title), stringResource(R.string.play_menu_detail), onClick = actions.onPlay) { Chevron() }
         HorizontalDivider(color = t.outline)
         MenuRow(EditorIcons.LineArt, stringResource(if (actions.lineDrawingPro) R.string.save_line_drawing else R.string.save_line_drawing_pro),
             onClick = { onPage(MenuPage.LINE_DRAWING) }) { Chevron() }

@@ -71,4 +71,18 @@
     <string name="live_daily_note">Com o plano de fundo diário ativado, o plano de fundo animado passa suavemente para o próximo favorito toda manhã.</string>
     <string name="live_set">Definir plano de fundo animado</string>
     <string name="editor_without_effects">Sem efeitos</string>
+    <string name="play_title">Campo de jogo</string>
+    <string name="play_menu_detail">Um dedo, muitos ajustes de uma vez</string>
+    <string name="play_map">Paisagem</string>
+    <string name="play_compass">Bússola</string>
+    <string name="play_done">Pronto</string>
+    <string name="play_hint">Arraste com um dedo. Dois dedos: afaste para mais, gire para as cores.</string>
+    <string name="play_new_map">Nova paisagem</string>
+    <string name="play_from_here">A partir daqui</string>
+    <string name="play_keep">Guardar</string>
+    <string name="play_light">Luz</string>
+    <string name="play_shape">Forma</string>
+    <string name="play_depth">Profundidade</string>
+    <string name="play_colour">Cor</string>
+    <string name="play_field_description">Campo de jogo: arraste para mudar a mandala</string>
 </resources>
