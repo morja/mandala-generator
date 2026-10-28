@@ -16,8 +16,9 @@
 
     <!-- Editor: menu, daily wallpaper entry -->
     <string name="editor_daily_pro">每天早上轮换你的收藏 · Pro</string>
-    <string name="editor_daily_today">今天：%1$s</string>
-    <string name="editor_daily_off">在锁屏和主屏幕上轮换你的收藏</string>
+    <string name="editor_daily_today">已开启 · 今天：%1$s</string>
+    <string name="editor_daily_off">已关闭</string>
+    <string name="editor_daily_on">已开启</string>
 
     <!-- Editor: canvas -->
     <string name="editor_show_large">放大显示图片</string>

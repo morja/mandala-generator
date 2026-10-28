@@ -35,8 +35,9 @@
     <string name="menu_fast_preview_detail">Solo l\'anteprima nell\'editor viene disegnata in modo più semplice e veloce. Le immagini salvate e gli sfondi mantengono la piena qualità.</string>
     <string name="menu_chip_previews">Immagini negli elenchi</string>
     <string name="menu_chip_previews_detail">Un piccolo esempio accanto a ogni stile e motivo. Disattivato, gli elenchi sono più corti.</string>
-    <string name="menu_daily_wallpaper">Nuovo sfondo ogni giorno</string>
-    <string name="menu_daily_about">Quando lo attivi, il prossimo dei tuoi preferiti diventa subito lo sfondo: sulla schermata di blocco e, un po\' più scuro, sulla schermata Home. Poi arriva il successivo ogni mattina tra le 4 e le 8, preferibilmente mentre il telefono è in carica. Con lo sfondo animato attivo, sfuma invece al preferito successivo.</string>
+    <string name="menu_daily_wallpaper">Sfondo del giorno</string>
+    <string name="menu_daily_about">Uno dei tuoi preferiti alla volta, il successivo ogni mattina.\nSulla schermata di blocco e, un po\' più scuro, sulla schermata Home.\nTra le 4 e le 8, meglio mentre il telefono è in carica; il primo appena lo attivi.</string>
+    <string name="menu_daily_switch">Cambia ogni mattina</string>
     <string name="menu_daily_favourites">Preferiti</string>
     <string name="menu_daily_all">Tutti</string>
     <string name="menu_daily_some">%1$d di %2$d</string>
@@ -121,5 +122,4 @@
     <string name="save_format">Formato</string>
     <string name="save_adjust_pro_quote">Luminosità, contrasto, saturazione e la citazione che segue il mandala sono inclusi in Pro.</string>
     <string name="save_adjust_quote_moves">la citazione segue</string>
-    <string name="menu_daily_short">Nuovo ogni giorno</string>
 </resources>

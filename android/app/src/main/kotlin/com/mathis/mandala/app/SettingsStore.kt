@@ -1,5 +1,7 @@
 package com.mathis.mandala.app
 
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import com.mathis.mandala.core.MandalaParameters
 import com.mathis.mandala.core.SettingsJson
 import java.io.File
@@ -18,6 +20,31 @@ class SettingsStore(private val file: File) {
     }
 
     fun save(params: MandalaParameters) = writeAtomically(file, SettingsJson.encode(params))
+}
+
+/**
+ * The last preview as drawn, with the settings it shows. After a restart the first preview can take
+ * many seconds (the drawing code is not compiled yet after an update), so this one stands in meanwhile.
+ */
+class PreviewStore(private val dir: File) {
+    private val image = File(dir, "last-preview.png")
+    private val settings = File(dir, "last-preview.json")
+
+    /** The kept preview if it shows exactly `params`, else null. */
+    fun load(params: MandalaParameters): Bitmap? = try {
+        if (image.isFile && settings.isFile && settings.readText() == SettingsJson.encode(params)) BitmapFactory.decodeFile(image.path) else null
+    } catch (e: Exception) {
+        null
+    }
+
+    fun save(params: MandalaParameters, bitmap: Bitmap) {
+        // The settings go last: a half-written pair never matches.
+        settings.delete()
+        val tmp = File(dir, image.name + ".tmp")
+        tmp.outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
+        if (!tmp.renameTo(image)) return
+        writeAtomically(settings, SettingsJson.encode(params))
+    }
 }
 
 /** The history (back and forward) across restarts, in the format of the macOS app's history.json. */

@@ -31,8 +31,9 @@
     <string name="menu_fast_preview_detail">편집기의 미리보기만 더 간단하고 빠르게 그립니다. 저장한 이미지와 배경화면은 항상 전체 품질입니다.</string>
     <string name="menu_chip_previews">목록의 그림</string>
     <string name="menu_chip_previews_detail">각 스타일과 모티프 옆에 작은 예시를 표시합니다. 끄면 목록이 짧아집니다.</string>
-    <string name="menu_daily_wallpaper">매일 새 배경화면</string>
-    <string name="menu_daily_about">켜면 즐겨찾기의 다음 만다라가 바로 배경화면이 됩니다. 잠금 화면에, 홈 화면에는 조금 더 어둡게 설정됩니다. 그 뒤로는 매일 아침 4시에서 8시 사이, 가능하면 충전 중에 다음 즐겨찾기로 바뀝니다. 라이브 배경화면이 켜져 있으면 대신 다음 즐겨찾기로 서서히 바뀝니다.</string>
+    <string name="menu_daily_wallpaper">매일 배경화면</string>
+    <string name="menu_daily_about">즐겨찾기 중 하나씩, 매일 아침 다음 것으로.\n잠금 화면에, 홈 화면에는 조금 더 어둡게.\n4시에서 8시 사이, 가능하면 충전 중에. 첫 번째는 켜는 즉시.</string>
+    <string name="menu_daily_switch">매일 아침 바꾸기</string>
     <string name="menu_daily_favourites">즐겨찾기</string>
     <string name="menu_daily_all">전체</string>
     <string name="menu_daily_some">%2$d개 중 %1$d개</string>
@@ -117,5 +118,4 @@
     <string name="save_format">형식</string>
     <string name="save_adjust_pro_quote">밝기, 대비, 채도, 만다라와 함께 움직이는 인용문은 Pro 기능입니다.</string>
     <string name="save_adjust_quote_moves">인용문도 함께 이동</string>
-    <string name="menu_daily_short">매일 새로</string>
 </resources>

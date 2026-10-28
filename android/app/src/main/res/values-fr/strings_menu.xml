@@ -35,8 +35,9 @@
     <string name="menu_fast_preview_detail">Seul l\'aperçu de l\'éditeur est dessiné plus simplement et plus vite. Les images enregistrées et les fonds d\'écran gardent toute leur qualité.</string>
     <string name="menu_chip_previews">Images dans les listes</string>
     <string name="menu_chip_previews_detail">Un petit exemple à côté de chaque style et motif. Désactivé, les listes sont plus courtes.</string>
-    <string name="menu_daily_wallpaper">Nouveau fond d\'écran chaque jour</string>
-    <string name="menu_daily_about">Une fois activé, le prochain de vos favoris devient aussitôt le fond d\'écran : sur l\'écran de verrouillage et, un peu plus sombre, sur l\'écran d\'accueil. Ensuite, le suivant arrive chaque matin entre 4 h et 8 h, de préférence pendant la charge. Si le fond d\'écran animé est actif, il passe en fondu au favori suivant.</string>
+    <string name="menu_daily_wallpaper">Fond d\'écran du jour</string>
+    <string name="menu_daily_about">Un de vos favoris à la fois, le suivant chaque matin.\nSur l\'écran de verrouillage et, un peu plus sombre, sur l\'écran d\'accueil.\nEntre 4 et 8 heures, de préférence pendant la charge ; le premier dès l\'activation.</string>
+    <string name="menu_daily_switch">Changer chaque matin</string>
     <string name="menu_daily_favourites">Favoris</string>
     <string name="menu_daily_all">Tous</string>
     <string name="menu_daily_some">%1$d sur %2$d</string>
@@ -121,5 +122,4 @@
     <string name="save_format">Format</string>
     <string name="save_adjust_pro_quote">La luminosité, le contraste, la saturation et la citation qui suit le mandala sont inclus avec Pro.</string>
     <string name="save_adjust_quote_moves">la citation suit</string>
-    <string name="menu_daily_short">Nouveau chaque jour</string>
 </resources>

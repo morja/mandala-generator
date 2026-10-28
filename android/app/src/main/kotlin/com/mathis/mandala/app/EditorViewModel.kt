@@ -483,7 +483,15 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
     private val _pairPreview = MutableStateFlow(PairPreview())
     val pairPreview: StateFlow<PairPreview> = _pairPreview.asStateFlow()
 
+    private val previewStore = PreviewStore(application.cacheDir)
+    private var previewSaveJob: Job? = null
+
     init {
+        viewModelScope.launch {
+            // The preview from last time, while the first one is drawn after a start.
+            val last = withContext(Dispatchers.IO) { previewStore.load(_params.value) }
+            if (last != null) _preview.update { if (it.image == null) it.copy(image = last.asImageBitmap()) else it }
+        }
         viewModelScope.launch {
             // A state shown recently (history, undo, a switch flipped back) comes back at once;
             // anything else is rendered once the settings rest for a moment.
@@ -1598,8 +1606,14 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
                     MandalaRenderer.render(params, previewOptions(fast) { !job.isActive })
                 }
             }
-            val bitmap = result.image.toBitmap().asImageBitmap()
+            val drawn = result.image.toBitmap()
+            val bitmap = drawn.asImageBitmap()
             _preview.value = PreviewState(image = bitmap, rendering = false, millis = result.millis, warnings = result.warnings)
+            previewSaveJob?.cancel()
+            previewSaveJob = viewModelScope.launch {
+                delay(SAVE_DELAY_MS)
+                withContext(Dispatchers.IO) { runCatching { previewStore.save(params, drawn) } }
+            }
             recentPreviews[params] = _preview.value
             renderedParams = params
             renderedFast = fast

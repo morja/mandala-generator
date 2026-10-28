@@ -328,6 +328,7 @@ fun EditorScreen(
                 dailySubtitle = when {
                     !pro.unlocked -> stringResource(R.string.editor_daily_pro)
                     daily.on && daily.lastName != null -> stringResource(R.string.editor_daily_today, daily.lastName.orEmpty())
+                    daily.on -> stringResource(R.string.editor_daily_on)
                     else -> stringResource(R.string.editor_daily_off)
                 },
                 onDaily = { on -> if (pro.unlocked) vm.setDaily(on) else vm.showPro() },

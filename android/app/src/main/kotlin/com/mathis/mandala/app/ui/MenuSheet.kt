@@ -137,7 +137,7 @@ internal fun MenuSheet(
                 page == MenuPage.MORE -> MorePage(fastPreview, chipPreviews, actions, back) { page = it }
                 else -> {
                     Current(params, image)
-                    KeepRow(busy, actions, onDailyPage = { page = MenuPage.DAILY })
+                    KeepRow(busy, actions)
                     NewMandala(actions.onTryNew)
                     MainRows(lightTheme, actions, onPage = { page = it })
                 }
@@ -170,7 +170,7 @@ private fun Current(params: MandalaParameters, image: ImageBitmap?) {
 }
 
 @Composable
-private fun KeepRow(busy: Boolean, actions: MenuActions, onDailyPage: () -> Unit) {
+private fun KeepRow(busy: Boolean, actions: MenuActions) {
     Row(Modifier.padding(top = Spacing.md), horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
         Pill(EditorIcons.StarLine, stringResource(R.string.menu_favourite), onClick = actions.onFavourite)
         Pill(EditorIcons.Share, stringResource(R.string.menu_share), enabled = !busy, onClick = actions.onShare)
@@ -183,12 +183,6 @@ private fun KeepRow(busy: Boolean, actions: MenuActions, onDailyPage: () -> Unit
                 }
                 DropdownMenuItem(text = { Text(actions.pairLabel) }, onClick = { open = false; actions.onPair() })
                 DropdownMenuItem(text = { Text(actions.liveLabel) }, onClick = { open = false; actions.onLive() })
-                DropdownMenuItem(
-                    // Marked like the pair and the live wallpaper, which are Pro too (ADR-0014); shorter, so it fits the menu.
-                    text = { Text(if (actions.lineDrawingPro) stringResource(R.string.menu_daily_wallpaper) else stringResource(R.string.controls_with_pro, stringResource(R.string.menu_daily_short))) },
-                    trailingIcon = { if (actions.dailyOn) Icon(EditorIcons.Check, contentDescription = null, tint = LocalTokens.current.accent) },
-                    onClick = { open = false; onDailyPage() },
-                )
             }
         }
     }
@@ -272,6 +266,11 @@ private fun MainRows(lightTheme: Boolean, actions: MenuActions, onPage: (MenuPag
     val t = LocalTokens.current
     Column(Modifier.padding(top = Spacing.md)) {
         HorizontalDivider(color = t.outline)
+        // A setting that keeps running, so a row of its own with its state, not among the wallpaper
+        // entries that set one right away (Mathis, 28 October 2026).
+        MenuRow(EditorIcons.Wallpaper, stringResource(R.string.menu_daily_wallpaper), actions.dailySubtitle,
+            onClick = { onPage(MenuPage.DAILY) }) { Chevron() }
+        HorizontalDivider(color = t.outline)
         // The play field opens from the top bar, the line drawing sits under More (Mathis, 27 October 2026).
         MenuRow(EditorIcons.Tune, stringResource(R.string.menu_more), onClick = { onPage(MenuPage.MORE) }) { Chevron() }
         HorizontalDivider(color = t.outline)
@@ -324,8 +323,7 @@ private fun DailyPage(actions: MenuActions, onBack: () -> Unit, onChoose: () -> 
     PageTop(stringResource(R.string.menu_daily_wallpaper), stringResource(R.string.menu_daily_about), onBack)
     Column(Modifier.padding(top = Spacing.md)) {
         HorizontalDivider(color = t.outline)
-        // The page title names it already; the line says what is set now.
-        SwitchMenuRow(EditorIcons.Wallpaper, actions.dailySubtitle, null, actions.dailyOn, actions.onDaily)
+        SwitchMenuRow(EditorIcons.Wallpaper, stringResource(R.string.menu_daily_switch), actions.dailySubtitle, actions.dailyOn, actions.onDaily)
         if (actions.favourites.isNotEmpty()) {
             HorizontalDivider(color = t.outline)
             val count = actions.favourites.count { actions.dailyChosen == null || it.id in actions.dailyChosen }
@@ -335,8 +333,8 @@ private fun DailyPage(actions: MenuActions, onBack: () -> Unit, onChoose: () -> 
                 onClick = onChoose) { Chevron() }
         }
         HorizontalDivider(color = t.outline)
-        Text(stringResource(R.string.menu_daily_widget_note), style = MaterialTheme.typography.bodySmall, color = t.textMuted,
-            modifier = Modifier.padding(top = Spacing.md))
+        Text(stringResource(R.string.live_daily_note) + " " + stringResource(R.string.menu_daily_widget_note),
+            style = MaterialTheme.typography.bodySmall, color = t.textMuted, modifier = Modifier.padding(top = Spacing.md))
     }
 }
 

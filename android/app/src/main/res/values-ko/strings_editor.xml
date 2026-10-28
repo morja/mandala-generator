@@ -16,8 +16,9 @@
 
     <!-- Editor: menu, daily wallpaper entry -->
     <string name="editor_daily_pro">매일 아침 즐겨찾기를 차례로 · Pro</string>
-    <string name="editor_daily_today">오늘: %1$s</string>
-    <string name="editor_daily_off">즐겨찾기를 차례로 잠금 화면과 홈 화면에</string>
+    <string name="editor_daily_today">켜짐 · 오늘: %1$s</string>
+    <string name="editor_daily_off">꺼짐</string>
+    <string name="editor_daily_on">켜짐</string>
 
     <!-- Editor: canvas -->
     <string name="editor_show_large">이미지 크게 보기</string>

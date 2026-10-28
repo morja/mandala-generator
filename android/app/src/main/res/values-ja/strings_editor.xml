@@ -16,8 +16,9 @@
 
     <!-- Editor: menu, daily wallpaper entry -->
     <string name="editor_daily_pro">毎朝お気に入りを順番に · Pro</string>
-    <string name="editor_daily_today">今日: %1$s</string>
-    <string name="editor_daily_off">お気に入りを順番にロック画面とホーム画面へ</string>
+    <string name="editor_daily_today">オン · 今日: %1$s</string>
+    <string name="editor_daily_off">オフ</string>
+    <string name="editor_daily_on">オン</string>
 
     <!-- Editor: canvas -->
     <string name="editor_show_large">画像を大きく表示</string>

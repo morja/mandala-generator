@@ -37,8 +37,9 @@
     <string name="menu_fast_preview_detail">Упрощённо и быстрее рисуется только предпросмотр в редакторе. Сохранённые изображения и обои всегда в полном качестве.</string>
     <string name="menu_chip_previews">Картинки в списках</string>
     <string name="menu_chip_previews_detail">Маленький пример рядом с каждым стилем и мотивом. Выключено, и списки становятся короче.</string>
-    <string name="menu_daily_wallpaper">Новые обои каждый день</string>
-    <string name="menu_daily_about">После включения следующий из ваших избранных сразу становится обоями: на экране блокировки и чуть темнее на главном экране. Затем каждое утро между 4 и 8 часами, лучше всего во время зарядки, появляется следующий. Если включены живые обои, они плавно переходят к следующему избранному.</string>
+    <string name="menu_daily_wallpaper">Обои на каждый день</string>
+    <string name="menu_daily_about">По одному из ваших избранных, каждое утро следующий.\nНа экране блокировки и, чуть темнее, на главном экране.\nМежду 4 и 8 часами, лучше во время зарядки; первый сразу после включения.</string>
+    <string name="menu_daily_switch">Менять каждое утро</string>
     <string name="menu_daily_favourites">Избранное</string>
     <string name="menu_daily_all">Все</string>
     <string name="menu_daily_some">%1$d из %2$d</string>
@@ -123,5 +124,4 @@
     <string name="save_format">Формат</string>
     <string name="save_adjust_pro_quote">Яркость, контраст, насыщенность и цитата, движущаяся с мандалой, доступны в Pro.</string>
     <string name="save_adjust_quote_moves">цитата движется вместе</string>
-    <string name="menu_daily_short">Новые каждый день</string>
 </resources>

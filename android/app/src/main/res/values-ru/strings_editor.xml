@@ -16,8 +16,9 @@
 
     <!-- Editor: menu, daily wallpaper entry -->
     <string name="editor_daily_pro">Ваше избранное по очереди, каждое утро · Pro</string>
-    <string name="editor_daily_today">Сегодня: %1$s</string>
-    <string name="editor_daily_off">Ваше избранное по очереди на экране блокировки и главном экране</string>
+    <string name="editor_daily_today">Вкл. · сегодня: %1$s</string>
+    <string name="editor_daily_off">Выкл.</string>
+    <string name="editor_daily_on">Вкл.</string>
 
     <!-- Editor: canvas -->
     <string name="editor_show_large">Показать изображение крупно</string>

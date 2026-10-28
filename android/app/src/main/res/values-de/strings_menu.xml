@@ -33,8 +33,9 @@
     <string name="menu_fast_preview_detail">Nur die Vorschau im Editor wird einfacher und schneller gezeichnet. Gespeicherte Bilder und Hintergründe behalten die volle Qualität.</string>
     <string name="menu_chip_previews">Bilder in den Listen</string>
     <string name="menu_chip_previews_detail">Ein kleines Beispiel neben jedem Stil und Motiv. Aus, und die Listen werden kürzer.</string>
-    <string name="menu_daily_wallpaper">Jeden Tag ein neuer Hintergrund</string>
-    <string name="menu_daily_about">Beim Einschalten wird gleich der nächste deiner Favoriten zum Hintergrund: auf dem Sperrbildschirm und etwas dunkler auf dem Startbildschirm. Danach folgt jeden Morgen zwischen 4 und 8 Uhr der nächste, am liebsten während das Handy lädt. Ist der Live-Hintergrund an, blendet er stattdessen zum nächsten Favoriten über.</string>
+    <string name="menu_daily_wallpaper">Täglicher Hintergrund</string>
+    <string name="menu_daily_about">Immer einer deiner Favoriten, jeden Morgen der nächste.\nAuf dem Sperrbildschirm, auf dem Startbildschirm etwas dunkler.\nZwischen 4 und 8 Uhr, am liebsten beim Laden; der erste gleich beim Einschalten.</string>
+    <string name="menu_daily_switch">Jeden Morgen wechseln</string>
     <string name="menu_daily_favourites">Favoriten</string>
     <string name="menu_daily_all">Alle</string>
     <string name="menu_daily_some">%1$d von %2$d</string>
@@ -119,5 +120,4 @@
     <string name="save_format">Format</string>
     <string name="save_adjust_pro_quote">Helligkeit, Kontrast, Sättigung und das mitbewegte Zitat gibt es mit Pro.</string>
     <string name="save_adjust_quote_moves">Zitat bewegt sich mit</string>
-    <string name="menu_daily_short">Täglich neu</string>
 </resources>

@@ -35,8 +35,9 @@
     <string name="menu_fast_preview_detail">Só a prévia do editor é desenhada de forma mais simples e rápida. Imagens salvas e papéis de parede mantêm a qualidade total.</string>
     <string name="menu_chip_previews">Imagens nas listas</string>
     <string name="menu_chip_previews_detail">Um pequeno exemplo ao lado de cada estilo e motivo. Desligado, as listas ficam mais curtas.</string>
-    <string name="menu_daily_wallpaper">Novo plano de fundo todo dia</string>
-    <string name="menu_daily_about">Ao ativar, o próximo dos seus favoritos vira o papel de parede na hora: na tela de bloqueio e, um pouco mais escuro, na tela inicial. Depois, o seguinte chega toda manhã entre 4 e 8 horas, de preferência enquanto o telefone carrega. Com o papel de parede animado ativo, ele faz a transição para o próximo favorito.</string>
+    <string name="menu_daily_wallpaper">Fundo do dia</string>
+    <string name="menu_daily_about">Um dos seus favoritos de cada vez, o próximo toda manhã.\nNa tela de bloqueio e, um pouco mais escuro, na tela inicial.\nEntre 4 e 8 horas, de preferência enquanto carrega; o primeiro assim que você ativar.</string>
+    <string name="menu_daily_switch">Trocar toda manhã</string>
     <string name="menu_daily_favourites">Favoritos</string>
     <string name="menu_daily_all">Todos</string>
     <string name="menu_daily_some">%1$d de %2$d</string>
@@ -121,5 +122,4 @@
     <string name="save_format">Formato</string>
     <string name="save_adjust_pro_quote">Brilho, contraste, saturação e a citação que acompanha a mandala vêm com o Pro.</string>
     <string name="save_adjust_quote_moves">a citação acompanha</string>
-    <string name="menu_daily_short">Novo todo dia</string>
 </resources>

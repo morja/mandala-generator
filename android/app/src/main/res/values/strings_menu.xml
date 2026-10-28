@@ -33,8 +33,9 @@
     <string name="menu_fast_preview_detail">Only the preview in the editor is drawn simpler and faster. Saved images and wallpapers keep the full quality.</string>
     <string name="menu_chip_previews">Pictures in the lists</string>
     <string name="menu_chip_previews_detail">A small example beside each style and motif. Off, the lists are shorter.</string>
-    <string name="menu_daily_wallpaper">New wallpaper every day</string>
-    <string name="menu_daily_about">Switched on, the next of your favourites becomes the wallpaper right away: on the lock screen, and a little darker on the home screen. Then the next one follows every morning between 4 and 8 o\'clock, preferably while the phone charges. With the live wallpaper on, it fades over to the next favourite instead.</string>
+    <string name="menu_daily_wallpaper">Daily wallpaper</string>
+    <string name="menu_daily_about">One of your favourites at a time, the next one every morning.\nOn the lock screen, and a little darker on the home screen.\nBetween 4 and 8 o\'clock, preferably while the phone charges; the first one as soon as you switch it on.</string>
+    <string name="menu_daily_switch">Change every morning</string>
     <string name="menu_daily_favourites">Favourites</string>
     <string name="menu_daily_all">All</string>
     <string name="menu_daily_some">%1$d of %2$d</string>
@@ -119,5 +120,4 @@
     <string name="save_format">Format</string>
     <string name="save_adjust_pro_quote">Brightness, contrast, saturation and the quote moving with the mandala come with Pro.</string>
     <string name="save_adjust_quote_moves">quote moves along</string>
-    <string name="menu_daily_short">New every day</string>
 </resources>

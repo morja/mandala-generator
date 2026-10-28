@@ -16,8 +16,9 @@
 
     <!-- Editor: menu, daily wallpaper entry -->
     <string name="editor_daily_pro">Seus favoritos, um a cada manhã · Pro</string>
-    <string name="editor_daily_today">Hoje: %1$s</string>
-    <string name="editor_daily_off">Seus favoritos, um de cada vez, na tela de bloqueio e na inicial</string>
+    <string name="editor_daily_today">Ativado · hoje: %1$s</string>
+    <string name="editor_daily_off">Desativado</string>
+    <string name="editor_daily_on">Ativado</string>
 
     <!-- Editor: canvas -->
     <string name="editor_show_large">Mostrar a imagem grande</string>
