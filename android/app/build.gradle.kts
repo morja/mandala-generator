@@ -65,6 +65,13 @@ android {
         }
     }
 
+    // The launcher icon with a mark, shared by the local builds; release keeps the plain one.
+    sourceSets {
+        for (name in listOf("debug", "fast", "free")) {
+            getByName(name).res.srcDir("src/localBuild/res")
+        }
+    }
+
     buildFeatures {
         compose = true
     }
