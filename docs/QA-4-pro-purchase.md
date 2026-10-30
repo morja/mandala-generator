@@ -1,175 +1,193 @@
-# QA-4 · Pro purchase through the shared billing library
+# QA-4 · Pro-Kauf über die gemeinsame Kauf-Bibliothek
 
-30 October 2026. Scope: the one-time Pro purchase of ADR-0022 (`one.tearoom:unlock`), tested on Mathis' phone with builds installed from Google Play (1.8.0, code 15, from production; 1.8.1, code 16, from the internal track), a private Google account that is a licence tester, and Play's test payment methods.
+30. Oktober 2026. Umfang: der einmalige Pro-Kauf aus ADR-0022 (`one.tearoom:unlock`), getestet auf Mathis' Handy mit 1.8.1 (Code 16) aus dem internen Test-Track, mit seinem einen privaten Google-Konto und den Testzahlungsarten von Play. Am Ende steht ein echter Kauf mit Erstattung.
 
-## Preconditions
+## Voraussetzungen
 
-- The account is listed under Play Console → Settings → Licence testing. That is why the production build offers test payment methods and no money moves.
+- Das Konto steht in der Play Console unter Einstellungen → Lizenztests. Deshalb bietet die App Testzahlungsarten an und es fließt kein Geld.
 
-- The app is installed from Google Play, not sideloaded.
+- Die App ist aus Google Play installiert, nicht per Sideload.
 
-- A second Google account without the purchase is available on the phone.
+- Optional: ein zweites Gerät, auf dem dasselbe Konto angemeldet ist (nur für Fall 3).
 
-- Ideally a second device is signed in with the first account.
+## Schon erledigt
 
-## Already done
+- Testkauf mit der Standard-Testkarte war erfolgreich, Pro wurde freigeschaltet (30. Oktober 2026, 1.8.0).
 
-- Test purchase with the default test card succeeded and Pro unlocked (30 October 2026, 1.8.0).
+- Signaturprüfung: Nach dem Update auf 1.8.1 (Code 16, der erste Build mit dem Play-Lizenzschlüssel) hat die App Play online gefragt und Pro behalten, ohne dass irgendwo Pro-Markierungen auftauchten. Ein falscher Schlüssel hätte Pro entfernt (`UnlockPolicy` zählt nur geprüfte Käufe). Schlüssel bestätigt (30. Oktober 2026).
 
-- Signature check: after the update to 1.8.1 (code 16, the first build with the Play licence key) the app queried Play online and kept Pro, with no Pro marks anywhere. A wrong key would have removed Pro (`UnlockPolicy` counts only verified purchases). Key confirmed (30 October 2026).
+## Testfälle
 
-## Test cases
+Die Texte stammen aus `values-de/strings_app.xml` und `values-de/strings_editor.xml`. Das Pro-Fenster öffnet sich über jede Pro-Markierung im Editor.
 
-Pro sheet texts are quoted from `strings_app.xml` and `strings_editor.xml`. Open the Pro sheet from any Pro mark in the editor.
+Mit aktivem Pro ist das Pro-Fenster nicht erreichbar, und ein Testkauf lässt sich nicht zurücknehmen: Im Play Store kann man einen einmaligen Testkauf nicht stornieren, und die Play Console erstattet keine Testbestellungen. Deshalb kommen zuerst die Fälle 1 bis 3, die den vorhandenen Testkauf brauchen, dann in Fall 4 der echte Kauf mit Erstattung, und erst danach die Fälle 5 bis 8, die ein Konto ohne Kauf voraussetzen, zuletzt Fall 9 (ausstehende Zahlung), der wieder einen Testkauf hinterlässt. Das Konto kommt dafür nach der Erstattung wieder in die Lizenztests.
 
-### 1. Pending payment
+### 1. Wiederherstellen auf demselben Konto
 
-Steps:
+Schritte:
 
-- Make sure Pro is not owned (clear the app's data, or use the second account).
+- Mit dem Testkauf auf dem Konto die App-Daten löschen (oder deinstallieren und neu aus Play installieren).
 
-- Open the Pro sheet, tap "Buy for …", pick the test card "slow approval" and confirm.
+- App öffnen. Kurz warten, bis Play geantwortet hat.
 
-- Look at the sheet, then try to buy again.
+Erwartung:
 
-- Wait a few minutes until Play approves the payment, then close the app and open it again (Play is asked on every resume).
+- Pro ist wieder aktiv, ohne dass der Kauf neu ausgelöst wird (Play wird bei jedem Fortsetzen gefragt).
 
-Expected:
+- Taucht kurz eine Pro-Markierung auf, im Pro-Fenster „Kauf wiederherstellen“ tippen: „Pro ist auf diesem Gerät aktiv.“
 
-- The sheet shows "The purchase is pending. Pro unlocks once it is paid."
+Ergebnis: 
 
-- A second purchase is blocked while the payment is pending.
+### 2. Offline
 
-- After approval and reopening, Pro is unlocked ("Thank you! Pro is unlocked.") and the Pro marks are gone.
+Schritte:
 
-Result: 
+- Mit Pro im Flugmodus die App beenden (Force-Stop) und kalt starten.
 
-### 2. Cancelled purchase
+- Flugmodus ausschalten, App fortsetzen.
 
-Steps:
+Erwartung:
 
-- Without Pro, tap "Buy for …" and back out of the Play dialog (back button or tap outside).
+- Pro bleibt aus dem Zwischenspeicher freigeschaltet, es erscheinen keine Pro-Markierungen. Ein nicht erreichbares Play entfernt Pro nie.
 
-Expected:
+- Online bleibt Pro weiterhin aktiv.
 
-- No Pro, no crash, the sheet is usable again and "Buy for …" is enabled.
+Der Teil „Offline ohne Pro“ steht als Fall 8.
 
-- The library ignores a cancel on purpose, so no message appears. "Google Play could not open the purchase. Please try again." only appears when Play cannot open the dialog at all.
+Ergebnis: 
 
-Result: 
+### 3. Zweites Gerät, gleiches Konto (optional)
 
-### 3. Declined payment
+Schritte:
 
-Steps:
+- Auf dem zweiten Gerät, angemeldet mit dem Konto, das Pro besitzt, die App aus Google Play installieren und öffnen.
 
-- Without Pro, tap "Buy for …", pick the test card "always declines" and confirm.
+Erwartung:
 
-Expected:
+- Pro wird beim Fortsetzen erkannt, ohne „Kauf wiederherstellen“ zu tippen.
 
-- Play shows its own decline notice; if the dialog closes with an error, the app shows "The purchase did not go through."
+Ergebnis: 
 
-- No Pro.
+### 4. Echter Kauf, Erstattung und Wiederherstellen ohne Kauf
 
-Result: 
+Testkäufe erscheinen nicht in der Play Console unter Bestellverwaltung. Nur eine echte Bestellung lässt sich erstatten und prüft damit den Widerruf.
 
-### 4. Restore on the same account
+Schritte:
 
-Steps:
+- Das Konto wird in der Play Console unter Einstellungen → Lizenztests aus der Liste entfernt (macht der Agent auf Mathis' Wort). Einige Zeit warten. Zeigt Play danach noch die Testkarte, den Cache der Play-Store-App leeren.
 
-- With the purchase on the account, clear the app's data (or uninstall and reinstall from Play).
+- App-Daten löschen, Pro-Fenster öffnen, „Für … kaufen“ tippen und mit dem Konto echt bezahlen.
 
-- Open the Pro sheet and tap "Restore purchase".
+- Prüfen, dass Pro aktiv ist („Danke! Pro ist freigeschaltet.“) und die Pro-Markierungen weg sind.
 
-Expected:
+- In der Play Console unter Bestellverwaltung die Bestellung erstatten (macht der Agent auf Mathis' Wort).
 
-- Pro is active again and the sheet shows "Pro is active on this device."
+- App neu starten (kalt starten oder fortsetzen), mit Internet.
 
-Result: 
+- Im Pro-Fenster „Kauf wiederherstellen“ tippen.
 
-### 5. Restore on another account without the purchase
+- Danach das Konto wieder in die Lizenztests aufnehmen (Agent auf Mathis' Wort), damit die Testzahlungsarten für die Fälle 5 bis 9 zurück sind.
 
-Steps:
+Erwartung:
 
-- Switch the Play account to the second one (Play Store → profile picture).
+- Nach der Erstattung und dem nächsten Start mit Internet ist Pro weg und die Pro-Markierungen sind wieder da. Play muss geantwortet haben; offline behält der Zwischenspeicher Pro.
 
-- Open the Pro sheet in the app (data cleared, so no cached Pro) and tap "Restore purchase".
+- „Kauf wiederherstellen“ zeigt: „Google Play hat für dieses Google-Konto keinen Pro-Kauf gefunden. Wenn du Pro mit einem anderen Google-Konto gekauft hast, wechsle im Play Store zu diesem Konto und tippe noch einmal auf „Kauf wiederherstellen“.“
 
-Expected:
+- Kein Pro.
 
-- "Google Play found no Pro purchase for this Google account. If you bought Pro with another Google account, switch to it in the Play Store and tap “Restore purchase” again."
+Ergebnis: 
 
-- No Pro.
+### 5. Abgebrochener Kauf
 
-Result: 
+Schritte:
 
-### 6. Offline
+- Ohne Pro „Für … kaufen“ tippen und den Play-Dialog verlassen (Zurück-Taste oder neben den Dialog tippen).
 
-Steps:
+Erwartung:
 
-- With Pro owned, switch on aeroplane mode and force-stop the app, then start it cold.
+- Kein Pro, kein Absturz, das Fenster ist wieder bedienbar und „Für … kaufen“ ist aktiv.
 
-- Open the Pro sheet. (Without a cached Pro, "Restore purchase" offline shows "Google Play could not be reached, so nothing was checked. Please try again later.")
+- Die Bibliothek ignoriert einen Abbruch absichtlich, es erscheint keine Meldung. „Google Play konnte den Kauf nicht öffnen. Bitte versuch es noch einmal.“ erscheint nur, wenn Play den Dialog gar nicht öffnen kann.
 
-- Switch aeroplane mode off and tap "Try again".
+Ergebnis: 
 
-Expected:
+### 6. Abgelehnte Zahlung
 
-- Pro stays unlocked from the cache; an unreachable Play never removes it.
+Schritte:
 
-- The sheet explains the missing price: "Google Play cannot be reached right now, so there is no price yet. Check the connection and try again." with the button "Try again".
+- Ohne Pro „Für … kaufen“ tippen, die Testkarte „always declines“ wählen und bestätigen.
 
-- Online, "Try again" shows the price.
+Erwartung:
 
-Result: 
+- Play zeigt seinen eigenen Ablehnungshinweis; schließt der Dialog mit einem Fehler, zeigt die App: „Der Kauf ist nicht zustande gekommen.“
 
-### 7. Second device, same account
+- Kein Pro.
 
-Steps:
+Ergebnis: 
 
-- On the second device, signed in with the account that owns Pro, install the app from Google Play and open it.
+### 7. Pro-Fenster auf Deutsch und Russisch bei 360 dp
 
-Expected:
+Schritte:
 
-- Pro is recognised on resume without pressing "Restore purchase".
+- Das Handy auf eine Breite von 360 dp stellen (Einstellungen → Anzeige → Anzeigegröße, oder ein schmales Handy nehmen), die App-Sprache auf Deutsch und auf Russisch stellen.
 
-Result: 
+- Das Pro-Fenster ohne Pro öffnen, auch mit einem Preisproblem oder dem Text „Ausstehend“, wenn das leicht erreichbar ist.
 
-### 8. Pro sheet in German and Russian at 360 dp
+Erwartung:
 
-Steps:
+- Kein abgeschnittener oder überlappender Text, kein horizontales Scrollen, „Für … kaufen“, „Erneut versuchen“ und „Kauf wiederherstellen“ sind lesbar. Ein kurzer Blick genügt.
 
-- Set the phone to a 360 dp wide layout (Settings → Display → display size, or use a narrow phone), then switch the app language to German and to Russian.
+Ergebnis: 
 
-- Open the Pro sheet without Pro, also while a price problem or the pending text is shown if that is easy to reach.
+### 8. Offline ohne Pro
 
-Expected:
+Schritte:
 
-- No clipped or overlapping text, no horizontal scrolling, "Buy for …", "Try again" and "Restore purchase" are readable. A quick look is enough.
+- Ohne Pro (Konto ohne Kauf) Flugmodus einschalten, App kalt starten und das Pro-Fenster öffnen.
 
-Result: 
+- „Kauf wiederherstellen“ tippen.
 
-### 9. Real purchase and refund (last, optional)
+- Flugmodus ausschalten und „Erneut versuchen“ tippen.
 
-Test purchases do not appear in Play Console → Order management, so a real order is the only way to test the revocation path.
+Erwartung:
 
-Steps:
+- Das Fenster erklärt den fehlenden Preis: „Google Play ist gerade nicht erreichbar, daher gibt es noch keinen Preis. Prüf die Verbindung und versuch es noch einmal.“ mit der Schaltfläche „Erneut versuchen“.
 
-- Remove the account from Settings → Licence testing and wait for it to propagate. If Play still offers the test card, clear the cache of the Play Store app.
+- „Kauf wiederherstellen“ zeigt offline: „Google Play war nicht erreichbar, daher wurde nichts geprüft. Bitte versuch es später noch einmal.“
 
-- Clear the app's data, buy Pro for real and check that it unlocks.
+- Online zeigt „Erneut versuchen“ den Preis.
 
-- In Play Console → Order management, refund the order.
+Ergebnis: 
 
-- Start the app again (a cold start, or wait for a resume).
+### 9. Ausstehende Zahlung
 
-- Add the account to the licence testers again.
+Schritte:
 
-Expected:
+- Sicherstellen, dass das Konto keinen Kauf hat (nach Fall 4) und wieder in den Lizenztests steht.
 
-- After the refund and the next start, Pro is gone and the Pro marks are back. Play must have answered; offline the cache keeps Pro.
+- Pro-Fenster öffnen, „Für … kaufen“ tippen, die Testkarte mit verzögerter Genehmigung („slow approval“) wählen und bestätigen.
 
-Result: 
+- Das Fenster ansehen, dann noch einmal kaufen versuchen.
 
-## Open points
+- Einige Minuten warten, bis Play die Zahlung genehmigt, dann die App schließen und wieder öffnen.
 
-- Cases 1 to 9 are still open; run them on 1.8.1 from the internal track.
+Erwartung:
+
+- Das Fenster zeigt: „Der Kauf steht noch aus. Pro wird freigeschaltet, sobald er bezahlt ist.“
+
+- Ein zweiter Kauf ist gesperrt, solange die Zahlung aussteht.
+
+- Nach der Genehmigung und dem Wiederöffnen ist Pro freigeschaltet („Danke! Pro ist freigeschaltet.“) und die Pro-Markierungen sind weg.
+
+Danach hat das Konto wieder einen Testkauf. Deshalb kommt dieser Fall zuletzt.
+
+Ergebnis: 
+
+## Offene Punkte
+
+- Alle Fälle 1 bis 9 sind noch offen; sie laufen auf 1.8.1 (Code 16) aus dem internen Test-Track.
+
+- Nicht geprüft wird die Wiederherstellung auf einem anderen Google-Konto (kein zweites Konto vorhanden). Nur der Text „Kauf nicht gefunden“ wird in Fall 4 mit demselben Konto ohne Kauf gesehen.
+
+- Unklar ist, ob Play beim echten Kauf in Fall 4 den vorhandenen Testkauf als „bereits gekauft“ meldet. Das zeigt sich in Fall 4.
