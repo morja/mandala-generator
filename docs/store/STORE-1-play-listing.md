@@ -97,6 +97,10 @@ Since 23 October 2026 the listing exists in seven languages: English (default), 
 
 The Reddit and launch plan is [MKT-1](../MKT-1-reddit-and-launch-plan.md).
 
+## Release notes for 1.8.2 (code 17)
+
+**On the internal track since 30 October 2026** (`bin/release internal`, `completed`, notes in English and German; a fresh API read verified code 17 on internal). Production: not requested. Source tag: `android-v1.8.2` at `f583346`. Validation: `bin/check-full` on `main` (parity test and release build), signed `bundleRelease`. Bundle SHA-256: `e6e6ef8ca47a08013dfdca1589e833f32a7f4ba8f62e90169d9865c19350e8e8`. Changes since 1.8.1: the menu has a Dahlia entry with the Pro status, the guide and About; a page shows what Pro includes; the surprise die's label is shorter in German and Portuguese. Notes: `store/android/en-US/changelogs/17.txt` and `de-DE/changelogs/17.txt`.
+
 ## Release notes for 1.8.1 (code 16)
 
 **On the internal track since 30 October 2026** (`bin/release internal`, `completed`, notes in English and German; a fresh API read verified code 16 on internal). Production: pending the Pro purchase test on the internal build (`docs/QA-4-pro-purchase.md`) and Mathis' OK. Source tag: `android-v1.8.1` at `4efe8b1`. Validation: `android/scripts/check-full` on `main` (parity test and release build), signed `bundleRelease`, signature verified. Bundle SHA-256: `038b9d1f7863a31335f6db81788c9d17bb79240d5c13205391f74a2eacab7440`. Changes since 1.8.0: the daily wallpaper has its own menu row and shows its last preview at start, Pro purchases are verified with the app's Play licence key (ADR-0022 point 5). Notes: `store/android/en-US/changelogs/16.txt` and `de-DE/changelogs/16.txt`.
