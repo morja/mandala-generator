@@ -1,6 +1,6 @@
 # QA-4 · Pro purchase through the shared billing library
 
-30 October 2026. Scope: the one-time Pro purchase of ADR-0022 (`one.tearoom:unlock`), tested on Mathis' phone with the production build 1.8.0 (code 15) installed from Google Play, a private Google account that is a licence tester, and Play's test payment methods.
+30 October 2026. Scope: the one-time Pro purchase of ADR-0022 (`one.tearoom:unlock`), tested on Mathis' phone with builds installed from Google Play (1.8.0, code 15, from production; 1.8.1, code 16, from the internal track), a private Google account that is a licence tester, and Play's test payment methods.
 
 ## Preconditions
 
@@ -14,7 +14,9 @@
 
 ## Already done
 
-- Test purchase with the default test card succeeded and Pro unlocked (30 October 2026).
+- Test purchase with the default test card succeeded and Pro unlocked (30 October 2026, 1.8.0).
+
+- Signature check: after the update to 1.8.1 (code 16, the first build with the Play licence key) the app queried Play online and kept Pro, with no Pro marks anywhere. A wrong key would have removed Pro (`UnlockPolicy` counts only verified purchases). Key confirmed (30 October 2026).
 
 ## Test cases
 
@@ -170,4 +172,4 @@ Result:
 
 ## Open points
 
-- The Play licence key for the signature check (`publicKeyBase64` in `Pro.kt`) is still `null`. Once it is added, the licence-test purchase (cases 1 to 4 at least) has to be repeated, since a wrong key would hide every purchase.
+- Cases 1 to 9 are still open; run them on 1.8.1 from the internal track.
