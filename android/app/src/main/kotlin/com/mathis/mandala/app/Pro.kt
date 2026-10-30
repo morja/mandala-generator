@@ -19,6 +19,10 @@ object Pro {
     /** The one-time product in the Play Console; its purchase option is `buy`. */
     const val PRODUCT_ID = "pro"
 
+    /** Base64 RSA public key of the app (Play Console, Monetisation setup, Licensing); public, not a secret. */
+    private const val LICENCE_KEY =
+        "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAst9NnLLPwngiEAADvgg3RgOmni2Vm83GGs329K+Bw0MgGCe7X/j/rwSxvRkeM5bhXudWu5vc+jjDLodX3y+mXk9Ultqlwe0JHi8Ri7GyHHEgTFLJGxSf8FEGIiupq/9KNpHJXg/vyAM+JZZ2nr8UPo0pemXMC61vG9K+0ue0lPT+GnGXcomaQ+cKelIWWsMJvaFrS6ZbXJOXDsbWQTAfTj4LtguQFIwPj+14CA1tkopdtE4/gOGXcOxsfgJZ5uXkuq2tVNgAQfLTAdhIHrDVAsPAvdAn0h/llGbVZFxhxiIzlIHEEdlZeHOlA6UBLV0XI1zvjvumiLLj0HuOJJv6PQIDAQAB"
+
     @Volatile private var instance: OneTimeUnlock? = null
 
     fun unlock(context: Context): OneTimeUnlock = instance ?: synchronized(this) {
@@ -29,8 +33,8 @@ object Pro {
                 // The cache of the earlier ProPurchases, kept so nothing changes for a phone that owns Pro.
                 prefsName = "pro",
                 prefsKey = "owned",
-                // Play licence key for the local signature check (ADR-0022); off until it is added.
-                publicKeyBase64 = null,
+                // Play licence key copied from the Play Console on 30 October 2026; the signature check is on (ADR-0022).
+                publicKeyBase64 = LICENCE_KEY,
                 debugUnlocked = { it.resources.getBoolean(R.bool.pro_for_testing) },
             ),
         ).also { instance = it }

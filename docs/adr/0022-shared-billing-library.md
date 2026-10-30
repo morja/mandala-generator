@@ -14,7 +14,7 @@ Status: accepted, 27 October 2026 (Mathis' decision that Play Billing exists onc
    - A pending payment shows in the sheet and blocks a second purchase; it unlocks once paid.
    - A refund or revocation removes Pro the next time Play answers; an unreachable Play never removes it.
    - Purchase and restore feedback shows inside the sheet while it is open, otherwise as a message. Google's raw error text and code are no longer shown.
-5. **Signature check:** the library can check purchases against the Play licence key (`publicKeyBase64` in `Pro.kt`). It stays off (`null`) until Mathis copies the key from the Play Console (Monetisation setup, Licensing); a wrong key would hide every purchase, so it needs a licence-test purchase before release.
+5. **Signature check:** the library can check purchases against the Play licence key (`publicKeyBase64` in `Pro.kt`). Mathis decided on 30 October 2026 to switch it on; the key was copied from the Play Console (Monetisation setup, Licensing) into `Pro.kt` and the check is on. A wrong key would hide every purchase, so a licence-test purchase on a Play-installed build is still needed before the next release (`docs/QA-4-pro-purchase.md`).
 
 ## Reasons
 
