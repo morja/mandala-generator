@@ -1,0 +1,1 @@
+The daily wallpaper has its own row in the menu and shows its last picture when the app opens. Pro purchases are now verified with the app's Google Play key.

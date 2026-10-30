@@ -1,0 +1,1 @@
+Das tägliche Hintergrundbild hat eine eigene Zeile im Menü und zeigt beim Öffnen sein letztes Bild. Pro-Käufe werden jetzt mit dem Google-Play-Schlüssel der App geprüft.
