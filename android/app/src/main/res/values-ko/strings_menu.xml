@@ -48,6 +48,11 @@
     <string name="menu_theme_light">밝게</string>
     <string name="menu_guide">가이드</string>
     <string name="menu_about">정보</string>
+    <string name="menu_dahlia_detail">가이드, 정보, Pro</string>
+    <string name="menu_dahlia_detail_pro">가이드, 정보, Pro 사용 중</string>
+    <string name="menu_pro_detail">레이어 5개, 엠블럼, 텍스트, 배경화면</string>
+    <string name="menu_pro_active">사용 중, 감사합니다</string>
+    <string name="menu_pro_thanks">Pro를 구입해 주셔서 감사합니다.</string>
 
     <!-- Menu: comparing the new mandala with the current one -->
     <string name="menu_back">메뉴</string>

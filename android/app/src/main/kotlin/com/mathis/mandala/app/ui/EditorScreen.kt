@@ -356,6 +356,8 @@ fun EditorScreen(
                 onChipPreviews = vm::setChipPreviews,
                 onLightTheme = onLightTheme,
                 onAbout = closing(onAbout),
+                proActive = pro.unlocked,
+                onPro = vm::showPro,
             ),
             onDismiss = { showMenu = false; vm.closeCandidate() },
         )
@@ -893,7 +895,14 @@ private fun ProSheet(
             }
             request.note?.let { Text(it, style = MaterialTheme.typography.bodyMedium) }
             Text(
-                stringResource(R.string.editor_pro_summary),
+                stringResource(
+                    R.string.editor_pro_summary,
+                    stringResource(R.string.editor_pro_adds_making),
+                    stringResource(R.string.editor_pro_adds_saving),
+                    stringResource(R.string.editor_pro_adds_wallpapers),
+                    stringResource(R.string.editor_pro_try),
+                    stringResource(R.string.editor_pro_once),
+                ),
                 style = MaterialTheme.typography.bodySmall,
                 color = t.textMuted,
             )

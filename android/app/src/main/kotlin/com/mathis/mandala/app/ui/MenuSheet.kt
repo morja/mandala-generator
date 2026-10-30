@@ -100,17 +100,21 @@ internal class MenuActions(
     val onChipPreviews: (Boolean) -> Unit,
     val onLightTheme: (Boolean) -> Unit,
     val onAbout: () -> Unit,
+    /** Whether Pro is owned: "Dahlia Pro" then opens a page with what it includes, otherwise `onPro`, the Pro sheet. */
+    val proActive: Boolean,
+    val onPro: () -> Unit,
 )
 
 /** The pages of the menu: the main one, and those with room to explain what an entry does. */
-private enum class MenuPage { MAIN, LINE_DRAWING, DAILY, DAILY_FAVOURITES, MORE }
+private enum class MenuPage { MAIN, LINE_DRAWING, DAILY, DAILY_FAVOURITES, MORE, DAHLIA, PRO }
 
 /**
  * The menu as a sheet from below (DM-7 B): the mandala on screen with what keeps it, three dice for a
- * new one, then "More" (files, the line drawing, switches), the theme and About. A die shows its new mandala next to the current one
- * in the same sheet; only "Use new" replaces it. The die in the top bar stays the quick way, without
- * asking. The rarer entries (files, fast preview) and the daily wallpaper have pages of their
- * own, each with a few lines on what it does, so the main page stays short.
+ * new one, then the daily wallpaper, the theme, "More" (files, the line drawing, switches) and "Dahlia"
+ * (Pro, the guide, About). A die shows its new mandala next to the current one in the same sheet; only
+ * "Use new" replaces it. The die in the top bar stays the quick way, without asking. The rarer entries
+ * (files, fast preview) and the daily wallpaper have pages of their own, each with a few lines on what
+ * it does, so the main page stays short.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -135,6 +139,8 @@ internal fun MenuSheet(
                 page == MenuPage.DAILY -> DailyPage(actions, back, onChoose = { page = MenuPage.DAILY_FAVOURITES })
                 page == MenuPage.DAILY_FAVOURITES -> DailyFavouritesPage(actions, onBack = { page = MenuPage.DAILY })
                 page == MenuPage.MORE -> MorePage(fastPreview, chipPreviews, actions, back) { page = it }
+                page == MenuPage.DAHLIA -> DahliaPage(actions, back, onProPage = { page = MenuPage.PRO })
+                page == MenuPage.PRO -> ProPage(onBack = { page = MenuPage.DAHLIA })
                 else -> {
                     Current(params, image)
                     KeepRow(busy, actions)
@@ -271,17 +277,19 @@ private fun MainRows(lightTheme: Boolean, actions: MenuActions, onPage: (MenuPag
         MenuRow(EditorIcons.Wallpaper, stringResource(R.string.menu_daily_wallpaper), actions.dailySubtitle,
             onClick = { onPage(MenuPage.DAILY) }) { Chevron() }
         HorizontalDivider(color = t.outline)
-        // The play field opens from the top bar, the line drawing sits under More (Mathis, 27 October 2026).
-        MenuRow(EditorIcons.Tune, stringResource(R.string.menu_more), onClick = { onPage(MenuPage.MORE) }) { Chevron() }
-        HorizontalDivider(color = t.outline)
-        // On the main page, since it is switched often, e.g. outdoors or at night.
+        // On the main page, above More, since it is switched often, e.g. outdoors or at night.
         MenuRow(EditorIcons.Moon, stringResource(R.string.menu_theme), onClick = null) {
             ThemeChoice(lightTheme, actions.onLightTheme)
         }
         HorizontalDivider(color = t.outline)
-        GuideRow()
+        // The play field opens from the top bar, the line drawing sits under More (Mathis, 27 October 2026).
+        MenuRow(EditorIcons.Tune, stringResource(R.string.menu_more), onClick = { onPage(MenuPage.MORE) }) { Chevron() }
         HorizontalDivider(color = t.outline)
-        MenuRow(EditorIcons.Info, stringResource(R.string.menu_about), onClick = actions.onAbout) { Chevron() }
+        // Names all three things on its page, so it does not read as Pro only (Mathis, 30 October 2026).
+        // One line in both states, so the row keeps its height when Pro is bought.
+        MenuRow(EditorIcons.Info, stringResource(R.string.menu_dahlia),
+            stringResource(if (actions.proActive) R.string.menu_dahlia_detail_pro else R.string.menu_dahlia_detail),
+            detailMaxLines = 1, onClick = { onPage(MenuPage.DAHLIA) }) { Chevron() }
     }
 }
 
@@ -363,6 +371,41 @@ private fun DailyFavouritesPage(actions: MenuActions, onBack: () -> Unit) {
 private const val DAILY_COLUMNS = 3
 
 @Composable
+private fun DahliaPage(actions: MenuActions, onBack: () -> Unit, onProPage: () -> Unit) {
+    val t = LocalTokens.current
+    PageTop(stringResource(R.string.menu_dahlia), null, onBack)
+    Column(Modifier.padding(top = Spacing.sm)) {
+        HorizontalDivider(color = t.outline)
+        MenuRow(EditorIcons.StarLine, stringResource(R.string.editor_pro_title),
+            stringResource(if (actions.proActive) R.string.menu_pro_active else R.string.menu_pro_detail),
+            onClick = if (actions.proActive) onProPage else actions.onPro) { Chevron() }
+        HorizontalDivider(color = t.outline)
+        GuideRow()
+        HorizontalDivider(color = t.outline)
+        MenuRow(EditorIcons.Info, stringResource(R.string.menu_about), onClick = actions.onAbout) { Chevron() }
+    }
+}
+
+/** With Pro: the thanks and what it includes, in the sentences the Pro sheet sells it with (ADR-0016). */
+@Composable
+private fun ProPage(onBack: () -> Unit) {
+    val t = LocalTokens.current
+    PageTop(stringResource(R.string.editor_pro_title), stringResource(R.string.menu_pro_thanks), onBack)
+    Column(Modifier.padding(top = Spacing.md)) {
+        for ((icon, text) in listOf(
+            EditorIcons.Tune to R.string.editor_pro_adds_making,
+            EditorIcons.FileSave to R.string.editor_pro_adds_saving,
+            EditorIcons.Wallpaper to R.string.editor_pro_adds_wallpapers,
+        )) {
+            HorizontalDivider(color = t.outline)
+            MenuRow(icon, stringResource(text), onClick = null) {}
+        }
+        HorizontalDivider(color = t.outline)
+        Text(stringResource(R.string.editor_pro_once), style = MaterialTheme.typography.bodySmall, color = t.textMuted, modifier = Modifier.padding(top = Spacing.md))
+    }
+}
+
+@Composable
 private fun MorePage(fastPreview: Boolean, chipPreviews: Boolean, actions: MenuActions, onBack: () -> Unit, onPage: (MenuPage) -> Unit) {
     val t = LocalTokens.current
     PageTop(stringResource(R.string.menu_more), null, onBack)
@@ -382,7 +425,7 @@ private fun MorePage(fastPreview: Boolean, chipPreviews: Boolean, actions: MenuA
 }
 
 @Composable
-private fun MenuRow(icon: ImageVector, label: String, detail: String? = null, onClick: (() -> Unit)?, trailing: @Composable () -> Unit) {
+private fun MenuRow(icon: ImageVector, label: String, detail: String? = null, detailMaxLines: Int = Int.MAX_VALUE, onClick: (() -> Unit)?, trailing: @Composable () -> Unit) {
     val t = LocalTokens.current
     Row(
         Modifier.fillMaxWidth().then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier).padding(vertical = Spacing.md),
@@ -392,7 +435,7 @@ private fun MenuRow(icon: ImageVector, label: String, detail: String? = null, on
         Icon(icon, contentDescription = null, tint = t.textMuted)
         Column(Modifier.weight(1f)) {
             Text(label, style = MaterialTheme.typography.bodyLarge)
-            if (detail != null) Text(detail, style = MaterialTheme.typography.bodySmall, color = t.textMuted)
+            if (detail != null) Text(detail, style = MaterialTheme.typography.bodySmall, color = t.textMuted, maxLines = detailMaxLines, overflow = TextOverflow.Ellipsis)
         }
         trailing()
     }

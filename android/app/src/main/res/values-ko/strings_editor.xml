@@ -38,7 +38,12 @@
     <string name="editor_pro_uses_keep">이 만다라는 Pro 기능을 사용합니다. 이대로 저장, 공유하거나 배경화면으로 설정하려면 Pro를 구입하세요:</string>
     <string name="editor_pro_uses">이 만다라는 다음 Pro 기능을 사용합니다:</string>
     <string name="editor_pro_feature_item">· %1$s</string>
-    <string name="editor_pro_summary">Pro에서는 레이어를 최대 다섯 개까지 쓸 수 있고, 엠블럼, 텍스트와 명언, 레이어와 엠블럼 이동이 추가됩니다. 너비 2048픽셀로 저장할 수 있으며, 만다라를 직접 배치하고 보정하거나, 회전하는 동영상이나 선화로 저장할 수 있습니다. 배경화면: 홈 화면과 잠금 화면 한 쌍, 매일 새 배경화면, 라이브 배경화면. 구입 전에 에디터에서 모두 사용해 보고 즐겨찾기에 남길 수 있습니다. 한 번 구입, 구독 없음.</string>
+    <string name="editor_pro_adds_making">Pro에서는 레이어를 최대 다섯 개까지 쓸 수 있고, 엠블럼, 텍스트와 명언, 레이어와 엠블럼 이동이 추가됩니다.</string>
+    <string name="editor_pro_adds_saving">너비 2048픽셀로 저장할 수 있으며, 만다라를 직접 배치하고 보정하거나, 회전하는 동영상이나 선화로 저장할 수 있습니다.</string>
+    <string name="editor_pro_adds_wallpapers">배경화면: 홈 화면과 잠금 화면 한 쌍, 매일 새 배경화면, 라이브 배경화면.</string>
+    <string name="editor_pro_try">구입 전에 에디터에서 모두 사용해 보고 즐겨찾기에 남길 수 있습니다.</string>
+    <string name="editor_pro_once">한 번 구입, 구독 없음.</string>
+    <string name="editor_pro_summary">%1$s %2$s %3$s %4$s %5$s</string>
     <string name="editor_pro_buy_for">%1$s에 구매</string>
     <string name="editor_pro_buy">Pro 구매</string>
     <string name="editor_pro_without">Pro 기능 없이 %1$s</string>

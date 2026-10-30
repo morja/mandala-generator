@@ -54,6 +54,11 @@
     <string name="menu_theme_light">Светлая</string>
     <string name="menu_guide">Руководство</string>
     <string name="menu_about">О приложении</string>
+    <string name="menu_dahlia_detail">Руководство, О приложении, Pro</string>
+    <string name="menu_dahlia_detail_pro">Руководство, О приложении, Pro активен</string>
+    <string name="menu_pro_detail">Пять слоёв, эмблемы, текст, обои</string>
+    <string name="menu_pro_active">Активно, спасибо</string>
+    <string name="menu_pro_thanks">Спасибо за покупку Pro.</string>
 
     <!-- Menu: comparing the new mandala with the current one -->
     <string name="menu_back">Меню</string>

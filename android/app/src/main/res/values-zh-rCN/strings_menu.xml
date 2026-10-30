@@ -48,6 +48,11 @@
     <string name="menu_theme_light">浅色</string>
     <string name="menu_guide">使用指南</string>
     <string name="menu_about">关于</string>
+    <string name="menu_dahlia_detail">使用指南、关于、Pro</string>
+    <string name="menu_dahlia_detail_pro">使用指南、关于、Pro 已激活</string>
+    <string name="menu_pro_detail">五个图层、徽标、文字、壁纸</string>
+    <string name="menu_pro_active">已激活，谢谢</string>
+    <string name="menu_pro_thanks">感谢购买 Pro。</string>
 
     <!-- Menu: comparing the new mandala with the current one -->
     <string name="menu_back">菜单</string>

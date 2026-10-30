@@ -50,6 +50,11 @@
     <string name="menu_theme_light">Hell</string>
     <string name="menu_guide">Anleitung</string>
     <string name="menu_about">Über</string>
+    <string name="menu_dahlia_detail">Anleitung, Über, Pro</string>
+    <string name="menu_dahlia_detail_pro">Anleitung, Über, Pro aktiv</string>
+    <string name="menu_pro_detail">Fünf Ebenen, Embleme, Text, Hintergründe</string>
+    <string name="menu_pro_active">Aktiv, danke</string>
+    <string name="menu_pro_thanks">Danke, dass du Pro gekauft hast.</string>
 
     <!-- Menu: comparing the new mandala with the current one -->
     <string name="menu_back">Menü</string>

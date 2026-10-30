@@ -38,7 +38,12 @@
     <string name="editor_pro_uses_keep">Esta mandala usa recursos do Pro. Para salvá-la, compartilhá-la ou usá-la como plano de fundo como está, obtenha o Pro:</string>
     <string name="editor_pro_uses">Esta mandala usa o que vem com o Pro:</string>
     <string name="editor_pro_feature_item">· %1$s</string>
-    <string name="editor_pro_summary">O Pro oferece até cinco camadas, emblemas, texto e citações, além de mover as camadas e o emblema. Salve com 2048 pixels de largura, com a mandala posicionada à mão e ajustada, como vídeo girando e como desenho em linhas. Planos de fundo: tela inicial e de bloqueio em par, um novo a cada dia e um plano de fundo animado. Experimente tudo no editor e mantenha como favorito antes de comprar. Uma compra, sem assinatura.</string>
+    <string name="editor_pro_adds_making">O Pro oferece até cinco camadas, emblemas, texto e citações, além de mover as camadas e o emblema.</string>
+    <string name="editor_pro_adds_saving">Salve com 2048 pixels de largura, com a mandala posicionada à mão e ajustada, como vídeo girando e como desenho em linhas.</string>
+    <string name="editor_pro_adds_wallpapers">Planos de fundo: tela inicial e de bloqueio em par, um novo a cada dia e um plano de fundo animado.</string>
+    <string name="editor_pro_try">Experimente tudo no editor e mantenha como favorito antes de comprar.</string>
+    <string name="editor_pro_once">Uma compra, sem assinatura.</string>
+    <string name="editor_pro_summary">%1$s %2$s %3$s %4$s %5$s</string>
     <string name="editor_pro_buy_for">Comprar por %1$s</string>
     <string name="editor_pro_buy">Comprar o Pro</string>
     <string name="editor_pro_without">%1$s sem eles</string>

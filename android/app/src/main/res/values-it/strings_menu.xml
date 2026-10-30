@@ -52,6 +52,11 @@
     <string name="menu_theme_light">Chiaro</string>
     <string name="menu_guide">Guida</string>
     <string name="menu_about">Info</string>
+    <string name="menu_dahlia_detail">Guida, Info, Pro</string>
+    <string name="menu_dahlia_detail_pro">Guida, Info, Pro attivo</string>
+    <string name="menu_pro_detail">Cinque livelli, emblemi, testo, sfondi</string>
+    <string name="menu_pro_active">Attivo, grazie</string>
+    <string name="menu_pro_thanks">Grazie per aver acquistato Pro.</string>
 
     <!-- Menu: comparing the new mandala with the current one -->
     <string name="menu_back">Menu</string>

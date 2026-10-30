@@ -38,7 +38,12 @@
     <string name="editor_pro_uses_keep">此曼陀罗使用了 Pro 功能。要按原样保存、分享或设为壁纸，请获取 Pro：</string>
     <string name="editor_pro_uses">此曼陀罗使用了 Pro 中的功能：</string>
     <string name="editor_pro_feature_item">· %1$s</string>
-    <string name="editor_pro_summary">Pro 提供最多五个图层、徽标、文字和名言，以及移动图层和徽标。可保存为 2048 像素宽的图片，曼陀罗可手动摆放和调整，也可保存为旋转视频和线稿。壁纸：主屏幕和锁屏成对设置、每天一张新壁纸，以及动态壁纸。购买前可在编辑器中试用全部功能并保留为收藏。一次购买，无需订阅。</string>
+    <string name="editor_pro_adds_making">Pro 提供最多五个图层、徽标、文字和名言，以及移动图层和徽标。</string>
+    <string name="editor_pro_adds_saving">可保存为 2048 像素宽的图片，曼陀罗可手动摆放和调整，也可保存为旋转视频和线稿。</string>
+    <string name="editor_pro_adds_wallpapers">壁纸：主屏幕和锁屏成对设置、每天一张新壁纸，以及动态壁纸。</string>
+    <string name="editor_pro_try">购买前可在编辑器中试用全部功能并保留为收藏。</string>
+    <string name="editor_pro_once">一次购买，无需订阅。</string>
+    <string name="editor_pro_summary">%1$s%2$s%3$s%4$s%5$s</string>
     <string name="editor_pro_buy_for">以 %1$s 购买</string>
     <string name="editor_pro_buy">购买 Pro</string>
     <string name="editor_pro_without">%1$s（不含这些功能）</string>

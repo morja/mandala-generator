@@ -38,7 +38,12 @@
     <string name="editor_pro_uses_keep">Dieses Mandala nutzt, was es mit Pro gibt. Um es so zu speichern, zu teilen oder als Hintergrund zu setzen, hol dir Pro:</string>
     <string name="editor_pro_uses">Dieses Mandala nutzt, was es mit Pro gibt:</string>
     <string name="editor_pro_feature_item">· %1$s</string>
-    <string name="editor_pro_summary">Pro bietet bis zu fünf Ebenen, Embleme, Text und Zitate sowie verschiebbare Ebenen und Embleme. Speichern mit 2048 Pixeln Breite, mit von Hand platziertem und angepasstem Mandala, als drehendes Video und als Strichzeichnung. Hintergründe: Start- und Sperrbildschirm als Paar, jeden Tag ein neuer und ein Live-Hintergrund. Probier alles im Editor aus und behalte es als Favorit, bevor du kaufst. Einmal kaufen, kein Abo.</string>
+    <string name="editor_pro_adds_making">Pro bietet bis zu fünf Ebenen, Embleme, Text und Zitate sowie verschiebbare Ebenen und Embleme.</string>
+    <string name="editor_pro_adds_saving">Speichern mit 2048 Pixeln Breite, mit von Hand platziertem und angepasstem Mandala, als drehendes Video und als Strichzeichnung.</string>
+    <string name="editor_pro_adds_wallpapers">Hintergründe: Start- und Sperrbildschirm als Paar, jeden Tag ein neuer und ein Live-Hintergrund.</string>
+    <string name="editor_pro_try">Probier alles im Editor aus und behalte es als Favorit, bevor du kaufst.</string>
+    <string name="editor_pro_once">Einmal kaufen, kein Abo.</string>
+    <string name="editor_pro_summary">%1$s %2$s %3$s %4$s %5$s</string>
     <string name="editor_pro_buy_for">Für %1$s kaufen</string>
     <string name="editor_pro_buy">Pro kaufen</string>
     <string name="editor_pro_without">%1$s ohne diese Funktionen</string>

@@ -50,6 +50,12 @@
     <string name="menu_theme_light">Light</string>
     <string name="menu_guide">Guide</string>
     <string name="menu_about">About</string>
+    <string name="menu_dahlia" translatable="false">Dahlia</string>
+    <string name="menu_dahlia_detail">Guide, About, Pro</string>
+    <string name="menu_dahlia_detail_pro">Guide, About, Pro active</string>
+    <string name="menu_pro_detail">Five layers, emblems, text, wallpapers</string>
+    <string name="menu_pro_active">Active, thanks</string>
+    <string name="menu_pro_thanks">Thank you for buying Pro.</string>
 
     <!-- Menu: comparing the new mandala with the current one -->
     <string name="menu_back">Menu</string>

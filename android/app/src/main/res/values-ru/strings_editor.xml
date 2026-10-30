@@ -38,7 +38,12 @@
     <string name="editor_pro_uses_keep">Эта мандала использует функции Pro. Чтобы сохранить её, поделиться ею или поставить на обои в таком виде, оформите Pro:</string>
     <string name="editor_pro_uses">Эта мандала использует возможности Pro:</string>
     <string name="editor_pro_feature_item">· %1$s</string>
-    <string name="editor_pro_summary">Pro добавляет до пяти слоёв, эмблемы, текст и цитаты, а также перемещение слоёв и эмблемы. Сохранение шириной 2048 пикселей, с размещённой вручную и настроенной мандалой, в виде вращающегося видео и контурного рисунка. Обои: главный экран и экран блокировки парой, новые каждый день и живые обои. Попробуйте всё в редакторе и оставьте в избранном до покупки. Одна покупка, без подписки.</string>
+    <string name="editor_pro_adds_making">Pro добавляет до пяти слоёв, эмблемы, текст и цитаты, а также перемещение слоёв и эмблемы.</string>
+    <string name="editor_pro_adds_saving">Сохранение шириной 2048 пикселей, с размещённой вручную и настроенной мандалой, в виде вращающегося видео и контурного рисунка.</string>
+    <string name="editor_pro_adds_wallpapers">Обои: главный экран и экран блокировки парой, новые каждый день и живые обои.</string>
+    <string name="editor_pro_try">Попробуйте всё в редакторе и оставьте в избранном до покупки.</string>
+    <string name="editor_pro_once">Одна покупка, без подписки.</string>
+    <string name="editor_pro_summary">%1$s %2$s %3$s %4$s %5$s</string>
     <string name="editor_pro_buy_for">Купить за %1$s</string>
     <string name="editor_pro_buy">Купить Pro</string>
     <string name="editor_pro_without">%1$s без них</string>
