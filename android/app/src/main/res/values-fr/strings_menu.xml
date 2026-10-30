@@ -57,6 +57,7 @@
     <string name="menu_pro_detail">Cinq calques, emblèmes, texte, fonds d’écran</string>
     <string name="menu_pro_active">Actif, merci</string>
     <string name="menu_pro_thanks">Merci d’avoir acheté Pro.</string>
+    <string name="menu_pro_once">Achat unique, sans abonnement.</string>
 
     <!-- Menu: comparing the new mandala with the current one -->
     <string name="menu_back">Menu</string>

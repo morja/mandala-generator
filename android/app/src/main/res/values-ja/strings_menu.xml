@@ -53,6 +53,7 @@
     <string name="menu_pro_detail">5レイヤー、エンブレム、テキスト、壁紙</string>
     <string name="menu_pro_active">有効です。ありがとうございます</string>
     <string name="menu_pro_thanks">Proをご購入いただきありがとうございます。</string>
+    <string name="menu_pro_once">1回限りの購入で、サブスクリプションはありません。</string>
 
     <!-- Menu: comparing the new mandala with the current one -->
     <string name="menu_back">メニュー</string>

@@ -303,8 +303,8 @@ private fun GuideRow() {
 
 /** A page's top: back to the menu, its title, and a few lines on what it is for. */
 @Composable
-private fun PageTop(title: String, about: String?, onBack: () -> Unit) {
-    BackRow(onBack)
+private fun PageTop(title: String, about: String?, onBack: () -> Unit, backLabel: String = stringResource(R.string.menu_back)) {
+    BackRow(onBack, backLabel)
     Text(title, style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = Spacing.sm))
     if (about != null) {
         Text(about, style = MaterialTheme.typography.bodyMedium, color = LocalTokens.current.textMuted, modifier = Modifier.padding(top = Spacing.xs))
@@ -390,7 +390,7 @@ private fun DahliaPage(actions: MenuActions, onBack: () -> Unit, onProPage: () -
 @Composable
 private fun ProPage(onBack: () -> Unit) {
     val t = LocalTokens.current
-    PageTop(stringResource(R.string.editor_pro_title), stringResource(R.string.menu_pro_thanks), onBack)
+    PageTop(stringResource(R.string.editor_pro_title), stringResource(R.string.menu_pro_thanks), onBack, stringResource(R.string.menu_dahlia))
     Column(Modifier.padding(top = Spacing.md)) {
         for ((icon, text) in listOf(
             EditorIcons.Tune to R.string.editor_pro_adds_making,
@@ -401,7 +401,7 @@ private fun ProPage(onBack: () -> Unit) {
             MenuRow(icon, stringResource(text), onClick = null) {}
         }
         HorizontalDivider(color = t.outline)
-        Text(stringResource(R.string.editor_pro_once), style = MaterialTheme.typography.bodySmall, color = t.textMuted, modifier = Modifier.padding(top = Spacing.md))
+        Text(stringResource(R.string.menu_pro_once), style = MaterialTheme.typography.bodySmall, color = t.textMuted, modifier = Modifier.padding(top = Spacing.md))
     }
 }
 
@@ -442,14 +442,14 @@ private fun MenuRow(icon: ImageVector, label: String, detail: String? = null, de
 }
 
 @Composable
-private fun BackRow(onBack: () -> Unit) {
+private fun BackRow(onBack: () -> Unit, label: String = stringResource(R.string.menu_back)) {
     val t = LocalTokens.current
     Row(
         Modifier.clip(RoundedCornerShape(Radius.sm)).clickable(onClick = onBack).padding(vertical = Spacing.xs),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Icon(EditorIcons.ChevronBack, contentDescription = null, tint = t.textMuted)
-        Text(stringResource(R.string.menu_back), style = MaterialTheme.typography.bodyMedium, color = t.textMuted)
+        Text(label, style = MaterialTheme.typography.bodyMedium, color = t.textMuted)
     }
 }
 

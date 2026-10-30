@@ -56,6 +56,7 @@
     <string name="menu_pro_detail">Five layers, emblems, text, wallpapers</string>
     <string name="menu_pro_active">Active, thanks</string>
     <string name="menu_pro_thanks">Thank you for buying Pro.</string>
+    <string name="menu_pro_once">One-time purchase, no subscription.</string>
 
     <!-- Menu: comparing the new mandala with the current one -->
     <string name="menu_back">Menu</string>

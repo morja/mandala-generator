@@ -57,6 +57,7 @@
     <string name="menu_pro_detail">Cinco capas, emblemas, texto, fondos</string>
     <string name="menu_pro_active">Activo, gracias</string>
     <string name="menu_pro_thanks">Gracias por comprar Pro.</string>
+    <string name="menu_pro_once">Pago único, sin suscripción.</string>
 
     <!-- Menu: comparing the new mandala with the current one -->
     <string name="menu_back">Menú</string>

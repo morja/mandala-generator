@@ -53,6 +53,7 @@
     <string name="menu_pro_detail">레이어 5개, 엠블럼, 텍스트, 배경화면</string>
     <string name="menu_pro_active">사용 중, 감사합니다</string>
     <string name="menu_pro_thanks">Pro를 구입해 주셔서 감사합니다.</string>
+    <string name="menu_pro_once">일회성 구입, 구독 없음.</string>
 
     <!-- Menu: comparing the new mandala with the current one -->
     <string name="menu_back">메뉴</string>

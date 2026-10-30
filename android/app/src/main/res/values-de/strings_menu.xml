@@ -23,7 +23,7 @@
     <string name="menu_die_variation_detail">neue Details</string>
     <string name="menu_die_layers">Neue Ebenen</string>
     <string name="menu_die_layers_detail">neue Stile</string>
-    <string name="menu_die_everything">Überrasch mich</string>
+    <string name="menu_die_everything">Überraschung</string>
     <string name="menu_die_everything_detail">alles neu</string>
 
     <!-- Menu: files and settings -->
@@ -55,6 +55,7 @@
     <string name="menu_pro_detail">Fünf Ebenen, Embleme, Text, Hintergründe</string>
     <string name="menu_pro_active">Aktiv, danke</string>
     <string name="menu_pro_thanks">Danke, dass du Pro gekauft hast.</string>
+    <string name="menu_pro_once">Einmaliger Kauf, kein Abo.</string>
 
     <!-- Menu: comparing the new mandala with the current one -->
     <string name="menu_back">Menü</string>

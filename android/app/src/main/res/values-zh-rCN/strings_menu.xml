@@ -53,6 +53,7 @@
     <string name="menu_pro_detail">五个图层、徽标、文字、壁纸</string>
     <string name="menu_pro_active">已激活，谢谢</string>
     <string name="menu_pro_thanks">感谢购买 Pro。</string>
+    <string name="menu_pro_once">一次性购买，非订阅。</string>
 
     <!-- Menu: comparing the new mandala with the current one -->
     <string name="menu_back">菜单</string>

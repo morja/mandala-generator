@@ -57,6 +57,7 @@
     <string name="menu_pro_detail">Cinque livelli, emblemi, testo, sfondi</string>
     <string name="menu_pro_active">Attivo, grazie</string>
     <string name="menu_pro_thanks">Grazie per aver acquistato Pro.</string>
+    <string name="menu_pro_once">Acquisto una tantum, nessun abbonamento.</string>
 
     <!-- Menu: comparing the new mandala with the current one -->
     <string name="menu_back">Menu</string>

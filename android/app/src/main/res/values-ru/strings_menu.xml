@@ -59,6 +59,7 @@
     <string name="menu_pro_detail">Пять слоёв, эмблемы, текст, обои</string>
     <string name="menu_pro_active">Активно, спасибо</string>
     <string name="menu_pro_thanks">Спасибо за покупку Pro.</string>
+    <string name="menu_pro_once">Разовая покупка, без подписки.</string>
 
     <!-- Menu: comparing the new mandala with the current one -->
     <string name="menu_back">Меню</string>
