@@ -97,6 +97,10 @@ Since 23 October 2026 the listing exists in seven languages: English (default), 
 
 The Reddit and launch plan is [MKT-1](../MKT-1-reddit-and-launch-plan.md).
 
+## Release notes for 1.8.3 (code 18)
+
+**On the internal track and submitted to production on 1 November 2026** (`bin/release internal`, then `bin/release production 18`, Mathis' OK, full rollout, notes in English and German; a fresh API read shows code 18 with `completed` on both tracks, replacing 1.8.2, which may still have been in Google's review; Google's review follows). Source tag: `android-v1.8.3` at `4bb9f19`. Validation: `bin/check-full` at `b92ba9d` (parity test and release build), signed `bundleRelease`. Bundle SHA-256: `0d5078f100381a683b9d708aec2b611ee3b2428fd9a5789dab83023bc0b40063`. Changes since 1.8.2: with no saved last state the app opens on the starter favourite the app icon was made from. Notes: `store/android/en-US/changelogs/18.txt` and `de-DE/changelogs/18.txt`.
+
 ## Release notes for 1.8.2 (code 17)
 
 **On the internal track since 30 October 2026** (`bin/release internal`, `completed`, notes in English and German; a fresh API read verified code 17 on internal). **Submitted to production on 1 November 2026** (`bin/release production 17`, Mathis' OK, full rollout, same notes; a fresh API read shows code 17 on production with `completed`, replacing 1.8.0; Google's review follows). Source tag: `android-v1.8.2` at `f583346`. Validation: `bin/check-full` on `main` (parity test and release build), signed `bundleRelease`. Bundle SHA-256: `e6e6ef8ca47a08013dfdca1589e833f32a7f4ba8f62e90169d9865c19350e8e8`. Changes since 1.8.1: the menu has a Dahlia entry with the Pro status, the guide and About; a page shows what Pro includes; the surprise die's label is shorter in German and Portuguese. Notes: `store/android/en-US/changelogs/17.txt` and `de-DE/changelogs/17.txt`.
