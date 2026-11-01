@@ -1,0 +1,345 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DM-22 Onboarding</title>
+<style>
+  :root {
+    --bg: #0A0908; --surface: #121110; --raised: #1B1917; --text: #E6E1DB; --muted: #9C948B;
+    --outline: #2E2A26; --accent: #D9A15C; --on-accent: #241605; --accent-soft: #2A2117;
+    --page: #161412; --scrim: #000; --scrim-alpha: .62; --shadow: rgba(0,0,0,.45);
+    --inverse: #E6E1DB; --on-inverse: #0A0908;
+    --s-xs: 4px; --s-sm: 8px; --s-md: 12px; --s-lg: 16px; --s-xl: 24px; --r-sm: 8px; --r-md: 12px;
+  }
+  :root[data-theme="light"] {
+    --bg: #F7F4EF; --surface: #FFFDFA; --raised: #EFEAE3; --text: #221F1C; --muted: #5F5851;
+    --outline: #CFC7BD; --accent: #8A5210; --on-accent: #fff; --accent-soft: #F3E3CF;
+    --page: #E9E4DC; --scrim-alpha: .42; --shadow: rgba(60,40,20,.28);
+    --inverse: #221F1C; --on-inverse: #F7F4EF;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--page); color: var(--text); font: 14px/20px Roboto, system-ui, -apple-system, "Segoe UI", sans-serif; }
+  button { font: inherit; color: inherit; }
+
+  header { padding: var(--s-lg); display: flex; flex-wrap: wrap; gap: 10px var(--s-lg); align-items: center; }
+  header h1 { font-size: 17px; line-height: 24px; margin: 0 var(--s-sm) 0 0; font-weight: 600; }
+  .seg-ui { display: inline-flex; border: 1px solid var(--outline); border-radius: 999px; overflow: hidden; }
+  .seg-ui button { background: transparent; border: 0; padding: 6px 14px; cursor: pointer; white-space: nowrap; }
+  .seg-ui button[aria-pressed="true"] { background: var(--accent-soft); color: var(--accent); }
+  .plain { background: transparent; border: 1px solid var(--outline); border-radius: 999px; padding: 6px 14px; cursor: pointer; white-space: nowrap; }
+
+  main { display: flex; flex-wrap: wrap; gap: 28px; padding: 0 var(--s-lg) var(--s-xl); justify-content: center; align-items: flex-start; }
+  figure { margin: 0; }
+  figcaption { color: var(--muted); font-size: 12px; line-height: 16px; padding: 0 0 var(--s-sm) var(--s-xs); }
+
+  /* The phone: a real screenshot, 360 x 780 dp, with the tour on top of it. */
+  .phone { width: 360px; height: 780px; position: relative; overflow: hidden; border-radius: 26px; border: 1px solid var(--outline); background: var(--bg); box-sizing: content-box; }
+  .screen { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  .scrim { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+  .scrim .fill { fill: var(--scrim); fill-opacity: var(--scrim-alpha); }
+
+  /* Ring around what the card points at, and the line from it to the card. */
+  .ring { position: absolute; border: 2px solid var(--accent); pointer-events: none; }
+  .ring.round { border-radius: 50%; }
+  .ring.row { border-radius: var(--r-md); }
+  .line { position: absolute; width: 2px; background: var(--accent); pointer-events: none; }
+
+  .card { position: absolute; left: var(--s-md); right: var(--s-md); background: var(--raised); border: 1px solid var(--outline); border-radius: var(--r-md); padding: var(--s-md) var(--s-lg) var(--s-sm); box-shadow: 0 2px 10px var(--shadow); }
+  .card .head { display: flex; align-items: baseline; gap: var(--s-sm); }
+  .card h2 { margin: 0; flex: 1; font-size: 16px; line-height: 24px; font-weight: 500; }
+  .card .count { color: var(--muted); font-size: 12px; line-height: 16px; white-space: nowrap; }
+  .card p { margin: var(--s-xs) 0 0; }
+  .caret { position: absolute; width: 12px; height: 12px; background: var(--raised); border: 1px solid var(--outline); transform: rotate(45deg); }
+  .caret.up { top: -7px; border-right: 0; border-bottom: 0; }
+  .caret.down { bottom: -7px; border-left: 0; border-top: 0; }
+
+  .tiles { display: grid; grid-template-columns: repeat(6, 1fr); gap: var(--s-xs); margin-top: var(--s-sm); }
+  .tiles button { background: transparent; border: 0; border-radius: var(--r-sm); padding: 6px 0 var(--s-xs); display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 12px; line-height: 16px; cursor: pointer; color: var(--muted); }
+  .tiles button svg { width: 20px; height: 20px; color: var(--accent); }
+  .tiles button[aria-pressed="true"] { background: var(--accent-soft); color: var(--text); }
+
+  .foot { display: flex; align-items: center; margin-top: var(--s-sm); min-height: 40px; }
+  .foot .sp { flex: 1; }
+  .btn { height: 40px; border: 0; border-radius: 20px; padding: 0 var(--s-md); background: transparent; color: var(--muted); font-weight: 500; cursor: pointer; white-space: nowrap; }
+  .btn.skip { margin-left: calc(var(--s-md) * -1); }
+  .btn.primary { background: var(--accent); color: var(--on-accent); padding: 0 var(--s-xl); margin-left: var(--s-xs); }
+
+  .snack { position: absolute; left: var(--s-md); right: var(--s-md); bottom: var(--s-xl); background: var(--inverse); color: var(--on-inverse); border-radius: var(--r-sm); padding: 14px var(--s-lg); }
+
+  .inert .card, .inert .card * { pointer-events: none; }
+
+  @media (max-width: 400px) { main { padding: 0 var(--s-xs) var(--s-xl); } }
+</style>
+</head>
+<body>
+<header>
+  <h1>DM-22 Onboarding</h1>
+  <div class="seg-ui" data-group="view" aria-label="Ansicht"></div>
+  <div class="seg-ui" data-group="lang" aria-label="Sprache"></div>
+  <div class="seg-ui" data-group="theme" aria-label="Design"></div>
+  <div class="seg-ui" data-group="mode" aria-label="Karte"></div>
+  <button class="plain" id="restart">Von vorn</button>
+</header>
+<main id="stage"></main>
+
+<script>
+  // Target bounds in dp, read from the running app at 360 x 780 dp (uiautomator).
+  const BOUNDS = {"en":{"layers":{"play":[128.0,44.0,152.0,68.0],"die":[176.0,44.0,200.0,68.0],"save":[224.0,44.0,248.0,68.0],"fav":[272.0,44.0,296.0,68.0],"more":[320.0,44.0,344.0,68.0],"layerDie":[308.0,536.0,332.0,560.0],"style":[16.0,580.0,344.0,628.0],"palette":[16.0,636.0,344.0,684.0],"picture":[16.0,88.0,344.0,416.0]},"scene":{"tab":[86.3,424.0,142.0,464.0],"row":[16.0,468.0,344.0,516.0],"picture":[16.0,88.0,344.0,416.0],"topDie":[176.0,44.0,200.0,68.0]},"sceneon":{"die":[195.0,480.0,219.0,504.0],"picture":[16.0,88.0,344.0,416.0],"topDie":[176.0,44.0,200.0,68.0]},"emblem":{"die":[195.0,480.0,219.0,504.0],"picture":[16.0,88.0,344.0,416.0],"topDie":[176.0,44.0,200.0,68.0]},"text":{"die":[195.0,480.0,219.0,504.0],"picture":[16.0,88.0,344.0,416.0],"topDie":[176.0,44.0,200.0,68.0]},"menu":{"dieOne":[53.0,414.0,83.0,444.0],"dieThree":[165.2,414.0,195.2,444.0],"dieFive":[277.2,414.0,307.2,444.0]},"play":{"die":[84.0,728.0,108.0,752.0],"picture":[38.3,128.0,322.0,411.7]},"style-dark":{"target":[16.0,474.0,344.0,522.0],"picture":[16.0,88.0,344.0,416.0]},"palette-dark":{"target":[16.0,471.7,344.0,519.7],"picture":[16.0,88.0,344.0,416.0]},"dice-dark":{"layerDie":[308.0,477.0,332.0,501.0],"topDie":[176.0,44.0,200.0,68.0],"picture":[16.0,88.0,344.0,416.0]},"style-light":{"target":[16.0,473.3,344.0,521.3],"picture":[16.0,88.0,344.0,416.0]},"palette-light":{"target":[16.0,471.7,344.0,519.7],"picture":[16.0,88.0,344.0,416.0]},"dice-light":{"layerDie":[308.0,477.3,332.0,501.3],"topDie":[176.0,44.0,200.0,68.0],"picture":[16.0,88.0,344.0,416.0]}},"de":{"layers":{"play":[128.0,44.0,152.0,68.0],"die":[176.0,44.0,200.0,68.0],"save":[224.0,44.0,248.0,68.0],"fav":[272.0,44.0,296.0,68.0],"more":[320.0,44.0,344.0,68.0],"layerDie":[308.0,536.0,332.0,560.0],"style":[16.0,580.0,344.0,628.0],"palette":[16.0,636.0,344.0,684.0],"picture":[16.0,88.0,344.0,416.0]},"scene":{"tab":[86.3,424.0,141.7,464.0],"row":[16.0,468.0,344.0,516.0],"picture":[16.0,88.0,344.0,416.0],"topDie":[176.0,44.0,200.0,68.0]},"sceneon":{"die":[145.3,480.0,169.3,504.0],"picture":[16.0,88.0,344.0,416.0],"topDie":[176.0,44.0,200.0,68.0]},"emblem":{"die":[145.3,480.0,169.3,504.0],"picture":[16.0,88.0,344.0,416.0],"topDie":[176.0,44.0,200.0,68.0]},"text":{"die":[145.3,480.0,169.3,504.0],"picture":[16.0,88.0,344.0,416.0],"topDie":[176.0,44.0,200.0,68.0]},"menu":{"dieOne":[53.0,414.0,83.0,444.0],"dieThree":[165.0,414.0,195.0,444.0],"dieFive":[277.0,414.0,307.0,444.0]},"play":{"die":[84.0,728.0,108.0,752.0],"picture":[38.3,128.0,322.0,411.7]},"style-dark":{"target":[16.0,474.0,344.0,522.0],"picture":[16.0,88.0,344.0,416.0]},"palette-dark":{"target":[16.0,472.7,344.0,520.7],"picture":[16.0,88.0,344.0,416.0]},"dice-dark":{"layerDie":[308.0,477.3,332.0,501.3],"topDie":[176.0,44.0,200.0,68.0],"picture":[16.0,88.0,344.0,416.0]},"style-light":{"target":[16.0,473.3,344.0,521.3],"picture":[16.0,88.0,344.0,416.0]},"palette-light":{"target":[16.0,471.0,344.0,519.0],"picture":[16.0,88.0,344.0,416.0]},"dice-light":{"layerDie":[308.0,477.3,332.0,501.3],"topDie":[176.0,44.0,200.0,68.0],"picture":[16.0,88.0,344.0,416.0]}}};
+
+  const H = 780;
+  const SAFE_TOP = 36;     // below the status bar
+  const SAFE_BOTTOM = 24;  // above the gesture bar
+  const GAP = 8;           // Spacing.sm between ring and card
+  const ROUND = 40;        // ring around a 24 dp icon in its button
+
+  const UI = {
+    en: { of: 'of', next: 'Next', back: 'Back', skip: 'Skip', done: 'Done', outro: 'You can take this tour again from the menu, under Dahlia.',
+          places: ['Here', 'Effects', 'Emblem', 'Text', 'Menu', 'Play'] },
+    de: { of: 'von', next: 'Weiter', back: 'Zurück', skip: 'Überspringen', done: 'Fertig', outro: 'Diese Tour findest du wieder im Menü unter Dahlia.',
+          places: ['Hier', 'Effekte', 'Emblem', 'Text', 'Menü', 'Spielen'] },
+  };
+
+  const TEXT = {
+    en: [
+      ['Play', 'Drag a finger across the play field and the mandala changes as you go. Stop whenever you like what you see.'],
+      ['Favourites', 'The star holds the mandalas you keep. A few are already there. Tap one to open it, or add the one you are looking at.'],
+      ['Save and share', 'The arrow saves your picture or sets it as wallpaper. Share is in the menu behind the three dots.'],
+      ['Styles', 'Every layer has a style, like Spirograph or Rose Curves. Open this row and tap one. The picture changes right away.'],
+      ['Colours', 'A palette colours the layer. Open this row to try another one or to make your own.'],
+      ['Effects', 'Scene adds light, grain, stars and more. Switch the effects on here, then press and hold the picture to see it without them.'],
+      ['The die', 'Wherever you see this die, it rolls something new at random. The more dots, the more changes. The arrow at the top left takes you back.'],
+    ],
+    de: [
+      ['Spielen', 'Zieh einen Finger über die Spielfläche, und das Mandala verändert sich mit. Hör auf, wenn dir gefällt, was du siehst.'],
+      ['Favoriten', 'Im Stern liegen die Mandalas, die du behalten willst. Ein paar warten schon. Tippe eins an, um es zu öffnen, oder füge das aktuelle hinzu.'],
+      ['Speichern und teilen', 'Der Pfeil speichert dein Bild oder macht es zum Hintergrund. Teilen findest du im Menü hinter den drei Punkten.'],
+      ['Stile', 'Jede Ebene hat einen Stil, etwa Spirograph oder Rosenkurven. Öffne diese Zeile und tippe einen an. Das Bild ändert sich sofort.'],
+      ['Farben', 'Eine Palette färbt die Ebene. Öffne diese Zeile, um eine andere zu probieren oder eine eigene anzulegen.'],
+      ['Effekte', 'Unter Szene kommen Licht, Körnung, Sterne und mehr dazu. Schalte die Effekte hier ein und halte das Bild gedrückt, um es ohne sie zu sehen.'],
+      ['Der Würfel', 'Wo immer du diesen Würfel siehst, würfelt er etwas Neues aus. Je mehr Punkte, desto mehr ändert sich. Der Pfeil oben links bringt dich zurück.'],
+    ],
+    long: [
+      ['Spielen', 'Zieh einen Finger langsam über die Spielfläche, und das Mandala verändert sich mit jeder Bewegung. Hör einfach auf, sobald dir gefällt, was du siehst, und übernimm es mit Fertig.'],
+      ['Favoriten', 'Im Stern liegen alle Mandalas, die du behalten möchtest, und ein paar warten dort schon auf dich. Tippe eins an, um es zu öffnen, oder füge das aktuelle Mandala als neuen Favoriten hinzu.'],
+      ['Speichern und teilen', 'Der Pfeil speichert dein Bild in der gewünschten Größe oder macht es zum Bildschirmhintergrund. Teilen findest du im Menü hinter den drei Punkten oben rechts, gleich neben Favorit und Hintergrund.'],
+      ['Stile', 'Jede Ebene hat ihren eigenen Stil, etwa Spirograph, Rosenkurven oder Epitrochoide. Öffne diese Zeile und tippe einen Stil an. Das Bild ändert sich sofort, und du kannst jederzeit zurückgehen.'],
+      ['Farben', 'Eine Palette färbt die ausgewählte Ebene. Öffne diese Zeile, um eine andere Palette auszuprobieren, oder lege eine eigene an, auch aus den Farben eines Bildes.'],
+      ['Effekte', 'Unter Szene kommen Licht, Körnung, Sterne, Vignette und vieles mehr dazu. Schalte die Effekte hier ein und halte das Bild gedrückt, um den Unterschied ohne sie zu sehen.'],
+      ['Der Würfel', 'Wo immer du diesen Würfel siehst, würfelt er an dieser Stelle etwas Neues aus. Je mehr Punkte, desto mehr ändert sich. Gefällt es dir nicht, bringt dich der Pfeil oben links zurück.'],
+    ],
+  };
+
+  // The screens behind the die step: where the die really sits, with its number of dots.
+  const PLACES = [
+    { screen: 'dice', dots: 5, targets: [{ k: 'topDie' }, { k: 'layerDie', line: true }] },
+    { screen: 'sceneon', dots: 1, targets: [{ k: 'topDie' }, { k: 'die', line: true }] },
+    { screen: 'emblem', dots: 1, targets: [{ k: 'topDie' }, { k: 'die', line: true }] },
+    { screen: 'text', dots: 1, targets: [{ k: 'topDie' }, { k: 'die', line: true }] },
+    { screen: 'menu', dots: 3, targets: [{ k: 'dieOne' }, { k: 'dieThree' }, { k: 'dieFive' }] },
+    { screen: 'play', dots: 1, targets: [{ k: 'die', line: true }] },
+  ];
+
+  const STEPS = [
+    { screen: 'layers', targets: [{ k: 'play', line: true }] },
+    { screen: 'layers', targets: [{ k: 'fav', line: true }] },
+    { screen: 'layers', targets: [{ k: 'save', line: true }, { k: 'more', line: true }] },
+    { screen: 'style', targets: [{ k: 'target', row: true, line: true }] },
+    { screen: 'palette', targets: [{ k: 'target', row: true, line: true }] },
+    { screen: 'scene', targets: [{ k: 'row', row: true, line: true }], also: [{ k: 'tab', row: true }] },
+    { places: true },
+  ];
+
+  const state = { view: 'walk', lang: 'en', theme: 'dark', mode: 'a', step: 0, place: 0, finished: false };
+
+  const appLang = () => (state.lang === 'en' ? 'en' : 'de');
+
+  const SEGMENTS = {
+    view: [['walk', 'Durchklicken'], ['all', 'Alle Schritte']],
+    lang: [['en', 'English'], ['de', 'Deutsch'], ['long', 'Deutsch lang']],
+    theme: [['dark', 'Dunkel'], ['light', 'Hell']],
+    mode: [['a', 'a Karte unten'], ['b', 'b Karte am Knopf']],
+  };
+
+  function buildSegments() {
+    for (const [group, options] of Object.entries(SEGMENTS)) {
+      const box = document.querySelector(`[data-group="${group}"]`);
+      for (const [value, label] of options) {
+        const b = document.createElement('button');
+        b.textContent = label;
+        b.addEventListener('click', () => { state[group] = value; render(); });
+        b.dataset.value = value;
+        box.append(b);
+      }
+    }
+  }
+
+  function syncSegments() {
+    for (const group of Object.keys(SEGMENTS)) {
+      for (const b of document.querySelectorAll(`[data-group="${group}"] button`)) {
+        b.setAttribute('aria-pressed', String(b.dataset.value === state[group]));
+      }
+    }
+  }
+
+  function boundsFor(screen) {
+    const set = BOUNDS[appLang()];
+    return set[`${screen}-${state.theme}`] || set[screen];
+  }
+
+  /** The ring's rectangle around a target: a circle for icons, the row itself for rows. */
+  function ringRect(box, row) {
+    const [x0, y0, x1, y1] = box;
+    if (row) return { l: x0 - 2, t: y0 - 2, r: x1 + 2, b: y1 + 2, row: true };
+    const cx = (x0 + x1) / 2, cy = (y0 + y1) / 2, half = Math.max(ROUND, x1 - x0 + 14) / 2;
+    return { l: cx - half, t: cy - half, r: cx + half, b: cy + half, row: false };
+  }
+
+  /**
+   * Finds the card's top edge. It never overlaps a ring. a: docks at the bottom, so Next stays under
+   * the thumb, and moves up only past a ring it would cover. b: sits right next to the first target.
+   */
+  function placeCard(rings, height, mode) {
+    const bottom = H - SAFE_BOTTOM;
+    const hits = (y, r) => y < r.b + GAP && y + height > r.t - GAP;
+
+    if (mode === 'a') {
+      let y = bottom - height;
+      for (const r of [...rings].sort((p, q) => q.b - p.b)) if (hits(y, r)) y = r.t - GAP - height;
+      return Math.max(SAFE_TOP, y);
+    }
+
+    let y = rings[0].b + GAP;
+    for (const r of [...rings].sort((p, q) => p.t - q.t)) if (hits(y, r)) y = r.b + GAP;
+    if (y + height > bottom) y = rings[0].t - GAP - height;
+    return Math.max(SAFE_TOP, y);
+  }
+
+  function dieIcon(dots) {
+    const spots = { 1: [[12, 12]], 3: [[8.3, 8.3], [12, 12], [15.7, 15.7]], 5: [[8.3, 8.3], [15.7, 8.3], [12, 12], [8.3, 15.7], [15.7, 15.7]] };
+    const body = 'M7.5,3.5h9a4,4 0 0,1 4,4v9a4,4 0 0,1 -4,4h-9a4,4 0 0,1 -4,-4v-9a4,4 0 0,1 4,-4z';
+    return `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${body}" fill="currentColor" fill-opacity=".22"/>` +
+      `<path d="${body}" fill="none" stroke="currentColor" stroke-width="1.8"/>` +
+      spots[dots].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="1.5" fill="currentColor"/>`).join('') + '</svg>';
+  }
+
+  function scrim(id, holes) {
+    const shapes = holes.map((h) => (h.round
+      ? `<circle cx="${(h.l + h.r) / 2}" cy="${(h.t + h.b) / 2}" r="${(h.r - h.l) / 2}" fill="#000"/>`
+      : `<rect x="${h.l}" y="${h.t}" width="${h.r - h.l}" height="${h.b - h.t}" rx="12" fill="#000"/>`)).join('');
+    return `<svg class="scrim" viewBox="0 0 360 780" aria-hidden="true"><defs><mask id="${id}"><rect width="360" height="780" fill="#fff"/>${shapes}</mask></defs>` +
+      `<rect class="fill" width="360" height="780" mask="url(#${id})"/></svg>`;
+  }
+
+  function screenImage(screen) {
+    return `<img class="screen" alt="" src="dm-22-onboarding/${appLang()}-${state.theme}-${screen}.webp">`;
+  }
+
+  /** One phone at one step of the tour. `interactive` wires the buttons. */
+  function phone(index, placeIndex, interactive, id) {
+    const step = STEPS[index];
+    const stop = step.places ? PLACES[placeIndex] : step;
+    const b = boundsFor(stop.screen);
+    const rings = stop.targets.map((t) => ({ ...ringRect(b[t.k], t.row), line: !!t.line }));
+    const extra = (stop.also || []).map((t) => ringRect(b[t.k], true));
+    const holes = [...rings.map((r) => ({ ...r, round: !r.row })), ...extra];
+    if (b.picture) holes.push({ l: b.picture[0], t: b.picture[1], r: b.picture[2], b: b.picture[3] });
+
+    const ui = UI[appLang()];
+    const [title, body] = TEXT[state.lang][index];
+    const last = index === STEPS.length - 1;
+
+    const el = document.createElement('div');
+    el.className = 'phone' + (interactive ? '' : ' inert');
+    el.innerHTML = screenImage(stop.screen) + scrim(`hole-${id}`, holes) +
+      rings.map((r) => `<div class="ring ${r.row ? 'row' : 'round'}" style="left:${r.l}px;top:${r.t}px;width:${r.r - r.l}px;height:${r.b - r.t}px"></div>`).join('');
+
+    const card = document.createElement('section');
+    card.className = 'card';
+    card.setAttribute('role', 'dialog');
+    card.setAttribute('aria-label', title);
+    card.innerHTML =
+      `<div class="head"><h2>${title}</h2><span class="count">${index + 1} ${ui.of} ${STEPS.length}</span></div><p>${body}</p>` +
+      (step.places ? `<div class="tiles">${PLACES.map((p, i) => `<button data-place="${i}" aria-pressed="${i === placeIndex}">${dieIcon(p.dots)}${ui.places[i]}</button>`).join('')}</div>` : '') +
+      `<div class="foot">${last ? '' : `<button class="btn skip" data-go="skip">${ui.skip}</button>`}<span class="sp"></span>` +
+      `${index > 0 ? `<button class="btn" data-go="back">${ui.back}</button>` : ''}` +
+      `<button class="btn primary" data-go="next">${last ? ui.done : ui.next}</button></div>`;
+    card.style.visibility = 'hidden';
+    el.append(card);
+
+    if (interactive) {
+      card.addEventListener('click', (e) => {
+        const tile = e.target.closest('[data-place]');
+        if (tile) { state.place = Number(tile.dataset.place); render(); return; }
+        const go = e.target.closest('[data-go]')?.dataset.go;
+        if (go === 'skip' || (go === 'next' && last)) { state.finished = true; state.step = 0; state.place = 0; }
+        else if (go === 'next') { state.step += 1; state.place = 0; }
+        else if (go === 'back') { state.step -= 1; state.place = 0; }
+        render();
+      });
+    }
+
+    // The card's height depends on the text, so it is placed once it is in the page.
+    el.settle = () => {
+      const height = card.offsetHeight;
+      const top = placeCard(rings, height, state.mode);
+      card.style.top = `${top}px`;
+      card.style.visibility = '';
+      for (const r of rings.filter((x) => x.line)) {
+        const cx = (r.l + r.r) / 2;
+        const below = top >= r.b;
+        if (state.mode === 'a') {
+          const y0 = below ? r.b : top + height, y1 = below ? top : r.t;
+          if (y1 - y0 >= 16) el.insertAdjacentHTML('beforeend', `<div class="line" style="left:${cx - 1}px;top:${y0}px;height:${y1 - y0}px"></div>`);
+        } else {
+          card.insertAdjacentHTML('beforeend', `<span class="caret ${below ? 'up' : 'down'}" style="left:${Math.min(cx - 18, 310)}px"></span>`);
+        }
+      }
+    };
+    return el;
+  }
+
+  function finishedPhone() {
+    const el = document.createElement('div');
+    el.className = 'phone';
+    el.innerHTML = screenImage('layers') + `<div class="snack">${UI[appLang()].outro}</div>`;
+    el.settle = () => {};
+    return el;
+  }
+
+  function render() {
+    document.documentElement.dataset.theme = state.theme;
+    syncSegments();
+    const stage = document.getElementById('stage');
+    stage.replaceChildren();
+    const phones = [];
+
+    if (state.view === 'walk') {
+      const el = state.finished ? finishedPhone() : phone(state.step, state.place, true, 'walk');
+      stage.append(el);
+      phones.push(el);
+    } else {
+      const add = (index, place, caption, id) => {
+        const fig = document.createElement('figure');
+        const cap = document.createElement('figcaption');
+        cap.textContent = caption;
+        const el = phone(index, place, false, id);
+        fig.append(cap, el);
+        stage.append(fig);
+        phones.push(el);
+      };
+      STEPS.forEach((s, i) => add(i, 0, `${i + 1} ${TEXT[state.lang][i][0]}`, `s${i}`));
+      PLACES.slice(1).forEach((p, i) => add(STEPS.length - 1, i + 1, `7 ${UI[appLang()].places[i + 1]}`, `p${i}`));
+    }
+
+    phones.forEach((p) => p.settle());
+  }
+
+  buildSegments();
+  document.getElementById('restart').addEventListener('click', () => {
+    state.step = 0; state.place = 0; state.finished = false; state.view = 'walk'; render();
+  });
+  render();
+</script>
+</body>
+</html>
