@@ -1,0 +1,1 @@
+A fresh install now opens on the mandala from the app icon.
