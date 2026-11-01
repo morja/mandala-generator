@@ -174,7 +174,16 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
     private val store = SettingsStore(File(application.filesDir, "last-settings.json"))
     private val favoritesStore = FavoritesStore(File(application.filesDir, "favorites.json"))
 
-    private val _params = MutableStateFlow(store.load() ?: Editing.initial(randomSeed()))
+    /** Read only when needed: on the very first start. */
+    private val starters by lazy {
+        application.assets.open(STARTER_FAVORITES).use { SettingsJson.decodeFavorites(it.reader().readText()) }
+    }
+
+    private val _params = MutableStateFlow(
+        store.load()
+            ?: runCatching { Favorites.firstMandala(starters) }.getOrNull()
+            ?: Editing.initial(randomSeed()),
+    )
     val params: StateFlow<MandalaParameters> = _params.asStateFlow()
 
     private val _selected = MutableStateFlow(0)
@@ -186,7 +195,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
     private val _favorites = MutableStateFlow(
         favoritesStore.loadOrSeed {
             // Examples from the macOS app's favourites, so new users see what the app can do.
-            application.assets.open(STARTER_FAVORITES).use { SettingsJson.decodeFavorites(it.reader().readText()) }
+            starters
         },
     )
     val favorites: StateFlow<List<Favorite>> = _favorites.asStateFlow()

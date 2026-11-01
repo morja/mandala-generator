@@ -1,12 +1,20 @@
 package com.mathis.mandala.app
 
 import com.mathis.mandala.core.Favorite
+import com.mathis.mandala.core.MandalaParameters
 import com.mathis.mandala.core.Quote
 import com.mathis.mandala.core.SettingsJson
 import java.io.File
 
 /** Favourite list rules. Newest first, as in the macOS app. */
 object Favorites {
+    /** The starter favourite the app icon was made from; a fresh install opens on it. */
+    const val FIRST_MANDALA_ID = "3F655220-7E77-466C-B250-E25740453709"
+
+    /** The mandala of a fresh install, taken from the starter favourites. */
+    fun firstMandala(starters: List<Favorite>): MandalaParameters? =
+        starters.firstOrNull { it.id == FIRST_MANDALA_ID }?.parameters
+
     fun add(list: List<Favorite>, favorite: Favorite): List<Favorite> = listOf(favorite) + list
 
     fun remove(list: List<Favorite>, id: String): List<Favorite> = list.filterNot { it.id == id }

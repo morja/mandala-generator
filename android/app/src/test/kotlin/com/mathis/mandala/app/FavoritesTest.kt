@@ -47,6 +47,17 @@ class FavoritesTest {
     }
 
     @Test
+    fun aFreshInstallOpensOnTheFavouriteOfTheAppIcon() {
+        val starters = com.mathis.mandala.core.SettingsJson.decodeFavorites(File("src/main/assets/starter-favorites.json").readText())
+        val first = Favorites.firstMandala(starters)
+
+        assertEquals(starters.first { it.id == Favorites.FIRST_MANDALA_ID }.parameters, first)
+        // Free to save and share: a new user is not met by the Pro mark.
+        assertEquals(emptySet<Any>(), com.mathis.mandala.core.ProFeatures.of(first!!))
+        assertEquals(null, Favorites.firstMandala(emptyList()))
+    }
+
+    @Test
     fun bundledStartersDecodeAndRenderWithoutWarnings() {
         val text = File("src/main/assets/starter-favorites.json").readText()
         val starters = com.mathis.mandala.core.SettingsJson.decodeFavorites(text)
