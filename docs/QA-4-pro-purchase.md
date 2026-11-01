@@ -20,7 +20,7 @@
 
 Die Texte stammen aus `values-de/strings_app.xml` und `values-de/strings_editor.xml`. Das Pro-Fenster öffnet sich über jede Pro-Markierung im Editor.
 
-Mit aktivem Pro ist das Pro-Fenster nicht erreichbar, und ein Testkauf lässt sich nicht zurücknehmen: Im Play Store kann man einen einmaligen Testkauf nicht stornieren, und die Play Console erstattet keine Testbestellungen. Deshalb kommen zuerst die Fälle 1 bis 3, die den vorhandenen Testkauf brauchen, dann in Fall 4 der echte Kauf mit Erstattung, und erst danach die Fälle 5 bis 8, die ein Konto ohne Kauf voraussetzen, zuletzt Fall 9 (ausstehende Zahlung), der wieder einen Testkauf hinterlässt. Das Konto kommt dafür nach der Erstattung wieder in die Lizenztests.
+Mit aktivem Pro ist das Pro-Fenster nicht erreichbar, und der Testkauf bleibt am Konto, auch wenn es kein Tester mehr ist. Er lässt sich nur in der Play Console unter Bestellverwaltung zurücknehmen: Testbestellungen stehen dort als „Test: …“ und werden mit „Remove entitlement“ erstattet. Deshalb kommen zuerst die Fälle 1 bis 3, die den vorhandenen Testkauf brauchen, dann in Fall 4 der echte Kauf mit Erstattung, und erst danach die Fälle 5 bis 8, die ein Konto ohne Kauf voraussetzen, zuletzt Fall 9 (ausstehende Zahlung), der wieder einen Testkauf hinterlässt. Das Konto kommt dafür nach der Erstattung wieder in die Lizenztests.
 
 ### 1. Wiederherstellen auf demselben Konto
 
@@ -70,7 +70,7 @@ Ergebnis:
 
 ### 4. Echter Kauf, Erstattung und Wiederherstellen ohne Kauf
 
-Testkäufe erscheinen nicht in der Play Console unter Bestellverwaltung. Nur eine echte Bestellung lässt sich erstatten und prüft damit den Widerruf.
+Der echte Kauf setzt voraus, dass der alte Testkauf vorher in der Bestellverwaltung erstattet wurde (Testbestellung `GPA.3351-7712-4995-51816`, erstattet am 1. November 2026 mit „Remove entitlement“). Für den Austritt zuerst den internen Test verlassen, dann das Konto aus den Listen nehmen, sonst scheitern Updates. Hilft das nicht, im Play Store die Daten löschen, nicht nur den Cache.
 
 Schritte:
 
@@ -190,4 +190,4 @@ Ergebnis:
 
 - Nicht geprüft wird die Wiederherstellung auf einem anderen Google-Konto (kein zweites Konto vorhanden). Nur der Text „Kauf nicht gefunden“ wird in Fall 4 mit demselben Konto ohne Kauf gesehen.
 
-- Unklar ist, ob Play beim echten Kauf in Fall 4 den vorhandenen Testkauf als „bereits gekauft“ meldet. Das zeigt sich in Fall 4.
+- Unklar ist, ob die App Pro nach der Erstattung der Testbestellung beim nächsten Start mit Internet entfernt. Das zeigt sich vor dem echten Kauf in Fall 4.
