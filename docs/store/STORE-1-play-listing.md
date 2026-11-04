@@ -266,7 +266,7 @@ On 23 October 2026 the seven screenshots were replaced in every listing language
 Taken on 22 October 2026 with the starter favourites and the current editor. The order starts with what the app shows first, the layers (Mathis' choice):
 
 1. Hypocycloid, Universe and Phyllotaxis (favourite 21), Layers tab.
-2. Om emblem (favourite 2), Emblem tab.
+2. Home screen widgets (replaced the Om emblem on 4 November 2026, Mathis): "Mandala of the day" at 4×3 and 4×2 with the Kabir quote, dark mode, on a plain plum wallpaper. Taken on a fresh Pixel emulator (Android 14, AVD `Store34`) with the fast build, app suggestions off and the dock emptied; the status bar and the Google search bar are cropped out and the empty wallpaper above the widgets is stretched to reach 1080 × 2160.
 3. A mandala set as lock screen wallpaper (Menu > Wallpaper), without widgets.
 4. The Rumi quote "This is the House of Love" (favourite 4), Text tab.
 5. Favourites sheet, from the top.
