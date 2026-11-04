@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
@@ -83,6 +84,15 @@ internal class TourTargets {
 
     /** The step whose tab and scroll position are in place; its rings show only then. */
     var settled by mutableStateOf<TourStep?>(null)
+
+    /**
+     * Pixels the picture's side gives up while the tour runs, when the card does not fit below the
+     * picture and the marked row otherwise (small screens, large fonts). Only grows during a tour.
+     */
+    var shrinkBy by mutableFloatStateOf(0f)
+
+    /** The picture's side at the size the user chose, in pixels; set by the folding canvas. */
+    var pictureFull by mutableFloatStateOf(0f)
 }
 
 internal val LocalTourTargets = compositionLocalOf<TourTargets?> { null }
@@ -200,6 +210,13 @@ internal fun TourOverlay(
             val card = measurables.first().measure(Constraints.fixedWidth(width.coerceAtLeast(0)))
             val top = (insets.getTop(this) + margin).toFloat()
             val bottom = (constraints.maxHeight - insets.getBottom(this) - margin).toFloat()
+            // Not enough room under the picture and the marked row: the picture folds smaller by what is missing.
+            if (settled && picture != null && tour.pictureFull > 0f) {
+                val lowest = maxOf(picture.bottom, rings.filter { it.rect.top >= picture.top }.maxOfOrNull { it.rect.bottom } ?: 0f)
+                val missing = lowest + Spacing.sm.toPx() + card.height - bottom
+                val required = tour.pictureFull - picture.width + missing
+                if (required > tour.shrinkBy + 1f) tour.shrinkBy = required
+            }
             val y = if (settled || lastTop[0].isNaN()) {
                 val spans = rings.map { TourLayout.Span(it.rect.top, it.rect.bottom) }
                 TourLayout.cardTop(spans, card.height.toFloat(), top, bottom, Spacing.sm.toPx()).also { lastTop[0] = it }
@@ -233,7 +250,7 @@ private fun TourCard(state: TourState, onNext: () -> Unit, onBack: () -> Unit, o
             .semantics { liveRegion = LiveRegionMode.Polite },
     ) {
         Row {
-            Text(stringResource(step.title), style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f).alignByBaseline())
+            Text(stringResource(step.title), style = MaterialTheme.typography.titleMedium, color = t.text, modifier = Modifier.weight(1f).alignByBaseline())
             Text(
                 stringResource(R.string.tour_count, state.number, TourState.count),
                 style = MaterialTheme.typography.bodySmall,
@@ -242,7 +259,7 @@ private fun TourCard(state: TourState, onNext: () -> Unit, onBack: () -> Unit, o
                 modifier = Modifier.padding(start = Spacing.sm).alignByBaseline(),
             )
         }
-        Text(bodyText(step), style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = Spacing.xs))
+        Text(bodyText(step), style = MaterialTheme.typography.bodyMedium, color = t.text, modifier = Modifier.padding(top = Spacing.xs))
         if (step == TourStep.DIE) DiePlaces()
         TourButtons(
             skip = if (state.isLast) null else ({
@@ -283,7 +300,7 @@ private fun DiePlaces() {
         EditorIcons.DieOne to stringResource(R.string.tour_place_play),
     )
     FlowRow(
-        Modifier.padding(top = Spacing.md),
+        Modifier.fillMaxWidth().padding(top = Spacing.md),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalArrangement = Arrangement.spacedBy(Spacing.sm),
     ) {

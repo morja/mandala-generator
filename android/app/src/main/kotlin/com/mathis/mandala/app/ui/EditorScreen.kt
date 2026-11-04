@@ -1,7 +1,9 @@
 package com.mathis.mandala.app.ui
 
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.first
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.withFrameNanos
 import com.mathis.mandala.app.TourTarget
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -171,10 +173,15 @@ fun EditorScreen(
     val tourTargets = remember { TourTargets() }
     LaunchedEffect(tour?.step) {
         tourTargets.step = tour?.step
-        if (tour == null) tourTargets.bounds.clear()
+        if (tour == null) {
+            tourTargets.bounds.clear()
+            tourTargets.shrinkBy = 0f
+        }
     }
+    // After the first frame and once the first picture is drawn, so the tour opens on the mandala, not on an empty frame.
     LaunchedEffect(Unit) {
         withFrameNanos {}
+        vm.preview.first { it.image != null || it.error != null }
         vm.startTourIfNew()
     }
     val proRequest by vm.proRequest.collectAsStateWithLifecycle()
@@ -580,12 +587,17 @@ private fun FoldingCanvas(
 ) {
     val t = LocalTokens.current
     val pinned = drawing != null || move != null
-    val shown = if (pinned) PreviewSize.FULL else size
+    val fullPx = with(androidx.compose.ui.platform.LocalDensity.current) { fullSide.toPx() }
+    val chosen = if (pinned) PreviewSize.FULL else size
+    // The tour folds the picture a little where its card would not fit otherwise (DM-22); the chosen size comes back after it.
+    val tour = LocalTourTargets.current
+    val tourShrink = if (tour?.step != null) tour.shrinkBy else 0f
+    val shown = if (tourShrink > 0f && fullPx > 0f) ((chosen * fullPx - tourShrink) / fullPx).coerceIn(PreviewSize.SMALL, chosen) else chosen
+    SideEffect { tour?.pictureFull = chosen * fullPx }
     // The shown side as a fraction of the full one; follows a pull while the finger is down.
     val scale = remember { androidx.compose.animation.core.Animatable(shown) }
     LaunchedEffect(shown) { scale.animateTo(shown) }
     val fraction = scale.value
-    val fullPx = with(androidx.compose.ui.platform.LocalDensity.current) { fullSide.toPx() }
     val scope = androidx.compose.runtime.rememberCoroutineScope()
     val latestSize by rememberUpdatedState(size)
     // Pulling down past the top of the controls grows the image with the finger; let go and it stays

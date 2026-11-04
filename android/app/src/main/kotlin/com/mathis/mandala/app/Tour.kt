@@ -4,7 +4,7 @@ import android.content.Context
 import androidx.annotation.StringRes
 
 /**
- * The first-start tour (DM-22, card a; UX-1 24): seven cards docked at the bottom, each pointing with
+ * The first-start tour (DM-22, card a; UX-1 21): seven cards docked at the bottom, each pointing with
  * a ring and a line at a real control while the rest of the screen is dimmed, except the picture.
  * The composables report where their targets are; this file only holds the steps and the rules.
  */
