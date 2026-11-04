@@ -263,6 +263,8 @@ Without `keystore.properties`, release builds are signed with the local debug ke
 
 On 23 October 2026 the seven screenshots were replaced in every listing language by captioned versions (1080 × 1920: a caption and a muted second line on the app's dark background, the screenshot below with rounded corners), rendered with `docs/store/play/Caption.java` from `captions.json` and uploaded with `play_shots.py`. The originals below stay the source.
 
+On 5 November 2026 the set with the widget in place of the Om emblem was uploaded through the API in all seven languages (one edit per language; the checksums in Play match the rendered files).
+
 Taken on 22 October 2026 with the starter favourites and the current editor. The order starts with what the app shows first, the layers (Mathis' choice):
 
 1. Hypocycloid, Universe and Phyllotaxis (favourite 21), Layers tab.
