@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Texts of the first-start tour (DM-22) and its entry in the menu (ADR-0019). -->
+<resources>
+    <string name="menu_tour">Обзор</string>
+    <string name="tour_pane">Обзор</string>
+    <string name="tour_count">%1$d из %2$d</string>
+    <string name="tour_next">Далее</string>
+    <string name="tour_back">Назад</string>
+    <string name="tour_skip">Пропустить</string>
+    <string name="tour_done">Готово</string>
+    <string name="tour_again">Этот обзор можно открыть снова в меню, в разделе Dahlia.</string>
+    <string name="tour_play_title">Игра</string>
+    <string name="tour_play_body">Компас открывает игровое поле. Проведите по нему пальцем, и мандала будет меняться вслед за ним.</string>
+    <string name="tour_favourites_title">Избранное</string>
+    <string name="tour_favourites_body">В звезде хранятся мандалы, которые вы сохранили, и несколько там уже есть. Нажмите на одну, чтобы открыть, или добавьте текущую.</string>
+    <string name="tour_save_title">Сохранить и поделиться</string>
+    <string name="tour_save_body">Стрелка сохраняет изображение или ставит его на обои. «Поделиться» находится в меню за тремя точками.</string>
+    <string name="tour_styles_title">Стили</string>
+    <string name="tour_styles_body">У каждого слоя есть стиль, например %1$s или %2$s. Откройте эту строку и выберите стиль — изображение сразу изменится.</string>
+    <string name="tour_colours_title">Цвета</string>
+    <string name="tour_colours_body">Палитра раскрашивает слой. Откройте эту строку, чтобы попробовать другую палитру или создать свою.</string>
+    <string name="tour_effects_title">Эффекты</string>
+    <string name="tour_effects_body">Сцена добавляет свет, зерно, звёзды и многое другое. Включите эффекты здесь и удерживайте изображение, чтобы увидеть его без них.</string>
+    <string name="tour_die_title">Кубик</string>
+    <string name="tour_die_body">Где бы вы ни увидели этот кубик, он случайно создаёт что-то новое, и чем больше точек, тем больше перемен. Стрелка слева вверху возвращает назад.</string>
+    <string name="tour_place_effects">Эффекты</string>
+    <string name="tour_place_menu">Меню</string>
+    <string name="tour_place_play">Игра</string>
+</resources>

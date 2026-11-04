@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Texts of the first-start tour (DM-22) and its entry in the menu (ADR-0019). -->
+<resources>
+    <string name="menu_tour">둘러보기</string>
+    <string name="tour_pane">둘러보기</string>
+    <string name="tour_count">%1$d / %2$d</string>
+    <string name="tour_next">다음</string>
+    <string name="tour_back">뒤로</string>
+    <string name="tour_skip">건너뛰기</string>
+    <string name="tour_done">완료</string>
+    <string name="tour_again">이 둘러보기는 메뉴의 Dahlia에서 다시 볼 수 있습니다.</string>
+    <string name="tour_play_title">놀이</string>
+    <string name="tour_play_body">나침반을 누르면 놀이판이 열립니다. 손가락으로 끌면 그에 따라 만다라가 바뀝니다.</string>
+    <string name="tour_favourites_title">즐겨찾기</string>
+    <string name="tour_favourites_body">별에는 간직하고 싶은 만다라가 모여 있고, 몇 개는 이미 들어 있습니다. 하나를 눌러 열거나 지금 보이는 만다라를 추가하세요.</string>
+    <string name="tour_save_title">저장과 공유</string>
+    <string name="tour_save_body">화살표로 그림을 저장하거나 배경화면으로 설정합니다. 공유는 점 세 개 메뉴에 있습니다.</string>
+    <string name="tour_styles_title">스타일</string>
+    <string name="tour_styles_body">각 레이어에는 %1$s, %2$s 같은 스타일이 있습니다. 이 줄을 열고 하나를 누르면 그림이 바로 바뀝니다.</string>
+    <string name="tour_colours_title">색</string>
+    <string name="tour_colours_body">팔레트가 레이어에 색을 입힙니다. 이 줄을 열어 다른 팔레트를 써 보거나 나만의 팔레트를 만드세요.</string>
+    <string name="tour_effects_title">효과</string>
+    <string name="tour_effects_body">장면에서 빛, 그레인, 별 등을 더할 수 있습니다. 여기서 효과를 켜고 그림을 길게 누르면 효과 없이 볼 수 있습니다.</string>
+    <string name="tour_die_title">주사위</string>
+    <string name="tour_die_body">이 주사위가 보이는 곳에서는 무작위로 새로운 것이 만들어지고, 점이 많을수록 더 많이 바뀝니다. 왼쪽 위 화살표로 되돌릴 수 있습니다.</string>
+    <string name="tour_place_effects">효과</string>
+    <string name="tour_place_menu">메뉴</string>
+    <string name="tour_place_play">놀이</string>
+</resources>

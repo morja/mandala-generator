@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Texts of the first-start tour (DM-22) and its entry in the menu (ADR-0019). -->
+<resources>
+    <string name="menu_tour">Tour</string>
+    <string name="tour_pane">Tour</string>
+    <string name="tour_count">%1$d of %2$d</string>
+    <string name="tour_next">Next</string>
+    <string name="tour_back">Back</string>
+    <string name="tour_skip">Skip</string>
+    <string name="tour_done">Done</string>
+    <string name="tour_again">You can take this tour again from the menu, under Dahlia.</string>
+    <string name="tour_play_title">Play</string>
+    <string name="tour_play_body">The compass opens the play field. Drag a finger across it and the mandala changes as you go.</string>
+    <string name="tour_favourites_title">Favourites</string>
+    <string name="tour_favourites_body">The star holds the mandalas you keep, and a few are already there. Tap one to open it, or add the one you see.</string>
+    <string name="tour_save_title">Save and share</string>
+    <string name="tour_save_body">The arrow saves your picture or sets it as wallpaper. Share is in the menu behind the three dots.</string>
+    <string name="tour_styles_title">Styles</string>
+    <string name="tour_styles_body">Every layer has a style, like %1$s or %2$s. Open this row and tap one, and the picture changes right away.</string>
+    <string name="tour_colours_title">Colours</string>
+    <string name="tour_colours_body">A palette colours the layer. Open this row to try another one or to make your own.</string>
+    <string name="tour_effects_title">Effects</string>
+    <string name="tour_effects_body">Scene adds light, grain, stars and more. Switch the effects on here, then hold the picture to see it without them.</string>
+    <string name="tour_die_title">The die</string>
+    <string name="tour_die_body">Wherever you see this die, it rolls something new at random, and more dots change more. The arrow at the top left takes you back.</string>
+    <string name="tour_place_effects">Effects</string>
+    <string name="tour_place_menu">Menu</string>
+    <string name="tour_place_play">Play</string>
+</resources>

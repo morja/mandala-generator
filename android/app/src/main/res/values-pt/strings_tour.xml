@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Texts of the first-start tour (DM-22) and its entry in the menu (ADR-0019). -->
+<resources>
+    <string name="menu_tour">Tour</string>
+    <string name="tour_pane">Tour</string>
+    <string name="tour_count">%1$d de %2$d</string>
+    <string name="tour_next">Próximo</string>
+    <string name="tour_back">Voltar</string>
+    <string name="tour_skip">Pular</string>
+    <string name="tour_done">Concluir</string>
+    <string name="tour_again">Você pode refazer este tour pelo menu, em Dahlia.</string>
+    <string name="tour_play_title">Jogar</string>
+    <string name="tour_play_body">A bússola abre o campo de jogo. Deslize um dedo por ele e a mandala muda junto com você.</string>
+    <string name="tour_favourites_title">Favoritos</string>
+    <string name="tour_favourites_body">A estrela guarda as mandalas que você quer manter, e algumas já estão lá. Toque em uma para abrir ou adicione a que está vendo.</string>
+    <string name="tour_save_title">Salvar e compartilhar</string>
+    <string name="tour_save_body">A seta salva sua imagem ou a define como plano de fundo. Compartilhar fica no menu dos três pontos.</string>
+    <string name="tour_styles_title">Estilos</string>
+    <string name="tour_styles_body">Cada camada tem um estilo, como %1$s ou %2$s. Abra esta linha e toque em um: a imagem muda na hora.</string>
+    <string name="tour_colours_title">Cores</string>
+    <string name="tour_colours_body">Uma paleta colore a camada. Abra esta linha para experimentar outra ou criar a sua.</string>
+    <string name="tour_effects_title">Efeitos</string>
+    <string name="tour_effects_body">Cena adiciona luz, granulado, estrelas e mais. Ative os efeitos aqui e mantenha a imagem pressionada para vê-la sem eles.</string>
+    <string name="tour_die_title">O dado</string>
+    <string name="tour_die_body">Onde você vir este dado, ele cria algo novo ao acaso, e quanto mais pontos, mais muda. A seta no canto superior esquerdo desfaz.</string>
+    <string name="tour_place_effects">Efeitos</string>
+    <string name="tour_place_menu">Menu</string>
+    <string name="tour_place_play">Jogar</string>
+</resources>

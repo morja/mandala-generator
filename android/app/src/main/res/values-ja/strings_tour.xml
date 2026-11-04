@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Texts of the first-start tour (DM-22) and its entry in the menu (ADR-0019). -->
+<resources>
+    <string name="menu_tour">ツアー</string>
+    <string name="tour_pane">ツアー</string>
+    <string name="tour_count">%1$d / %2$d</string>
+    <string name="tour_next">次へ</string>
+    <string name="tour_back">戻る</string>
+    <string name="tour_skip">スキップ</string>
+    <string name="tour_done">完了</string>
+    <string name="tour_again">このツアーはメニューの Dahlia からもう一度見られます。</string>
+    <string name="tour_play_title">プレイ</string>
+    <string name="tour_play_body">コンパスでプレイフィールドが開きます。指でなぞると、それに合わせて曼荼羅が変わります。</string>
+    <string name="tour_favourites_title">お気に入り</string>
+    <string name="tour_favourites_body">星には残しておきたい曼荼羅が入っていて、最初からいくつか用意されています。タップして開くか、表示中のものを追加できます。</string>
+    <string name="tour_save_title">保存と共有</string>
+    <string name="tour_save_body">矢印で画像を保存したり壁紙にしたりできます。共有は右上の三点メニューにあります。</string>
+    <string name="tour_styles_title">スタイル</string>
+    <string name="tour_styles_body">各レイヤーには %1$s や %2$s などのスタイルがあります。この行を開いてタップすると、すぐに絵が変わります。</string>
+    <string name="tour_colours_title">色</string>
+    <string name="tour_colours_body">パレットがレイヤーに色をつけます。この行を開いて別のパレットを試したり、自分のパレットを作ったりできます。</string>
+    <string name="tour_effects_title">エフェクト</string>
+    <string name="tour_effects_body">シーンでは光、粒子、星などを加えられます。ここでエフェクトをオンにし、絵を長押しするとエフェクトなしで見られます。</string>
+    <string name="tour_die_title">サイコロ</string>
+    <string name="tour_die_body">このサイコロがある場所では、ランダムに新しいものが生まれ、点が多いほど大きく変わります。左上の矢印で元に戻せます。</string>
+    <string name="tour_place_effects">エフェクト</string>
+    <string name="tour_place_menu">メニュー</string>
+    <string name="tour_place_play">プレイ</string>
+</resources>

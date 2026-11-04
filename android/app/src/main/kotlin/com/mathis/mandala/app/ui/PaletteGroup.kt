@@ -79,6 +79,8 @@ internal fun PaletteGroup(
     /** Which layer (or the emblem) is shown; an open editor belongs to it. */
     editorKey: Any,
     apply: (index: Int, own: CustomPalette?) -> Unit,
+    /** On the heading row only, e.g. for the tour to find it. */
+    headerModifier: Modifier = Modifier,
     more: @Composable ColumnScope.() -> Unit = {},
 ) {
     val t = LocalTokens.current
@@ -89,7 +91,7 @@ internal fun PaletteGroup(
     val useOwn: (CustomPalette) -> Unit = { apply(Editing.fallbackPalette(it), it) }
     val defaultName = stringResource(R.string.controls_palette_default_name, mine.size + 1)
 
-    Group(title, summary = (editing?.palette ?: shown)?.name ?: builtIn.name) {
+    Group(title, summary = (editing?.palette ?: shown)?.name ?: builtIn.name, headerModifier = headerModifier) {
         val draft = editing
         if (draft != null) {
             PaletteEditor(

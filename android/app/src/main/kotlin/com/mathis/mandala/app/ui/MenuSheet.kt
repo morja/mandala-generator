@@ -100,6 +100,8 @@ internal class MenuActions(
     val onChipPreviews: (Boolean) -> Unit,
     val onLightTheme: (Boolean) -> Unit,
     val onAbout: () -> Unit,
+    /** Starts the first-start tour again (DM-22). */
+    val onTour: () -> Unit,
     /** Whether Pro is owned: "Dahlia Pro" then opens a page with what it includes, otherwise `onPro`, the Pro sheet. */
     val proActive: Boolean,
     val onPro: () -> Unit,
@@ -381,6 +383,9 @@ private fun DahliaPage(actions: MenuActions, onBack: () -> Unit, onProPage: () -
             onClick = if (actions.proActive) onProPage else actions.onPro) { Chevron() }
         HorizontalDivider(color = t.outline)
         GuideRow()
+        HorizontalDivider(color = t.outline)
+        // Beside the guide: the short tour of the editor that a new install starts with (DM-22).
+        MenuRow(EditorIcons.Tour, stringResource(R.string.menu_tour), onClick = actions.onTour) { Chevron() }
         HorizontalDivider(color = t.outline)
         MenuRow(EditorIcons.Info, stringResource(R.string.menu_about), onClick = actions.onAbout) { Chevron() }
     }

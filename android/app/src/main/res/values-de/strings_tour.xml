@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Texts of the first-start tour (DM-22) and its entry in the menu (ADR-0019). -->
+<resources>
+    <string name="menu_tour">Tour</string>
+    <string name="tour_pane">Tour</string>
+    <string name="tour_count">%1$d von %2$d</string>
+    <string name="tour_next">Weiter</string>
+    <string name="tour_back">Zurück</string>
+    <string name="tour_skip">Überspringen</string>
+    <string name="tour_done">Fertig</string>
+    <string name="tour_again">Diese Tour findest du wieder im Menü unter Dahlia.</string>
+    <string name="tour_play_title">Spielen</string>
+    <string name="tour_play_body">Der Kompass öffnet die Spielfläche. Zieh einen Finger darüber, und das Mandala verändert sich mit.</string>
+    <string name="tour_favourites_title">Favoriten</string>
+    <string name="tour_favourites_body">Im Stern liegen die Mandalas, die du behalten willst, und ein paar warten schon. Tippe eins an, um es zu öffnen, oder füge das aktuelle hinzu.</string>
+    <string name="tour_save_title">Speichern und teilen</string>
+    <string name="tour_save_body">Der Pfeil speichert dein Bild oder macht es zum Hintergrund. Teilen findest du im Menü hinter den drei Punkten.</string>
+    <string name="tour_styles_title">Stile</string>
+    <string name="tour_styles_body">Jede Ebene hat einen Stil, etwa %1$s oder %2$s. Öffne diese Zeile und tippe einen an, das Bild ändert sich sofort.</string>
+    <string name="tour_colours_title">Farben</string>
+    <string name="tour_colours_body">Eine Palette färbt die Ebene. Öffne diese Zeile, um eine andere zu probieren oder eine eigene anzulegen.</string>
+    <string name="tour_effects_title">Effekte</string>
+    <string name="tour_effects_body">Unter Szene kommen Licht, Körnung, Sterne und mehr dazu. Schalte die Effekte hier ein und halte das Bild gedrückt, um es ohne sie zu sehen.</string>
+    <string name="tour_die_title">Der Würfel</string>
+    <string name="tour_die_body">Wo du diesen Würfel siehst, würfelt er etwas Neues aus, und mehr Punkte ändern mehr. Der Pfeil oben links bringt dich zurück.</string>
+    <string name="tour_place_effects">Effekte</string>
+    <string name="tour_place_menu">Menü</string>
+    <string name="tour_place_play">Spielen</string>
+</resources>

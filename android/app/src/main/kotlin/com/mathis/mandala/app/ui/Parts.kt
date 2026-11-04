@@ -95,6 +95,8 @@ internal fun Group(
     framed: Boolean = true,
     /** Something inside differs from its default: a dot beside the title shows it while folded too. */
     changed: Boolean = false,
+    /** On the heading row only, e.g. for the tour to find it. */
+    headerModifier: Modifier = Modifier,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val t = LocalTokens.current
@@ -115,7 +117,7 @@ internal fun Group(
             .then(container),
     ) {
         Row(
-            Modifier.fillMaxWidth()
+            headerModifier.fillMaxWidth()
                 // Unframed (the save sheet's Adjust) it is a lighter heading and takes less height.
                 .heightIn(min = if (framed) Sizes.icon * 2 else Sizes.icon + Spacing.md)
                 .clickable(onClickLabel = toggleLabel) { open = !open }

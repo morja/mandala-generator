@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Texts of the first-start tour (DM-22) and its entry in the menu (ADR-0019). -->
+<resources>
+    <string name="menu_tour">导览</string>
+    <string name="tour_pane">导览</string>
+    <string name="tour_count">%1$d / %2$d</string>
+    <string name="tour_next">下一步</string>
+    <string name="tour_back">上一步</string>
+    <string name="tour_skip">跳过</string>
+    <string name="tour_done">完成</string>
+    <string name="tour_again">你可以在菜单的 Dahlia 中再次查看本导览。</string>
+    <string name="tour_play_title">游戏</string>
+    <string name="tour_play_body">指南针会打开游戏场。用手指在上面划动，曼陀罗会随之变化。</string>
+    <string name="tour_favourites_title">收藏</string>
+    <string name="tour_favourites_body">星形里存放着你想保留的曼陀罗，已经有几个在里面。点一个即可打开，也可以添加当前这个。</string>
+    <string name="tour_save_title">保存与分享</string>
+    <string name="tour_save_body">箭头可保存图片或设为壁纸。分享在三个点的菜单里。</string>
+    <string name="tour_styles_title">风格</string>
+    <string name="tour_styles_body">每个图层都有一种风格，例如%1$s或%2$s。打开这一行并点选一个，图片会立刻变化。</string>
+    <string name="tour_colours_title">颜色</string>
+    <string name="tour_colours_body">调色板为图层上色。打开这一行，试试别的调色板，或创建你自己的。</string>
+    <string name="tour_effects_title">效果</string>
+    <string name="tour_effects_body">场景可添加光线、颗粒、星星等。在这里开启效果，然后按住图片即可查看没有效果时的样子。</string>
+    <string name="tour_die_title">骰子</string>
+    <string name="tour_die_body">凡是看到这个骰子的地方，它都会随机生成新内容，点数越多，变化越大。左上角的箭头可以撤回。</string>
+    <string name="tour_place_effects">效果</string>
+    <string name="tour_place_menu">菜单</string>
+    <string name="tour_place_play">游戏</string>
+</resources>

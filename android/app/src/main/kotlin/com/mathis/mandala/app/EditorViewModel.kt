@@ -179,8 +179,11 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         application.assets.open(STARTER_FAVORITES).use { SettingsJson.decodeFavorites(it.reader().readText()) }
     }
 
+    /** The mandala saved at the last start; null on a new install. */
+    private val savedAtStart = store.load()
+
     private val _params = MutableStateFlow(
-        store.load()
+        savedAtStart
             ?: runCatching { Favorites.firstMandala(starters) }.getOrNull()
             ?: Editing.initial(randomSeed()),
     )
@@ -231,6 +234,42 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
 
     /** Asks Google Play for an earlier purchase and reports the answer. */
     fun restorePro() = pro.restore()
+
+    // ── The first-start tour (DM-22) ──
+
+    private val _tour = MutableStateFlow<TourState?>(null)
+
+    /** The running tour; null while none runs. */
+    val tour: StateFlow<TourState?> = _tour.asStateFlow()
+
+    /** Whether the tour is to start by itself on this new install, once the editor has drawn its first frame. */
+    private var tourPending = TourGate.of(application).startsByItself(hadSavedState = savedAtStart != null)
+
+    /** Starts the tour if this is a new install that has not seen it; called after the first frame. */
+    fun startTourIfNew() {
+        if (!tourPending) return
+        tourPending = false
+        _tour.value = TourState.start(automatic = true)
+    }
+
+    /** Starts the tour again, from the menu. */
+    fun startTour() {
+        _tour.value = TourState.start(automatic = false)
+    }
+
+    fun tourNext() {
+        val next = _tour.value?.next()
+        if (next == null) endTour() else _tour.value = next
+    }
+
+    fun tourBack() = _tour.update { it?.back() }
+
+    /** Done or Skip. After the tour that came by itself, a message says where to find it again. */
+    fun endTour() {
+        val ended = _tour.value ?: return
+        _tour.value = null
+        if (ended.automatic) message(string(R.string.tour_again))
+    }
 
     // ── The line between free and Pro (ADR-0016) ──
 

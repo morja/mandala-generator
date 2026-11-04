@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Texts of the first-start tour (DM-22) and its entry in the menu (ADR-0019). -->
+<resources>
+    <string name="menu_tour">Visite</string>
+    <string name="tour_pane">Visite</string>
+    <string name="tour_count">%1$d sur %2$d</string>
+    <string name="tour_next">Suivant</string>
+    <string name="tour_back">Retour</string>
+    <string name="tour_skip">Passer</string>
+    <string name="tour_done">Terminé</string>
+    <string name="tour_again">Vous retrouverez cette visite dans le menu, sous Dahlia.</string>
+    <string name="tour_play_title">Jouer</string>
+    <string name="tour_play_body">La boussole ouvre le terrain de jeu. Faites glisser un doigt dessus et le mandala change au fil du geste.</string>
+    <string name="tour_favourites_title">Favoris</string>
+    <string name="tour_favourites_body">L\'étoile garde les mandalas que vous conservez, et quelques-uns s\'y trouvent déjà. Touchez-en un pour l\'ouvrir, ou ajoutez celui que vous voyez.</string>
+    <string name="tour_save_title">Enregistrer et partager</string>
+    <string name="tour_save_body">La flèche enregistre votre image ou en fait un fond d\'écran. Partager se trouve dans le menu des trois points.</string>
+    <string name="tour_styles_title">Styles</string>
+    <string name="tour_styles_body">Chaque calque a un style, comme %1$s ou %2$s. Ouvrez cette ligne et touchez-en un : l\'image change aussitôt.</string>
+    <string name="tour_colours_title">Couleurs</string>
+    <string name="tour_colours_body">Une palette colore le calque. Ouvrez cette ligne pour en essayer une autre ou créer la vôtre.</string>
+    <string name="tour_effects_title">Effets</string>
+    <string name="tour_effects_body">Scène ajoute lumière, grain, étoiles et plus encore. Activez les effets ici, puis maintenez l\'image pour la voir sans eux.</string>
+    <string name="tour_die_title">Le dé</string>
+    <string name="tour_die_body">Partout où vous voyez ce dé, il tire quelque chose de nouveau au hasard, et plus il a de points, plus il change. La flèche en haut à gauche vous ramène en arrière.</string>
+    <string name="tour_place_effects">Effets</string>
+    <string name="tour_place_menu">Menu</string>
+    <string name="tour_place_play">Jouer</string>
+</resources>

@@ -1,5 +1,18 @@
 package com.mathis.mandala.app.ui
 
+import androidx.compose.foundation.ScrollState
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.snapshotFlow
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInRoot
+import androidx.compose.ui.platform.LocalDensity
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.first
+import com.mathis.mandala.app.TourLayout
+import com.mathis.mandala.app.TourTab
+import com.mathis.mandala.app.TourTarget
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import com.mathis.mandala.app.AndroidTextRenderer
@@ -168,17 +181,69 @@ internal fun ControlTabs(
         if (tab != ControlTab.TEXT && moveTarget == MoveTarget.TEXT) vm.setMoveTarget(null)
     }
     val position = PositionInput(proOwned, moveTarget, vm::setMoveTarget, onShowPro)
+
+    // The tour (DM-22) opens a step's tab and scrolls its row up under the tabs, and puts both back
+    // when it ends. Each shown tab reports its scroll state; the top of the scrolled area is kept too.
+    val scrolls = remember { mutableStateMapOf<ControlTab, ScrollState>() }
+    var viewportTop by remember { mutableFloatStateOf(0f) }
+    val tour = LocalTourTargets.current
+    val tourStep = tour?.step
+    var restore by remember { mutableStateOf<TourRestore?>(null) }
+    val gap = with(LocalDensity.current) { Spacing.md.toPx() }
+    LaunchedEffect(tourStep) {
+        // Shows `wanted` with `row` under the tabs, or at the place it had before the tour.
+        suspend fun show(wanted: ControlTab, row: TourTarget?, r: TourRestore) {
+            if (wanted != tab) {
+                // A hidden tab keeps its scroll position, so it is put back before it goes.
+                r.scroll[tab]?.let { scrolls[tab]?.scrollTo(it) }
+                tab = wanted
+            }
+            val scroll = snapshotFlow { scrolls[wanted] }.filterNotNull().first()
+            val before = r.scroll.getOrPut(wanted) { scroll.value }
+            if (row == null) {
+                scroll.animateScrollTo(before)
+            } else {
+                val bounds = snapshotFlow { tour?.bounds?.get(row) }.filterNotNull().first()
+                scroll.animateScrollTo(TourLayout.scrollFor(bounds.top, viewportTop, scroll.value, scroll.maxValue, gap))
+            }
+        }
+        if (tourStep == null) {
+            restore?.let { show(it.tab, null, it) }
+            restore = null
+            return@LaunchedEffect
+        }
+        val r = restore ?: TourRestore(tab).also { restore = it }
+        show(tourStep.tab?.let(::controlTab) ?: r.tab, tourStep.scrollTo, r)
+        tour?.settled = tourStep
+    }
+
     Column(modifier) {
         PrimaryTabRow(selectedTabIndex = tab.ordinal) {
             for (option in ControlTab.entries) {
                 // Content without the text tab's side padding, so five labels fit on a narrow phone.
-                Tab(selected = tab == option, onClick = { tab = option }) {
+                Tab(
+                    selected = tab == option,
+                    onClick = { tab = option },
+                    modifier = if (option == ControlTab.SCENE) Modifier.tourTarget(TourTarget.SCENE_TAB) else Modifier,
+                ) {
                     Text(stringResource(option.label), style = MaterialTheme.typography.titleSmall, maxLines = 1, modifier = Modifier.padding(vertical = Spacing.md))
                 }
             }
         }
         tabs.SaveableStateProvider(tab) {
-            Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(top = Spacing.xs, bottom = Spacing.lg)) {
+            val shown = tab
+            val scroll = rememberScrollState()
+            DisposableEffect(shown, scroll) {
+                scrolls[shown] = scroll
+                onDispose { if (scrolls[shown] === scroll) scrolls.remove(shown) }
+            }
+            Column(
+                Modifier
+                    .weight(1f)
+                    .onGloballyPositioned { viewportTop = it.positionInRoot().y }
+                    .verticalScroll(scroll)
+                    .padding(top = Spacing.xs, bottom = Spacing.lg),
+            ) {
                 when (tab) {
                     ControlTab.LAYERS -> LayersTab(params, selected.coerceIn(0, params.layers.lastIndex), vm, position)
                     ControlTab.SCENE -> SceneTab(params, vm)
@@ -189,6 +254,16 @@ internal fun ControlTabs(
             }
         }
     }
+}
+
+/** The tab and scroll positions the tour found, to put back when it ends. */
+private class TourRestore(val tab: ControlTab) {
+    val scroll = mutableMapOf<ControlTab, Int>()
+}
+
+private fun controlTab(tab: TourTab) = when (tab) {
+    TourTab.LAYERS -> ControlTab.LAYERS
+    TourTab.SCENE -> ControlTab.SCENE
 }
 
 // ── Layers ──
@@ -222,7 +297,10 @@ private fun LayersTab(params: MandalaParameters, selected: Int, vm: EditorViewMo
         TextButton(onClick = vm::duplicateSelected, enabled = layers.size < Editing.MAX_LAYERS) { Text(stringResource(R.string.controls_layers_duplicate)) }
         TextButton(onClick = vm::removeSelected, enabled = layers.size > 1) { Text(stringResource(R.string.controls_delete)) }
         Box(Modifier.weight(1f))
-        IconButton(onClick = vm::randomizeSelected) { Icon(EditorIcons.DieOne, contentDescription = stringResource(R.string.controls_layers_randomize, selected + 1), tint = LocalTokens.current.accent) }
+        IconButton(onClick = vm::randomizeSelected) {
+            Icon(EditorIcons.DieOne, contentDescription = stringResource(R.string.controls_layers_randomize, selected + 1), tint = LocalTokens.current.accent,
+                modifier = Modifier.tourTarget(TourTarget.LAYER_DIE))
+        }
     }
     LayerControls(layers[selected], selected, vm, vm::updateSelected, position, onVary = vm::varySelected, onReseed = vm::reseedSelected)
 }
@@ -332,7 +410,7 @@ private fun LayerRow(
 @Composable
 private fun LayerControls(layer: StyleLayer, layerIndex: Int, vm: EditorViewModel, update: ((StyleLayer) -> StyleLayer) -> Unit, position: PositionInput, onVary: () -> Unit, onReseed: () -> Unit) {
     val t = LocalTokens.current
-    Group(stringResource(R.string.controls_style), summary = stringResource(layer.style.labelRes)) {
+    Group(stringResource(R.string.controls_style), summary = stringResource(layer.style.labelRes), headerModifier = Modifier.tourTarget(TourTarget.STYLE_ROW)) {
         RandomActionRow(stringResource(R.string.menu_die_variation), stringResource(R.string.controls_variation_detail), stringResource(R.string.controls_variation_description), onVary)
         val pictures by vm.chipPreviews.collectAsStateWithLifecycle()
         FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
@@ -360,6 +438,7 @@ private fun LayerControls(layer: StyleLayer, layerIndex: Int, vm: EditorViewMode
     PaletteGroup(
         stringResource(R.string.controls_palette), layer.paletteIndex, layer.customPalette, vm, editorKey = layerIndex,
         apply = { index, own -> update { it.copy(paletteIndex = index, customPalette = own) } },
+        headerModifier = Modifier.tourTarget(TourTarget.PALETTE_ROW),
     )
     Group(stringResource(R.string.controls_blending), summary = blendSummary(layer.blendMode, layer.opacity)) {
         BlendChips(layer.blendMode) { m -> update { it.copy(blendMode = m) } }
@@ -524,7 +603,7 @@ private fun Effects(
     val switch: (Boolean) -> Unit = { on -> update { it.copy(isEnabled = on) } }
     Column {
         // The label switches too; the die and reset beside it keep their own taps (as in the text tab).
-        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+        Row(Modifier.tourTarget(TourTarget.EFFECTS_ROW).fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             Text(stringResource(R.string.controls_show_effects), style = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier.weight(1f).toggleable(value = fx.isEnabled, role = Role.Switch, onValueChange = switch))
             if (fx.isEnabled) {

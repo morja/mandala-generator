@@ -1,6 +1,9 @@
 package com.mathis.mandala.app.ui
 
 import kotlinx.coroutines.launch
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.withFrameNanos
+import com.mathis.mandala.app.TourTarget
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.shape.CircleShape
@@ -163,6 +166,17 @@ fun EditorScreen(
     val compare = if (params.effectsLayer.isEnabled) Compare(plainPreview, vm::preparePlainPreview) else null
     val candidate by vm.candidate.collectAsStateWithLifecycle()
     var showMenu by remember { mutableStateOf(false) }
+    // The first-start tour (DM-22): once on a new install after the first frame, or again from the menu.
+    val tour by vm.tour.collectAsStateWithLifecycle()
+    val tourTargets = remember { TourTargets() }
+    LaunchedEffect(tour?.step) {
+        tourTargets.step = tour?.step
+        if (tour == null) tourTargets.bounds.clear()
+    }
+    LaunchedEffect(Unit) {
+        withFrameNanos {}
+        vm.startTourIfNew()
+    }
     val proRequest by vm.proRequest.collectAsStateWithLifecycle()
     val missingPro by vm.missingPro.collectAsStateWithLifecycle()
     var showPair by remember { mutableStateOf(false) }
@@ -356,6 +370,7 @@ fun EditorScreen(
                 onChipPreviews = vm::setChipPreviews,
                 onLightTheme = onLightTheme,
                 onAbout = closing(onAbout),
+                onTour = closing(vm::startTour),
                 proActive = pro.unlocked,
                 onPro = vm::showPro,
             ),
@@ -375,6 +390,8 @@ fun EditorScreen(
         )
     }
 
+    CompositionLocalProvider(LocalTourTargets provides tourTargets) {
+    Box(Modifier.fillMaxSize()) {
     Scaffold(
         topBar = {
             // Undo and redo on the left; play field, dice, save, favourites and the menu on the right. The title
@@ -391,17 +408,27 @@ fun EditorScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = vm::openPlay) { Icon(EditorIcons.Play, contentDescription = stringResource(R.string.play_title)) }
-                    IconButton(onClick = vm::surprise) { Icon(EditorIcons.DieFive, contentDescription = stringResource(R.string.menu_die_everything), tint = LocalTokens.current.accent) }
+                    IconButton(onClick = vm::openPlay) {
+                        Icon(EditorIcons.Play, contentDescription = stringResource(R.string.play_title), modifier = Modifier.tourTarget(TourTarget.PLAY))
+                    }
+                    IconButton(onClick = vm::surprise) {
+                        Icon(EditorIcons.DieFive, contentDescription = stringResource(R.string.menu_die_everything), tint = LocalTokens.current.accent,
+                            modifier = Modifier.tourTarget(TourTarget.TOP_DIE))
+                    }
                     IconButton(onClick = { showSave = true }, enabled = !busy) {
                         if (busy) {
                             CircularProgressIndicator(Modifier.size(Sizes.icon), strokeWidth = Sizes.progress)
                         } else {
-                            Icon(EditorIcons.Save, contentDescription = stringResource(R.string.editor_save_image), tint = LocalTokens.current.accent)
+                            Icon(EditorIcons.Save, contentDescription = stringResource(R.string.editor_save_image), tint = LocalTokens.current.accent,
+                                modifier = Modifier.tourTarget(TourTarget.SAVE))
                         }
                     }
-                    IconButton(onClick = { showFavorites = true }) { Icon(EditorIcons.Star, contentDescription = stringResource(R.string.editor_favourites)) }
-                    IconButton(onClick = { showMenu = true }) { Icon(EditorIcons.More, contentDescription = stringResource(R.string.editor_more)) }
+                    IconButton(onClick = { showFavorites = true }) {
+                        Icon(EditorIcons.Star, contentDescription = stringResource(R.string.editor_favourites), modifier = Modifier.tourTarget(TourTarget.FAVOURITES))
+                    }
+                    IconButton(onClick = { showMenu = true }) {
+                        Icon(EditorIcons.More, contentDescription = stringResource(R.string.editor_more), modifier = Modifier.tourTarget(TourTarget.MORE))
+                    }
                 },
             )
         },
@@ -442,6 +469,19 @@ fun EditorScreen(
                 }
             }
         }
+    }
+    tour?.let { state ->
+        TourOverlay(
+            state = state,
+            tour = tourTargets,
+            wide = LocalConfiguration.current.screenWidthDp.dp >= Spacing.twoPaneMinWidth,
+            darkTheme = !lightTheme,
+            onNext = vm::tourNext,
+            onBack = vm::tourBack,
+            onSkip = vm::endTour,
+        )
+    }
+    }
     }
 }
 
@@ -673,7 +713,7 @@ private fun Canvas(
     val latestTap by rememberUpdatedState(onTap)
     Column(modifier.padding(bottom = Spacing.xs), verticalArrangement = Arrangement.spacedBy(Spacing.xs)) {
         Box(
-            Modifier.fillMaxWidth().aspectRatio(1f).clip(RoundedCornerShape(Radius.md)).background(t.canvas),
+            Modifier.fillMaxWidth().aspectRatio(1f).tourTarget(TourTarget.PICTURE).clip(RoundedCornerShape(Radius.md)).background(t.canvas),
             contentAlignment = Alignment.BottomCenter,
         ) {
             // A tap shows a smaller image large; a long press shows it without the scene effects until

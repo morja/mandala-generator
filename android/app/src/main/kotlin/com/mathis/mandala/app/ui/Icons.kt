@@ -36,6 +36,9 @@ object EditorIcons {
     val Moon = line("M19.5,14.5A8,8 0 0,1 9.5,4.5a8,8 0 1,0 10,10z", soft = "M19.5,14.5A8,8 0 0,1 9.5,4.5a8,8 0 1,0 10,10z")
     val Info = line("M12,3.5a8.5,8.5 0 1,0 0,17a8.5,8.5 0 1,0 0,-17zM12,11v5.5", soft = "M12,3.5a8.5,8.5 0 1,0 0,17a8.5,8.5 0 1,0 0,-17z",
         dots = dots(12 to 7.8f, radius = 0.9f))
+    /** The tour: a signpost that shows the way around the editor. */
+    val Tour = line("M12,21V3M12,5h5.5l2,2.5 -2,2.5H12M12,12H6.5l-2,2.5 2,2.5H12",
+        soft = "M12,5h5.5l2,2.5 -2,2.5H12zM12,12H6.5l-2,2.5 2,2.5H12z")
     /** The guide: a question mark in a circle. */
     val Help = line("M12,3.5a8.5,8.5 0 1,0 0,17a8.5,8.5 0 1,0 0,-17zM9.6,9.6a2.4,2.4 0 1,1 3.4,2.2c-0.6,0.3 -1,0.8 -1,1.5v0.6",
         soft = "M12,3.5a8.5,8.5 0 1,0 0,17a8.5,8.5 0 1,0 0,-17z", dots = dots(12 to 16.6f, radius = 0.9f))
