@@ -102,8 +102,7 @@ object DailyWallpaper {
      * Today's favourite, for the widget: the one whose turn it was last, or the first of the chosen
      * ones before the first run. Without Pro it stays the first one (ADR-0020).
      */
-    fun today(context: Context): Favorite? {
-        val favorites = FavoritesStore(File(context.filesDir, "favorites.json")).load()
+    fun today(context: Context, favorites: List<Favorite> = FavoritesStore(File(context.filesDir, "favorites.json")).load()): Favorite? {
         val last = prefs(context).getString(KEY_LAST_ID, null)
         if (Pro.isUnlocked(context)) favorites.firstOrNull { it.id == last }?.let { return it }
         return turn(favorites, chosen(context), 0)?.first
@@ -213,6 +212,7 @@ class DailyWallpaperJob : JobService() {
         val s = CoroutineScope(SupervisorJob() + Dispatchers.Default).also { scope = it }
         s.launch {
             runCatching { if (wallpaper) DailyWallpaper.setNext(applicationContext) else DailyWallpaper.advance(applicationContext) }
+            // The widgets are drawn in a job of their own, each on its own.
             runCatching { MandalaWidget.refresh(applicationContext) }
             DailyWallpaper.schedule(applicationContext)
             jobFinished(params, false)

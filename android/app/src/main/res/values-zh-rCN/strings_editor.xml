@@ -93,4 +93,7 @@
     <string name="play_depth">深度</string>
     <string name="play_colour">颜色</string>
     <string name="play_field_description">游戏场：拖动以改变曼陀罗</string>
+    <!-- A tap on the widget (ADR-0020, 5 November 2026) -->
+    <string name="message_widget_offer">打开小组件中的曼陀罗？</string>
+    <string name="message_widget_open">打开</string>
 </resources>

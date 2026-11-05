@@ -93,4 +93,7 @@
     <string name="play_depth">깊이</string>
     <string name="play_colour">색</string>
     <string name="play_field_description">놀이판: 끌어서 만다라 바꾸기</string>
+    <!-- A tap on the widget (ADR-0020, 5 November 2026) -->
+    <string name="message_widget_offer">위젯의 만다라를 열까요?</string>
+    <string name="message_widget_open">열기</string>
 </resources>

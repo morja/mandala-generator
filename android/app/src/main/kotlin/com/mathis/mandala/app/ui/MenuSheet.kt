@@ -57,6 +57,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import com.mathis.mandala.app.Candidate
 import com.mathis.mandala.app.NewKind
+import com.mathis.mandala.app.PlacedWidget
+import com.mathis.mandala.app.Thumbnails
 import com.mathis.mandala.app.R
 import com.mathis.mandala.app.WallpaperTarget
 import com.mathis.mandala.app.ui.theme.LocalTokens
@@ -102,13 +104,16 @@ internal class MenuActions(
     val onAbout: () -> Unit,
     /** Starts the first-start tour again (DM-22). */
     val onTour: () -> Unit,
+    /** The home screen widgets (ADR-0020); a tap opens one's settings page. */
+    val widgets: List<PlacedWidget>,
+    val onWidget: (Int) -> Unit,
     /** Whether Pro is owned: "Dahlia Pro" then opens a page with what it includes, otherwise `onPro`, the Pro sheet. */
     val proActive: Boolean,
     val onPro: () -> Unit,
 )
 
 /** The pages of the menu: the main one, and those with room to explain what an entry does. */
-private enum class MenuPage { MAIN, LINE_DRAWING, DAILY, DAILY_FAVOURITES, MORE, DAHLIA, PRO }
+private enum class MenuPage { MAIN, LINE_DRAWING, DAILY, DAILY_FAVOURITES, MORE, DAHLIA, PRO, WIDGETS }
 
 /**
  * The menu as a sheet from below (DM-7 B): the mandala on screen with what keeps it, three dice for a
@@ -141,8 +146,9 @@ internal fun MenuSheet(
                 page == MenuPage.DAILY -> DailyPage(actions, back, onChoose = { page = MenuPage.DAILY_FAVOURITES })
                 page == MenuPage.DAILY_FAVOURITES -> DailyFavouritesPage(actions, onBack = { page = MenuPage.DAILY })
                 page == MenuPage.MORE -> MorePage(fastPreview, chipPreviews, actions, back) { page = it }
-                page == MenuPage.DAHLIA -> DahliaPage(actions, back, onProPage = { page = MenuPage.PRO })
+                page == MenuPage.DAHLIA -> DahliaPage(actions, back, onProPage = { page = MenuPage.PRO }, onWidgets = { page = MenuPage.WIDGETS })
                 page == MenuPage.PRO -> ProPage(onBack = { page = MenuPage.DAHLIA })
+                page == MenuPage.WIDGETS -> WidgetsPage(actions, onBack = { page = MenuPage.DAHLIA })
                 else -> {
                     Current(params, image)
                     KeepRow(busy, actions)
@@ -373,7 +379,7 @@ private fun DailyFavouritesPage(actions: MenuActions, onBack: () -> Unit) {
 private const val DAILY_COLUMNS = 3
 
 @Composable
-private fun DahliaPage(actions: MenuActions, onBack: () -> Unit, onProPage: () -> Unit) {
+private fun DahliaPage(actions: MenuActions, onBack: () -> Unit, onProPage: () -> Unit, onWidgets: () -> Unit) {
     val t = LocalTokens.current
     PageTop(stringResource(R.string.menu_dahlia), null, onBack)
     Column(Modifier.padding(top = Spacing.sm)) {
@@ -382,12 +388,56 @@ private fun DahliaPage(actions: MenuActions, onBack: () -> Unit, onProPage: () -
             stringResource(if (actions.proActive) R.string.menu_pro_active else R.string.menu_pro_detail),
             onClick = if (actions.proActive) onProPage else actions.onPro) { Chevron() }
         HorizontalDivider(color = t.outline)
+        // Each widget's own mandala and colours (ADR-0020, 5 November 2026); a long press on a widget opens the same page.
+        MenuRow(EditorIcons.Widgets, stringResource(R.string.menu_widgets),
+            if (actions.widgets.isEmpty()) stringResource(R.string.menu_widgets_none)
+                else pluralStringResource(R.plurals.menu_widgets_count, actions.widgets.size, actions.widgets.size),
+            onClick = onWidgets) { Chevron() }
+        HorizontalDivider(color = t.outline)
         GuideRow()
         HorizontalDivider(color = t.outline)
         // Beside the guide: the short tour of the editor that a new install starts with (DM-22).
         MenuRow(EditorIcons.Tour, stringResource(R.string.menu_tour), onClick = actions.onTour) { Chevron() }
         HorizontalDivider(color = t.outline)
         MenuRow(EditorIcons.Info, stringResource(R.string.menu_about), onClick = actions.onAbout) { Chevron() }
+    }
+}
+
+/** The placed widgets by size, with what each shows; a tap opens its settings page. */
+@Composable
+private fun WidgetsPage(actions: MenuActions, onBack: () -> Unit) {
+    val t = LocalTokens.current
+    PageTop(stringResource(R.string.menu_widgets), stringResource(R.string.menu_widgets_about), onBack, stringResource(R.string.menu_dahlia))
+    Column(Modifier.padding(top = Spacing.md)) {
+        for (widget in actions.widgets) {
+            HorizontalDivider(color = t.outline)
+            val thumb = remember(widget.favourite?.id) { widget.favourite?.let { Thumbnails.decode(it.thumbnailData) } }
+            val name = widget.favourite?.let { favouriteName(it) }
+            Row(
+                Modifier.fillMaxWidth().clickable { actions.onWidget(widget.id) }.padding(vertical = Spacing.md),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(Spacing.md),
+            ) {
+                Thumb(thumb, Modifier.size(Sizes.favourite / 2))
+                Column(Modifier.weight(1f)) {
+                    Text(stringResource(R.string.widget_settings_title, stringResource(R.string.widget_size, widget.columns, widget.rows)),
+                        style = MaterialTheme.typography.bodyLarge)
+                    Text(
+                        when {
+                            name == null -> stringResource(R.string.widget_empty)
+                            widget.fixed -> name
+                            else -> stringResource(R.string.menu_widget_daily, name)
+                        },
+                        style = MaterialTheme.typography.bodySmall, color = t.textMuted, maxLines = 2, overflow = TextOverflow.Ellipsis,
+                    )
+                }
+                Chevron()
+            }
+        }
+        HorizontalDivider(color = t.outline)
+        if (actions.widgets.isEmpty()) {
+            Text(stringResource(R.string.menu_widgets_empty), style = MaterialTheme.typography.bodySmall, color = t.textMuted, modifier = Modifier.padding(top = Spacing.md))
+        }
     }
 }
 

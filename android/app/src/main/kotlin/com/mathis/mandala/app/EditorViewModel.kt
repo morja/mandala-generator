@@ -83,6 +83,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -135,6 +137,9 @@ data class ExportProgress(val label: String, val share: Float? = null)
 /** Whether the daily wallpaper is on, and the favourite it set last. */
 data class DailyState(val on: Boolean, val lastName: String?, val chosen: Set<String>? = null)
 
+/** A home screen widget for the menu's Widgets page: its size in cells, what it shows, and whether that is fixed. */
+data class PlacedWidget(val id: Int, val columns: Int, val rows: Int, val favourite: Favorite?, val fixed: Boolean)
+
 /** The pair sheet's lock and home screen (ADR-0014). */
 data class PairPreview(val lock: ImageBitmap? = null, val home: ImageBitmap? = null, val rendering: Boolean = true)
 
@@ -160,8 +165,11 @@ data class ProRequest(
 data class HistoryState(val canGoBack: Boolean, val canGoForward: Boolean)
 
 sealed interface EditorEvent {
-    /** `undo` restores what the message reports; changes to the mandala are undone with Back instead. */
-    data class Message(val text: String, val undo: (() -> Unit)? = null) : EditorEvent
+    /**
+     * `undo` restores what the message reports; changes to the mandala are undone with Back instead.
+     * With an `action` label the button says that instead of Undo, and the message stays a little longer.
+     */
+    data class Message(val text: String, val undo: (() -> Unit)? = null, val action: String? = null) : EditorEvent
     data class ShareImage(val uri: Uri, val type: String = "image/png") : EditorEvent
 }
 
@@ -569,7 +577,11 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
             }
         }
         viewModelScope.launch {
-            _favorites.drop(1).collectLatest { f -> withContext(Dispatchers.IO) { runCatching { favoritesStore.save(f) } } }
+            _favorites.drop(1).collectLatest { f ->
+                withContext(Dispatchers.IO) { runCatching { favoritesStore.save(f) } }
+                // A deleted favourite, or a new one that is now first in turn, changes what widgets show.
+                WidgetRedraw.requestChanged(getApplication())
+            }
         }
         viewModelScope.launch {
             @OptIn(FlowPreview::class)
@@ -953,7 +965,17 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         return favorite.id
     }
 
-    /** Opens a favourite by id, as the home screen widget asks for with a tap (ADR-0020). */
+    /**
+     * A tap on a home screen widget opens the app as it was; only when the widget shows another
+     * mandala, a message offers it (ADR-0020, amended 5 November 2026).
+     */
+    fun offerWidgetFavourite(id: String) {
+        val favourite = _favorites.value.firstOrNull { it.id == id } ?: return
+        if (favourite.parameters == _params.value) return
+        _events.trySend(EditorEvent.Message(string(R.string.message_widget_offer), undo = { applyFavoriteId(id) }, action = string(R.string.message_widget_open)))
+    }
+
+    /** Opens a favourite by id: the widget's, when its message is answered with Open. */
     fun applyFavoriteId(id: String) {
         _favorites.value.firstOrNull { it.id == id }?.let(::applyFavorite)
     }
@@ -1341,6 +1363,36 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
 
     init {
         DailyWallpaper.ensureScheduled(application)
+        // Also after the first start wrote the starter favourites: widgets placed before it fill now.
+        WidgetRedraw.requestChanged(application)
+        viewModelScope.launch {
+            // With Pro the daily turn moves on, so the widgets that follow it may change.
+            pro.state.map { it.unlocked }.distinctUntilChanged().drop(1).collect { WidgetRedraw.requestChanged(application) }
+        }
+    }
+
+    /** The placed home screen widgets, for the menu; read again whenever the menu opens or comes back. */
+    private val _widgets = MutableStateFlow<List<PlacedWidget>>(emptyList())
+    val widgets: StateFlow<List<PlacedWidget>> = _widgets.asStateFlow()
+
+    fun loadWidgets() {
+        val app = getApplication<Application>()
+        viewModelScope.launch {
+            _widgets.value = withContext(Dispatchers.IO) {
+                runCatching {
+                    val manager = android.appwidget.AppWidgetManager.getInstance(app)
+                    val store = WidgetSettingsStore.of(app)
+                    val favourites = _favorites.value
+                    val daily = DailyWallpaper.today(app, favourites)
+                    MandalaWidget.ids(app).sorted().map { id ->
+                        val (columns, rows) = MandalaWidget.cells(manager.getAppWidgetOptions(id))
+                        val settings = store.load(id)
+                        val favourite = WidgetChoice.favourite(settings, favourites, daily)
+                        PlacedWidget(id, columns, rows, favourite, fixed = favourite != null && favourite.id == settings.favouriteId)
+                    }
+                }.getOrDefault(emptyList())
+            }
+        }
     }
 
     /** Switching it on sets the first one right away, so it shows at once; then every morning. */
@@ -1350,11 +1402,13 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         val chosen = DailyWallpaper.toggled(_daily.value.chosen, _favorites.value.map { it.id }, id)
         DailyWallpaper.setChosen(app, chosen)
         _daily.update { it.copy(chosen = chosen) }
+        WidgetRedraw.requestChanged(app)
     }
 
     fun chooseAllDailyFavourites() {
         DailyWallpaper.setChosen(getApplication(), null)
         _daily.update { it.copy(chosen = null) }
+        WidgetRedraw.requestChanged(getApplication())
     }
 
     fun setDaily(on: Boolean) {
@@ -1376,7 +1430,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         viewModelScope.launch {
             try {
                 val name = withContext(Dispatchers.Default) {
-                    DailyWallpaper.setNext(app, threads).also { runCatching { MandalaWidget.refresh(app) } }
+                    DailyWallpaper.setNext(app, threads).also { MandalaWidget.refresh(app) }
                 }
                 _daily.update { it.copy(lastName = DailyWallpaper.lastName(app)) }
                 _export.value = null

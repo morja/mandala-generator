@@ -93,4 +93,7 @@
     <string name="play_depth">Profondità</string>
     <string name="play_colour">Colore</string>
     <string name="play_field_description">Campo di gioco: trascina per cambiare il mandala</string>
+    <!-- A tap on the widget (ADR-0020, 5 November 2026) -->
+    <string name="message_widget_offer">Aprire il mandala del widget?</string>
+    <string name="message_widget_open">Apri</string>
 </resources>

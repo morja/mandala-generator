@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Before a widget is first drawn it follows the phone; the values themselves are in values/widget.xml. -->
 <resources>
-    <color name="widget_surface">#FF121110</color>
-    <color name="widget_text">#FFE6E1DB</color>
-    <color name="widget_muted">#FF9C948B</color>
+    <color name="widget_surface">@color/widget_surface_dark</color>
+    <color name="widget_text">@color/widget_text_dark</color>
+    <color name="widget_muted">@color/widget_muted_dark</color>
 </resources>

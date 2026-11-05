@@ -23,7 +23,10 @@ import com.mathis.mandala.app.ui.EditorScreen
 import com.mathis.mandala.app.ui.theme.MandalaTheme
 
 class MainActivity : ComponentActivity() {
-    /** A favourite the home screen widget asked to open (ADR-0020); taken once the editor is there. */
+    /**
+     * The favourite of the home screen widget that was tapped (ADR-0020, amended 5 November 2026). The
+     * app opens as it was; the editor only offers this one in a message, once.
+     */
     private var widgetFavourite by mutableStateOf<String?>(null)
 
     override fun onNewIntent(intent: Intent) {
@@ -33,8 +36,9 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // Not again after a rotation, when the editor already shows it.
-        if (savedInstanceState == null) widgetFavourite = intent.getStringExtra(MandalaWidget.EXTRA_FAVOURITE_ID)
+        // Not again after a rotation, nor when Android brings back the widget's old intent from the recent apps.
+        val fromHistory = intent.flags and Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY != 0
+        if (savedInstanceState == null && !fromHistory) widgetFavourite = intent.getStringExtra(MandalaWidget.EXTRA_FAVOURITE_ID)
         val appearance = Appearance(this)
         setContent {
             var light by remember { mutableStateOf(appearance.light) }
@@ -54,13 +58,18 @@ class MainActivity : ComponentActivity() {
                 Box(if (about) Modifier.clearAndSetSemantics {} else Modifier) {
                     val vm: EditorViewModel = viewModel()
                     LaunchedEffect(widgetFavourite) {
-                        widgetFavourite?.let { vm.applyFavoriteId(it); widgetFavourite = null }
+                        widgetFavourite?.let { vm.offerWidgetFavourite(it); widgetFavourite = null }
                     }
                     EditorScreen(
                         vm,
                         onAbout = { about = true },
                         lightTheme = light,
-                        onLightTheme = { light = it; appearance.light = it },
+                        onLightTheme = {
+                            light = it
+                            appearance.light = it
+                            // Widgets "like the app" change colour with it.
+                            WidgetRedraw.requestChanged(this@MainActivity)
+                        },
                     )
                 }
                 if (about) AboutScreen(onClose = { about = false })

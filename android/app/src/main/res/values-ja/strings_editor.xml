@@ -93,4 +93,7 @@
     <string name="play_depth">深さ</string>
     <string name="play_colour">色</string>
     <string name="play_field_description">プレイフィールド: ドラッグしてマンダラを変える</string>
+    <!-- A tap on the widget (ADR-0020, 5 November 2026) -->
+    <string name="message_widget_offer">ウィジェットのマンダラを開きますか？</string>
+    <string name="message_widget_open">開く</string>
 </resources>

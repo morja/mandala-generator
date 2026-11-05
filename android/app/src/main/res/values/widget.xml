@@ -1,10 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- The home screen widget (ADR-0020). RemoteViews cannot use the Compose tokens, so these repeat
-     the values of ui/theme/Tokens.kt (light here, dark in values-night); keep them in step. -->
+     the surface and text values of ui/theme/Tokens.kt; keep them in step. Each widget picks light or
+     dark itself (like the app, light or dark), and MandalaWidget sets these on its views. -->
 <resources>
-    <color name="widget_surface">#FFFFFDFA</color>
-    <color name="widget_text">#FF221F1C</color>
-    <color name="widget_muted">#FF5F5851</color>
+    <color name="widget_surface_light">#FFFFFDFA</color>
+    <color name="widget_text_light">#FF221F1C</color>
+    <color name="widget_muted_light">#FF5F5851</color>
+    <color name="widget_surface_dark">#FF121110</color>
+    <color name="widget_text_dark">#FFE6E1DB</color>
+    <color name="widget_muted_dark">#FF9C948B</color>
+    <!-- Only for the moment before a widget is first drawn, and the picker's preview: the phone's mode. -->
+    <color name="widget_surface">@color/widget_surface_light</color>
+    <color name="widget_text">@color/widget_text_light</color>
+    <color name="widget_muted">@color/widget_muted_light</color>
     <dimen name="widget_radius">16dp</dimen>
     <dimen name="widget_padding">16dp</dimen>
     <dimen name="widget_gap">8dp</dimen>

@@ -93,4 +93,7 @@
     <string name="play_depth">Глубина</string>
     <string name="play_colour">Цвет</string>
     <string name="play_field_description">Игровое поле: ведите, чтобы менять мандалу</string>
+    <!-- A tap on the widget (ADR-0020, 5 November 2026) -->
+    <string name="message_widget_offer">Открыть мандалу из виджета?</string>
+    <string name="message_widget_open">Открыть</string>
 </resources>

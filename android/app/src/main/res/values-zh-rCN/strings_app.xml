@@ -108,4 +108,15 @@
     <string name="widget_label">今日曼陀罗</string>
     <string name="widget_description">把今天的收藏放到主屏幕。方形只显示图片，宽版同时显示文字。Pro 每天早上换一个。</string>
     <string name="widget_empty">在应用中添加收藏后，会显示在这里。</string>
+    <!-- Home screen widget settings (ADR-0020, 5 November 2026) -->
+    <string name="widget_settings_title">小组件 %1$s</string>
+    <string name="widget_appearance">外观</string>
+    <string name="widget_look_app">跟随应用</string>
+    <string name="widget_look_light">浅色</string>
+    <string name="widget_look_dark">深色</string>
+    <string name="widget_mandala">曼陀罗</string>
+    <string name="widget_daily">每日轮换</string>
+    <string name="widget_daily_pro">每日壁纸的收藏轮流显示，每天早上更换。</string>
+    <string name="widget_daily_free">每日壁纸收藏中的第一个；有 Pro 时每天早上更换。</string>
+    <string name="widget_fixed">或始终显示同一个收藏</string>
 </resources>

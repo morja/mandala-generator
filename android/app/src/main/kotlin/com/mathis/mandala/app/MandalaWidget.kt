@@ -7,51 +7,71 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.RemoteViews
+import androidx.compose.ui.graphics.asAndroidBitmap
+import androidx.core.content.ContextCompat
 import com.mathis.mandala.core.Favorite
 import com.mathis.mandala.core.MandalaParameters
 import com.mathis.mandala.core.MandalaRenderer
 import com.mathis.mandala.core.Quote
 import com.mathis.mandala.core.Quotes
 import com.mathis.mandala.core.RenderOptions
+import java.io.File
 import java.time.LocalDate
-import java.util.concurrent.Executors
 
 /**
- * "Mandala of the day" on the home screen (ADR-0020): today's favourite of the daily wallpaper's
- * turn. Square sizes (2×2 up to 4×4) show the picture alone; a wide one (4×2) shows the picture
- * without its text and the words beside it. A tap opens that favourite in the editor. With Pro it
- * moves on every morning with the daily wallpaper's run; without Pro it stays on the first one.
- * Plain RemoteViews, so no new package (Glance would be one).
+ * "Mandala of the day" on the home screen (ADR-0020): the daily wallpaper's turn or a fixed favourite,
+ * per widget, in the app's colours or always light or dark. Square sizes (2×2 up to 4×4) show the
+ * picture alone; a wide one (4×2) shows the picture without its text and the words beside it. A tap
+ * opens the app as it was and offers that favourite. The receiver only asks for a redraw;
+ * [WidgetRenderJob] draws each widget on its own. Plain RemoteViews, so no new package.
  */
 class MandalaWidget : AppWidgetProvider() {
 
-    override fun onUpdate(context: Context, manager: AppWidgetManager, ids: IntArray) = drawAsync(context, ids)
+    override fun onUpdate(context: Context, manager: AppWidgetManager, ids: IntArray) = WidgetRedraw.request(context, ids.toList())
 
     override fun onAppWidgetOptionsChanged(context: Context, manager: AppWidgetManager, id: Int, options: Bundle) =
-        drawAsync(context, intArrayOf(id))
+        WidgetRedraw.request(context, listOf(id))
+
+    override fun onDeleted(context: Context, ids: IntArray) {
+        val store = WidgetSettingsStore.of(context)
+        ids.forEach(store::remove)
+    }
+
+    /** Android gave restored widgets new ids; their settings move along. */
+    override fun onRestored(context: Context, oldIds: IntArray, newIds: IntArray) {
+        val store = WidgetSettingsStore.of(context)
+        oldIds.zip(newIds).forEach { (from, to) -> store.move(from, to) }
+        WidgetRedraw.request(context, newIds.toList())
+    }
 
     override fun onEnabled(context: Context) = DailyWallpaper.ensureScheduled(context)
 
     override fun onDisabled(context: Context) = DailyWallpaper.cancelIfIdle(context)
 
-    /** Rendering takes a moment, so it runs off the main thread while the broadcast is kept open. */
-    private fun drawAsync(context: Context, ids: IntArray) {
-        val pending = goAsync()
-        val app = context.applicationContext
-        worker.execute {
-            try {
-                draw(app, ids)
-                DailyWallpaper.ensureScheduled(app)
-            } finally {
-                pending.finish()
+    /** What every widget needs to pick its favourite and colours; read once per widget, so a change during a run counts. */
+    class Inputs(val favorites: List<Favorite>, val dailyTurn: Favorite?, val appLight: Boolean) {
+        companion object {
+            fun load(context: Context): Inputs {
+                val favorites = FavoritesStore(File(context.filesDir, "favorites.json")).load()
+                return Inputs(favorites, DailyWallpaper.today(context, favorites), Appearance(context).light)
             }
         }
     }
 
+    /** The widget's colours from `res/values/widget.xml`, set on the views since the phone's night mode no longer decides. */
+    private class Colours(context: Context, val light: Boolean) {
+        val background = if (light) R.drawable.widget_background_light else R.drawable.widget_background_dark
+        val text = ContextCompat.getColor(context, if (light) R.color.widget_text_light else R.color.widget_text_dark)
+        val muted = ContextCompat.getColor(context, if (light) R.color.widget_muted_light else R.color.widget_muted_dark)
+    }
+
     companion object {
         const val EXTRA_FAVOURITE_ID = "com.mathis.mandala.app.favourite_id"
+
+        private const val TAG = "MandalaWidget"
 
         /** Longer side of the rendered picture: sharp on a 4×4 widget, small enough for a RemoteViews bitmap. */
         private const val SIDE = 512
@@ -59,60 +79,96 @@ class MandalaWidget : AppWidgetProvider() {
         /** Wider than this (width over height) counts as the wide layout with words. */
         private const val WIDE_RATIO = 1.3
 
-        private val worker = Executors.newSingleThreadExecutor()
-
         fun isPlaced(context: Context): Boolean = ids(context).isNotEmpty()
 
-        private fun ids(context: Context): IntArray =
+        fun ids(context: Context): IntArray =
             AppWidgetManager.getInstance(context).getAppWidgetIds(ComponentName(context, MandalaWidget::class.java))
 
-        /** Draws every placed widget again, after the morning run or a new choice; call off the main thread. */
-        fun refresh(context: Context) {
-            val ids = ids(context)
-            if (ids.isNotEmpty()) draw(context.applicationContext, ids)
+        /** Draws every placed widget again, after the morning run or a new choice. */
+        fun refresh(context: Context) = WidgetRedraw.requestAll(context)
+
+        /** The favourite and colours a widget shows with the current settings. */
+        fun choice(context: Context, id: Int, inputs: Inputs): Pair<Favorite?, Boolean> {
+            val settings = WidgetSettingsStore.of(context).load(id)
+            return WidgetChoice.favourite(settings, inputs.favorites, inputs.dailyTurn) to WidgetChoice.isLight(settings.look, inputs.appLight)
         }
 
-        private fun draw(context: Context, ids: IntArray) {
-            val manager = AppWidgetManager.getInstance(context)
-            val favourite = DailyWallpaper.today(context)
-            for (id in ids) {
-                val views = if (favourite == null) empty(context) else picture(context, favourite, manager.getAppWidgetOptions(id))
-                manager.updateAppWidget(id, views)
+        /**
+         * Draws one widget and remembers what it shows. A picture that cannot be rendered falls back to
+         * the favourite's thumbnail; the empty state only shows when there is no favourite at all.
+         */
+        internal fun draw(context: Context, manager: AppWidgetManager, id: Int, inputs: Inputs) {
+            val (favourite, light) = choice(context, id, inputs)
+            val colours = Colours(context, light)
+            val views = if (favourite == null) {
+                empty(context, id, colours)
+            } else {
+                try {
+                    picture(context, id, favourite, manager.getAppWidgetOptions(id), colours)
+                } catch (e: Exception) {
+                    Log.w(TAG, "Widget $id: rendering failed, showing the thumbnail", e)
+                    thumbnail(context, id, favourite, colours) ?: return
+                } catch (e: OutOfMemoryError) {
+                    Log.w(TAG, "Widget $id: out of memory, showing the thumbnail", e)
+                    thumbnail(context, id, favourite, colours) ?: return
+                }
             }
+            manager.updateAppWidget(id, views)
+            WidgetSettingsStore.of(context).setShown(id, WidgetChoice.shownKey(favourite, light))
         }
 
         /** Height over width of the placed widget; in portrait it is as wide as its smallest width and as high as its largest height. */
-        private fun aspect(options: Bundle): Double {
+        fun aspect(options: Bundle): Double {
             val width = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH)
             val height = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT)
             return if (width > 0 && height > 0) height.toDouble() / width else 1.0
         }
 
-        private fun empty(context: Context) = RemoteViews(context.packageName, R.layout.widget_empty).apply {
-            setOnClickPendingIntent(R.id.widget_root, open(context, null))
+        /** Whether the widget is wide enough for the words beside the picture. */
+        fun isWide(options: Bundle): Boolean = 1 / aspect(options) > WIDE_RATIO
+
+        /** Its size in launcher cells, columns by rows, as the widget stands in portrait. */
+        fun cells(options: Bundle): Pair<Int, Int> =
+            WidgetChoice.cells(options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH)) to
+                WidgetChoice.cells(options.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT))
+
+        private fun empty(context: Context, id: Int, colours: Colours) = RemoteViews(context.packageName, R.layout.widget_empty).apply {
+            setInt(R.id.widget_root, "setBackgroundResource", colours.background)
+            setTextColor(R.id.widget_empty_text, colours.muted)
+            setOnClickPendingIntent(R.id.widget_root, open(context, id, null))
         }
 
-        private fun picture(context: Context, favourite: Favorite, options: Bundle): RemoteViews {
+        private fun picture(context: Context, id: Int, favourite: Favorite, options: Bundle, colours: Colours): RemoteViews {
             val params = favourite.parameters
-            val aspect = aspect(options)
-            return if (1 / aspect <= WIDE_RATIO) {
-                RemoteViews(context.packageName, R.layout.widget_square).apply {
-                    // Launcher cells are rarely square: the whole mandala in the widget's own shape, the background going on.
-                    setImageViewBitmap(R.id.widget_image, render(params, aspect))
-                    setOnClickPendingIntent(R.id.widget_root, open(context, favourite.id))
-                }
+            return if (!isWide(options)) {
+                square(context, id, favourite, colours, render(params, aspect(options)))
             } else {
                 val words = words(context, params)
                 RemoteViews(context.packageName, R.layout.widget_wide).apply {
+                    setInt(R.id.widget_root, "setBackgroundResource", colours.background)
                     // The words stand beside the picture, so the picture goes without them.
                     setImageViewBitmap(R.id.widget_image, render(params.copy(textLayer = params.textLayer.copy(isEnabled = false)), 1.0))
                     setTextViewText(R.id.widget_quote, words.text)
+                    setTextColor(R.id.widget_quote, colours.text)
                     setTextViewText(R.id.widget_author, if (words.author.isBlank()) "" else "— " + words.author)
+                    setTextColor(R.id.widget_author, colours.muted)
                     setViewVisibility(R.id.widget_author, if (words.author.isBlank()) View.GONE else View.VISIBLE)
-                    setOnClickPendingIntent(R.id.widget_root, open(context, favourite.id))
+                    setOnClickPendingIntent(R.id.widget_root, open(context, id, favourite.id))
                 }
             }
         }
+
+        // Launcher cells are rarely square: the whole mandala in the widget's own shape, the background going on.
+        private fun square(context: Context, id: Int, favourite: Favorite, colours: Colours, image: android.graphics.Bitmap) =
+            RemoteViews(context.packageName, R.layout.widget_square).apply {
+                setInt(R.id.widget_root, "setBackgroundResource", colours.background)
+                setImageViewBitmap(R.id.widget_image, image)
+                setOnClickPendingIntent(R.id.widget_root, open(context, id, favourite.id))
+            }
+
+        /** The favourite's stored 128 px thumbnail, when the full picture cannot be made. */
+        private fun thumbnail(context: Context, id: Int, favourite: Favorite, colours: Colours): RemoteViews? =
+            Thumbnails.decode(favourite.thumbnailData)?.let { square(context, id, favourite, colours, it.asAndroidBitmap()) }
 
         /** The picture with `aspect` as height over width, its longer side [SIDE]. */
         private fun render(params: MandalaParameters, aspect: Double): android.graphics.Bitmap {
@@ -135,12 +191,13 @@ class MandalaWidget : AppWidgetProvider() {
         internal fun quoteOfTheDay(quotes: List<Quote>, day: LocalDate): Quote =
             if (quotes.isEmpty()) Quote("") else quotes[day.toEpochDay().mod(quotes.size)]
 
-        private fun open(context: Context, favouriteId: String?): PendingIntent {
+        /** Opens the app as it was; the favourite only comes as an offer (ADR-0020, amended 5 November 2026). */
+        private fun open(context: Context, id: Int, favouriteId: String?): PendingIntent {
             val intent = Intent(context, MainActivity::class.java)
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
                 .apply { if (favouriteId != null) putExtra(EXTRA_FAVOURITE_ID, favouriteId) }
-            return PendingIntent.getActivity(context, favouriteId.hashCode(), intent,
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+            // One request code per widget, so two widgets with different favourites keep their own extras.
+            return PendingIntent.getActivity(context, id, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
         }
     }
 }

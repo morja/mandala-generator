@@ -45,7 +45,7 @@
     <string name="menu_daily_some">%1$d из %2$d</string>
     <string name="menu_daily_pick_about">Чередуются только отмеченные мандалы из избранного, в его порядке. Добавленная позже войдёт в смену, когда вы отметите её здесь.</string>
     <string name="menu_daily_choose_all">Отметить все</string>
-    <string name="menu_daily_widget_note">Виджет «Мандала дня» показывает то же избранное; с Pro он меняется каждое утро, даже если ежедневные обои выключены.</string>
+    <string name="menu_daily_widget_note">Виджет «Мандала дня» показывает то же избранное, если у него нет своей мандалы; с Pro он меняется каждое утро, даже если ежедневные обои выключены.</string>
     <string name="menu_open_file_detail">Настройки мандалы, сохранённые в файл в этом приложении или в приложении для macOS</string>
     <string name="menu_save_settings_detail">Эта мандала в виде файла, чтобы сохранить её или открыть на Mac</string>
     <string name="menu_more">Ещё</string>
@@ -130,4 +130,16 @@
     <string name="save_format">Формат</string>
     <string name="save_adjust_pro_quote">Яркость, контраст, насыщенность и цитата, движущаяся с мандалой, доступны в Pro.</string>
     <string name="save_adjust_quote_moves">цитата движется вместе</string>
+    <!-- Widgets on the Dahlia page (ADR-0020, 5 November 2026) -->
+    <string name="menu_widgets">Виджеты</string>
+    <string name="menu_widgets_none">Пока нет на главном экране</string>
+    <string name="menu_widgets_about">У каждого виджета своя мандала и свои цвета. Настройки также открываются долгим нажатием на виджет.</string>
+    <string name="menu_widgets_empty">Чтобы добавить, нажмите и удерживайте пустое место на главном экране, выберите «Виджеты», затем Dahlia.</string>
+    <string name="menu_widget_daily">%1$s · Смена каждый день</string>
+    <plurals name="menu_widgets_count">
+        <item quantity="one">%d на главном экране</item>
+        <item quantity="few">%d на главном экране</item>
+        <item quantity="many">%d на главном экране</item>
+        <item quantity="other">%d на главном экране</item>
+    </plurals>
 </resources>

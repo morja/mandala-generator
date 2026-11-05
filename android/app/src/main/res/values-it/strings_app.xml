@@ -112,4 +112,15 @@
     <string name="widget_label">Mandala del giorno</string>
     <string name="widget_description">Il preferito del giorno sulla schermata Home. Quadrato mostra l\'immagine, largo aggiunge le parole. Con Pro uno nuovo ogni mattina.</string>
     <string name="widget_empty">Aggiungi un preferito nell\'app per vederlo qui.</string>
+    <!-- Home screen widget settings (ADR-0020, 5 November 2026) -->
+    <string name="widget_settings_title">Widget %1$s</string>
+    <string name="widget_appearance">Aspetto</string>
+    <string name="widget_look_app">Come l\'app</string>
+    <string name="widget_look_light">Chiaro</string>
+    <string name="widget_look_dark">Scuro</string>
+    <string name="widget_mandala">Mandala</string>
+    <string name="widget_daily">Cambio quotidiano</string>
+    <string name="widget_daily_pro">I preferiti dello sfondo del giorno a turno, uno nuovo ogni mattina.</string>
+    <string name="widget_daily_free">Il primo dei preferiti dello sfondo del giorno; con Pro uno nuovo ogni mattina.</string>
+    <string name="widget_fixed">Oppure sempre lo stesso preferito</string>
 </resources>

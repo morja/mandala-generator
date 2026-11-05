@@ -28,6 +28,22 @@
             android:name=".DailyWallpaperJob"
             android:exported="false"
             android:permission="android.permission.BIND_JOB_SERVICE" />
+        <!-- Draws the home screen widgets one by one, outside the widget broadcast (ADR-0020). -->
+        <service
+            android:name=".WidgetRenderJob"
+            android:exported="false"
+            android:permission="android.permission.BIND_JOB_SERVICE" />
+        <!-- A widget's own settings: offered by a long press on it, and from the menu (ADR-0020). Its
+             own task, so the launcher returns to the home screen and the editor stays as it was. -->
+        <activity
+            android:name=".WidgetSettingsActivity"
+            android:excludeFromRecents="true"
+            android:exported="true"
+            android:taskAffinity="">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
+            </intent-filter>
+        </activity>
         <!-- Mandala of the day on the home screen (ADR-0020). -->
         <receiver
             android:name=".MandalaWidget"

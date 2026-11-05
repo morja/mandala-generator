@@ -39,7 +39,7 @@
     <string name="menu_daily_some">%2$d개 중 %1$d개</string>
     <string name="menu_daily_pick_about">체크한 즐겨찾기만 즐겨찾기 순서대로 번갈아 나옵니다. 나중에 추가한 즐겨찾기는 여기서 체크하면 포함됩니다.</string>
     <string name="menu_daily_choose_all">모두 체크</string>
-    <string name="menu_daily_widget_note">홈 화면 위젯 ‘오늘의 만다라’도 같은 즐겨찾기를 보여 줍니다. Pro는 매일 배경화면이 꺼져 있어도 매일 아침 바뀝니다.</string>
+    <string name="menu_daily_widget_note">홈 화면 위젯 ‘오늘의 만다라’도 따로 고른 즐겨찾기가 없으면 같은 즐겨찾기를 보여 줍니다. Pro는 매일 배경화면이 꺼져 있어도 매일 아침 바뀝니다.</string>
     <string name="menu_open_file_detail">이 앱이나 macOS 앱에서 파일로 저장한 만다라 설정</string>
     <string name="menu_save_settings_detail">이 만다라를 파일로 저장해 보관하거나 Mac에서 열 수 있습니다</string>
     <string name="menu_more">더 보기</string>
@@ -124,4 +124,13 @@
     <string name="save_format">형식</string>
     <string name="save_adjust_pro_quote">밝기, 대비, 채도, 만다라와 함께 움직이는 인용문은 Pro 기능입니다.</string>
     <string name="save_adjust_quote_moves">인용문도 함께 이동</string>
+    <!-- Widgets on the Dahlia page (ADR-0020, 5 November 2026) -->
+    <string name="menu_widgets">위젯</string>
+    <string name="menu_widgets_none">아직 홈 화면에 없음</string>
+    <string name="menu_widgets_about">위젯마다 만다라와 색을 따로 정할 수 있습니다. 위젯을 길게 눌러도 설정이 열립니다.</string>
+    <string name="menu_widgets_empty">추가하려면 홈 화면의 빈 곳을 길게 누르고 위젯을 고른 뒤 Dahlia를 선택하세요.</string>
+    <string name="menu_widget_daily">%1$s · 매일 바뀜</string>
+    <plurals name="menu_widgets_count">
+        <item quantity="other">홈 화면에 %d개</item>
+    </plurals>
 </resources>

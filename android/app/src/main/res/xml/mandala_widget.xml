@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Mandala of the day (ADR-0020): 2×2 at first, square up to 4×4, or 4×2 with the words. -->
+<!-- Mandala of the day (ADR-0020): 2×2 at first, square up to 4×4, or 4×2 with the words. Placing it
+     needs no settings (the defaults apply); a long press offers them later. -->
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:configure="com.mathis.mandala.app.WidgetSettingsActivity"
     android:description="@string/widget_description"
-    android:initialLayout="@layout/widget_empty"
+    android:initialLayout="@layout/widget_loading"
     android:minWidth="110dp"
     android:minHeight="110dp"
     android:minResizeWidth="110dp"
@@ -12,4 +14,5 @@
     android:targetCellWidth="2"
     android:targetCellHeight="2"
     android:updatePeriodMillis="0"
-    android:widgetCategory="home_screen" />
+    android:widgetCategory="home_screen"
+    android:widgetFeatures="reconfigurable|configuration_optional" />

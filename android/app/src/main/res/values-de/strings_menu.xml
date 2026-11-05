@@ -41,7 +41,7 @@
     <string name="menu_daily_some">%1$d von %2$d</string>
     <string name="menu_daily_pick_about">Nur die angehakten Favoriten wechseln sich ab, in der Reihenfolge deiner Favoriten. Ein später hinzugefügter Favorit kommt dazu, sobald du ihn hier anhakst.</string>
     <string name="menu_daily_choose_all">Alle anhaken</string>
-    <string name="menu_daily_widget_note">Das Widget „Mandala des Tages“ für den Startbildschirm zeigt dieselben Favoriten; mit Pro wechselt es jeden Morgen, auch wenn der Tageshintergrund aus ist.</string>
+    <string name="menu_daily_widget_note">Das Widget „Mandala des Tages“ für den Startbildschirm zeigt dieselben Favoriten, wenn es keinen eigenen hat; mit Pro wechselt es jeden Morgen, auch wenn der Tageshintergrund aus ist.</string>
     <string name="menu_open_file_detail">Als Datei gespeicherte Mandala-Einstellungen, aus dieser App oder der macOS-App</string>
     <string name="menu_save_settings_detail">Dieses Mandala als Datei, zum Aufheben oder zum Öffnen auf dem Mac</string>
     <string name="menu_more">Mehr</string>
@@ -126,4 +126,14 @@
     <string name="save_format">Format</string>
     <string name="save_adjust_pro_quote">Helligkeit, Kontrast, Sättigung und das mitbewegte Zitat gibt es mit Pro.</string>
     <string name="save_adjust_quote_moves">Zitat bewegt sich mit</string>
+    <!-- Widgets on the Dahlia page (ADR-0020, 5 November 2026) -->
+    <string name="menu_widgets">Widgets</string>
+    <string name="menu_widgets_none">Noch keins auf dem Startbildschirm</string>
+    <string name="menu_widgets_about">Jedes Widget hat sein eigenes Mandala und seine eigenen Farben. Auch ein langer Druck auf ein Widget öffnet seine Einstellungen.</string>
+    <string name="menu_widgets_empty">Zum Hinzufügen eine freie Stelle auf dem Startbildschirm lange drücken, „Widgets“ wählen, dann Dahlia.</string>
+    <string name="menu_widget_daily">%1$s · Täglicher Wechsel</string>
+    <plurals name="menu_widgets_count">
+        <item quantity="one">%d auf dem Startbildschirm</item>
+        <item quantity="other">%d auf dem Startbildschirm</item>
+    </plurals>
 </resources>

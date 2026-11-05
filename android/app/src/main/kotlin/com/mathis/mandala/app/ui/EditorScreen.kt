@@ -128,6 +128,7 @@ import com.mathis.mandala.core.MandalaParameters
 import com.mathis.mandala.core.VectorExport
 import androidx.compose.ui.res.stringResource
 import com.mathis.mandala.app.R
+import com.mathis.mandala.app.WidgetSettingsActivity
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -224,11 +225,12 @@ fun EditorScreen(
             when (event) {
                 is EditorEvent.Message -> {
                     // Short, also with Undo: with an action Compose would keep the message until it is tapped.
+                    // An offer with its own action (the widget's mandala) stays a little longer.
                     messageFor = vm.params.value
                     val result = snackbar.showSnackbar(
                         event.text,
-                        actionLabel = if (event.undo != null) undoLabel else null,
-                        duration = SnackbarDuration.Short,
+                        actionLabel = event.action ?: if (event.undo != null) undoLabel else null,
+                        duration = if (event.action != null) SnackbarDuration.Long else SnackbarDuration.Short,
                     )
                     messageFor = null
                     if (result == SnackbarResult.ActionPerformed) event.undo?.invoke()
@@ -326,6 +328,10 @@ fun EditorScreen(
     }
     LaunchedEffect(pro.unlocked) { if (pro.unlocked) vm.closePro() }
 
+    // The menu's Widgets page lists what each widget shows; read again when it opens and after its settings page.
+    val widgets by vm.widgets.collectAsStateWithLifecycle()
+    LaunchedEffect(showMenu) { if (showMenu) vm.loadWidgets() }
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { if (showMenu) vm.loadWidgets() }
     if (showMenu) {
         // Every entry but the dice closes the sheet, so its result or message shows.
         fun closing(action: () -> Unit): () -> Unit = { showMenu = false; vm.closeCandidate(); action() }
@@ -378,6 +384,8 @@ fun EditorScreen(
                 onLightTheme = onLightTheme,
                 onAbout = closing(onAbout),
                 onTour = closing(vm::startTour),
+                widgets = widgets,
+                onWidget = { id -> context.startActivity(WidgetSettingsActivity.intent(context, id)) },
                 proActive = pro.unlocked,
                 onPro = vm::showPro,
             ),

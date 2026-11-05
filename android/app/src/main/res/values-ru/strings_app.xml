@@ -114,4 +114,15 @@
     <string name="widget_label">Мандала дня</string>
     <string name="widget_description">Мандала дня из избранного на главном экране. Квадратный виджет показывает изображение, широкий — ещё и слова. С Pro каждое утро новая.</string>
     <string name="widget_empty">Добавьте мандалу в избранное в приложении, и она появится здесь.</string>
+    <!-- Home screen widget settings (ADR-0020, 5 November 2026) -->
+    <string name="widget_settings_title">Виджет %1$s</string>
+    <string name="widget_appearance">Оформление</string>
+    <string name="widget_look_app">Как в приложении</string>
+    <string name="widget_look_light">Светлое</string>
+    <string name="widget_look_dark">Тёмное</string>
+    <string name="widget_mandala">Мандала</string>
+    <string name="widget_daily">Смена каждый день</string>
+    <string name="widget_daily_pro">Избранное для ежедневных обоев по очереди, каждое утро новое.</string>
+    <string name="widget_daily_free">Первая из избранного для ежедневных обоев; с Pro каждое утро новая.</string>
+    <string name="widget_fixed">Или всегда одно и то же избранное</string>
 </resources>

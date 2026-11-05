@@ -43,7 +43,7 @@
     <string name="menu_daily_some">%1$d de %2$d</string>
     <string name="menu_daily_pick_about">Solo se alternan los favoritos marcados, en el orden de tus favoritos. Un favorito añadido después entra cuando lo marques aquí.</string>
     <string name="menu_daily_choose_all">Marcar todos</string>
-    <string name="menu_daily_widget_note">El widget «Mandala del día» muestra los mismos favoritos; con Pro cambia cada mañana, aunque el fondo diario esté desactivado.</string>
+    <string name="menu_daily_widget_note">El widget «Mandala del día» muestra los mismos favoritos si no tiene uno propio; con Pro cambia cada mañana, aunque el fondo diario esté desactivado.</string>
     <string name="menu_open_file_detail">Ajustes de mandala guardados como archivo, desde esta app o la app de macOS</string>
     <string name="menu_save_settings_detail">Este mandala como archivo, para guardarlo o abrirlo en el Mac</string>
     <string name="menu_more">Más</string>
@@ -128,4 +128,15 @@
     <string name="save_format">Formato</string>
     <string name="save_adjust_pro_quote">El brillo, el contraste, la saturación y la cita que se mueve con el mandala vienen con Pro.</string>
     <string name="save_adjust_quote_moves">la cita se mueve con él</string>
+    <!-- Widgets on the Dahlia page (ADR-0020, 5 November 2026) -->
+    <string name="menu_widgets">Widgets</string>
+    <string name="menu_widgets_none">Aún no hay ninguno en la pantalla de inicio</string>
+    <string name="menu_widgets_about">Cada widget tiene su propio mandala y sus colores. Al mantener pulsado un widget también se abren sus ajustes.</string>
+    <string name="menu_widgets_empty">Para añadir uno, mantén pulsado un espacio vacío de la pantalla de inicio, elige Widgets y luego Dahlia.</string>
+    <string name="menu_widget_daily">%1$s · Cambio diario</string>
+    <plurals name="menu_widgets_count">
+        <item quantity="one">%d en la pantalla de inicio</item>
+        <item quantity="many">%d en la pantalla de inicio</item>
+        <item quantity="other">%d en la pantalla de inicio</item>
+    </plurals>
 </resources>
