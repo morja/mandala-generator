@@ -113,7 +113,9 @@
     <string name="widget_description">Il preferito del giorno sulla schermata Home. Quadrato mostra l\'immagine, largo aggiunge le parole. Con Pro uno nuovo ogni mattina.</string>
     <string name="widget_empty">Aggiungi un preferito nell\'app per vederlo qui.</string>
     <!-- Home screen widget settings (ADR-0020, 5 November 2026) -->
-    <string name="widget_settings_title">Widget %1$s</string>
+    <string name="widget_title_small">Widget piccolo</string>
+    <string name="widget_title_wide">Widget largo</string>
+    <string name="widget_title_large">Widget grande</string>
     <string name="widget_appearance">Aspetto</string>
     <string name="widget_look_app">Come l\'app</string>
     <string name="widget_look_light">Chiaro</string>

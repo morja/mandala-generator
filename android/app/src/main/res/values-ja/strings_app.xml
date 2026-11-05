@@ -109,7 +109,9 @@
     <string name="widget_description">今日のお気に入りをホーム画面に。正方形は画像だけ、横長は言葉も表示します。Pro なら毎朝新しいものに。</string>
     <string name="widget_empty">アプリでお気に入りを追加すると、ここに表示されます。</string>
     <!-- Home screen widget settings (ADR-0020, 5 November 2026) -->
-    <string name="widget_settings_title">ウィジェット %1$s</string>
+    <string name="widget_title_small">小さいウィジェット</string>
+    <string name="widget_title_wide">横長のウィジェット</string>
+    <string name="widget_title_large">大きいウィジェット</string>
     <string name="widget_appearance">表示</string>
     <string name="widget_look_app">アプリと同じ</string>
     <string name="widget_look_light">ライト</string>

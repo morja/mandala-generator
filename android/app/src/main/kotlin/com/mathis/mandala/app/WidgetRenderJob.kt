@@ -126,9 +126,11 @@ class WidgetRenderJob : JobService() {
             while (isActive) {
                 val id = WidgetRedraw.take(app) ?: break
                 current = id
+                val began = SystemClock.elapsedRealtime()
                 try {
                     MandalaWidget.draw(app, manager, id, MandalaWidget.Inputs.load(app))
                     count++
+                    Log.i(TAG, "Widget $id drawn in ${SystemClock.elapsedRealtime() - began} ms")
                 } catch (e: Throwable) {
                     Log.w(TAG, "Widget $id could not be drawn", e)
                 }

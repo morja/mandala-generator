@@ -4,6 +4,7 @@ import android.appwidget.AppWidgetManager
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
@@ -35,17 +36,16 @@ class WidgetSettingsActivity : ComponentActivity() {
             finish()
             return
         }
-        // The widget stays whatever happens here; before Android 12 the launcher opens this page on
+        // The widget stays whatever happens here. Before Android 12 the launcher opens this page on
         // placing and leaves the first picture to it.
         setResult(RESULT_OK, Intent().putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, id))
-        WidgetRedraw.request(this, listOf(id))
+        if (savedInstanceState == null && Build.VERSION.SDK_INT < Build.VERSION_CODES.S) WidgetRedraw.request(this, listOf(id))
 
         val store = WidgetSettingsStore.of(this)
         val appLight = Appearance(this).light
         val style = if (appLight) SystemBarStyle.light(Color.TRANSPARENT, Color.TRANSPARENT) else SystemBarStyle.dark(Color.TRANSPARENT)
         enableEdgeToEdge(statusBarStyle = style, navigationBarStyle = style)
         val options = AppWidgetManager.getInstance(this).getAppWidgetOptions(id)
-        val (columns, rows) = MandalaWidget.cells(options)
 
         setContent {
             MandalaTheme(dark = !appLight) {
@@ -55,7 +55,7 @@ class WidgetSettingsActivity : ComponentActivity() {
                 }
                 WidgetSettingsScreen(
                     WidgetPage(
-                        size = stringResource(R.string.widget_size, columns, rows),
+                        title = stringResource(MandalaWidget.title(MandalaWidget.shape(options))),
                         wide = MandalaWidget.isWide(options),
                         favourites = inputs?.favorites,
                         dailyTurn = inputs?.dailyTurn,

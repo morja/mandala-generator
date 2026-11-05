@@ -113,7 +113,9 @@
     <string name="widget_description">Le favori du jour sur votre écran d\'accueil. Carré : l\'image ; large : avec les mots. Avec Pro, un nouveau chaque matin.</string>
     <string name="widget_empty">Ajoutez un favori dans l\'app pour le voir ici.</string>
     <!-- Home screen widget settings (ADR-0020, 5 November 2026) -->
-    <string name="widget_settings_title">Widget %1$s</string>
+    <string name="widget_title_small">Petit widget</string>
+    <string name="widget_title_wide">Widget large</string>
+    <string name="widget_title_large">Grand widget</string>
     <string name="widget_appearance">Apparence</string>
     <string name="widget_look_app">Comme l\'app</string>
     <string name="widget_look_light">Clair</string>

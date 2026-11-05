@@ -111,7 +111,9 @@
     <string name="widget_description">Der Favorit des Tages auf dem Startbildschirm. Quadratisch zeigt das Bild, breit dazu die Worte. Mit Pro jeden Morgen ein neuer.</string>
     <string name="widget_empty">Füge in der App einen Favoriten hinzu, dann erscheint er hier.</string>
     <!-- Home screen widget settings (ADR-0020, 5 November 2026) -->
-    <string name="widget_settings_title">Widget %1$s</string>
+    <string name="widget_title_small">Kleines Widget</string>
+    <string name="widget_title_wide">Breites Widget</string>
+    <string name="widget_title_large">Großes Widget</string>
     <string name="widget_appearance">Darstellung</string>
     <string name="widget_look_app">Wie die App</string>
     <string name="widget_look_light">Hell</string>

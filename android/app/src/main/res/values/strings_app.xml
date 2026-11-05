@@ -111,7 +111,9 @@
     <string name="widget_description">Today\'s favourite on your home screen. Square shows the picture, wide adds the words. With Pro a new one every morning.</string>
     <string name="widget_empty">Add a favourite in the app to see it here.</string>
     <!-- Home screen widget settings (ADR-0020, 5 November 2026) -->
-    <string name="widget_settings_title">Widget %1$s</string>
+    <string name="widget_title_small">Small widget</string>
+    <string name="widget_title_wide">Wide widget</string>
+    <string name="widget_title_large">Large widget</string>
     <string name="widget_appearance">Appearance</string>
     <string name="widget_look_app">Like the app</string>
     <string name="widget_look_light">Light</string>
@@ -121,5 +123,4 @@
     <string name="widget_daily_pro">The daily wallpaper\'s favourites in turn, a new one every morning.</string>
     <string name="widget_daily_free">The first of the daily wallpaper\'s favourites; with Pro a new one every morning.</string>
     <string name="widget_fixed">Or always the same favourite</string>
-    <string name="widget_size" translatable="false">%1$d×%2$d</string>
 </resources>

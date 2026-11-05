@@ -127,10 +127,16 @@ class MandalaWidget : AppWidgetProvider() {
         /** Whether the widget is wide enough for the words beside the picture. */
         fun isWide(options: Bundle): Boolean = 1 / aspect(options) > WIDE_RATIO
 
-        /** Its size in launcher cells, columns by rows, as the widget stands in portrait. */
-        fun cells(options: Bundle): Pair<Int, Int> =
-            WidgetChoice.cells(options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH)) to
-                WidgetChoice.cells(options.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT))
+        /** Small, wide or large, as the widget stands in portrait. */
+        fun shape(options: Bundle): WidgetShape = WidgetChoice.shape(
+            options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH), options.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT), isWide(options))
+
+        /** The widget's name in the menu and on its settings page. */
+        fun title(shape: WidgetShape): Int = when (shape) {
+            WidgetShape.SMALL -> R.string.widget_title_small
+            WidgetShape.WIDE -> R.string.widget_title_wide
+            WidgetShape.LARGE -> R.string.widget_title_large
+        }
 
         private fun empty(context: Context, id: Int, colours: Colours) = RemoteViews(context.packageName, R.layout.widget_empty).apply {
             setInt(R.id.widget_root, "setBackgroundResource", colours.background)

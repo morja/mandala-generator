@@ -103,9 +103,9 @@ class WidgetSettingsTest {
     }
 
     @Test
-    fun cellsFromTheLaunchersSize() {
-        assertEquals(2, WidgetChoice.cells(110))
-        assertEquals(4, WidgetChoice.cells(250))
-        assertEquals(1, WidgetChoice.cells(0))
+    fun aWidgetIsNamedByItsShape() {
+        assertEquals(WidgetShape.WIDE, WidgetChoice.shape(320, 150, wide = true))
+        assertEquals(WidgetShape.SMALL, WidgetChoice.shape(150, 180, wide = false))
+        assertEquals(WidgetShape.LARGE, WidgetChoice.shape(330, 400, wide = false))
     }
 }

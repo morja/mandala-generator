@@ -56,7 +56,7 @@ import com.mathis.mandala.core.Quote
 
 /** What the settings page of one widget shows; `favourites` is null while they are read. */
 internal class WidgetPage(
-    val size: String,
+    val title: String,
     val wide: Boolean,
     val favourites: List<Favorite>?,
     val dailyTurn: Favorite?,
@@ -79,7 +79,7 @@ internal fun WidgetSettingsScreen(page: WidgetPage, words: (Favorite) -> Quote, 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(R.string.widget_settings_title, page.size)) },
+                title = { Text(page.title) },
                 navigationIcon = {
                     IconButton(onClick = onClose) { Icon(EditorIcons.Close, contentDescription = stringResource(R.string.controls_close)) }
                 },

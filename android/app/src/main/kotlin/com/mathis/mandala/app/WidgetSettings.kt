@@ -3,8 +3,9 @@ package com.mathis.mandala.app
 import android.content.Context
 import android.content.SharedPreferences
 import com.mathis.mandala.core.Favorite
-import kotlin.math.max
-import kotlin.math.roundToInt
+
+/** How the menu and the settings page name a widget: launchers do not tell their cells, so by shape and size. */
+enum class WidgetShape { SMALL, WIDE, LARGE }
 
 /** The widget's colours (ADR-0020): like the app's own light or dark setting, or always one of them. */
 enum class WidgetLook { APP, LIGHT, DARK }
@@ -96,6 +97,13 @@ object WidgetChoice {
     /** What decides the widget's picture: its favourite and colours. Drawn again when this changes. */
     fun shownKey(favourite: Favorite?, light: Boolean): String = (favourite?.id ?: "-") + if (light) "|light" else "|dark"
 
-    /** Launcher cells from a size in dp (Android's rule of thumb: n cells are 70 n − 30 dp). */
-    fun cells(dp: Int): Int = max(1, ((dp + 30) / 70.0).roundToInt())
+    /** Wide when it gets the words beside the picture; otherwise small below [LARGE_DP] on its shorter side. */
+    fun shape(widthDp: Int, heightDp: Int, wide: Boolean): WidgetShape = when {
+        wide -> WidgetShape.WIDE
+        minOf(widthDp, heightDp) < LARGE_DP -> WidgetShape.SMALL
+        else -> WidgetShape.LARGE
+    }
+
+    /** A 2×2 widget is about 150 to 180 dp on its shorter side, a 3×3 or 4×4 one over 240 dp. */
+    private const val LARGE_DP = 200
 }

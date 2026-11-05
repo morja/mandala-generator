@@ -138,7 +138,7 @@ data class ExportProgress(val label: String, val share: Float? = null)
 data class DailyState(val on: Boolean, val lastName: String?, val chosen: Set<String>? = null)
 
 /** A home screen widget for the menu's Widgets page: its size in cells, what it shows, and whether that is fixed. */
-data class PlacedWidget(val id: Int, val columns: Int, val rows: Int, val favourite: Favorite?, val fixed: Boolean)
+data class PlacedWidget(val id: Int, val shape: WidgetShape, val favourite: Favorite?, val fixed: Boolean)
 
 /** The pair sheet's lock and home screen (ADR-0014). */
 data class PairPreview(val lock: ImageBitmap? = null, val home: ImageBitmap? = null, val rendering: Boolean = true)
@@ -1385,10 +1385,10 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
                     val favourites = _favorites.value
                     val daily = DailyWallpaper.today(app, favourites)
                     MandalaWidget.ids(app).sorted().map { id ->
-                        val (columns, rows) = MandalaWidget.cells(manager.getAppWidgetOptions(id))
+                        val shape = MandalaWidget.shape(manager.getAppWidgetOptions(id))
                         val settings = store.load(id)
                         val favourite = WidgetChoice.favourite(settings, favourites, daily)
-                        PlacedWidget(id, columns, rows, favourite, fixed = favourite != null && favourite.id == settings.favouriteId)
+                        PlacedWidget(id, shape, favourite, fixed = favourite != null && favourite.id == settings.favouriteId)
                     }
                 }.getOrDefault(emptyList())
             }

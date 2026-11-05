@@ -115,7 +115,9 @@
     <string name="widget_description">Мандала дня из избранного на главном экране. Квадратный виджет показывает изображение, широкий — ещё и слова. С Pro каждое утро новая.</string>
     <string name="widget_empty">Добавьте мандалу в избранное в приложении, и она появится здесь.</string>
     <!-- Home screen widget settings (ADR-0020, 5 November 2026) -->
-    <string name="widget_settings_title">Виджет %1$s</string>
+    <string name="widget_title_small">Маленький виджет</string>
+    <string name="widget_title_wide">Широкий виджет</string>
+    <string name="widget_title_large">Большой виджет</string>
     <string name="widget_appearance">Оформление</string>
     <string name="widget_look_app">Как в приложении</string>
     <string name="widget_look_light">Светлое</string>

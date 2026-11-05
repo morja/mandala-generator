@@ -56,6 +56,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import com.mathis.mandala.app.Candidate
+import com.mathis.mandala.app.MandalaWidget
 import com.mathis.mandala.app.NewKind
 import com.mathis.mandala.app.PlacedWidget
 import com.mathis.mandala.app.Thumbnails
@@ -420,8 +421,7 @@ private fun WidgetsPage(actions: MenuActions, onBack: () -> Unit) {
             ) {
                 Thumb(thumb, Modifier.size(Sizes.favourite / 2))
                 Column(Modifier.weight(1f)) {
-                    Text(stringResource(R.string.widget_settings_title, stringResource(R.string.widget_size, widget.columns, widget.rows)),
-                        style = MaterialTheme.typography.bodyLarge)
+                    Text(stringResource(MandalaWidget.title(widget.shape)), style = MaterialTheme.typography.bodyLarge)
                     Text(
                         when {
                             name == null -> stringResource(R.string.widget_empty)
