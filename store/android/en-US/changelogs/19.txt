@@ -1,0 +1,1 @@
+New: a short tour shows where everything is: play field, favourites, saving and sharing, layers, styles, colours, effects and the die. It opens once on a new install; find it again under Menu, Dahlia, Tour.

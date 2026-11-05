@@ -1,0 +1,1 @@
+Neu: Eine kurze Tour zeigt, wo alles ist: Spielfläche, Favoriten, Speichern und Teilen, Ebenen, Stile, Farben, Effekte und der Würfel. Sie öffnet sich einmal bei einer neuen Installation; du findest sie wieder unter Menü, Dahlia, Tour.
