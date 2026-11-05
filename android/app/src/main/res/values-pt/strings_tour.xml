@@ -15,6 +15,8 @@
     <string name="tour_favourites_body">A estrela guarda as mandalas que você quer manter, e algumas já estão lá. Toque em uma para abrir ou adicione a que está vendo.</string>
     <string name="tour_save_title">Salvar e compartilhar</string>
     <string name="tour_save_body">A seta salva sua imagem ou a define como plano de fundo. Compartilhar fica no menu dos três pontos.</string>
+    <string name="tour_layers_title">Camadas</string>
+    <string name="tour_layers_body">Uma mandala é feita de camadas, cada uma com seu próprio estilo. Adicione uma aqui; o app gratuito permite %1$d camadas.</string>
     <string name="tour_styles_title">Estilos</string>
     <string name="tour_styles_body">Cada camada tem um estilo, como %1$s ou %2$s. Abra esta linha e toque em um: a imagem muda na hora.</string>
     <string name="tour_colours_title">Cores</string>

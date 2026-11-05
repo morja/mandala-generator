@@ -4,13 +4,15 @@ import android.content.Context
 import androidx.annotation.StringRes
 
 /**
- * The first-start tour (DM-22, card a; UX-1 21): seven cards docked at the bottom, each pointing with
+ * The first-start tour (DM-22, card a; UX-1 21): eight cards docked at the bottom, each pointing with
  * a ring and a line at a real control while the rest of the screen is dimmed, except the picture.
  * The composables report where their targets are; this file only holds the steps and the rules.
  */
 
 /** What the tour points at. The composables of these controls report their place on screen. */
-enum class TourTarget { PICTURE, PLAY, FAVOURITES, SAVE, MORE, TOP_DIE, SCENE_TAB, STYLE_ROW, PALETTE_ROW, EFFECTS_ROW, LAYER_DIE }
+enum class TourTarget {
+    PICTURE, PLAY, FAVOURITES, SAVE, MORE, TOP_DIE, LAYERS_TAB, LAYER_ROW, ADD_LAYER, SCENE_TAB, STYLE_ROW, PALETTE_ROW, EFFECTS_ROW, LAYER_DIE,
+}
 
 /** The control tabs a step can need. */
 enum class TourTab { LAYERS, SCENE }
@@ -33,6 +35,10 @@ enum class TourStep(
     PLAY(R.string.tour_play_title, R.string.tour_play_body, listOf(TourMark(TourTarget.PLAY))),
     FAVOURITES(R.string.tour_favourites_title, R.string.tour_favourites_body, listOf(TourMark(TourTarget.FAVOURITES))),
     SAVE(R.string.tour_save_title, R.string.tour_save_body, listOf(TourMark(TourTarget.SAVE), TourMark(TourTarget.MORE))),
+    // The tab and Add get rings, the selected layer's row stays clear.
+    LAYERS(R.string.tour_layers_title, R.string.tour_layers_body,
+        listOf(TourMark(TourTarget.LAYERS_TAB, line = false), TourMark(TourTarget.ADD_LAYER)),
+        tab = TourTab.LAYERS, scrollTo = TourTarget.LAYER_ROW, open = listOf(TourTarget.LAYER_ROW)),
     STYLES(R.string.tour_styles_title, R.string.tour_styles_body, listOf(TourMark(TourTarget.STYLE_ROW)),
         tab = TourTab.LAYERS, scrollTo = TourTarget.STYLE_ROW),
     COLOURS(R.string.tour_colours_title, R.string.tour_colours_body, listOf(TourMark(TourTarget.PALETTE_ROW)),

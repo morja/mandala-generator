@@ -15,6 +15,8 @@
     <string name="tour_favourites_body">星には残しておきたい曼荼羅が入っていて、最初からいくつか用意されています。タップして開くか、表示中のものを追加できます。</string>
     <string name="tour_save_title">保存と共有</string>
     <string name="tour_save_body">矢印で画像を保存したり壁紙にしたりできます。共有は右上の三点メニューにあります。</string>
+    <string name="tour_layers_title">レイヤー</string>
+    <string name="tour_layers_body">曼荼羅はレイヤーでできていて、それぞれに独自のスタイルがあります。ここで追加でき、無料版では%1$d枚まで使えます。</string>
     <string name="tour_styles_title">スタイル</string>
     <string name="tour_styles_body">各レイヤーには %1$s や %2$s などのスタイルがあります。この行を開いてタップすると、すぐに絵が変わります。</string>
     <string name="tour_colours_title">色</string>

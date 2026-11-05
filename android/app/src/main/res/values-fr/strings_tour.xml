@@ -15,6 +15,8 @@
     <string name="tour_favourites_body">L\'étoile garde les mandalas que vous conservez, et quelques-uns s\'y trouvent déjà. Touchez-en un pour l\'ouvrir, ou ajoutez celui que vous voyez.</string>
     <string name="tour_save_title">Enregistrer et partager</string>
     <string name="tour_save_body">La flèche enregistre votre image ou en fait un fond d\'écran. Partager se trouve dans le menu des trois points.</string>
+    <string name="tour_layers_title">Calques</string>
+    <string name="tour_layers_body">Un mandala se compose de calques, chacun avec son propre style. Ajoutez-en un ici ; l\'app gratuite en permet %1$d.</string>
     <string name="tour_styles_title">Styles</string>
     <string name="tour_styles_body">Chaque calque a un style, comme %1$s ou %2$s. Ouvrez cette ligne et touchez-en un : l\'image change aussitôt.</string>
     <string name="tour_colours_title">Couleurs</string>

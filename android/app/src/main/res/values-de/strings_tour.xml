@@ -15,6 +15,8 @@
     <string name="tour_favourites_body">Im Stern liegen die Mandalas, die du behalten willst, und ein paar warten schon. Tippe eins an, um es zu öffnen, oder füge das aktuelle hinzu.</string>
     <string name="tour_save_title">Speichern und teilen</string>
     <string name="tour_save_body">Der Pfeil speichert dein Bild oder macht es zum Hintergrund. Teilen findest du im Menü hinter den drei Punkten.</string>
+    <string name="tour_layers_title">Ebenen</string>
+    <string name="tour_layers_body">Ein Mandala besteht aus Ebenen, jede mit ihrem eigenen Stil. Hier fügst du eine hinzu; die kostenlose App erlaubt %1$d Ebenen.</string>
     <string name="tour_styles_title">Stile</string>
     <string name="tour_styles_body">Jede Ebene hat einen Stil, etwa %1$s oder %2$s. Öffne diese Zeile und tippe einen an, das Bild ändert sich sofort.</string>
     <string name="tour_colours_title">Farben</string>

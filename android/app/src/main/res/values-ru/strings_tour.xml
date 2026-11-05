@@ -15,6 +15,8 @@
     <string name="tour_favourites_body">В звезде хранятся мандалы, которые вы сохранили, и несколько там уже есть. Нажмите на одну, чтобы открыть, или добавьте текущую.</string>
     <string name="tour_save_title">Сохранить и поделиться</string>
     <string name="tour_save_body">Стрелка сохраняет изображение или ставит его на обои. «Поделиться» находится в меню за тремя точками.</string>
+    <string name="tour_layers_title">Слои</string>
+    <string name="tour_layers_body">Мандала состоит из слоёв, у каждого свой стиль. Добавьте слой здесь; в бесплатном приложении доступно %1$d слоя.</string>
     <string name="tour_styles_title">Стили</string>
     <string name="tour_styles_body">У каждого слоя есть стиль, например %1$s или %2$s. Откройте эту строку и выберите стиль — изображение сразу изменится.</string>
     <string name="tour_colours_title">Цвета</string>

@@ -15,6 +15,8 @@
     <string name="tour_favourites_body">La stella custodisce i mandala che tieni, e alcuni ci sono già. Toccane uno per aprirlo o aggiungi quello che vedi.</string>
     <string name="tour_save_title">Salva e condividi</string>
     <string name="tour_save_body">La freccia salva l\'immagine o la imposta come sfondo. Condividi è nel menu dei tre puntini.</string>
+    <string name="tour_layers_title">Livelli</string>
+    <string name="tour_layers_body">Un mandala è fatto di livelli, ognuno con il suo stile. Aggiungine uno qui; l\'app gratuita ne consente %1$d.</string>
     <string name="tour_styles_title">Stili</string>
     <string name="tour_styles_body">Ogni livello ha uno stile, come %1$s o %2$s. Apri questa riga e toccane uno: l\'immagine cambia subito.</string>
     <string name="tour_colours_title">Colori</string>

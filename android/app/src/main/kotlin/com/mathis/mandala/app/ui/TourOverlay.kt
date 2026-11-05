@@ -68,6 +68,7 @@ import com.mathis.mandala.app.ui.theme.Radius
 import com.mathis.mandala.app.ui.theme.Sizes
 import com.mathis.mandala.app.ui.theme.Spacing
 import com.mathis.mandala.core.MandalaStyle
+import com.mathis.mandala.core.ProFeatures
 
 /**
  * Where the tour's targets are on screen, reported by the composables themselves (`tourTarget`), so
@@ -280,9 +281,10 @@ private fun TourCard(state: TourState, onNext: () -> Unit, onBack: () -> Unit, o
     }
 }
 
-/** The step's sentences; the style step names two real styles in the app's language. */
+/** The step's sentences; the layers step names the free number of layers, the style step two real styles in the app's language. */
 @Composable
 private fun bodyText(step: TourStep): String = when (step) {
+    TourStep.LAYERS -> stringResource(step.body, ProFeatures.FREE_LAYERS)
     TourStep.STYLES -> stringResource(step.body, stringResource(MandalaStyle.SPIROGRAPH.labelRes), stringResource(MandalaStyle.ROSE_CURVES.labelRes))
     else -> stringResource(step.body)
 }

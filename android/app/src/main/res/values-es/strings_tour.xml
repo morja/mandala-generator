@@ -15,6 +15,8 @@
     <string name="tour_favourites_body">La estrella guarda los mandalas que quieres conservar, y ya hay algunos. Toca uno para abrirlo o añade el que estás viendo.</string>
     <string name="tour_save_title">Guardar y compartir</string>
     <string name="tour_save_body">La flecha guarda tu imagen o la pone como fondo de pantalla. Compartir está en el menú de los tres puntos.</string>
+    <string name="tour_layers_title">Capas</string>
+    <string name="tour_layers_body">Un mandala se compone de capas, cada una con su propio estilo. Añade una aquí; la app gratuita permite %1$d capas.</string>
     <string name="tour_styles_title">Estilos</string>
     <string name="tour_styles_body">Cada capa tiene un estilo, como %1$s o %2$s. Abre esta fila y toca uno; la imagen cambia al instante.</string>
     <string name="tour_colours_title">Colores</string>

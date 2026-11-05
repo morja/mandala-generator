@@ -15,6 +15,8 @@
     <string name="tour_favourites_body">별에는 간직하고 싶은 만다라가 모여 있고, 몇 개는 이미 들어 있습니다. 하나를 눌러 열거나 지금 보이는 만다라를 추가하세요.</string>
     <string name="tour_save_title">저장과 공유</string>
     <string name="tour_save_body">화살표로 그림을 저장하거나 배경화면으로 설정합니다. 공유는 점 세 개 메뉴에 있습니다.</string>
+    <string name="tour_layers_title">레이어</string>
+    <string name="tour_layers_body">만다라는 레이어로 이루어지며, 레이어마다 스타일이 있습니다. 여기서 추가할 수 있고, 무료 앱에서는 %1$d개까지 쓸 수 있습니다.</string>
     <string name="tour_styles_title">스타일</string>
     <string name="tour_styles_body">각 레이어에는 %1$s, %2$s 같은 스타일이 있습니다. 이 줄을 열고 하나를 누르면 그림이 바로 바뀝니다.</string>
     <string name="tour_colours_title">색</string>

@@ -224,7 +224,11 @@ internal fun ControlTabs(
                 Tab(
                     selected = tab == option,
                     onClick = { tab = option },
-                    modifier = if (option == ControlTab.SCENE) Modifier.tourTarget(TourTarget.SCENE_TAB) else Modifier,
+                    modifier = when (option) {
+                        ControlTab.LAYERS -> Modifier.tourTarget(TourTarget.LAYERS_TAB)
+                        ControlTab.SCENE -> Modifier.tourTarget(TourTarget.SCENE_TAB)
+                        else -> Modifier
+                    },
                 ) {
                     Text(stringResource(option.label), style = MaterialTheme.typography.titleSmall, maxLines = 1, modifier = Modifier.padding(vertical = Spacing.md))
                 }
@@ -293,7 +297,9 @@ private fun LayersTab(params: MandalaParameters, selected: Int, vm: EditorViewMo
     }
     // Actions on the selected (highlighted) layer; its settings follow below.
     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-        TextButton(onClick = vm::addLayer, enabled = layers.size < Editing.MAX_LAYERS) { Text(stringResource(R.string.controls_layers_add)) }
+        TextButton(onClick = vm::addLayer, enabled = layers.size < Editing.MAX_LAYERS, modifier = Modifier.tourTarget(TourTarget.ADD_LAYER)) {
+            Text(stringResource(R.string.controls_layers_add))
+        }
         TextButton(onClick = vm::duplicateSelected, enabled = layers.size < Editing.MAX_LAYERS) { Text(stringResource(R.string.controls_layers_duplicate)) }
         TextButton(onClick = vm::removeSelected, enabled = layers.size > 1) { Text(stringResource(R.string.controls_delete)) }
         Box(Modifier.weight(1f))
@@ -379,6 +385,7 @@ private fun LayerRow(
     val palette = OwnPalettes.resolve(layer.paletteIndex, layer.customPalette, BuiltInPalettes.all)
     Row(
         Modifier
+            .then(if (selected) Modifier.tourTarget(TourTarget.LAYER_ROW) else Modifier)
             .fillMaxWidth()
             .clip(RoundedCornerShape(Radius.sm))
             .background(if (selected) t.accentSoft else t.surface)

@@ -15,6 +15,8 @@
     <string name="tour_favourites_body">The star holds the mandalas you keep, and a few are already there. Tap one to open it, or add the one you see.</string>
     <string name="tour_save_title">Save and share</string>
     <string name="tour_save_body">The arrow saves your picture or sets it as wallpaper. Share is in the menu behind the three dots.</string>
+    <string name="tour_layers_title">Layers</string>
+    <string name="tour_layers_body">A mandala is made of layers, each with its own style. The free app allows %1$d; add one here.</string>
     <string name="tour_styles_title">Styles</string>
     <string name="tour_styles_body">Every layer has a style, like %1$s or %2$s. Open this row and tap one, and the picture changes right away.</string>
     <string name="tour_colours_title">Colours</string>

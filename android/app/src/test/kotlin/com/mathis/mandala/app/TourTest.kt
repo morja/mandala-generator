@@ -36,12 +36,12 @@ class TourTest {
     }
 
     @Test
-    fun sevenStepsInTheirOrder() {
+    fun eightStepsInTheirOrder() {
         assertEquals(
-            listOf(TourStep.PLAY, TourStep.FAVOURITES, TourStep.SAVE, TourStep.STYLES, TourStep.COLOURS, TourStep.EFFECTS, TourStep.DIE),
+            listOf(TourStep.PLAY, TourStep.FAVOURITES, TourStep.SAVE, TourStep.LAYERS, TourStep.STYLES, TourStep.COLOURS, TourStep.EFFECTS, TourStep.DIE),
             TourStep.entries.toList(),
         )
-        assertEquals(7, TourState.count)
+        assertEquals(8, TourState.count)
     }
 
     @Test
@@ -53,7 +53,7 @@ class TourTest {
             assertTrue(state.automatic)
             state = state.next()
         }
-        assertEquals((1..7).toList(), seen)
+        assertEquals((1..8).toList(), seen)
     }
 
     @Test
@@ -70,6 +70,10 @@ class TourTest {
     fun stepsNeedTheirTabsAndRows() {
         // The first three point at the top bar and keep the tab that is open.
         for (step in listOf(TourStep.PLAY, TourStep.FAVOURITES, TourStep.SAVE)) assertNull(step.tab)
+        // Layers: the tab and Add are ringed, the selected row stays clear and scrolls up under the tabs.
+        assertEquals(listOf(TourTarget.LAYERS_TAB, TourTarget.ADD_LAYER), TourStep.LAYERS.marks.map { it.target })
+        assertEquals(TourTarget.LAYER_ROW, TourStep.LAYERS.scrollTo)
+        assertEquals(listOf(TourTarget.LAYER_ROW), TourStep.LAYERS.open)
         assertEquals(TourTab.LAYERS, TourStep.STYLES.tab)
         assertEquals(TourTarget.STYLE_ROW, TourStep.STYLES.scrollTo)
         assertEquals(TourTarget.PALETTE_ROW, TourStep.COLOURS.scrollTo)

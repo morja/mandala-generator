@@ -15,6 +15,8 @@
     <string name="tour_favourites_body">星形里存放着你想保留的曼陀罗，已经有几个在里面。点一个即可打开，也可以添加当前这个。</string>
     <string name="tour_save_title">保存与分享</string>
     <string name="tour_save_body">箭头可保存图片或设为壁纸。分享在三个点的菜单里。</string>
+    <string name="tour_layers_title">图层</string>
+    <string name="tour_layers_body">曼陀罗由图层组成，每个图层都有自己的风格。在这里添加图层；免费版最多可用%1$d个图层。</string>
     <string name="tour_styles_title">风格</string>
     <string name="tour_styles_body">每个图层都有一种风格，例如%1$s或%2$s。打开这一行并点选一个，图片会立刻变化。</string>
     <string name="tour_colours_title">颜色</string>
