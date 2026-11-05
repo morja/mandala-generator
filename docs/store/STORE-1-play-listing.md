@@ -97,6 +97,10 @@ Since 23 October 2026 the listing exists in seven languages: English (default), 
 
 The Reddit and launch plan is [MKT-1](../MKT-1-reddit-and-launch-plan.md).
 
+## Release notes for 1.8.5 (code 20)
+
+**On the internal track and submitted to production on 5 November 2026** (`bin/release internal`, then `bin/release production 20`, Mathis' OK, full rollout, notes in English and German; a fresh API read shows code 20 with `completed` on both tracks, replacing 1.8.4, which may still have been in Google's review; Google's review follows). Source tag: `android-v1.8.5` at `40b2292`. Validation: `bin/check-full` on `main` at `40b2292` (parity test and release build), signed `bundleRelease`. Bundle SHA-256: `67285823e803c50fad93b193d0f95db79d5f7f54652f5ac2187352323829b632`. Changes since 1.8.4 (ADR-0020 amendment of 5 November 2026): widgets are rendered one by one in a JobScheduler job instead of inside the update broadcast, with the favourite's thumbnail as fallback; settings per widget (a fixed favourite or the daily turn; appearance like the app, light or dark) from a long press or Menu › Dahlia › Widgets; a tap opens the app as it was and only offers the widget's mandala when it differs. Notes: `store/android/en-US/changelogs/20.txt` and `de-DE/changelogs/20.txt`.
+
 ## Release notes for 1.8.4 (code 19)
 
 **On the internal track and submitted to production on 5 November 2026** (`bin/release internal`, then `bin/release production 19`, Mathis' OK, full rollout, notes in English and German; a fresh API read shows code 19 with `completed` on both tracks, replacing 1.8.3; Google's review follows). Source tag: `android-v1.8.4` at `51b2b58`. Validation: `android/scripts/check-full` on `main` (parity test and release build), signed `bundleRelease`. Bundle SHA-256: `6ab74c566e534dc62b51d7eb3c1af10686f57ca5de5fe5729152522948337d9d`. Changes since 1.8.3: the first-start tour (DM-22, card a, eight steps: play, favourites, save and share, layers, styles, colours, effects, the die; once on a fresh install, again from "Tour" beside "Guide" on the Dahlia page; UX-1 point 21). Notes: `store/android/en-US/changelogs/19.txt` and `de-DE/changelogs/19.txt`.
