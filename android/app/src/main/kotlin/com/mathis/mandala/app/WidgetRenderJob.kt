@@ -16,6 +16,9 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executors
 
 /**
@@ -108,49 +111,62 @@ object WidgetRedraw {
 /**
  * Draws the waiting widgets one after another, each with its own try/catch: a widget is updated as
  * soon as its picture is ready, and one that fails is logged without stopping the others.
+ *
+ * Android may start a new run while an older one is still being stopped (a redraw asked for in the
+ * moment between the start and [onStartJob]); both share this service, so each run keeps its own
+ * scope, and a lock lets only one of them draw at a time.
  */
 class WidgetRenderJob : JobService() {
-    private var scope: CoroutineScope? = null
+    private class Run(val scope: CoroutineScope) {
+        @Volatile
+        var current: Int? = null
+    }
 
-    @Volatile
-    private var current: Int? = null
+    private val runs = ConcurrentHashMap<JobParameters, Run>()
 
     override fun onStartJob(params: JobParameters): Boolean {
         WidgetRedraw.started()
-        val s = CoroutineScope(SupervisorJob() + Dispatchers.Default).also { scope = it }
-        s.launch {
+        val run = Run(CoroutineScope(SupervisorJob() + Dispatchers.Default))
+        runs[params] = run
+        run.scope.launch {
             val app = applicationContext
             val manager = AppWidgetManager.getInstance(app)
-            val start = SystemClock.elapsedRealtime()
-            var count = 0
-            while (isActive) {
-                val id = WidgetRedraw.take(app) ?: break
-                current = id
-                val began = SystemClock.elapsedRealtime()
-                try {
-                    MandalaWidget.draw(app, manager, id, MandalaWidget.Inputs.load(app))
-                    count++
-                    Log.i(TAG, "Widget $id drawn in ${SystemClock.elapsedRealtime() - began} ms")
-                } catch (e: Throwable) {
-                    Log.w(TAG, "Widget $id could not be drawn", e)
+            drawing.withLock {
+                val start = SystemClock.elapsedRealtime()
+                var count = 0
+                while (isActive) {
+                    val id = WidgetRedraw.take(app) ?: break
+                    run.current = id
+                    val began = SystemClock.elapsedRealtime()
+                    try {
+                        MandalaWidget.draw(app, manager, id, MandalaWidget.Inputs.load(app))
+                        count++
+                        Log.i(TAG, "Widget $id drawn in ${SystemClock.elapsedRealtime() - began} ms")
+                    } catch (e: Throwable) {
+                        Log.w(TAG, "Widget $id could not be drawn", e)
+                    }
+                    run.current = null
                 }
-                current = null
+                if (count > 0) Log.i(TAG, "Drew $count widget(s) in ${SystemClock.elapsedRealtime() - start} ms")
             }
-            Log.i(TAG, "Drew $count widget(s) in ${SystemClock.elapsedRealtime() - start} ms")
             runCatching { DailyWallpaper.ensureScheduled(app) }
-            jobFinished(params, false)
+            if (runs.remove(params) != null) jobFinished(params, false)
         }
         return true
     }
 
-    /** Android stopped the job; the rest is drawn when it runs again. */
+    /** Android stopped the run; the widget it was drawing and the rest are drawn when it runs again. */
     override fun onStopJob(params: JobParameters): Boolean {
-        scope?.cancel()
-        WidgetRedraw.stopped(applicationContext, current)
+        val run = runs.remove(params) ?: return false
+        run.scope.cancel()
+        WidgetRedraw.stopped(applicationContext, run.current)
         return true
     }
 
     private companion object {
         const val TAG = "MandalaWidget"
+
+        /** One run draws at a time, in the whole process. */
+        val drawing = Mutex()
     }
 }
