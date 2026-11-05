@@ -1,0 +1,1 @@
+Widgets: Jedes Widget hat jetzt eigene Einstellungen. Wähle einen festen Favoriten oder den täglichen Wechsel, und hell, dunkel oder wie die App. Lange aufs Widget drücken oder Menü, Dahlia, Widgets. Ein Tipp aufs Widget ersetzt nicht mehr, woran du gerade arbeitest. Behoben: Ein Widget konnte leer bleiben.

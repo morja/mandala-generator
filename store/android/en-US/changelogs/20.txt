@@ -1,0 +1,1 @@
+Widgets: each widget has its own settings now. Choose a fixed favourite or the daily turn, and light, dark or like the app. Long-press the widget or open Menu, Dahlia, Widgets. Tapping a widget no longer replaces what you are editing. Fixed: a widget could stay empty.
