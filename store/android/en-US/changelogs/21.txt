@@ -1,0 +1,1 @@
+Dahlia Pro: a new purchase sheet that shows the price, a pending payment and the result of a restore in plain words. It scrolls with large text. Internal test build with tearoom-android-kit 5bcbe9b (includes 14812d1).

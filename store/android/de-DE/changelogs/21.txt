@@ -1,0 +1,1 @@
+Dahlia Pro: ein neues Kaufblatt, das Preis, offene Zahlung und das Ergebnis der Wiederherstellung klar anzeigt. Es scrollt bei großer Schrift. Interner Test-Build mit tearoom-android-kit 5bcbe9b (enthält 14812d1).
