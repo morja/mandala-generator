@@ -18,6 +18,8 @@ java {
 dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0")
     testImplementation(kotlin("test"))
+    // Guardrail rules shared by the tearoom.one apps (tearoom-android-kit, module :testing).
+    testImplementation("one.tearoom:testing:1.0.0")
 }
 
 tasks.test {
