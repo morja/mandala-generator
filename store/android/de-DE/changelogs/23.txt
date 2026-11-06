@@ -1,0 +1,1 @@
+Dahlia Pro kaufen ist klarer: Preis, eine noch offene Zahlung und das Ergebnis von „Kauf wiederherstellen“ stehen direkt im Pro-Fenster. Es scrollt bei großer Schrift, und nach dem Kauf erscheint der Dank wieder. Einstellungsdateien behalten Angaben aus neueren Versionen.

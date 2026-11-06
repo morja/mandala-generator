@@ -1,0 +1,1 @@
+Buying Dahlia Pro is clearer: the price, a payment still pending and the result of “Restore purchase” show right in the Pro window. It scrolls with large text, and the thanks after a purchase shows again. Settings files keep fields from newer versions.
