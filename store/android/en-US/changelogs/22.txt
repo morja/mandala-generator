@@ -1,0 +1,1 @@
+Internal test build: same as 1.8.6, to test an update over an installation that owns Pro (tearoom-android-kit 3631def, same purchase code as 5bcbe9b).

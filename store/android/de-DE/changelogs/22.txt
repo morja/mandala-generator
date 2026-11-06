@@ -1,0 +1,1 @@
+Interner Test-Build: wie 1.8.6, zum Test eines Updates über eine Installation mit gekauftem Pro (tearoom-android-kit 3631def, gleicher Kaufablauf wie 5bcbe9b).
