@@ -20,7 +20,7 @@ Bilder liegen in `docs/qa/QA-5/`.
 
 4. **Schriftgröße 130 %.** Vor der Korrektur ragte „Kauf wiederherstellen“ unter den Bildschirmrand, das Sheet ließ sich nicht schieben (Bild `free-de-font130-before-scroll-fix.png`; das alte Dahlia-Sheet hatte denselben Aufbau). Behoben im Kit (`f45cb33`): der Inhalt des Sheets scrollt. Danach ist „Restore purchase“ bei 130 % nach einem Wisch erreichbar, Bild `free-en-font130-scrolled.png`.
 
-5. **Dunkel und hell.** Dahlia zeichnet standardmäßig dunkel; das Sheet nimmt Farben, Schrift und Formen aus Dahlias `MaterialTheme` (Akzent für die Textknöpfe, gedämpfter Nebentext). Dahlias helles Design (Menü → Design) wurde in diesem Durchgang nicht aufgenommen.
+5. **Dunkel und hell.** Dahlia zeichnet standardmäßig dunkel; das Sheet nimmt Farben, Schrift und Formen aus Dahlias `MaterialTheme` (Akzent für die Textknöpfe, gedämpfter Nebentext). Im hellen Design (Menü → Design → Hell) dasselbe Bild mit Dahlias hellen Tokens, Bild `free-de-light-theme-restored.png` (nachgeholt nach REV-3 Befund 8). Deutsch bei 130 % nach der Scroll-Korrektur: Bild `free-de-font130-scrolled.png`.
 
 6. **Besitzer-Zustand (fast) und Neustart.** Mit `pro_for_testing` zeigt die Menüzeile „Dahlia Pro · Aktiv, danke“; nach `force-stop` und Neustart unverändert. Die Zeile öffnet Dahlias eigene Pro-Infoseite („Danke, dass du Pro gekauft hast.“), nicht das Kauf-Sheet; das Sheet schließt sich bei Pro von selbst (unverändertes Verhalten aus ADR-0022). Bild `fast-menu-owned.png`.
 
@@ -42,7 +42,7 @@ Voraussetzungen wie in QA-4: Konto in der Play Console unter Lizenztests, App au
 
 5. App-Daten löschen, App öffnen, kurz warten: Pro kommt ohne Kauf zurück. Falls kurz eine Pro-Markierung erscheint, „Kauf wiederherstellen“: „Pro ist auf diesem Gerät aktiv.“
 
-6. Im Play Store auf ein zweites Google-Konto ohne Kauf wechseln, App-Daten löschen, Sheet → „Kauf wiederherstellen“: der Text nennt das andere Konto und den Weg zurück.
+6. Wiederherstellen mit einem anderen Konto: Play rechnet dem Konto ab, das die App installiert hat; Konto im Store wechseln und Daten löschen reicht nicht. Deshalb: App deinstallieren, mit dem zweiten Google-Konto (ohne Kauf) aus Play installieren, oder ein eigenes Android-Nutzerprofil mit diesem Konto anlegen. Dann Sheet → „Kauf wiederherstellen“: der Text nennt das andere Konto und den Weg zurück. Im Ergebnis festhalten, welches Konto installiert hat.
 
 7. Ausstehende Zahlung (Testkarte „slow“): das Sheet zeigt „Die Zahlung ist noch offen…“, der Kaufen-Knopf bleibt deaktiviert, nach der Bestätigung durch Play wird Pro frei.
 
@@ -50,4 +50,12 @@ Voraussetzungen wie in QA-4: Konto in der Play Console unter Lizenztests, App au
 
 9. Erstattung in der Play Console („Remove entitlement“), App in den Vordergrund holen: Pro verschwindet beim nächsten Fortsetzen; offline bleibt es bis zur nächsten Play-Antwort.
 
-10. Ergebnis je Punkt hier unter „Ergebnis:“ eintragen oder in einem QA-6 fortschreiben.
+10. Acknowledge: nach dem Kauf (Punkt 3) in der Play Console unter Bestellverwaltung prüfen, dass die Bestellung nach drei Tagen nicht als erstattet erscheint (unbestätigte Käufe erstattet Play von selbst); die App bestätigt beim Kauf und bei jedem Fortsetzen noch einmal.
+
+11. Abgelehnte Zahlung (Testkarte „always declines“): Play meldet die Ablehnung, das Sheet zeigt „Der Kauf wurde nicht abgeschlossen.“, Pro bleibt aus, der Knopf wird wieder aktiv.
+
+12. Ausstehende Zahlung bei geschlossener App: mit der langsamen Testkarte kaufen, App sofort beenden; nach der Bestätigung durch Play (einige Minuten) App öffnen: Pro ist beim ersten Fortsetzen frei, die Meldung „Danke! Pro ist freigeschaltet.“ erscheint. Dasselbe mit einer Ablehnung in der ausstehenden Zahlung: Pro bleibt aus, der Hinweis auf die offene Zahlung verschwindet.
+
+13. Update über eine Installation mit Kauf: den vorherigen Play-Build mit gekauftem Pro behalten, den neuen Build darüber installieren (interner Track): Pro ist sofort da (Cache `pro`/`owned`), Play bestätigt es beim ersten Fortsetzen, keine Pro-Markierung taucht auf.
+
+14. Ergebnis je Punkt hier unter „Ergebnis:“ eintragen oder in einem QA-6 fortschreiben.
