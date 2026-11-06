@@ -92,7 +92,7 @@
     <string name="pro_product_unavailable">現在、Google PlayではこのアカウントにProを提供していません。しばらくしてからもう一度お試しください。</string>
     <string name="pro_play_unavailable">現在Google Playに接続できないため、価格を表示できません。接続を確認して、もう一度お試しください。</string>
     <string name="pro_restore_active">このデバイスでProが有効です。</string>
-    <string name="pro_restore_not_found">このGoogleアカウントではProの購入が見つかりませんでした。別のGoogleアカウントでProを購入した場合は、Playストアでそのアカウントに切り替えて、もう一度「購入を復元」をタップしてください。</string>
+    <string name="pro_restore_not_found">このGoogleアカウントではProの購入が見つかりませんでした。Playでは、購入はDahliaをインストールしたアカウントに結びつきます。別のアカウントでProを購入した場合は、Dahliaをアンインストールし、Playストアでそのアカウントに切り替えてから、Dahliaをもう一度インストールしてください。アンインストールするとお気に入りは削除されます（Androidのバックアップから復元される場合を除く）。</string>
     <string name="pro_restore_unreachable">Google Playに接続できなかったため、確認できませんでした。しばらくしてからもう一度お試しください。</string>
     <string name="pro_price_refreshing">価格を更新しています。少し待ってから、もう一度購入をタップしてください。</string>
     <string name="pro_loading_price">価格を読み込んでいます…</string>

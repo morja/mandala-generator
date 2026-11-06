@@ -96,7 +96,7 @@
     <string name="pro_product_unavailable">No momento, o Google Play não oferece o Pro para esta conta. Tente novamente mais tarde.</string>
     <string name="pro_play_unavailable">No momento, não é possível acessar o Google Play, por isso ainda não há preço. Verifique a conexão e tente novamente.</string>
     <string name="pro_restore_active">O Pro está ativo neste dispositivo.</string>
-    <string name="pro_restore_not_found">O Google Play não encontrou nenhuma compra do Pro para esta Conta do Google. Se você comprou o Pro com outra Conta do Google, mude para ela na Play Store e toque em “Restaurar compra” novamente.</string>
+    <string name="pro_restore_not_found">O Google Play não encontrou nenhuma compra do Pro para esta Conta do Google. O Play vincula a compra à conta que instalou o Dahlia: se você comprou o Pro com outra conta, desinstale o Dahlia, mude para essa conta na Play Store e instale o Dahlia de novo a partir dela. Ao desinstalar, seus favoritos são apagados, a menos que o Android os restaure do backup.</string>
     <string name="pro_restore_unreachable">Não foi possível acessar o Google Play, então nada foi verificado. Tente novamente mais tarde.</string>
     <string name="pro_price_refreshing">O preço está sendo atualizado. Toque em Comprar novamente em instantes.</string>
     <string name="pro_loading_price">Carregando o preço…</string>

@@ -48,6 +48,12 @@ Die Nummern 1–14 entsprechen den Punkten der Checkliste in QA-5, ab 15 folgen 
 
 17. **Console: das Testkonto stand nicht unter Dahlias internen Testern** [hoch für jeden Testlauf, behoben]. koblin@gmail.com war kontoweit Lizenztester (Liste „Tearoom testers“), Dahlias interner Track hatte aber nur „License testers (auto-generated)“ (gazania.ip@gmail.com) angehakt; Play lieferte deshalb 1.8.5 aus der Produktion. Ich habe „Tearoom testers“ um 13:50 angehakt. Danach musste koblin die Einladung annehmen; die erste Annahme um 14:00 lief versehentlich in Brave, dem Standardbrowser des Tablets, wo dojolava angemeldet ist (der Agent hatte den Link ohne Browserangabe geöffnet). Erst die Annahme in Chrome als koblin um 18:54 wirkte: das Update stand eine Minute später bereit. Lazy Moves, Weatherfold und Feldbuch hatten die Liste schon. Für künftige Läufe: vor dem Testlauf in der Console nachsehen, dass „Tearoom testers“ beim internen Track angehakt ist, und auf dem Gerät den Opt-in-Link in dem Browser öffnen, in dem das Play-Konto angemeldet ist; die Opt-in-Seite muss „You're a tester“ zeigen. Wer schon Tester ist, bekommt neue interne Versionen in Minuten (Lazy Moves Code 44: höchstens 40 Minuten).
 
+## Behoben nach dem Lauf
+
+- Befund 15: `EditorScreen.kt` schließt nach einem Kauf auch das Menü, wenn das Pro-Sheet offen war; die Danke-Meldung erscheint dann im Editor. Auf dem Gerät noch nicht geprüft (braucht einen neuen internen Build und einen neuen Kauf über das Menü).
+
+- Befund 16: `pro_restore_not_found` in allen zehn Sprachen neu: Play ordnet den Kauf dem installierenden Konto zu; mit dem anderen Konto deinstallieren, im Play Store wechseln, neu installieren; der Hinweis, dass Favoriten dabei verloren gehen, wenn Android sie nicht aus der Sicherung zurückholt. Lazy Moves hatte denselben Rat und hat ihn in `84a85c1` korrigiert.
+
 ## Zustand nach dem Lauf
 
 - Flugmodus aus, Gerät auf dem Startbildschirm.

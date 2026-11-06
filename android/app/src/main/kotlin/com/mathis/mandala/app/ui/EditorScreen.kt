@@ -333,7 +333,13 @@ fun EditorScreen(
             },
         )
     }
-    LaunchedEffect(pro.unlocked) { if (pro.unlocked) vm.closePro() }
+    // A purchase closes the Pro sheet; one opened from the menu closes the menu too, so the thanks shows (QA-6 finding 15).
+    LaunchedEffect(pro.unlocked) {
+        if (pro.unlocked) {
+            if (proRequest != null) showMenu = false
+            vm.closePro()
+        }
+    }
 
     // The menu's Widgets page lists what each widget shows; read again when it opens and after its settings page.
     val widgets by vm.widgets.collectAsStateWithLifecycle()
