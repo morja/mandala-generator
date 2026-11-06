@@ -4,7 +4,7 @@ Session: Purchase flow in the kit (unlock 1.1.0) · 6. November 2026
 
 ## QA-5: Kaufablauf aus dem Kit (unlock 1.1.0, unlock-ui 1.1.0) auf dem Emulator
 
-Umfang: der Teil der Billing-Testmatrix (Skill `app-release`, Abschnitt 5; Kit ADR-0002 und ADR-0004), der ohne Mathis und ohne Lizenztester-Konto geht. Dahlia ist seit dem 6. November 2026 die Referenz-App für den Kaufablauf des Kits (Entscheidung F14): das Sheet ist das `UnlockSheet` aus `one.tearoom:unlock-ui`, der Ablauf dahinter `AppUnlock` aus `one.tearoom:unlock`. Kit-Stand: `tearoom-android-kit` Commit `14812d1` (Tag `unlock-1.1.0` zeigt auf `4846f7d`, davor liegen zwei Korrekturen aus diesem Test, siehe Befunde 4 und 7).
+Umfang: der Teil der Billing-Testmatrix (Skill `app-release`, Abschnitt 5; Kit ADR-0002 und ADR-0004), der ohne Mathis und ohne Lizenztester-Konto geht. Dahlia ist seit dem 6. November 2026 die Referenz-App für den Kaufablauf des Kits (Entscheidung F14): das Sheet ist das `UnlockSheet` aus `one.tearoom:unlock-ui`, der Ablauf dahinter `AppUnlock` aus `one.tearoom:unlock`. Kit-Stand: `tearoom-android-kit` Commit `14812d1` beim Emulator-Test; der geprüfte Stand mit allen Korrekturen dieses Tages ist unlock 1.1.1, Tag `unlock-1.1.1` (Befunde 4 und 7 hier, dazu `PENDING` beim Wiederherstellen aus REV-3).
 
 Aufbau: Emulator `emulator-5556` (AVD Api34b, Android 14, Play Store ohne angemeldetes Konto, Gerätesprache Deutsch). Builds aus diesem Arbeitsstand: `app-free.apk` (zählt nicht als Pro) für den Kaufpfad, `app-fast.apk` (`pro_for_testing`) für den Besitzer-Zustand. Ohne Play-Konto antwortet Billing mit „nicht verfügbar“, deshalb sind Preis, Kauf und ausstehende Zahlung hier nicht prüfbar; genau diese Fälle stehen in der Checkliste unten.
 
@@ -32,7 +32,7 @@ Bilder liegen in `docs/qa/QA-5/`.
 
 Voraussetzungen wie in QA-4: Konto in der Play Console unter Lizenztests, App aus Google Play installiert, Pro vorher in der Bestellverwaltung erstattet („Remove entitlement“), damit das Konto ohne Kauf beginnt. Jeder Punkt gilt für dieses Sheet; die anderen Apps laufen über denselben Kit-Ablauf und brauchen danach nur ihren `bin/check` und einen Blick auf ihre Oberfläche.
 
-1. Internen Test-Build hochladen (`bin/release internal`), Kit-Commit `14812d1` in den Release-Notizen vermerken, auf dem Handy aus Play installieren.
+1. Internen Test-Build hochladen (`bin/release internal`), Kit-Stand `unlock-1.1.1` in den Release-Notizen vermerken, auf dem Handy aus Play installieren.
 
 2. Sheet öffnen (Menü → Dahlia → Dahlia Pro, oder eine Pro-Markierung im Editor): Preis steht im Knopf („Pro für 2,99 € kaufen“), kein Grund-Text, keine Meldung.
 

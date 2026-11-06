@@ -93,8 +93,8 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.11.0")
     // One-time "Pro" purchase (ADR-0007) through the shared tearoom-android-kit (ADR-0022): the flow in
     // unlock (Google Play Billing 9.1.0, the fragment 1.9.1 constraint), the sheet in unlock-ui.
-    implementation("one.tearoom:unlock:1.1.0")
-    implementation("one.tearoom:unlock-ui:1.1.0")
+    implementation("one.tearoom:unlock:1.1.1")
+    implementation("one.tearoom:unlock-ui:1.1.1")
 
     testImplementation("junit:junit:4.13.2")
 }
