@@ -95,7 +95,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import one.tearoom.unlock.UnlockMessage
 import one.tearoom.unlock.UnlockState
+import one.tearoom.unlock.textRes
 import java.io.File
 import java.util.UUID
 import kotlin.random.Random
@@ -229,19 +231,19 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
     val historyState: StateFlow<HistoryState> = _historyState.asStateFlow()
 
     private val threads = Runtime.getRuntime().availableProcessors()
-    /** The app-wide Pro purchase (ADR-0022); its Play connection stays open with the app. */
-    private val pro = Pro.unlock(application)
+    /**
+     * The app-wide Pro purchase (ADR-0022), the shared flow of tearoom-android-kit: whether Pro is
+     * unlocked, its price, a pending payment and purchase or restore feedback.
+     */
+    val proState: StateFlow<UnlockState> = Pro.state(application)
 
-    /** Whether Pro is unlocked, its price, a pending payment and purchase or restore feedback. */
-    val proState: StateFlow<UnlockState> = pro.state
-
-    fun buyPro(activity: android.app.Activity) = pro.purchase(activity)
+    fun buyPro(activity: android.app.Activity) = Pro.buy(activity)
 
     /** Asks Google Play again; on every resume (purchases elsewhere, refunds) and from "Try again". */
-    fun refreshPro() = pro.refresh()
+    fun refreshPro() = Pro.refresh(getApplication())
 
     /** Asks Google Play for an earlier purchase and reports the answer. */
-    fun restorePro() = pro.restore()
+    fun restorePro() = Pro.restore(getApplication())
 
     // ── The first-start tour (DM-22) ──
 
@@ -287,12 +289,13 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
     val proRequest: StateFlow<ProRequest?> = _proRequest.asStateFlow()
 
     init {
-        // Purchase and restore feedback shows inside the Pro sheet while it is open, otherwise as a message.
+        // Inside the Pro sheet the kit's panel shows Play's feedback; while it is closed it comes as a
+        // message. The thanks after a purchase arrives as the sheet closes itself, so it is shown either way.
         viewModelScope.launch {
-            combine(pro.state, _proRequest) { state, request -> state.message.takeIf { request == null } }.collect { shown ->
-                if (shown != null) {
-                    message(string(shown.textRes))
-                    pro.clearMessage()
+            Pro.messages(application).collect { shown ->
+                if (_proRequest.value == null || shown == UnlockMessage.UNLOCKED) {
+                    message(string(shown.textRes(Pro.texts)))
+                    Pro.clearMessage(application)
                 }
             }
         }
@@ -300,7 +303,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
 
     /** The Pro features the mandala uses that the user does not own: empty with Pro. */
     @OptIn(ExperimentalCoroutinesApi::class)
-    val missingPro: StateFlow<Set<ProFeature>> = combine(_params, pro.state) { p, pr -> if (pr.unlocked) emptySet() else ProFeatures.of(p) }
+    val missingPro: StateFlow<Set<ProFeature>> = combine(_params, proState) { p, pr -> if (pr.unlocked) emptySet() else ProFeatures.of(p) }
         .stateIn(viewModelScope, SharingStarted.Eagerly, emptySet())
 
     /** Opens the Pro sheet from an "About Pro" link or the mark on the mandala. */
@@ -309,8 +312,6 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
     }
 
     fun closePro() {
-        // Feedback already read in the sheet is not repeated; the thanks after a purchase is shown.
-        if (!pro.state.value.purchased) pro.clearMessage()
         _proRequest.value = null
     }
 
@@ -320,7 +321,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
      * it after removing them. Favourites are not gated (ADR-0016).
      */
     private fun mayKeep(action: String, step: () -> Unit): Boolean {
-        val missing = if (pro.state.value.unlocked) emptySet() else ProFeatures.of(_params.value)
+        val missing = if (proState.value.unlocked) emptySet() else ProFeatures.of(_params.value)
         if (missing.isEmpty()) return true
         _proRequest.value = ProRequest(missing, action, then = step)
         return false
@@ -379,16 +380,16 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
 
     /** Moving and zooming the mandala is part of Pro; without it the mandala stays on its preset. */
     fun setFraming(framing: Framing) {
-        if (pro.state.value.unlocked) _saveChoice.update { it.copy(framing = framing.clamped(), fit = Fit.HAND, framedByHand = true) }
+        if (proState.value.unlocked) _saveChoice.update { it.copy(framing = framing.clamped(), fit = Fit.HAND, framedByHand = true) }
     }
 
     /** The quote moving with the mandala, part of "Adjust" and of Pro (ADR-0016). */
     fun setTextFollowsMandala(follows: Boolean) {
-        if (pro.state.value.unlocked) _saveChoice.update { it.copy(textFollowsMandala = follows) }
+        if (proState.value.unlocked) _saveChoice.update { it.copy(textFollowsMandala = follows) }
     }
 
     /** Whether the quote moves with the mandala in exports: as chosen with Pro, never without. */
-    private fun effectiveTextFollows(): Boolean = pro.state.value.unlocked && _saveChoice.value.textFollowsMandala
+    private fun effectiveTextFollows(): Boolean = proState.value.unlocked && _saveChoice.value.textFollowsMandala
 
     /** A picture or a video of the layers turning (UX-1 12); anyone may look, keeping the video is Pro. */
     fun setMoving(moving: Boolean) = _saveChoice.update { it.copy(moving = moving) }
@@ -399,22 +400,22 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
 
     /** The last adjustment of saved images and wallpapers (ADR-0014), part of Pro. */
     fun setFinish(finish: Finish) {
-        if (pro.state.value.unlocked) _saveChoice.update { it.copy(finish = finish.clamped()) }
+        if (proState.value.unlocked) _saveChoice.update { it.copy(finish = finish.clamped()) }
     }
 
     fun setHomeBrightness(brightness: Double) {
-        if (pro.state.value.unlocked) _saveChoice.update { it.copy(homeBrightness = brightness.coerceIn(SaveChoice.MIN_HOME_BRIGHTNESS, 1.0)) }
+        if (proState.value.unlocked) _saveChoice.update { it.copy(homeBrightness = brightness.coerceIn(SaveChoice.MIN_HOME_BRIGHTNESS, 1.0)) }
     }
 
     /** The finish exports get: the chosen one with Pro, none without. */
-    private fun effectiveFinish(): Finish = if (pro.state.value.unlocked) _saveChoice.value.finish else Finish()
+    private fun effectiveFinish(): Finish = if (proState.value.unlocked) _saveChoice.value.finish else Finish()
 
     /** Fill zooms measured recently, by mandala and shape; touched only on the main thread. */
     private val fillZooms = LinkedHashMap<Pair<MandalaParameters, Double>, Double>()
 
     /** The framing the save sheet shows and images are drawn with, for the current mandala. */
     @OptIn(ExperimentalCoroutinesApi::class)
-    val shownFraming: StateFlow<Framing> = combine(_saveChoice, _params, _screenAspect, pro.state) { c, p, a, pr -> FramingInput(c, p, Editing.aspect(c.format, a), pr.unlocked) }
+    val shownFraming: StateFlow<Framing> = combine(_saveChoice, _params, _screenAspect, proState) { c, p, a, pr -> FramingInput(c, p, Editing.aspect(c.format, a), pr.unlocked) }
         .mapLatest { framingFor(it.choice, it.params, it.aspect, it.pro) }
         .stateIn(viewModelScope, SharingStarted.Eagerly, Framing())
 
@@ -595,7 +596,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         viewModelScope.launch {
             // The save sheet's preview, only while the sheet is open.
             @OptIn(FlowPreview::class)
-            combine(_params, _saveChoice, _screenAspect, _saveOpen, pro.state) { p, c, a, open, pr -> if (open) FrameRequest(p, c, a, pr.unlocked) else null }
+            combine(_params, _saveChoice, _screenAspect, _saveOpen, proState) { p, c, a, open, pr -> if (open) FrameRequest(p, c, a, pr.unlocked) else null }
                 .debounce(FRAME_DEBOUNCE_MS)
                 .collectLatest { request -> if (request != null) renderFramePreview(request) }
         }
@@ -794,7 +795,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
     }
 
     /** Surprise mandalas stay within the free line without Pro, so they can always be kept. */
-    private fun surpriseLayers(): Int = if (pro.state.value.unlocked) Randomize.MAX_LAYERS else ProFeatures.FREE_LAYERS
+    private fun surpriseLayers(): Int = if (proState.value.unlocked) Randomize.MAX_LAYERS else ProFeatures.FREE_LAYERS
 
     private val _candidate = MutableStateFlow<Candidate?>(null)
 
@@ -1159,12 +1160,12 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
      * without supersampling so it needs no more memory than the normal export.
      */
     fun saveImage(large: Boolean) {
-        if (large && !pro.state.value.unlocked) return
+        if (large && !proState.value.unlocked) return
         if (!mayKeep(string(R.string.action_save)) { saveImage(large) }) return
         val choice = _saveChoice.value
         val (w, h) = Editing.exportSize(choice.format, _screenAspect.value, large)
         val params = _params.value
-        val framing: suspend () -> Framing = { framingFor(choice, params, aspectOf(choice.format), pro.state.value.unlocked) }
+        val framing: suspend () -> Framing = { framingFor(choice, params, aspectOf(choice.format), proState.value.unlocked) }
         renderFullSize(string(R.string.export_creating_image), w, h, large, framing, effectiveTextFollows(), finish = effectiveFinish()) { image, fileName ->
             exportStep(string(R.string.export_saving_to_pictures))
             withContext(Dispatchers.IO) { GalleryExport.savePng(getApplication(), image, fileName) }
@@ -1181,7 +1182,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
     fun setWallpaper(target: WallpaperTarget, filled: Boolean = false) {
         if (!mayKeep(string(R.string.action_set_wallpaper)) { setWallpaper(target, filled) }) return
         val choice = _saveChoice.value
-        val large = pro.state.value.unlocked
+        val large = proState.value.unlocked
         val (w, h) = Editing.exportSize(Editing.SaveFormat.SCREEN, _screenAspect.value, large)
         val screen = aspectOf(Editing.SaveFormat.SCREEN)
         val params = _params.value
@@ -1224,7 +1225,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
      * The layers are drawn once; each frame turns and blends them and runs the scene effects.
      */
     fun saveVideo(large: Boolean, share: Boolean) {
-        if (!pro.state.value.unlocked) {
+        if (!proState.value.unlocked) {
             _proRequest.value = ProRequest(missingPro.value, note = string(R.string.save_video_pro))
             return
         }
@@ -1251,7 +1252,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
                     val job = coroutineContext.job
                     val options = LayerAnimation.options(
                         RenderOptions(
-                            width = w, height = h, framing = framing, textFollowsMandala = pro.state.value.unlocked && choice.textFollowsMandala,
+                            width = w, height = h, framing = framing, textFollowsMandala = proState.value.unlocked && choice.textFollowsMandala,
                             supersample = false, finish = choice.finish, threads = threads,
                             textRenderer = textRenderer, imageLoader = imageLoader, isCancelled = { !job.isActive },
                         ),
@@ -1312,7 +1313,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
      * layers' lines and the emblem, square and centred, without the pixel steps.
      */
     fun saveLineDrawing(look: VectorExport.Look, uri: Uri) {
-        if (!pro.state.value.unlocked || _busy.value) return
+        if (!proState.value.unlocked || _busy.value) return
         val snapshot = _params.value
         _busy.value = true
         _export.value = ExportProgress(string(R.string.export_creating_line_drawing))
@@ -1342,7 +1343,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
      * and darker by `homeBrightness` on the home screen; drawn once, finished twice.
      */
     fun setWallpaperPair() {
-        if (!pro.state.value.unlocked) return
+        if (!proState.value.unlocked) return
         val choice = _saveChoice.value
         val (w, h) = Editing.exportSize(Editing.SaveFormat.SCREEN, _screenAspect.value, large = true)
         val params = _params.value
@@ -1367,7 +1368,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         WidgetRedraw.requestChanged(application)
         viewModelScope.launch {
             // With Pro the daily turn moves on, so the widgets that follow it may change.
-            pro.state.map { it.unlocked }.distinctUntilChanged().drop(1).collect { WidgetRedraw.requestChanged(application) }
+            proState.map { it.unlocked }.distinctUntilChanged().drop(1).collect { WidgetRedraw.requestChanged(application) }
         }
     }
 
@@ -1418,7 +1419,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
             _daily.update { it.copy(on = false) }
             return
         }
-        if (!pro.state.value.unlocked || _busy.value) return
+        if (!proState.value.unlocked || _busy.value) return
         if (_favorites.value.isEmpty()) {
             message(string(R.string.message_daily_needs_favourite))
             return
@@ -1452,7 +1453,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
     val live: StateFlow<LiveSettings> = _live.asStateFlow()
 
     fun setLiveSettings(settings: LiveSettings) {
-        if (!pro.state.value.unlocked) return
+        if (!proState.value.unlocked) return
         _live.value = settings
         LiveWallpaper.setSettings(getApplication(), settings)
     }
@@ -1463,7 +1464,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
      * opens Android's preview, which shows it at once.
      */
     fun useForLiveWallpaper(openPicker: () -> Unit) {
-        if (!pro.state.value.unlocked) return openPicker()
+        if (!proState.value.unlocked) return openPicker()
         if (_busy.value) return
         val app = getApplication<Application>()
         val params = _params.value

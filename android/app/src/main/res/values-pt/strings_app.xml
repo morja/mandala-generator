@@ -99,6 +99,7 @@
     <string name="pro_restore_not_found">O Google Play não encontrou nenhuma compra do Pro para esta Conta do Google. Se você comprou o Pro com outra Conta do Google, mude para ela na Play Store e toque em “Restaurar compra” novamente.</string>
     <string name="pro_restore_unreachable">Não foi possível acessar o Google Play, então nada foi verificado. Tente novamente mais tarde.</string>
     <string name="pro_price_refreshing">O preço está sendo atualizado. Toque em Comprar novamente em instantes.</string>
+    <string name="pro_loading_price">Carregando o preço…</string>
     <string name="pro_purchase_not_started">O Google Play não conseguiu abrir a compra. Tente novamente.</string>
     <string name="pro_purchase_incomplete">A compra não foi concluída.</string>
     <string name="export_creating_video">Criando o vídeo</string>

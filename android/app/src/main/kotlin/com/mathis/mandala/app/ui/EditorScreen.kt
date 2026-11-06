@@ -17,9 +17,9 @@ import com.mathis.mandala.app.PreviewSize
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.ui.semantics.onClick
 import androidx.activity.compose.LocalActivity
-import one.tearoom.unlock.UnlockMessage
-import one.tearoom.unlock.UnlockState
-import com.mathis.mandala.app.textRes
+import one.tearoom.unlock.ui.UnlockSheet
+import one.tearoom.unlock.ui.UnlockStyle
+import com.mathis.mandala.app.Pro
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import com.mathis.mandala.app.ProRequest
@@ -317,13 +317,20 @@ fun EditorScreen(
         )
     }
     proRequest?.let { request ->
-        ProSheet(
-            pro, request,
-            onBuy = { activity?.let(vm::buyPro) },
-            onRetry = vm::refreshPro,
-            onRestore = vm::restorePro,
-            onWithout = vm::continueWithoutPro,
+        // The purchase surface and flow come from the kit; what Pro means for this mandala is Dahlia's.
+        UnlockSheet(
+            Pro,
+            title = stringResource(R.string.editor_pro_title),
             onDismiss = vm::closePro,
+            style = UnlockStyle(horizontalPadding = Spacing.lg, bottomPadding = Spacing.xl, gap = Spacing.sm, groupGap = Spacing.sm),
+            intro = { ProIntro(request) },
+            actions = {
+                if (request.features.isNotEmpty()) {
+                    OutlinedButton(colors = outlinedColors(), onClick = vm::continueWithoutPro, modifier = Modifier.fillMaxWidth()) {
+                        Text(request.action?.let { stringResource(R.string.editor_pro_without, it) } ?: stringResource(R.string.editor_pro_remove))
+                    }
+                }
+            },
         )
     }
     LaunchedEffect(pro.unlocked) { if (pro.unlocked) vm.closePro() }
@@ -925,72 +932,35 @@ private fun MoveOverlay(input: MoveInput, guide: Color, halo: Color) {
 }
 
 /**
- * What Pro adds and the purchase button with Google Play's price (ADR-0016). Opened for a step the
- * mandala's Pro features block, it names them and offers the step without them.
+ * Why the Pro sheet opened (ADR-0016): the Pro features the mandala uses, what the user was about to do,
+ * a note, and what Pro adds. The purchase itself is the kit's `UnlockSheet`.
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun ProSheet(
-    pro: UnlockState,
-    request: ProRequest,
-    onBuy: () -> Unit,
-    onRetry: () -> Unit,
-    onRestore: () -> Unit,
-    onWithout: () -> Unit,
-    onDismiss: () -> Unit,
-) {
+private fun ProIntro(request: ProRequest) {
     val t = LocalTokens.current
-    ModalBottomSheet(onDismissRequest = onDismiss) {
-        Column(Modifier.padding(horizontal = Spacing.lg).padding(bottom = Spacing.xl), verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
-            Text(stringResource(R.string.editor_pro_title), style = MaterialTheme.typography.titleLarge)
-            if (request.features.isNotEmpty()) {
-                Text(
-                    if (request.action != null) stringResource(R.string.editor_pro_uses_keep)
-                    else stringResource(R.string.editor_pro_uses),
-                    style = MaterialTheme.typography.bodyMedium,
-                )
-                Column(Modifier.padding(start = Spacing.md)) {
-                    for (feature in request.features) Text(stringResource(R.string.editor_pro_feature_item, stringResource(feature.labelRes)), style = MaterialTheme.typography.bodyMedium)
-                }
-            }
-            request.note?.let { Text(it, style = MaterialTheme.typography.bodyMedium) }
-            Text(
-                stringResource(
-                    R.string.editor_pro_summary,
-                    stringResource(R.string.editor_pro_adds_making),
-                    stringResource(R.string.editor_pro_adds_saving),
-                    stringResource(R.string.editor_pro_adds_wallpapers),
-                    stringResource(R.string.editor_pro_try),
-                    stringResource(R.string.editor_pro_once),
-                ),
-                style = MaterialTheme.typography.bodySmall,
-                color = t.textMuted,
-            )
-            Button(onClick = onBuy, enabled = pro.canBuy, modifier = Modifier.fillMaxWidth()) {
-                Text(pro.price?.let { stringResource(R.string.editor_pro_buy_for, it) } ?: stringResource(R.string.editor_pro_buy))
-            }
-            if (request.features.isNotEmpty()) {
-                OutlinedButton(colors = outlinedColors(), onClick = onWithout, modifier = Modifier.fillMaxWidth()) {
-                    Text(request.action?.let { stringResource(R.string.editor_pro_without, it) } ?: stringResource(R.string.editor_pro_remove))
-                }
-            }
-            // Feedback from Google Play: a pending payment, why there is no price, the last purchase or restore.
-            if (pro.pending) {
-                Text(stringResource(R.string.pro_pending), style = MaterialTheme.typography.bodySmall, color = t.textMuted)
-            }
-            pro.priceProblem?.takeIf { !pro.loadingPrice }?.let { problem ->
-                Text(stringResource(problem.textRes), style = MaterialTheme.typography.bodySmall, color = t.textMuted)
-            }
-            pro.message?.takeIf { !(it == UnlockMessage.PENDING && pro.pending) }?.let { message ->
-                Text(stringResource(message.textRes), style = MaterialTheme.typography.bodyMedium)
-            }
-            // One per line, so long translations fit at 360 dp.
-            if (pro.priceProblem != null && !pro.loadingPrice) {
-                TextButton(onClick = onRetry) { Text(stringResource(R.string.editor_pro_retry)) }
-            }
-            TextButton(onClick = onRestore, enabled = !pro.busy) { Text(stringResource(R.string.editor_pro_restore)) }
+    if (request.features.isNotEmpty()) {
+        Text(
+            if (request.action != null) stringResource(R.string.editor_pro_uses_keep)
+            else stringResource(R.string.editor_pro_uses),
+            style = MaterialTheme.typography.bodyMedium,
+        )
+        Column(Modifier.padding(start = Spacing.md)) {
+            for (feature in request.features) Text(stringResource(R.string.editor_pro_feature_item, stringResource(feature.labelRes)), style = MaterialTheme.typography.bodyMedium)
         }
     }
+    request.note?.let { Text(it, style = MaterialTheme.typography.bodyMedium) }
+    Text(
+        stringResource(
+            R.string.editor_pro_summary,
+            stringResource(R.string.editor_pro_adds_making),
+            stringResource(R.string.editor_pro_adds_saving),
+            stringResource(R.string.editor_pro_adds_wallpapers),
+            stringResource(R.string.editor_pro_try),
+            stringResource(R.string.editor_pro_once),
+        ),
+        style = MaterialTheme.typography.bodySmall,
+        color = t.textMuted,
+    )
 }
 
 /**
