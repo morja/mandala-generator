@@ -1,6 +1,6 @@
 # ADR-0005 · Android app shell: one screen, ViewModel, gallery export
 
-Status: proposed, 19 October 2026
+Status: accepted, 6 November 2026 (Mathis, after REV-1; proposed 19 October 2026 and in production since Android 1.4)
 
 ## Decision
 

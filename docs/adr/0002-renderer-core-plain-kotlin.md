@@ -1,6 +1,6 @@
 # ADR-0002 · Renderer as a plain Kotlin module shared by app and JVM tool
 
-Status: decided, 19 October 2026 (user decision)
+Status: accepted, 19 October 2026 (user decision; status word aligned on 6 November 2026)
 
 ## Decision
 

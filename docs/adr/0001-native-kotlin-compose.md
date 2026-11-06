@@ -1,6 +1,6 @@
 # ADR-0001 · Native Android app in Kotlin with Jetpack Compose
 
-Status: decided, 19 October 2026 (user decision, following the evaluation in this session)
+Status: accepted, 19 October 2026 (user decision, following the evaluation in this session; status word aligned on 6 November 2026)
 
 ## Decision
 

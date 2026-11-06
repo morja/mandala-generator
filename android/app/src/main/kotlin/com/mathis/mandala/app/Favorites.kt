@@ -5,6 +5,7 @@ import com.mathis.mandala.core.MandalaParameters
 import com.mathis.mandala.core.Quote
 import com.mathis.mandala.core.SettingsJson
 import java.io.File
+import java.io.IOException
 
 /** Favourite list rules. Newest first, as in the macOS app. */
 object Favorites {
@@ -52,14 +53,21 @@ class FavoritesStore(private val file: File) {
     fun save(favorites: List<Favorite>) = writeAtomically(file, SettingsJson.encodeFavorites(favorites))
 }
 
-/** Writes to a temporary file first, so a crash never leaves half a file behind. */
+/**
+ * Writes to a temporary file first and renames it over [file], so a crash never leaves half a file
+ * behind and a reader meanwhile sees the old or the new file, never none. The temporary file has
+ * its own name per write, because several stores share this function and may save at the same time.
+ */
 fun writeAtomically(file: File, text: String) {
-    file.parentFile?.mkdirs()
-    val tmp = File(file.parentFile, file.name + ".tmp")
-    tmp.writeText(text)
-    if (!tmp.renameTo(file)) {
-        file.delete()
-        tmp.renameTo(file)
+    val dir = file.absoluteFile.parentFile ?: throw IOException("no folder for $file")
+    dir.mkdirs()
+    val tmp = File.createTempFile(file.name, ".tmp", dir)
+    try {
+        tmp.writeText(text)
+        if (!tmp.renameTo(file)) throw IOException("could not replace $file")
+    } catch (e: Exception) {
+        tmp.delete()
+        throw e
     }
 }
 
