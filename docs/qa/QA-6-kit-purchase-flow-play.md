@@ -50,7 +50,7 @@ Die Nummern 1–14 entsprechen den Punkten der Checkliste in QA-5, ab 15 folgen 
 
 ## Behoben nach dem Lauf
 
-- Befund 15: `EditorScreen.kt` schließt nach einem Kauf auch das Menü, wenn das Pro-Sheet offen war; die Danke-Meldung erscheint dann im Editor. Auf dem Gerät noch nicht geprüft (braucht einen neuen internen Build und einen neuen Kauf über das Menü).
+- Befund 15: `EditorScreen.kt` schließt nach einem Kauf auch das Menü, wenn das Pro-Sheet offen war; die Danke-Meldung erscheint dann im Editor. Auf dem Gerät geprüft mit 1.8.8 (Code 23) aus dem internen Track: Pro-Recht aus `GPA.3313-0970-1888-40487` entfernt, neu gekauft über Menü → Dahlia → Dahlia Pro (`GPA.3324-5549-9510-45950`, 20:37), das Menü schließt, „Danke! Pro ist freigeschaltet.“ erscheint. Bild `p15-thanks-after-fix.png`.
 
 - Befund 16: `pro_restore_not_found` in allen zehn Sprachen neu: Play ordnet den Kauf dem installierenden Konto zu; mit dem anderen Konto deinstallieren, im Play Store wechseln, neu installieren; der Hinweis, dass Favoriten dabei verloren gehen, wenn Android sie nicht aus der Sicherung zurückholt. Lazy Moves hatte denselben Rat und hat ihn in `84a85c1` korrigiert.
 
@@ -58,7 +58,7 @@ Die Nummern 1–14 entsprechen den Punkten der Checkliste in QA-5, ab 15 folgen 
 
 - Flugmodus aus, Gerät auf dem Startbildschirm.
 
-- Dahlia 1.8.7 (Code 22) aus dem internen Track auf dem Tablet, installiert von koblin@gmail.com, Pro gekauft (`GPA.3313-0970-1888-40487`, nicht erstatten).
-- Erstattet: `GPA.3389-6941-8135-01035` (Vorbereitung), `GPA.3315-3991-6700-35372` (Punkt 9), `GPA.3305-1018-7848-75767` (von Play selbst, Punkt 12).
+- Dahlia 1.8.8 (Code 23) aus dem internen Track auf dem Tablet, installiert von koblin@gmail.com, Pro gekauft (`GPA.3324-5549-9510-45950`, nicht erstatten).
+- Erstattet: `GPA.3389-6941-8135-01035` (Vorbereitung), `GPA.3313-0970-1888-40487` (Punkt 3, für die Prüfung von Befund 15), `GPA.3315-3991-6700-35372` (Punkt 9), `GPA.3305-1018-7848-75767` (von Play selbst, Punkt 12).
 - Play Store auf dem Tablet: Daten am 6. November gelöscht (Mathis' OK), Konto koblin@gmail.com aktiv, dojolava@gmail.com angemeldet.
-- Interner Track: 1.8.7 (Code 22); Produktion unverändert 1.8.5 (Code 20). Kein Tag gesetzt.
+- 1.8.8 (Code 23) mit beiden Korrekturen in die Produktion befördert, Tag `android-v1.8.8` (siehe `docs/store/STORE-1-play-listing.md`).
