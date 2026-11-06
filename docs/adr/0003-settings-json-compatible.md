@@ -8,7 +8,7 @@ The Android app reads and writes the same settings JSON as the macOS app (`Manda
 
 - same field names and defaults as the Swift `decodeSafe` calls;
 - unknown enum values fall back to the default (style → `mixed`, blend → `screen`, background → `gradient`);
-- unknown fields are ignored;
+- unknown fields are kept and written back (since 6 November 2026, below); before that they were ignored;
 - 64-bit seeds are unsigned (`ULong`); values above `Long.MAX_VALUE` occur in real files;
 - layers not ported yet would be kept as raw JSON so a round trip loses nothing (text, graffiti and drawing were, until they were ported on 19 October 2026; all layers are typed now).
 
@@ -21,3 +21,14 @@ Favourites and settings can move between Mac and phone, and the parity tests (AD
 ## Consequences
 
 Changes to the Swift model must be mirrored in `Model.kt`. Fields added after the port, with the default a missing or unknown value decodes to: `emblemLayer.glowMode` (`"shadow"`, the original glow; or `"light"`), added with TUNE-1 on 22 October 2026. TUNE-2 adds `effectsLayer.smoother` (25 October 2026), default and fallback `0.0`, for Gaussian softening. Custom palettes are not part of the file in the macOS app (`paletteIndex` refers to built-in palettes first). Android adds `customPalette` on layers and the emblem (ADR-0021, 26 October 2026), default and fallback none; the Mac ignores it and draws the built-in palette `paletteIndex` names.
+
+Round trip without loss (6 November 2026, Mathis, F8 of the Cockpit review REV-2): both apps keep the
+fields they do not know and write them back, so a file from a newer version or from the other
+platform loses nothing on the way. The rule is the same on both sides (`ParamsJson` in `core`,
+`ParamsJSON` on the Mac): unknown keys of the root object and of the six fixed layer objects
+(`baseLayer`, `effectsLayer`, `graffitiLayer`, `drawingLayer`, `textLayer`, `emblemLayer`) travel
+with the parameters (`extras`) and are merged back on save, a typed field always winning over a kept
+one; unknown fields inside elements of the `layers` list are not kept, since that list is reordered
+and shortened. Every written settings object carries `formatVersion` (1 today), which is not kept
+from the file: an app always writes its own. Nothing warns yet when a file's version is higher;
+`SettingsJson.formatVersion(text)` reads it for the day a warning is wanted.

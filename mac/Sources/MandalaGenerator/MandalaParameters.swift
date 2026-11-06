@@ -60,7 +60,7 @@ struct BaseLayerSettings: Equatable, Codable {
     // Overall
     var opacity: Double     = 1.0
 
-    enum CodingKeys: String, CodingKey {
+    enum CodingKeys: String, CodingKey, CaseIterable {
         case isEnabled, type, hue, saturation, brightness, hue2, saturation2, brightness2
         case isRadial, gradientAngle, patternType, patternScale, patternSharpness
         case grainAmount, grainColored, imageURL, imageBlend, opacity
@@ -121,7 +121,7 @@ struct EffectsLayerSettings: Equatable, Codable {
     var starsSeed: UInt64      = 44
     var glitterSeed: UInt64    = 55
 
-    enum CodingKeys: String, CodingKey {
+    enum CodingKeys: String, CodingKey, CaseIterable {
         case isEnabled, dimming, erasure, highlights, stars, vignette, chromatic
         case brightness, contrast, relief, reliefAngle
         case wash, sepia, fade, bloom, grain, glitter, localContrast, smoother
@@ -203,7 +203,7 @@ struct DrawingLayerSettings: Equatable, Codable {
     var currentSaturation: Double = 1.0
     var currentBrightness: Double = 0.9
 
-    enum CodingKeys: String, CodingKey {
+    enum CodingKeys: String, CodingKey, CaseIterable {
         case isEnabled, strokes, symmetry, glowIntensity
         case strokeWeight, blendMode, opacity
         case currentHue, currentSaturation, currentBrightness
@@ -284,7 +284,7 @@ struct GraffitiLayerSettings: Equatable, Codable {
     var currentBrushSize: Double  = 0.05
     var currentOpacity: Double    = 0.6
 
-    enum CodingKeys: String, CodingKey {
+    enum CodingKeys: String, CodingKey, CaseIterable {
         case isEnabled, strokes, symmetry, blendMode, opacity, softness
         case currentHue, currentSaturation, currentBrightness, currentBrushSize, currentOpacity
     }
@@ -459,7 +459,7 @@ struct EmblemLayerSettings: Equatable, Codable {
     var offsetX: Double             = 0
     var offsetY: Double             = 0
 
-    enum CodingKeys: String, CodingKey {
+    enum CodingKeys: String, CodingKey, CaseIterable {
         case isEnabled, motif, rendering, frame, size, weight, paletteIndex, colorPosition, colorSpread
         case glow, opacity, blendMode, seed, branching, roots, organic, flowerVariant, petals, rotation
         case offsetX, offsetY, glowMode
@@ -530,7 +530,7 @@ struct TextLayerSettings: Equatable, Codable {
     var authorScale: Double = 0.667 // author line font size relative to main font size
     var authorItalic: Bool = true   // render author line in italic
 
-    enum CodingKeys: String, CodingKey {
+    enum CodingKeys: String, CodingKey, CaseIterable {
         case isEnabled, text, fontName, fontSize, glow
         case shadowOpacity, shadowBlur, shadowOffsetX, shadowOffsetY
         case shadowHue, shadowSaturation, shadowBrightness
@@ -833,6 +833,15 @@ struct MandalaParameters: Equatable, Codable {
     // Transient: populated by AppState before rendering; not persisted.
     var resolvedPalettes: [ColorPalette] = []
 
+    /// Fields this app does not know, from the file these parameters were read from (JSON of the
+    /// unknown keys of the root object and of the six fixed layer objects). `ParamsJSON` writes them
+    /// back unchanged (ADR-0003), so a file from a newer app or from Android survives a round trip.
+    /// Not part of `==`: two settings that draw the same are the same.
+    var extras: Data? = nil
+
+    /// The version this app writes; a file with a higher one comes from a newer app (`ParamsJSON`).
+    let formatVersion: Int = ParamsJSON.formatVersion
+
     // Internal working fields used by renderer function signatures — overwritten per layer in render loop. Do NOT expose in UI.
     var symmetry: Int = 6
     var complexity: Double = 0.6
@@ -853,10 +862,11 @@ struct MandalaParameters: Equatable, Codable {
         }
     }
 
-    enum CodingKeys: String, CodingKey {
+    enum CodingKeys: String, CodingKey, CaseIterable {
         case layers, baseLayer, effectsLayer, graffitiLayer, drawingLayer, textLayer, emblemLayer
         case seed, previewSize, outputSize, outputSizeCustom, outputFormat, outputShape
         case symmetry, complexity, density, glowIntensity, colorDrift, ripple, wash, abstractLevel, paletteIndex
+        case formatVersion
     }
 
     init() {}

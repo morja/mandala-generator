@@ -10,7 +10,7 @@ import kotlinx.serialization.Serializable
 data class Favorite(
     /** UUID string. */
     val id: String,
-    val parameters: MandalaParameters,
+    @Serializable(with = ParamsJson::class) val parameters: MandalaParameters,
     /** JPEG thumbnail (about 128 px), base64 encoded as Swift's JSONEncoder writes `Data`. */
     val thumbnailData: String = "",
     val name: String = "",

@@ -2,6 +2,7 @@ package com.mathis.mandala.core
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonObject
 
 // Settings model, field for field compatible with the macOS app's MandalaParameters.swift.
 // Defaults mirror the Swift `decodeSafe` defaults so partial or older files load the same way.
@@ -381,6 +382,13 @@ data class MandalaParameters(
     val wash: Double = 0.0,
     val abstractLevel: Double = 0.3,
     val paletteIndex: Int = 0,
+    /**
+     * Fields this app does not know, from the file these parameters were read from: unknown keys of
+     * the root object and of the six fixed layer objects, as `{"key": value, "effectsLayer": {"key":
+     * value}}`. Written back unchanged by [ParamsJson] (ADR-0003), so a file from a newer app or from
+     * the Mac survives a round trip. Unknown fields inside the `layers` list are not kept.
+     */
+    val extras: JsonObject = JsonObject(emptyMap()),
 ) {
     /** Export size after resolving the "custom" preset (outputSize == 0). */
     val resolvedOutputSize: Int

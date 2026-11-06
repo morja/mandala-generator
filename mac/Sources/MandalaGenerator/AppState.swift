@@ -425,14 +425,14 @@ class AppState: ObservableObject {
     }
 
     private func saveHistory() {
-        guard let data = try? JSONEncoder().encode(history) else { return }
+        guard let data = try? ParamsJSON.encode(history) else { return }
         try? data.write(to: historyFileURL)
     }
 
     @discardableResult
     private func loadHistory() -> Bool {
         guard let data = try? Data(contentsOf: historyFileURL),
-              let loaded = try? JSONDecoder().decode([MandalaParameters].self, from: data),
+              let loaded = try? ParamsJSON.decodeList(data),
               !loaded.isEmpty else { return false }
         history = loaded
         historyIndex = history.count - 1
@@ -486,13 +486,13 @@ class AppState: ObservableObject {
     }
 
     private func saveFavorites() {
-        guard let data = try? JSONEncoder().encode(favorites) else { return }
+        guard let data = try? ParamsJSON.encode(favorites) else { return }
         try? data.write(to: favoritesFileURL)
     }
 
     private func loadFavorites() {
         guard let data   = try? Data(contentsOf: favoritesFileURL),
-              let loaded = try? JSONDecoder().decode([Favorite].self, from: data) else { return }
+              let loaded = try? ParamsJSON.decodeFavorites(data) else { return }
         favorites = loaded
     }
 
@@ -574,7 +574,7 @@ class AppState: ObservableObject {
         panel.nameFieldStringValue = suggestedFilename() + ".json"
         panel.begin { [weak self] response in
             guard response == .OK, let url = panel.url, let self else { return }
-            guard let data = try? JSONEncoder().encode(self.parameters) else { return }
+            guard let data = try? ParamsJSON.encode(self.parameters) else { return }
             try? data.write(to: url)
         }
     }
@@ -588,7 +588,7 @@ class AppState: ObservableObject {
         panel.begin { [weak self] response in
             guard response == .OK, let url = panel.url, let self else { return }
             guard let data = try? Data(contentsOf: url),
-                  let params = try? JSONDecoder().decode(MandalaParameters.self, from: data) else { return }
+                  let params = try? ParamsJSON.decode(data) else { return }
             Task { @MainActor [weak self] in
                 self?.parameters = params
             }
