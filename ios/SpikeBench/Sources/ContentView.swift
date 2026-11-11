@@ -27,6 +27,8 @@ struct ContentView: View {
             .padding()
         }
         .onAppear {
+            // Keep the screen on: the phone must not lock during a run of several minutes.
+            UIApplication.shared.isIdleTimerDisabled = true
             if ProcessInfo.processInfo.arguments.contains("-autorun") { bench.start(threads: nil) }
         }
     }
