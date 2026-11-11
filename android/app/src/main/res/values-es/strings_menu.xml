@@ -52,6 +52,7 @@
     <string name="menu_theme_light">Claro</string>
     <string name="menu_guide">Guía</string>
     <string name="menu_about">Información</string>
+    <string name="menu_rate">Valorar la app</string>
     <string name="menu_dahlia_detail">Guía, Información, Pro</string>
     <string name="menu_dahlia_detail_pro">Guía, Información, Pro activo</string>
     <string name="menu_pro_detail">Cinco capas, emblemas, texto, fondos</string>

@@ -23,6 +23,8 @@ object EditorIcons {
 
     // Line icons for the menu sheet: an accent line over a soft fill of the same colour.
     val StarLine = line(STAR, soft = STAR)
+    /** A speech bubble: rating the app on Google Play (the star is Pro's). */
+    val Rate = line(BUBBLE, soft = BUBBLE)
     val Share = line("M8.5,11H6a1,1 0 0,0 -1,1v7.5a1,1 0 0,0 1,1h12a1,1 0 0,0 1,-1V12a1,1 0 0,0 -1,-1h-2.5M12,15V3.5M8.5,7L12,3.5 15.5,7",
         soft = "M5,11h14v8.5a1,1 0 0,1 -1,1H6a1,1 0 0,1 -1,-1z")
     val Wallpaper = line("M6,4.5h12a2.5,2.5 0 0,1 2.5,2.5v10a2.5,2.5 0 0,1 -2.5,2.5H6a2.5,2.5 0 0,1 -2.5,-2.5V7A2.5,2.5 0 0,1 6,4.5z" +
@@ -87,6 +89,7 @@ object EditorIcons {
     val Hidden = icon(EYE, strike = true)
 
     private const val DIE = "M7.5,3.5h9a4,4 0 0,1 4,4v9a4,4 0 0,1 -4,4h-9a4,4 0 0,1 -4,-4v-9a4,4 0 0,1 4,-4z"
+    private const val BUBBLE = "M5.5,4.5h13a2,2 0 0,1 2,2v8a2,2 0 0,1 -2,2h-6.5l-4.5,3.5v-3.5h-2a2,2 0 0,1 -2,-2v-8a2,2 0 0,1 2,-2z"
     private const val STAR = "M12,3.5l2.6,5.3 5.8,0.8 -4.2,4.1 1,5.8 -5.2,-2.7 -5.2,2.7 1,-5.8 -4.2,-4.1 5.8,-0.8z"
 
     /** How strongly the soft fill under a line icon shows the icon's colour. */

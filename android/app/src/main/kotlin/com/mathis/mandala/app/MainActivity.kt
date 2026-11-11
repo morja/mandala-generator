@@ -40,6 +40,8 @@ class MainActivity : ComponentActivity() {
         val fromHistory = intent.flags and Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY != 0
         if (savedInstanceState == null && !fromHistory) widgetFavourite = intent.getStringExtra(MandalaWidget.EXTRA_FAVOURITE_ID)
         val appearance = Appearance(this)
+        // Every start counts as an opening for the rating prompt; one day counts once.
+        Review.observe(this)
         setContent {
             var light by remember { mutableStateOf(appearance.light) }
             // Status and navigation bar icons follow the app's theme, not the phone's setting.
@@ -63,6 +65,7 @@ class MainActivity : ComponentActivity() {
                     EditorScreen(
                         vm,
                         onAbout = { about = true },
+                        covered = about,
                         lightTheme = light,
                         onLightTheme = {
                             light = it

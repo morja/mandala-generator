@@ -65,10 +65,13 @@ android {
         }
     }
 
-    // The launcher icon with a mark, shared by the local builds; release keeps the plain one.
+    // The launcher icon with a mark and the rating prompt's adb commands, shared by the local builds;
+    // release keeps the plain icon and has no receiver.
     sourceSets {
         for (name in listOf("debug", "fast", "free")) {
             getByName(name).res.srcDir("src/localBuild/res")
+            // The rating prompt's adb commands (kit ReviewDebugReceiver), never in a release.
+            getByName(name).manifest.srcFile("src/localBuild/AndroidManifest.xml")
         }
     }
 
@@ -95,6 +98,8 @@ dependencies {
     // unlock (Google Play Billing 9.1.0, the fragment 1.9.1 constraint), the sheet in unlock-ui.
     implementation("one.tearoom:unlock:1.1.1")
     implementation("one.tearoom:unlock-ui:1.1.1")
+    // The rating prompt and the listing for the menu row (kit ADR-0006), which brings Play In-App Review.
+    implementation("one.tearoom:review:1.0.0")
 
     testImplementation("junit:junit:4.13.2")
 }
