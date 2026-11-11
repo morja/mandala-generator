@@ -1,0 +1,34 @@
+# SPIKE-3 benchmark app. The Xcode project is generated from this file: xcodegen generate
+name: SpikeBench
+options:
+  bundleIdPrefix: one.tearoom
+  deploymentTarget:
+    iOS: "17.0"
+settings:
+  base:
+    DEVELOPMENT_TEAM: 6735ZK5WKV
+    CODE_SIGN_STYLE: Automatic
+    SWIFT_VERSION: "6.0"
+    SWIFT_STRICT_CONCURRENCY: minimal
+targets:
+  SpikeBench:
+    type: application
+    platform: iOS
+    sources:
+      - Sources
+      - path: Bench
+        type: folder
+        buildPhase: resources
+    dependencies:
+      - framework: Frameworks/MandalaCore.xcframework
+        embed: false
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: one.tearoom.dahlia.spike3
+        PRODUCT_NAME: SpikeBench
+        TARGETED_DEVICE_FAMILY: "1"
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+        INFOPLIST_KEY_CFBundleDisplayName: Spike 3
+        MARKETING_VERSION: "0.1"
+        CURRENT_PROJECT_VERSION: "1"

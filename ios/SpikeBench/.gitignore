@@ -1,0 +1,4 @@
+Frameworks/
+build/
+*.xcodeproj/project.xcworkspace/xcuserdata/
+*.xcodeproj/xcuserdata/
