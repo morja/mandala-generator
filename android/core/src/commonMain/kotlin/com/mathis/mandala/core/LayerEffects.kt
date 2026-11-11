@@ -42,12 +42,14 @@ internal class LayerEffects(
         private const val REF_TILE_AREA = 1700 * 1700
     }
 
-    private val rowScratch = ThreadLocal<FloatArray>()
+    // One growing row buffer per thread, kept in a one-element holder.
+    private val rowScratch = PerThread { arrayOfNulls<FloatArray>(1) }
 
     private fun scratch(size: Int): FloatArray {
-        val s = rowScratch.get()
+        val holder = rowScratch.get()
+        val s = holder[0]
         if (s != null && s.size >= size) return s
-        return FloatArray(size).also { rowScratch.set(it) }
+        return FloatArray(size).also { holder[0] = it }
     }
 
     /**
@@ -113,7 +115,7 @@ internal class LayerEffects(
             val lo = max(0, t0 - reach)
             val hi = minOf(refH, t1 + reach)
             val work = FloatImage(refW, hi - lo)
-            Filters.resampleRows(source, refW, refH, lo, hi, par) { y, row -> System.arraycopy(row, 0, work.data, (y - lo) * n, n) }
+            Filters.resampleRows(source, refW, refH, lo, hi, par) { y, row -> arraycopy(row, 0, work.data, (y - lo) * n, n) }
             var acc: FloatImage? = null
             for ((index, pass) in active.withIndex()) {
                 val blurred = if (index == active.lastIndex) work else work.copy()
@@ -127,7 +129,7 @@ internal class LayerEffects(
                     for (i in a.data.indices) a.data[i] += blurred.data[i] * st
                 }
             }
-            System.arraycopy(acc!!.data, (t0 - lo) * n, overlay.data, t0 * n, (t1 - t0) * n)
+            arraycopy(acc!!.data, (t0 - lo) * n, overlay.data, t0 * n, (t1 - t0) * n)
         }
         return overlay
     }
@@ -225,7 +227,7 @@ internal class LayerEffects(
                 for (r in from until until) {
                     val y = top + r
                     if (y < y0) WorkingSpace.readRow(above, y - aboveFrom, row) else WorkingSpace.readRow(image, y, row)
-                    System.arraycopy(row, 0, strip.data, r * n, n)
+                    arraycopy(row, 0, strip.data, r * n, n)
                 }
             }
 
@@ -258,8 +260,8 @@ internal class LayerEffects(
             val nextFrom = max(0, y1 - overlap)
             val keep = ByteArray((y1 - nextFrom) * n)
             for (y in nextFrom until y1) {
-                if (y < y0) System.arraycopy(above.data, (y - aboveFrom) * n, keep, (y - nextFrom) * n, n)
-                else System.arraycopy(image.data, y * n, keep, (y - nextFrom) * n, n)
+                if (y < y0) arraycopy(above.data, (y - aboveFrom) * n, keep, (y - nextFrom) * n, n)
+                else arraycopy(image.data, y * n, keep, (y - nextFrom) * n, n)
             }
             kept = Image8(w, y1 - nextFrom, image.encoding, keep)
             keptFrom = nextFrom
@@ -267,7 +269,7 @@ internal class LayerEffects(
                 val row = FloatArray(n)
                 for (k in from until until) {
                     val y = y0 + k
-                    System.arraycopy(strip.data, (y - top) * n, row, 0, n)
+                    arraycopy(strip.data, (y - top) * n, row, 0, n)
                     WorkingSpace.writeRow(row, out, y)
                 }
             }
@@ -362,7 +364,7 @@ internal class LayerEffects(
                         WorkingSpace.readRow(overlay!!, oy, src!!)
                         val xs = max(0, x0)
                         val xe = minOf(w, x0 + overlay.width)
-                        if (xe > xs) System.arraycopy(src, (xs - x0) * 3, b, xs * 3, (xe - xs) * 3)
+                        if (xe > xs) arraycopy(src, (xs - x0) * 3, b, xs * 3, (xe - xs) * 3)
                     }
                 }
                 WorkingSpace.readRow(base, y, a)

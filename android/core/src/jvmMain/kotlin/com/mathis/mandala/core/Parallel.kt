@@ -4,13 +4,13 @@ import java.util.concurrent.Callable
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
-/** Small fixed thread pool for splitting rows or tasks. Plain java.util.concurrent, so it runs on Android too. */
-class Parallel(val threads: Int) : AutoCloseable {
+/** JVM and Android: a small fixed thread pool from java.util.concurrent. */
+actual class Parallel actual constructor(actual val threads: Int) : AutoCloseable {
     private val pool: ExecutorService? =
         if (threads > 1) Executors.newFixedThreadPool(threads) { r -> Thread(r, "mandala-render").apply { isDaemon = true } } else null
 
     /** Runs `body(index)` for each chunk index in 0 until chunks, in parallel. */
-    fun forEachChunk(chunks: Int, body: (Int) -> Unit) {
+    actual fun forEachChunk(chunks: Int, body: (Int) -> Unit) {
         if (pool == null || chunks <= 1) {
             for (c in 0 until chunks) body(c)
             return
@@ -23,7 +23,7 @@ class Parallel(val threads: Int) : AutoCloseable {
      * Splits [0, count) into contiguous ranges, several per thread: on phones with fast and slow
      * cores, one range per thread would leave the fast cores waiting for the slow ones.
      */
-    fun forRange(count: Int, body: (from: Int, until: Int) -> Unit) {
+    actual fun forRange(count: Int, body: (from: Int, until: Int) -> Unit) {
         val n = maxOf(1, minOf(if (pool == null) 1 else threads * CHUNKS_PER_THREAD, count))
         val step = (count + n - 1) / n
         forEachChunk(n) { c ->
@@ -33,11 +33,7 @@ class Parallel(val threads: Int) : AutoCloseable {
         }
     }
 
-    override fun close() {
+    actual override fun close() {
         pool?.shutdown()
-    }
-
-    private companion object {
-        const val CHUNKS_PER_THREAD = 4
     }
 }

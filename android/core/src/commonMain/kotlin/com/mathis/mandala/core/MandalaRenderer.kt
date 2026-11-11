@@ -13,12 +13,14 @@ import com.mathis.mandala.core.styles.SymbolStyles
 import com.mathis.mandala.core.styles.ThreeDStyles
 import com.mathis.mandala.core.styles.CosmicStyles
 import com.mathis.mandala.core.styles.StyleContext
+import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.ceil
 import kotlin.math.floor
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.sqrt
+import kotlin.time.TimeSource
 
 data class RenderOptions(
     /** Overrides the size from the settings (the preview uses a smaller one). The image is square. */
@@ -37,7 +39,7 @@ data class RenderOptions(
      */
     val supersample: Boolean = true,
     /** Threads for drawing and filters. The image does not depend on it. */
-    val threads: Int = Runtime.getRuntime().availableProcessors(),
+    val threads: Int = availableProcessors(),
     /** Draws text for the text layer; supplied by the platform (fonts are not part of the core). */
     val textRenderer: TextRenderer? = null,
     /** Loads the image of an image background, stretched to a square of the given size (sRGB). */
@@ -85,7 +87,7 @@ object MandalaRenderer {
         options: RenderOptions = RenderOptions(),
         palettes: List<ColorPalette> = BuiltInPalettes.all,
     ): RenderResult {
-        val start = System.nanoTime()
+        val start = TimeSource.Monotonic.markNow()
         val warnings = mutableListOf<String>()
         val outW = options.width ?: options.outputSize ?: params.resolvedOutputSize
         val outH = options.height ?: outW
@@ -209,8 +211,8 @@ object MandalaRenderer {
                 // the rest goes into the centre it is drawn around (zero for a centred layer).
                 val lX = dX + layer.offsetX * mandalaSize
                 val lY = dY + layer.offsetY * mandalaSize
-                val lXi = Math.round(lX).toInt()
-                val lYi = Math.round(lY).toInt()
+                val lXi = roundHalfUp(lX).toInt()
+                val lYi = roundHalfUp(lY).toInt()
                 // A canvas reaching past the centred square and its margin (portrait, landscape, zoomed
                 // out, ADR-0010) or a moved layer (ADR-0011) shows the layer's outer area, and many
                 // styles draw beyond the macOS buffer (see styleReach). Such a layer gets a square as
@@ -398,7 +400,7 @@ object MandalaRenderer {
                 else -> WorkingSpace.convertToSrgb(composite)
             }
             progress.done()
-            return RenderResult(options.finish.apply(result, options.threads), warnings, (System.nanoTime() - start) / 1_000_000)
+            return RenderResult(options.finish.apply(result, options.threads), warnings, start.elapsedNow().inWholeMilliseconds)
         }
     }
 
@@ -420,7 +422,7 @@ object MandalaRenderer {
             val right = min(x0 + image.width, composite.width)
             val bottom = min(y0 + image.height, composite.height)
             if (right <= left || bottom <= top) return fx.composite(composite, null, op)
-            img = fx.rotate(image, layer.rotation * Math.PI * 2, cx, cy, left - x0, top - y0, right - left, bottom - top)
+            img = fx.rotate(image, layer.rotation * PI * 2, cx, cy, left - x0, top - y0, right - left, bottom - top)
             ox = left
             oy = top
         }
@@ -535,7 +537,7 @@ object MandalaRenderer {
      * are drawn small on black, and the radius up to which at least 60 % of every circle is lit sets
      * the zoom that brings that radius to the canvas corners. Takes about a tenth of a second.
      */
-    fun fillZoom(params: MandalaParameters, aspect: Double, threads: Int = Runtime.getRuntime().availableProcessors()): Double {
+    fun fillZoom(params: MandalaParameters, aspect: Double, threads: Int = availableProcessors()): Double {
         val longer = max(aspect, 1 / aspect)
         val corner = 0.5 * sqrt(1 + longer * longer)
         val layersOnly = params.copy(
@@ -553,7 +555,7 @@ object MandalaRenderer {
         for (r in 1 until side / 2) {
             var lit = 0
             for (a in 0 until FILL_ANGLES) {
-                val angle = a * 2 * Math.PI / FILL_ANGLES
+                val angle = a * 2 * PI / FILL_ANGLES
                 val x = (side / 2 + r * kotlin.math.cos(angle)).toInt()
                 val y = (side / 2 + r * kotlin.math.sin(angle)).toInt()
                 val o = (y * side + x) * 3

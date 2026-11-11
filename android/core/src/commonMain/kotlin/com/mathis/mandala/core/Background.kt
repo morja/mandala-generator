@@ -1,5 +1,6 @@
 package com.mathis.mandala.core
 
+import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.cos
@@ -134,14 +135,14 @@ internal object Background {
             if (start >= end) continue
             val rng = SeededRng(seed + tid.toULong() * 6364136223846793005uL + 1uL)
             for (i in start until end) {
-                val angle = rng.nextDouble() * Math.PI * 2.0
+                val angle = rng.nextDouble() * PI * 2.0
                 val startR = rng.nextDouble().toFloat() * maxRadius * 0.95f
                 val length = rng.nextDouble(3.0, 18.0).toFloat() * (1.0f + layer.complexity.toFloat() * 1.5f)
                 val wobble = rng.nextDouble(-0.15, 0.15).toFloat()
                 palette.colorAt(rng.nextDouble(), col)
                 val weight = rng.nextDouble(0.03, 0.25).toFloat() * layer.density.toFloat()
                 for (k in 0 until symmetry) {
-                    val sa = (angle + k * Math.PI * 2.0 / symmetry).toFloat()
+                    val sa = (angle + k * PI * 2.0 / symmetry).toFloat()
                     val x0 = cx + cos(sa) * startR
                     val y0 = cy + sin(sa) * startR
                     val ea = sa + wobble
@@ -165,7 +166,7 @@ internal object Background {
     }
 
     private fun linearGradient(settings: BaseLayerSettings, c1: Rgb, c2: Rgb, width: Int, height: Int): (Int, Int, FloatArray) -> Unit {
-        val angle = settings.gradientAngle * Math.PI * 2
+        val angle = settings.gradientAngle * PI * 2
         val ca = cos(angle)
         val sa = sin(angle)
         // Half the length of the gradient: half the side on a square; on other canvases it weighs

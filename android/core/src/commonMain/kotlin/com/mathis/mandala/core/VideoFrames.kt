@@ -60,5 +60,5 @@ object VideoFrames {
     /** Limited range: grey at 128, ±112 at the extremes. */
     private fun chroma(c: Double): Int = clamp(128 + c * 224 / 255)
 
-    private fun clamp(x: Double): Int = Math.round(x).toInt().coerceIn(0, 255)
+    private fun clamp(x: Double): Int = roundHalfUp(x).toInt().coerceIn(0, 255)
 }

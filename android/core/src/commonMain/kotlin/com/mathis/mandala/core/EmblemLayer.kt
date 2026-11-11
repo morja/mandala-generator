@@ -571,7 +571,7 @@ internal class EmblemMask(
 
 /** A coordinate or length in SVG: at most two decimals, no trailing zeros. */
 internal fun svgNumber(v: Double): String {
-    val r = Math.round(v * 100)
+    val r = roundHalfUp(v * 100)
     if (r % 100 == 0L) return (r / 100).toString()
     val text = (r / 100.0).toString()
     return if (text.contains('E')) "0" else text

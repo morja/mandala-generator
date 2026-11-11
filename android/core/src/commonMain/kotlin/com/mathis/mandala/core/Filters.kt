@@ -27,7 +27,7 @@ internal fun Image8.asRowSource(): RowSource = object : RowSource {
 internal fun FloatImage.asRowSource(): RowSource = object : RowSource {
     override val width get() = this@asRowSource.width
     override val height get() = this@asRowSource.height
-    override fun readRow(y: Int, out: FloatArray) = System.arraycopy(data, y * width * 3, out, 0, width * 3)
+    override fun readRow(y: Int, out: FloatArray) = arraycopy(data, y * width * 3, out, 0, width * 3)
 }
 
 /**
@@ -48,9 +48,9 @@ internal object Filters {
         par.forRange(h) { from, until ->
             val line = Line(w, sigma)
             for (y in from until until) {
-                System.arraycopy(d, y * w * 3, line.src, 0, w * 3)
+                arraycopy(d, y * w * 3, line.src, 0, w * 3)
                 // A black row stays black (and is already zero in place).
-                if (line.blur()) System.arraycopy(line.dst, 0, d, y * w * 3, w * 3)
+                if (line.blur()) arraycopy(line.dst, 0, d, y * w * 3, w * 3)
             }
         }
         // Columns, a block of them at a time: the block is gathered row by row so reads stay
@@ -63,7 +63,7 @@ internal object Filters {
             for (b in from until until) {
                 val x0 = b * block
                 val bw = min(w, x0 + block) - x0
-                for (y in 0 until h) System.arraycopy(d, (y * w + x0) * 3, cols, y * bw * 3, bw * 3)
+                for (y in 0 until h) arraycopy(d, (y * w + x0) * 3, cols, y * bw * 3, bw * 3)
                 for (c in 0 until bw) {
                     for (y in 0 until h) {
                         val i = (y * bw + c) * 3
@@ -75,7 +75,7 @@ internal object Filters {
                         cols[i] = line.dst[y * 3]; cols[i + 1] = line.dst[y * 3 + 1]; cols[i + 2] = line.dst[y * 3 + 2]
                     }
                 }
-                for (y in 0 until h) System.arraycopy(cols, y * bw * 3, d, (y * w + x0) * 3, bw * 3)
+                for (y in 0 until h) arraycopy(cols, y * bw * 3, d, (y * w + x0) * 3, bw * 3)
             }
         }
     }
@@ -234,7 +234,7 @@ internal object Filters {
             fun row(y: Int): FloatArray = cache.getOrPut(y) { FloatArray(sw * 3).also { src.readRow(y, it) } }
             for (y in fromRow + from until fromRow + until) {
                 if (wy == null) {
-                    System.arraycopy(row(y), 0, vertical, 0, sw * 3)
+                    arraycopy(row(y), 0, vertical, 0, sw * 3)
                     cache.remove(y)
                 } else {
                     vertical.fill(0f)
@@ -248,7 +248,7 @@ internal object Filters {
                     }
                 }
                 if (wx == null) {
-                    System.arraycopy(vertical, 0, out, 0, sw * 3)
+                    arraycopy(vertical, 0, out, 0, sw * 3)
                 } else {
                     for (x in 0 until dstW) {
                         var sr = 0f; var sg = 0f; var sb = 0f
@@ -269,7 +269,7 @@ internal object Filters {
 
     fun resampleToFloat(src: RowSource, dstW: Int, dstH: Int, par: Parallel): FloatImage {
         val out = FloatImage(dstW, dstH)
-        resampleRows(src, dstW, dstH, par) { y, row -> System.arraycopy(row, 0, out.data, y * dstW * 3, dstW * 3) }
+        resampleRows(src, dstW, dstH, par) { y, row -> arraycopy(row, 0, out.data, y * dstW * 3, dstW * 3) }
         return out
     }
 
@@ -327,7 +327,7 @@ internal object Filters {
     /** The w x h part of `src` whose top left corner is at (x0, y0). */
     fun crop(src: Image8, x0: Int, y0: Int, w: Int, h: Int): Image8 {
         val out = Image8(w, h, src.encoding)
-        for (y in 0 until h) System.arraycopy(src.data, ((y + y0) * src.width + x0) * 3, out.data, y * w * 3, w * 3)
+        for (y in 0 until h) arraycopy(src.data, ((y + y0) * src.width + x0) * 3, out.data, y * w * 3, w * 3)
         return out
     }
 
@@ -336,7 +336,7 @@ internal object Filters {
         val oy = (src.height - size) / 2
         val out = Image8(size, size, src.encoding)
         for (y in 0 until size) {
-            System.arraycopy(src.data, ((y + oy) * src.width + ox) * 3, out.data, y * size * 3, size * 3)
+            arraycopy(src.data, ((y + oy) * src.width + ox) * 3, out.data, y * size * 3, size * 3)
         }
         return out
     }

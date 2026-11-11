@@ -44,7 +44,7 @@ internal class Placement(val centreX: Double, val centreY: Double, val size: Int
         fun of(framing: Framing, canvasWidth: Int, canvasHeight: Int): Placement {
             val f = framing.clamped()
             val side = minOf(canvasWidth, canvasHeight)
-            return Placement(f.centreX * canvasWidth, f.centreY * canvasHeight, Math.round(side * f.zoom).toInt().coerceAtLeast(1), canvasWidth, canvasHeight)
+            return Placement(f.centreX * canvasWidth, f.centreY * canvasHeight, roundHalfUp(side * f.zoom).toInt().coerceAtLeast(1), canvasWidth, canvasHeight)
         }
     }
 }

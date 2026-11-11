@@ -26,7 +26,7 @@ import shutil
 import sys
 
 source = Path(sys.argv[1])
-model = Path("core/src/main/kotlin/com/mathis/mandala/core/Model.kt").read_text().split("/** How a layer")[0]
+model = Path("core/src/commonMain/kotlin/com/mathis/mandala/core/Model.kt").read_text().split("/** How a layer")[0]
 styles = re.findall(r'@SerialName\("([^"]+)"\) ([A-Z_]+)\(', model)
 target = Path("app/src/main/res/drawable-nodpi")
 target.mkdir(exist_ok=True)

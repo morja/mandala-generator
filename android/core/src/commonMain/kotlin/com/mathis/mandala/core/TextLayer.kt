@@ -66,7 +66,7 @@ internal class TextLayer(private val par: Parallel, private val renderer: TextRe
         fun kept(name: String, make: () -> FloatArray): FloatArray {
             if (still == null) return make()
             val rows = still.getOrPut("text.$name") { KeptRows(w, h, 1).also { k -> val m = make(); for (y in 0 until h) k.write(y, m.copyOfRange(y * w, y * w + w)) } } as KeptRows
-            return FloatArray(w * h).also { m -> val row = FloatArray(w); for (y in 0 until h) { rows.read(y, row); System.arraycopy(row, 0, m, y * w, w) } }
+            return FloatArray(w * h).also { m -> val row = FloatArray(w); for (y in 0 until h) { rows.read(y, row); arraycopy(row, 0, m, y * w, w) } }
         }
 
         if (s.cloudOpacity > 0.01) {

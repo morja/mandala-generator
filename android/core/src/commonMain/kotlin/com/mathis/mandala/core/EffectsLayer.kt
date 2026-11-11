@@ -104,7 +104,7 @@ internal class EffectsLayer(private val par: Parallel, private val fx: LayerEffe
                 val row = FloatArray(n)
                 for (r in from until until) {
                     source.readRow(lo + r, row)
-                    System.arraycopy(row, 0, w.data, r * n, n)
+                    arraycopy(row, 0, w.data, r * n, n)
                 }
             }
             if (bloom != null) {
@@ -128,7 +128,7 @@ internal class EffectsLayer(private val par: Parallel, private val fx: LayerEffe
             par.forRange(y1 - y0) { from, until ->
                 val row = FloatArray(n)
                 for (y in y0 + from until y0 + until) {
-                    if (s.relief > 0) reliefRow(w, y - top, top, height, s.reliefAngle, s.relief, row) else System.arraycopy(w.data, (y - top) * n, row, 0, n)
+                    if (s.relief > 0) reliefRow(w, y - top, top, height, s.reliefAngle, s.relief, row) else arraycopy(w.data, (y - top) * n, row, 0, n)
                     WorkingSpace.writeRow(row, out, y)
                 }
             }
@@ -157,7 +157,7 @@ internal class EffectsLayer(private val par: Parallel, private val fx: LayerEffe
         Filters.blurInPlace(padded, sigma, par)
         val out = FloatImage(source.width, until - from)
         for (y in from until until) {
-            System.arraycopy(padded.data, ((y + reach) * padded.width + reach) * 3, out.data, (y - from) * source.width * 3, source.width * 3)
+            arraycopy(padded.data, ((y + reach) * padded.width + reach) * 3, out.data, (y - from) * source.width * 3, source.width * 3)
         }
         return out
     }
@@ -182,8 +182,8 @@ internal class EffectsLayer(private val par: Parallel, private val fx: LayerEffe
         }
         private val vignetteSize = min(width, height).toFloat()
         private val shift = width * s.chromatic * 0.012
-        private val colour = ThreadLocal.withInitial { FloatArray(3) }
-        private val channels = ThreadLocal.withInitial { Array(2) { FloatArray(width) } }
+        private val colour = PerThread { FloatArray(3) }
+        private val channels = PerThread { Array(2) { FloatArray(width) } }
 
         fun apply(row: FloatArray, y: Int) {
             // Above 1 (slider up to 2) the radius stays at 1 and only the intensity keeps growing.

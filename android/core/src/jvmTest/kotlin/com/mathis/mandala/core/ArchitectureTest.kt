@@ -13,7 +13,8 @@ import kotlin.test.fail
 /** Guardrails from docs/adr; the scanning rules come from tearoom-android-kit (one.tearoom:testing). */
 class ArchitectureTest {
     private val root = File(System.getProperty("user.dir")).let { if (File(it, "core").isDirectory) it else it.parentFile }
-    private val core = Guardrails.sources(root.resolve("core/src/main").toPath())
+    private val core = listOf("commonMain", "jvmMain", "iosMain").flatMap { Guardrails.sources(root.resolve("core/src/$it").toPath()) }
+    private val common = Guardrails.sources(root.resolve("core/src/commonMain").toPath())
     private val app = Guardrails.sources(root.resolve("app/src/main/kotlin").toPath())
     private val theme = setOf(Path.of("ui/theme"))
 
@@ -22,6 +23,12 @@ class ArchitectureTest {
         // The renderer core stays plain Kotlin so Android and the JVM tool share it (ADR-0002).
         val forbidden = listOf("android.", "androidx.", "java.awt", "javax.", "kotlinx.coroutines")
         assertNoHits("Platform APIs in core (ADR-0002)", Guardrails.forbiddenImports(core, mapOf("" to forbidden)))
+    }
+
+    @Test
+    fun commonCoreUsesNoJava() {
+        // Shared by the JVM and iOS (ADR-0015): platform code lives in jvmMain and iosMain only.
+        assertNoHits("java.* in core/src/commonMain (ADR-0015)", Guardrails.forbiddenImports(common, mapOf("" to listOf("java."))))
     }
 
     @Test

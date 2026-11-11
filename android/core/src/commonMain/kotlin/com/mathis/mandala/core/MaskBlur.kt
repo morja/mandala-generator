@@ -16,9 +16,9 @@ internal object MaskBlur {
             val a = FloatArray(width)
             val b = FloatArray(width)
             for (y in from until until) {
-                System.arraycopy(mask, y * width, a, 0, width)
-                for (r in radii) { box(a, b, width, r); System.arraycopy(b, 0, a, 0, width) }
-                System.arraycopy(a, 0, mask, y * width, width)
+                arraycopy(mask, y * width, a, 0, width)
+                for (r in radii) { box(a, b, width, r); arraycopy(b, 0, a, 0, width) }
+                arraycopy(a, 0, mask, y * width, width)
             }
         }
         par.forRange(width) { from, until ->
@@ -26,7 +26,7 @@ internal object MaskBlur {
             val b = FloatArray(height)
             for (x in from until until) {
                 for (y in 0 until height) a[y] = mask[y * width + x]
-                for (r in radii) { box(a, b, height, r); System.arraycopy(b, 0, a, 0, height) }
+                for (r in radii) { box(a, b, height, r); arraycopy(b, 0, a, 0, height) }
                 for (y in 0 until height) mask[y * width + x] = a[y]
             }
         }
@@ -44,7 +44,7 @@ internal object MaskBlur {
     }
 
     private fun box(src: FloatArray, dst: FloatArray, n: Int, r: Int) {
-        if (r <= 0) { System.arraycopy(src, 0, dst, 0, n); return }
+        if (r <= 0) { arraycopy(src, 0, dst, 0, n); return }
         val norm = 1f / (2 * r + 1)
         var sum = 0f
         for (i in 0..min(r, n - 1)) sum += src[i]
