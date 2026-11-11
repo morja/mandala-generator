@@ -81,8 +81,8 @@ final class Bench: ObservableObject {
                 }
                 let peak = sampler.stop()
                 times.sort()
-                let mb = Double(peak &- base) / 1_048_576
-                await log("\(name) \(size.name) median=\(times[Self.runs / 2]) min=\(times[0]) runs=\(times) peakFootprintMB=\(String(format: "%.0f", mb)) baseMB=\(base / 1_048_576)")
+                let mb = Double(peak) / 1_048_576
+                await log("\(name) \(size.name) median=\(times[Self.runs / 2]) min=\(times[0]) runs=\(times) peakMB=\(String(format: "%.0f", mb)) baseMB=\(base / 1_048_576)")
                 if let result = last {
                     let rgba = bridge.rgba(image: result.image)
                     if let cg = makeImage(rgba, Int(result.image.width), Int(result.image.height)) {

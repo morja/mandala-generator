@@ -21,6 +21,8 @@ kotlin {
         target.binaries.framework {
             baseName = "MandalaCore"
             isStatic = true
+            // Render threads help the collector mark instead of waiting for it: 5-20 % faster renders (SPIKE-3).
+            binaryOption("gcMutatorsCooperate", "true")
             xcf.add(this)
         }
     }
