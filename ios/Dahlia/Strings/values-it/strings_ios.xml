@@ -10,4 +10,6 @@
     <string name="ios_photos_denied">Dahlia non può aggiungere immagini a Foto. Puoi consentirlo in Impostazioni.</string>
     <string name="ios_open_settings">Impostazioni</string>
     <string name="ios_favourite_label">Preferito: %1$s</string>
+    <string name="ios_picture_from_photos">Foto</string>
+    <string name="ios_picture_from_files">File</string>
 </resources>

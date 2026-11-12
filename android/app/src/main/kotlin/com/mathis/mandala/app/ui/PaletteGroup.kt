@@ -44,6 +44,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mathis.mandala.editing.Editing
+import com.mathis.mandala.editing.MyPalettes
 import com.mathis.mandala.app.EditorViewModel
 import com.mathis.mandala.app.R
 import com.mathis.mandala.app.ui.theme.LocalTokens
@@ -222,12 +223,7 @@ private fun PaletteEditor(
     Row(horizontalArrangement = Arrangement.spacedBy(Spacing.sm), modifier = Modifier.padding(top = Spacing.sm)) {
         ActionTile(EditorIcons.FromPicture, stringResource(R.string.controls_palette_from_picture), enabled = true, onClick = onFromPicture)
         ActionTile(EditorIcons.Plus, stringResource(R.string.controls_palette_add_colour), enabled = stops.size < OwnPalettes.MAX_STOPS) {
-            // Halfway to the next colour on the right (or the left at the end), in the chosen colour.
-            val sorted = stops.sortedBy { it.position }
-            val at = sorted.indexOf(stop)
-            val other = sorted.getOrNull(at + 1) ?: sorted.getOrNull(at - 1)
-            val position = if (other == null) 0.5 else (stop.position + other.position) / 2
-            withStops(stops + stop.copy(id = newId(), position = position), stops.size)
+            withStops(MyPalettes.addedStop(stops, selected, newId()), stops.size)
         }
         ActionTile(EditorIcons.Trash, stringResource(R.string.controls_palette_remove_colour), enabled = stops.size > OwnPalettes.MIN_STOPS) {
             withStops(stops.filterIndexed { i, _ -> i != selected }, (selected - 1).coerceAtLeast(0))

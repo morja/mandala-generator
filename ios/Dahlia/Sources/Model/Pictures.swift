@@ -28,6 +28,20 @@ enum Pictures {
         return CGImageSourceCreateImageAtIndex(source, 0, nil)
     }
 
+    /// The picture as sRGB RGBA bytes, for core's colour picking.
+    static func rgba(_ image: CGImage) -> Data? {
+        let w = image.width, h = image.height
+        var data = Data(count: w * h * 4)
+        let ok = data.withUnsafeMutableBytes { raw -> Bool in
+            guard let ctx = CGContext(data: raw.baseAddress, width: w, height: h, bitsPerComponent: 8, bytesPerRow: w * 4,
+                                      space: CGColorSpace(name: CGColorSpace.sRGB)!, bitmapInfo: CGImageAlphaInfo.noneSkipLast.rawValue)
+            else { return false }
+            ctx.draw(image, in: CGRect(x: 0, y: 0, width: w, height: h))
+            return true
+        }
+        return ok ? data : nil
+    }
+
     static func png(_ image: CGImage) -> Data? { encode(image, type: .png, quality: nil) }
 
     private static func encode(_ image: CGImage, type: UTType, quality: Double?) -> Data? {

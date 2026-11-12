@@ -1,0 +1,22 @@
+#!/bin/sh
+# Copies Android's style pictures (the small examples beside each style) into the iPhone app's resources,
+# so both apps show the same ones (PLAN-4 section 2, "Styles"). Android's files are the source.
+#
+#   ios/scripts/gen-style-previews           copy them
+#   ios/scripts/gen-style-previews --check   exit 1 when the copies are out of date
+set -eu
+here="$(cd "$(dirname "$0")/.." && pwd)"
+from="$here/../android/app/src/main/res/drawable-nodpi"
+to="$here/Dahlia/Resources/StylePreviews"
+if [ "${1:-}" = "--check" ]; then
+    for f in "$from"/style_preview_*.png; do
+        cmp -s "$f" "$to/$(basename "$f")" || { echo "style pictures are out of date: run ios/scripts/gen-style-previews" >&2; exit 1; }
+    done
+    for f in "$to"/style_preview_*.png; do
+        [ -f "$from/$(basename "$f")" ] || { echo "style picture without Android original: $f" >&2; exit 1; }
+    done
+    exit 0
+fi
+mkdir -p "$to"
+rm -f "$to"/style_preview_*.png
+cp "$from"/style_preview_*.png "$to/"

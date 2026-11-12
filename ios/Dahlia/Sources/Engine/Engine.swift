@@ -8,6 +8,8 @@ extension MandalaParameters: @retroactive @unchecked Sendable {}
 extension Favorite: @retroactive @unchecked Sendable {}
 extension Rendered: @retroactive @unchecked Sendable {}
 extension RenderTicket: @retroactive @unchecked Sendable {}
+extension CustomPaletteStop: @retroactive @unchecked Sendable {}
+extension CustomPalette: @retroactive @unchecked Sendable {}
 
 /// Owns every render call (PLAN-4 section 3.2). Kotlin calls block, so the actor runs on its own serial
 /// queue, never on the main thread or Swift's cooperative pool; inside a render core's worker pool
@@ -19,6 +21,7 @@ actor Engine {
     private let bridge = IosBridge.shared
     private let cache: LayerCache
     private let threads: Int32
+    private let loader = ImageIOLoader()
 
     private static let log = Logger(subsystem: "one.tearoom.mandala", category: "engine")
 
@@ -51,18 +54,18 @@ actor Engine {
     /// The editor's 512 px preview with the layer cache; nil when cancelled.
     func preview(_ params: MandalaParameters, fast: Bool, ticket: RenderTicket) -> Rendered? {
         if ticket.isCancelled() { return nil }
-        return bridge.renderPreview(params: params, cache: cache, fast: fast, threads: threads, ticket: ticket)
+        return bridge.renderPreview(params: params, cache: cache, fast: fast, threads: threads, ticket: ticket, imageLoader: loader)
     }
 
     /// A small, rough picture first when a change is expected to take long (Android's quick preview).
     func quick(_ params: MandalaParameters, ticket: RenderTicket) -> Rendered? {
         if ticket.isCancelled() { return nil }
-        return bridge.renderQuick(params: params, threads: threads, ticket: ticket)
+        return bridge.renderQuick(params: params, threads: threads, ticket: ticket, imageLoader: loader)
     }
 
     /// The square picture as saved; `progress` gets whole percents on the rendering thread.
     func square(_ params: MandalaParameters, size: Int, ticket: RenderTicket, progress: @escaping @Sendable (Int) -> Void) -> Rendered? {
-        bridge.renderSquare(params: params, size: Int32(size), threads: threads, ticket: ticket) { percent in
+        bridge.renderSquare(params: params, size: Int32(size), threads: threads, ticket: ticket, imageLoader: loader) { percent in
             progress(Int(percent.int32Value))
         }
     }

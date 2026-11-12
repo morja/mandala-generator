@@ -156,6 +156,16 @@ object Editing {
         return if (untouched) next.copy(brightness = BACKGROUND_START_BRIGHTNESS, brightness2 = BACKGROUND_START_BRIGHTNESS2) else next
     }
 
+    /**
+     * The background switched on or off by its switch: a picture background without its picture, or a
+     * type no longer offered, starts as Auto instead.
+     */
+    fun BaseLayerSettings.switchedOnOff(on: Boolean): BaseLayerSettings = when {
+        !on -> copy(isEnabled = false)
+        type == BaseLayerType.IMAGE && imageURL == null || type !in backgrounds -> switchedTo(BaseLayerType.AUTO)
+        else -> switchedTo(type)
+    }
+
     const val PREVIEW_SIZE = 512
 
     /**
@@ -535,3 +545,29 @@ class CentreSnap {
  * layer). Each app maps the entries to its own labels (on Android `DrawTool.label` in the app).
  */
 enum class DrawTool { LINES, SPRAY }
+
+/**
+ * The user's own palettes as a list (ADR-0021): in the order made, as on the Mac; saving one again
+ * replaces it. The files stay each app's business.
+ */
+object MyPalettes {
+    fun put(list: List<com.mathis.mandala.core.CustomPalette>, palette: com.mathis.mandala.core.CustomPalette): List<com.mathis.mandala.core.CustomPalette> {
+        val at = list.indexOfFirst { it.id == palette.id }
+        return if (at < 0) list + palette else list.toMutableList().also { it[at] = palette }
+    }
+
+    fun remove(list: List<com.mathis.mandala.core.CustomPalette>, id: String): List<com.mathis.mandala.core.CustomPalette> = list.filterNot { it.id == id }
+
+    /**
+     * The palette editor's "Add colour": a copy of the chosen stop, halfway to the next colour on the
+     * right (or the left at the end), appended with `newId`; the new stop is the last one.
+     */
+    fun addedStop(stops: List<com.mathis.mandala.core.CustomPaletteStop>, selected: Int, newId: String): List<com.mathis.mandala.core.CustomPaletteStop> {
+        val stop = stops[selected.coerceIn(0, stops.lastIndex)]
+        val sorted = stops.sortedBy { it.position }
+        val at = sorted.indexOf(stop)
+        val other = sorted.getOrNull(at + 1) ?: sorted.getOrNull(at - 1)
+        val position = if (other == null) 0.5 else (stop.position + other.position) / 2
+        return stops + stop.copy(id = newId, position = position)
+    }
+}

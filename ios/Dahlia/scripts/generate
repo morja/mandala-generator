@@ -6,5 +6,6 @@ here="$(cd "$(dirname "$0")/.." && pwd)"
 [ -f "$here/Config/Signing.xcconfig" ] || cp "$here/Config/Signing.example.xcconfig" "$here/Config/Signing.xcconfig"
 "$here/../scripts/gen-strings" >/dev/null
 "$here/../scripts/gen-tokens" >/dev/null
+"$here/../scripts/gen-style-previews"
 "$here/scripts/build-core"
 xcodegen generate --quiet --spec "$here/project.yml"
