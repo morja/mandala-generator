@@ -46,6 +46,8 @@ What WP-10 of [PLAN-4](PLAN-4-iphone-app.md) built: the widget extension with sm
 
 9. **The debug build has its own App Group now** (`group.one.tearoom.mandala.debug`), so debug and store app never show each other's widget pictures. IOS-9's Xcode steps change accordingly (below).
 
+10. **Two StoreKit tests failed once** in the first `check-full` (the race and the purchase from elsewhere) and passed in two reruns. The app that hosts those tests had started rendering widget pictures beside them; the widget work now stays off while the app hosts tests (`XCTestConfigurationFilePath`).
+
 ### Verified in the simulator (iPhone 17, iOS 27.2, debug build)
 
 - Four widgets with different settings: small, daily turn; medium, daily turn, like the app (dark, and light after switching the app to light); medium, fixed favourite "Sacred", light; large, fixed favourite "Starburst, Spirograph". Each showed its favourite, the large one in its own shape after the app ran, the medium ones with the quote of the day (`de-dark-home-page2-…`, `de-dark-home-page3-…`, `en-quotes-app-light-wide-like-the-app.png`).
