@@ -66,4 +66,4 @@ tools/reference-renderer/render-references.sh
 
 ## License
 
-GPL-3.0 with an additional permission for app stores and the Google Play Billing Library; see the [README at the repository root](../README.md#license) and ADR-0008.
+GPL-3.0 with an additional permission for app stores, the Google Play Billing Library and the Google Play Core libraries; see the [README at the repository root](../README.md#license) and ADR-0008.

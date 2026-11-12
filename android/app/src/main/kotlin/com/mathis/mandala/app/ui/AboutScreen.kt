@@ -47,8 +47,8 @@ private const val ANDROID_SDK_TERMS_URL = "https://developer.android.com/studio/
 
 /** Same wording as the root README and ADR-0008. */
 private const val SECTION_7_PERMISSION =
-    "If you modify this Program, or any covered work, by linking or combining it with the Google Play Billing Library " +
-        "or with the system and platform libraries of Android, macOS or iOS (or modified versions of those libraries), " +
+    "If you modify this Program, or any covered work, by linking or combining it with the Google Play Billing Library, " +
+        "the Google Play Core libraries (such as Google Play In-App Review) or with the system and platform libraries of Android, macOS or iOS (or modified versions of those libraries), " +
         "containing parts covered by the terms of their own licences, the licensors of this Program grant you additional " +
         "permission to convey the resulting work. You may also convey the Program through app stores (such as Google Play " +
         "and the Apple App Store) whose terms of service add restrictions on use or copying."

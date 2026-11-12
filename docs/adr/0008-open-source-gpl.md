@@ -10,7 +10,7 @@ Status: accepted, 20 October 2026 (Mathis' decision)
 
 ## Additional permission (GPL-3.0 section 7)
 
-> If you modify this Program, or any covered work, by linking or combining it with the Google Play Billing Library or with the system and platform libraries of Android, macOS or iOS (or modified versions of those libraries), containing parts covered by the terms of their own licences, the licensors of this Program grant you additional permission to convey the resulting work. You may also convey the Program through app stores (such as Google Play and the Apple App Store) whose terms of service add restrictions on use or copying.
+> If you modify this Program, or any covered work, by linking or combining it with the Google Play Billing Library, the Google Play Core libraries (such as Google Play In-App Review) or with the system and platform libraries of Android, macOS or iOS (or modified versions of those libraries), containing parts covered by the terms of their own licences, the licensors of this Program grant you additional permission to convey the resulting work. You may also convey the Program through app stores (such as Google Play and the Apple App Store) whose terms of service add restrictions on use or copying.
 
 The same text stands in both READMEs.
 
@@ -18,7 +18,7 @@ The same text stands in both READMEs.
 
 - Mathis wants the work to stay open source. GPL rather than MIT: nobody may turn the code into a closed app; a copy must stay open.
 - Keeping only one app closed protects almost nothing: new features are built in the public macOS app first, the Android app ports them. *Amended 27 October 2026 (Mathis):* the order is reversed: new features are built in the Android app first and the macOS app follows later; the argument stays the same, since both apps are in the same public repository.
-- The Google Play Billing Library is proprietary, and the App Store's terms add restrictions; without the permission, others could not legally ship builds with them. Mathis, as the only author, can ship his own builds either way.
+- The Google Play Billing Library is proprietary, and the App Store's terms add restrictions; without the permission, others could not legally ship builds with them. Mathis, as the only author, can ship his own builds either way. *Amended 12 November 2026 (Mathis):* the permission also names the Google Play Core libraries (such as In-App Review, brought in by the kit's rating prompt, kit ADR-0006), which are proprietary in the same way.
 - Mathis is the only contributor of both repositories (checked 20 October 2026), so he can choose the licence and change it for later versions.
 
 ## Consequences
