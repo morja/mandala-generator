@@ -11,3 +11,6 @@ store/*
 
 # ui-check screenshots (keep only the ones a QA report references, in docs/qa/QA-n/)
 docs/qa/shots/
+
+# widget sheet runs (bin/widget-sheet); approved pictures live in docs/qa/widget-sheet/reference/
+docs/qa/widget-sheet/latest/
