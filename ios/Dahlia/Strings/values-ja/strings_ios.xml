@@ -26,4 +26,28 @@
     <!-- The widget list on the Dahlia page (WP-10): iOS changes a widget through Edit Widget. -->
     <string name="menu_widgets_about">ウィジェットごとにマンダラと色を選べます。変えるには、ウィジェットを長押しして「ウィジェットを編集」を選びます。</string>
     <string name="menu_widgets_empty">追加するには、ホーム画面の空いている所を長押しし、「編集」、「ウィジェットを追加」の順にタップして Dahlia を選びます。</string>
+    <!-- The wallpaper page, the daily page and the Shortcuts action (WP-11): iOS lets no app set the wallpaper. -->
+    <string name="ios_wallpaper_about">このiPhoneの画面いっぱいに表示されるマンダラです。iOSではアプリが壁紙を直接設定できないため、Dahliaが「写真」に保存し、設定はご自身で行います。</string>
+    <string name="ios_wallpaper_save_both">両方を「写真」に保存</string>
+    <string name="ios_wallpaper_set_title">iOSで設定する</string>
+    <string name="ios_wallpaper_set_one">「写真」で画像を開き、「共有」をタップして「壁紙として使用」を選びます。「追加」をタップし、「壁紙のペアとして設定」をタップします。</string>
+    <string name="ios_wallpaper_set_pair">「写真」でロック画面用の画像を開き、「共有」をタップして「壁紙として使用」を選び、「追加」をタップします。「ホーム画面をカスタマイズ」を選び、「写真」をタップして、ホーム画面用の画像を選びます。</string>
+    <string name="ios_wallpaper_saved">「写真」に保存しました。「写真」で開き、「共有」をタップして「壁紙として使用」を選んでください。</string>
+    <string name="ios_wallpapers_saved">ロック画面用とホーム画面用の両方を「写真」に保存しました。</string>
+    <string name="ios_daily_today">今日：%1$s</string>
+    <string name="menu_daily_about">お気に入りを1枚ずつ、毎朝4時に次の1枚へ。iPhoneでは「ショートカット」のオートメーションが設定します。設定は1回だけです。</string>
+    <string name="menu_daily_widget_note">ホーム画面のウィジェット「今日のマンダラ」も、専用のお気に入りを選んでいなければ同じお気に入りを表示します。Pro なら毎朝替わります。</string>
+    <string name="ios_daily_automation_title">オートメーションを設定</string>
+    <string name="ios_daily_automation_steps">1. 「ショートカット」を開き、「オートメーション」をタップして、「新規オートメーション」をタップします。\n2. 「時刻」を選び、7:00 などの時刻と「毎日」を設定し、「すぐに実行」を選んで「次へ」をタップします。\n3. 「新規空のオートメーション」をタップし、Dahlia の「今日のマンダラ」を追加して、「画面」を「ロック画面」にします。\n4. 「壁紙の写真を設定」を追加し、ロック画面を選んで「プレビューを表示」をオフにします。\n5. ホーム画面用に、「今日のマンダラ」を「ホーム画面」でもう一度追加し、ホーム画面用の「壁紙の写真を設定」をもう1つ追加します。</string>
+    <string name="ios_daily_open_shortcuts">「ショートカット」を開く</string>
+    <string name="ios_daily_ready_shortcut">用意済みのショートカットを追加</string>
+    <string name="ios_daily_ready_note">用意済みのショートカットは両方の画面を設定します。追加したら、手順3〜5の代わりに、手順3でそのショートカットを指定した「ショートカットを実行」を追加します。</string>
+    <string name="ios_daily_needs_pro">ショートカットのアクション「今日のマンダラ」は Pro に含まれます。ウィジェットは最初にチェックしたお気に入りを表示します。</string>
+    <string name="ios_intent_title">今日のマンダラ</string>
+    <string name="ios_intent_description">お気に入りの中から今日のマンダラを、画面いっぱいに。「壁紙の写真を設定」にそのまま使えます。</string>
+    <string name="ios_intent_screen">画面</string>
+    <string name="ios_intent_needs_pro">「今日のマンダラ」は Dahlia Pro に含まれます。Dahlia を開いて入手してください。</string>
+    <!-- Siri and Spotlight phrases of the action; ${applicationName} is the app's name. -->
+    <string name="shortcut_phrase_1">${applicationName} 今日のマンダラ</string>
+    <string name="shortcut_phrase_2">${applicationName} の今日のマンダラ</string>
 </resources>

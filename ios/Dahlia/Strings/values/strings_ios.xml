@@ -31,4 +31,29 @@
     <!-- Debug builds only (global rule for local builds): the dot on widget pictures, off for screenshots. -->
     <string name="ios_debug_widget_mark">Mark widget pictures</string>
     <string name="ios_debug_widget_mark_detail">Debug build: a small dot bottom right; turn it off for screenshots.</string>
+    <!-- The wallpaper page, the daily page and the Shortcuts action (WP-11): iOS lets no app set the wallpaper. -->
+    <string name="ios_wallpaper_about">This mandala filling the screen of this iPhone. iOS lets no app set the wallpaper itself, so Dahlia saves it to Photos for you to set.</string>
+    <string name="ios_wallpaper_save_both">Save both to Photos</string>
+    <string name="ios_wallpaper_set_title">Setting it in iOS</string>
+    <string name="ios_wallpaper_set_one">Open the picture in Photos, tap Share, then Use as Wallpaper. Tap Add, then Set as Wallpaper Pair.</string>
+    <string name="ios_wallpaper_set_pair">Open the lock screen picture in Photos, tap Share, then Use as Wallpaper, and tap Add. Choose Customize Home Screen, tap Photos and pick the home screen picture.</string>
+    <string name="ios_wallpaper_saved">Saved to Photos. Open it there and tap Share, then Use as Wallpaper.</string>
+    <string name="ios_wallpapers_saved">Saved both to Photos: the lock screen and the home screen.</string>
+    <string name="ios_daily_today">Today: %1$s</string>
+    <string name="menu_daily_about">One of your favourites at a time, the next one every morning at 4 o\'clock. On the iPhone a Shortcuts automation sets it; you set it up once.</string>
+    <string name="menu_daily_widget_note">The home screen widget “Mandala of the day” shows the same favourites unless it has one of its own; with Pro it changes every morning.</string>
+    <string name="ios_daily_automation_title">Set up the automation</string>
+    <string name="ios_daily_automation_steps">1. Open Shortcuts, tap Automation, then New Automation.\n2. Choose Time of Day, pick a time such as 7:00 and Daily, choose Run Immediately and tap Next.\n3. Tap New Blank Automation and add Mandala of the day from Dahlia, with Screen set to Lock screen.\n4. Add Set Wallpaper Photo, choose the lock screen and turn off Show Preview.\n5. For the home screen, add Mandala of the day again with Home screen and a second Set Wallpaper Photo for the home screen.</string>
+    <string name="ios_daily_open_shortcuts">Open Shortcuts</string>
+    <string name="ios_daily_ready_shortcut">Add the ready shortcut</string>
+    <string name="ios_daily_ready_note">The ready shortcut sets both screens. Add it, then in step 3 add Run Shortcut with it instead of steps 3 to 5.</string>
+    <string name="ios_daily_needs_pro">The Shortcuts action “Mandala of the day” comes with Pro; the widget shows the first ticked favourite.</string>
+    <string name="ios_intent_title">Mandala of the day</string>
+    <string name="ios_intent_description">Today\'s mandala from your favourites, filling the screen, ready for Set Wallpaper Photo.</string>
+    <string name="ios_intent_screen">Screen</string>
+    <string name="ios_intent_needs_pro">Mandala of the day comes with Dahlia Pro. Open Dahlia to get it.</string>
+    <!-- Siri and Spotlight phrases of the action; ${applicationName} is the app's name. -->
+    <string name="shortcut_phrase_1">${applicationName} mandala of the day</string>
+    <string name="shortcut_phrase_2">Mandala of the day from ${applicationName}</string>
+    <string name="ios_debug_wallpaper_last_run">Debug build, last run of the Shortcuts action: %1$s</string>
 </resources>

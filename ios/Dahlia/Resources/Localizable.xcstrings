@@ -19452,6 +19452,472 @@
         }
       }
     },
+    "ios_daily_automation_steps" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1. Öffne „Kurzbefehle“, tippe auf „Automation“ und dann auf „Neue Automation“.\n2. Wähle „Tageszeit“, stelle eine Uhrzeit wie 7:00 und „Täglich“ ein, wähle „Sofort ausführen“ und tippe auf „Weiter“.\n3. Tippe auf „Neue leere Automation“ und füge „Mandala des Tages“ von Dahlia hinzu, mit „Bildschirm“ auf „Sperrbildschirm“.\n4. Füge „Hintergrundbild festlegen“ hinzu, wähle den Sperrbildschirm und schalte „Vorschau anzeigen“ aus.\n5. Für den Home-Bildschirm füge „Mandala des Tages“ noch einmal mit „Home-Bildschirm“ hinzu und ein zweites „Hintergrundbild festlegen“ für den Home-Bildschirm."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1. Open Shortcuts, tap Automation, then New Automation.\n2. Choose Time of Day, pick a time such as 7:00 and Daily, choose Run Immediately and tap Next.\n3. Tap New Blank Automation and add Mandala of the day from Dahlia, with Screen set to Lock screen.\n4. Add Set Wallpaper Photo, choose the lock screen and turn off Show Preview.\n5. For the home screen, add Mandala of the day again with Home screen and a second Set Wallpaper Photo for the home screen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1. Abre Atajos, toca Automatización y luego Nueva automatización.\n2. Elige Hora del día, selecciona una hora como las 7:00 y Diariamente, elige Ejecutar inmediatamente y toca Siguiente.\n3. Toca Nueva automatización en blanco y añade Mandala del día de Dahlia, con Pantalla en Pantalla de bloqueo.\n4. Añade Establecer foto de fondo, elige la pantalla de bloqueo y desactiva Mostrar vista previa.\n5. Para la pantalla de inicio, añade Mandala del día otra vez con Pantalla de inicio y un segundo Establecer foto de fondo para la pantalla de inicio."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1. Ouvrez Raccourcis, touchez Automatisation, puis Nouvelle automatisation.\n2. Choisissez Heure de la journée, réglez une heure comme 7:00 et Tous les jours, choisissez Exécuter immédiatement et touchez Suivant.\n3. Touchez Nouvelle automatisation vide et ajoutez Mandala du jour de Dahlia, avec Écran sur Écran verrouillé.\n4. Ajoutez Définir la photo du fond d'écran, choisissez l'écran verrouillé et désactivez Afficher l'aperçu.\n5. Pour l'écran d'accueil, ajoutez à nouveau Mandala du jour avec Écran d'accueil et une seconde action Définir la photo du fond d'écran pour l'écran d'accueil."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1. Apri Comandi rapidi, tocca Automazione, poi Nuova automazione.\n2. Scegli Ora del giorno, imposta un orario come 7:00 e Ogni giorno, scegli Esegui immediatamente e tocca Avanti.\n3. Tocca Nuova automazione vuota e aggiungi Mandala del giorno di Dahlia, con Schermo su Schermata di blocco.\n4. Aggiungi Imposta foto sfondo, scegli la schermata di blocco e disattiva Mostra anteprima.\n5. Per la schermata Home, aggiungi di nuovo Mandala del giorno con Schermata Home e un secondo Imposta foto sfondo per la schermata Home."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1. 「ショートカット」を開き、「オートメーション」をタップして、「新規オートメーション」をタップします。\n2. 「時刻」を選び、7:00 などの時刻と「毎日」を設定し、「すぐに実行」を選んで「次へ」をタップします。\n3. 「新規空のオートメーション」をタップし、Dahlia の「今日のマンダラ」を追加して、「画面」を「ロック画面」にします。\n4. 「壁紙の写真を設定」を追加し、ロック画面を選んで「プレビューを表示」をオフにします。\n5. ホーム画面用に、「今日のマンダラ」を「ホーム画面」でもう一度追加し、ホーム画面用の「壁紙の写真を設定」をもう1つ追加します。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1. 단축어 앱을 열고 자동화를 탭한 다음 새로운 자동화를 탭하세요.\n2. 시간을 선택하고 7:00 같은 시각과 매일을 설정한 다음 즉시 실행을 선택하고 다음을 탭하세요.\n3. 새로운 빈 자동화를 탭하고 Dahlia의 오늘의 만다라를 추가한 다음 화면을 잠금 화면으로 설정하세요.\n4. 배경화면 사진 설정을 추가하고 잠금 화면을 선택한 다음 미리보기 보기를 끄세요.\n5. 홈 화면용으로는 오늘의 만다라를 홈 화면으로 한 번 더 추가하고, 홈 화면용 배경화면 사진 설정을 하나 더 추가하세요."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1. Abra Atalhos, toque em Automação e depois em Nova Automação.\n2. Escolha Hora do Dia, defina um horário como 7:00 e Diariamente, escolha Executar Imediatamente e toque em Avançar.\n3. Toque em Nova Automação em Branco e adicione Mandala do dia do Dahlia, com Tela em Tela Bloqueada.\n4. Adicione Definir Foto do Papel de Parede, escolha a tela bloqueada e desative Mostrar Pré-visualização.\n5. Para a tela de início, adicione Mandala do dia de novo com Tela de Início e um segundo Definir Foto do Papel de Parede para a tela de início."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1. Откройте «Команды», коснитесь «Автоматизация», затем «Новая автоматизация».\n2. Выберите «Время суток», задайте время, например 7:00, и «Ежедневно», выберите «Выполнять сразу» и коснитесь «Далее».\n3. Коснитесь «Новая пустая автоматизация» и добавьте «Мандала дня» из Dahlia, указав «Экран»: «Экран блокировки».\n4. Добавьте «Установить фото обоев», выберите экран блокировки и выключите «Показать предпросмотр».\n5. Для экрана «Домой» ещё раз добавьте «Мандала дня» с «Экран «Домой»» и второе «Установить фото обоев» для экрана «Домой»."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1. 打开“快捷指令”，轻点“自动化”，然后轻点“新建自动化”。\n2. 选取“特定时间”，设定 7:00 之类的时间和“每天”，选取“立即运行”，然后轻点“下一步”。\n3. 轻点“新建空白自动化”，添加 Dahlia 的“今日曼陀罗”，并把“屏幕”设为“锁定屏幕”。\n4. 添加“设置壁纸照片”，选取锁定屏幕，并关闭“显示预览”。\n5. 对于主屏幕，再添加一次“今日曼陀罗”并选“主屏幕”，再添加第二个用于主屏幕的“设置壁纸照片”。"
+          }
+        }
+      }
+    },
+    "ios_daily_automation_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automation einrichten"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Set up the automation"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configurar la automatización"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configurer l'automatisation"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configura l'automazione"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "オートメーションを設定"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "자동화 설정"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configurar a automação"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Настройка автоматизации"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "设置自动化"
+          }
+        }
+      }
+    },
+    "ios_daily_needs_pro" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Kurzbefehle-Aktion „Mandala des Tages“ gibt es mit Pro; das Widget zeigt den ersten markierten Favoriten."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The Shortcuts action “Mandala of the day” comes with Pro; the widget shows the first ticked favourite."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La acción de Atajos «Mandala del día» viene con Pro; el widget muestra el primer favorito marcado."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L'action Raccourcis « Mandala du jour » est incluse avec Pro ; le widget montre le premier favori coché."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L'azione di Comandi rapidi «Mandala del giorno» è inclusa con Pro; il widget mostra il primo preferito selezionato."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ショートカットのアクション「今日のマンダラ」は Pro に含まれます。ウィジェットは最初にチェックしたお気に入りを表示します。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "단축어 동작 ‘오늘의 만다라’는 Pro에 포함되어 있습니다. 위젯은 처음 체크한 즐겨찾기를 보여 줍니다."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A ação de Atalhos “Mandala do dia” vem com o Pro; o widget mostra o primeiro favorito marcado."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Действие «Команд» «Мандала дня» входит в Pro; виджет показывает первое отмеченное избранное."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "快捷指令操作“今日曼陀罗”包含在 Pro 中；小组件显示第一个已勾选的收藏。"
+          }
+        }
+      }
+    },
+    "ios_daily_open_shortcuts" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "„Kurzbefehle“ öffnen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open Shortcuts"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abrir Atajos"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvrir Raccourcis"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apri Comandi rapidi"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "「ショートカット」を開く"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "단축어 열기"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abrir Atalhos"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Открыть «Команды»"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "打开“快捷指令”"
+          }
+        }
+      }
+    },
+    "ios_daily_ready_note" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Der fertige Kurzbefehl setzt beide Bildschirme. Füge ihn hinzu und füge in Schritt 3 „Kurzbefehl ausführen“ mit ihm hinzu, statt der Schritte 3 bis 5."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The ready shortcut sets both screens. Add it, then in step 3 add Run Shortcut with it instead of steps 3 to 5."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El atajo ya hecho establece ambas pantallas. Añádelo y, en el paso 3, añade Ejecutar atajo con él en lugar de los pasos 3 a 5."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le raccourci prêt à l'emploi définit les deux écrans. Ajoutez-le, puis à l'étape 3 ajoutez Lancer le raccourci avec lui au lieu des étapes 3 à 5."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il comando già pronto imposta entrambe le schermate. Aggiungilo e, al passo 3, aggiungi Esegui comando rapido con quel comando al posto dei passi da 3 a 5."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "用意済みのショートカットは両方の画面を設定します。追加したら、手順3〜5の代わりに、手順3でそのショートカットを指定した「ショートカットを実行」を追加します。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "준비된 단축어는 두 화면을 모두 설정합니다. 추가한 다음 3~5단계 대신 3단계에서 그 단축어로 단축어 실행을 추가하세요."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O atalho pronto define as duas telas. Adicione-o e, no passo 3, adicione Executar Atalho com ele em vez dos passos 3 a 5."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Готовая команда ставит оба экрана. Добавьте её и на шаге 3 добавьте «Выполнить команду» с ней вместо шагов 3–5."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "现成的快捷指令会设置两个屏幕。添加后，在第 3 步用它添加“运行快捷指令”，代替第 3 至 5 步。"
+          }
+        }
+      }
+    },
+    "ios_daily_ready_shortcut" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fertigen Kurzbefehl hinzufügen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add the ready shortcut"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añadir el atajo ya hecho"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajouter le raccourci prêt à l'emploi"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aggiungi il comando già pronto"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "用意済みのショートカットを追加"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "준비된 단축어 추가"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adicionar o atalho pronto"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Добавить готовую команду"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "添加现成的快捷指令"
+          }
+        }
+      }
+    },
+    "ios_daily_today" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Heute: %1$@"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Today: %1$@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hoy: %1$@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aujourd'hui : %1$@"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oggi: %1$@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今日：%1$@"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "오늘: %1$@"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hoje: %1$@"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сегодня: %1$@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今天：%1$@"
+          }
+        }
+      }
+    },
+    "ios_debug_wallpaper_last_run" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Debug build, last run of the Shortcuts action: %1$@"
+          }
+        }
+      }
+    },
     "ios_debug_widget_mark" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -19600,6 +20066,266 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "收藏：%1$@"
+          }
+        }
+      }
+    },
+    "ios_intent_description" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Das heutige Mandala aus deinen Favoriten, bildschirmfüllend, bereit für „Hintergrundbild festlegen“."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Today's mandala from your favourites, filling the screen, ready for Set Wallpaper Photo."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El mandala de hoy de tus favoritos, a pantalla completa, listo para Establecer foto de fondo."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le mandala du jour tiré de vos favoris, plein écran, prêt pour Définir la photo du fond d'écran."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il mandala di oggi tra i tuoi preferiti, a schermo intero, pronto per Imposta foto sfondo."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "お気に入りの中から今日のマンダラを、画面いっぱいに。「壁紙の写真を設定」にそのまま使えます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "즐겨찾기 중 오늘의 만다라를 화면 가득 채워, 배경화면 사진 설정에 바로 쓸 수 있게 합니다."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O mandala de hoje entre seus favoritos, preenchendo a tela, pronto para Definir Foto do Papel de Parede."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сегодняшняя мандала из ваших избранных на весь экран, готовая для «Установить фото обоев»."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今天从你的收藏中选出的曼陀罗，铺满屏幕，可直接用于“设置壁纸照片”。"
+          }
+        }
+      }
+    },
+    "ios_intent_needs_pro" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "„Mandala des Tages“ gibt es mit Dahlia Pro. Öffne Dahlia, um es zu holen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mandala of the day comes with Dahlia Pro. Open Dahlia to get it."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mandala del día viene con Dahlia Pro. Abre Dahlia para conseguirlo."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mandala du jour est inclus avec Dahlia Pro. Ouvrez Dahlia pour l'obtenir."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mandala del giorno è incluso in Dahlia Pro. Apri Dahlia per ottenerlo."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "「今日のマンダラ」は Dahlia Pro に含まれます。Dahlia を開いて入手してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "오늘의 만다라는 Dahlia Pro에 포함되어 있습니다. Dahlia를 열어 받으세요."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mandala do dia vem com o Dahlia Pro. Abra o Dahlia para obtê-lo."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "«Мандала дня» входит в Dahlia Pro. Откройте Dahlia, чтобы получить её."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“今日曼陀罗”包含在 Dahlia Pro 中。打开 Dahlia 即可获得。"
+          }
+        }
+      }
+    },
+    "ios_intent_screen" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bildschirm"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Screen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pantalla"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Écran"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Schermo"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "画面"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "화면"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tela"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Экран"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "屏幕"
+          }
+        }
+      }
+    },
+    "ios_intent_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mandala des Tages"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mandala of the day"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mandala del día"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mandala du jour"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mandala del giorno"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今日のマンダラ"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "오늘의 만다라"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mandala do dia"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Мандала дня"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今日曼陀罗"
           }
         }
       }
@@ -20055,6 +20781,461 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "选择"
+          }
+        }
+      }
+    },
+    "ios_wallpaper_about" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dieses Mandala füllt den Bildschirm dieses iPhones. iOS lässt keine App den Hintergrund selbst setzen, deshalb sichert Dahlia es in Fotos, und du legst es dort fest."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This mandala filling the screen of this iPhone. iOS lets no app set the wallpaper itself, so Dahlia saves it to Photos for you to set."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este mandala llenando la pantalla de este iPhone. iOS no deja que ninguna app establezca el fondo por sí misma, así que Dahlia lo guarda en Fotos para que lo establezcas tú."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ce mandala plein écran sur cet iPhone. iOS ne laisse aucune app définir le fond d'écran elle-même ; Dahlia l'enregistre donc dans Photos et vous le définissez là-bas."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Questo mandala a schermo intero su questo iPhone. iOS non permette a nessuna app di impostare lo sfondo da sola, quindi Dahlia lo salva in Foto e lo imposti tu da lì."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "このiPhoneの画面いっぱいに表示されるマンダラです。iOSではアプリが壁紙を直接設定できないため、Dahliaが「写真」に保存し、設定はご自身で行います。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 iPhone 화면을 가득 채우는 만다라입니다. iOS에서는 앱이 배경화면을 직접 설정할 수 없어서, Dahlia가 사진 앱에 저장하고 설정은 직접 하셔야 합니다."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este mandala preenchendo a tela deste iPhone. O iOS não deixa nenhum app definir o papel de parede sozinho, então o Dahlia o salva em Fotos para você defini-lo."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Эта мандала на весь экран этого iPhone. iOS не позволяет приложениям самим ставить обои, поэтому Dahlia сохраняет её в «Фото», а вы устанавливаете её там."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "这张曼陀罗铺满这台 iPhone 的屏幕。iOS 不允许应用自行设置壁纸，所以 Dahlia 会把它存到“照片”，由你在那里设置。"
+          }
+        }
+      }
+    },
+    "ios_wallpaper_save_both" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Beide in Fotos sichern"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Save both to Photos"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guardar ambos en Fotos"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enregistrer les deux dans Photos"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Salva entrambi in Foto"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "両方を「写真」に保存"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "둘 다 사진에 저장"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Salvar os dois em Fotos"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сохранить обе в «Фото»"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "两张都存到“照片”"
+          }
+        }
+      }
+    },
+    "ios_wallpaper_saved" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In Fotos gesichert. Öffne es dort und tippe auf „Teilen“, dann auf „Als Hintergrundbild verwenden“."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saved to Photos. Open it there and tap Share, then Use as Wallpaper."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guardado en Fotos. Ábrelo allí y toca Compartir y luego Usar como fondo de pantalla."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enregistré dans Photos. Ouvrez-le là-bas et touchez Partager, puis Utiliser comme fond d'écran."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Salvato in Foto. Aprilo da lì e tocca Condividi, poi Usa come sfondo."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "「写真」に保存しました。「写真」で開き、「共有」をタップして「壁紙として使用」を選んでください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "사진에 저장했습니다. 사진 앱에서 열고 공유를 탭한 다음 배경화면으로 사용을 탭하세요."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Salvo em Fotos. Abra lá e toque em Compartilhar e depois em Usar como Papel de Parede."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сохранено в «Фото». Откройте её там и коснитесь «Поделиться», затем «Использовать как обои»."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已存到“照片”。请在那里打开它，轻点“共享”，然后轻点“用作壁纸”。"
+          }
+        }
+      }
+    },
+    "ios_wallpaper_set_one" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Öffne das Bild in Fotos, tippe auf „Teilen“ und dann auf „Als Hintergrundbild verwenden“. Tippe auf „Hinzufügen“ und dann auf „Als Hintergrundbildpaar festlegen“."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open the picture in Photos, tap Share, then Use as Wallpaper. Tap Add, then Set as Wallpaper Pair."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abre la imagen en Fotos, toca Compartir y luego Usar como fondo de pantalla. Toca Añadir y luego Establecer como par de fondos."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvrez l'image dans Photos, touchez Partager, puis Utiliser comme fond d'écran. Touchez Ajouter, puis Définir comme paire de fonds d'écran."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apri l'immagine in Foto, tocca Condividi, poi Usa come sfondo. Tocca Aggiungi, poi Imposta come coppia di sfondi."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "「写真」で画像を開き、「共有」をタップして「壁紙として使用」を選びます。「追加」をタップし、「壁紙のペアとして設定」をタップします。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "사진 앱에서 이미지를 열고 공유를 탭한 다음 배경화면으로 사용을 탭하세요. 추가를 탭한 다음 배경화면 쌍으로 설정을 탭하세요."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abra a imagem em Fotos, toque em Compartilhar e depois em Usar como Papel de Parede. Toque em Adicionar e depois em Definir como Par de Papéis de Parede."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Откройте картинку в «Фото», коснитесь «Поделиться», затем «Использовать как обои». Коснитесь «Добавить», затем «Установить как пару обоев»."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在“照片”中打开图片，轻点“共享”，然后轻点“用作壁纸”。轻点“添加”，再轻点“设为壁纸对”。"
+          }
+        }
+      }
+    },
+    "ios_wallpaper_set_pair" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Öffne das Bild für den Sperrbildschirm in Fotos, tippe auf „Teilen“, dann auf „Als Hintergrundbild verwenden“ und auf „Hinzufügen“. Wähle „Home-Bildschirm anpassen“, tippe auf „Fotos“ und wähle das Bild für den Home-Bildschirm."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open the lock screen picture in Photos, tap Share, then Use as Wallpaper, and tap Add. Choose Customize Home Screen, tap Photos and pick the home screen picture."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abre la imagen de la pantalla de bloqueo en Fotos, toca Compartir, luego Usar como fondo de pantalla y toca Añadir. Elige Personalizar pantalla de inicio, toca Fotos y elige la imagen de la pantalla de inicio."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvrez l'image de l'écran verrouillé dans Photos, touchez Partager, puis Utiliser comme fond d'écran, et touchez Ajouter. Choisissez Personnaliser l'écran d'accueil, touchez Photos et choisissez l'image de l'écran d'accueil."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apri l'immagine della schermata di blocco in Foto, tocca Condividi, poi Usa come sfondo e tocca Aggiungi. Scegli Personalizza schermata Home, tocca Foto e scegli l'immagine della schermata Home."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "「写真」でロック画面用の画像を開き、「共有」をタップして「壁紙として使用」を選び、「追加」をタップします。「ホーム画面をカスタマイズ」を選び、「写真」をタップして、ホーム画面用の画像を選びます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "사진 앱에서 잠금 화면용 이미지를 열고 공유를 탭한 다음 배경화면으로 사용을 탭하고 추가를 탭하세요. 홈 화면 사용자화를 선택하고 사진을 탭한 다음 홈 화면용 이미지를 고르세요."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abra a imagem da tela bloqueada em Fotos, toque em Compartilhar, depois em Usar como Papel de Parede e toque em Adicionar. Escolha Personalizar Tela de Início, toque em Fotos e escolha a imagem da tela de início."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Откройте картинку для экрана блокировки в «Фото», коснитесь «Поделиться», затем «Использовать как обои» и коснитесь «Добавить». Выберите «Настроить экран «Домой»», коснитесь «Фото» и выберите картинку для экрана «Домой»."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在“照片”中打开锁屏图片，轻点“共享”，然后轻点“用作壁纸”，再轻点“添加”。选取“自定主屏幕”，轻点“照片”，然后选取主屏幕图片。"
+          }
+        }
+      }
+    },
+    "ios_wallpaper_set_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In iOS festlegen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Setting it in iOS"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Establecerlo en iOS"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le définir dans iOS"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impostarlo in iOS"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iOSで設定する"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iOS에서 설정하기"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Definir no iOS"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Установка в iOS"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在 iOS 中设置"
+          }
+        }
+      }
+    },
+    "ios_wallpapers_saved" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Beide in Fotos gesichert: für den Sperrbildschirm und den Home-Bildschirm."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saved both to Photos: the lock screen and the home screen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se han guardado ambos en Fotos: el de la pantalla de bloqueo y el de la pantalla de inicio."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les deux sont enregistrés dans Photos : l'écran verrouillé et l'écran d'accueil."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Salvati entrambi in Foto: la schermata di blocco e la schermata Home."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ロック画面用とホーム画面用の両方を「写真」に保存しました。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "잠금 화면용과 홈 화면용 둘 다 사진에 저장했습니다."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Os dois foram salvos em Fotos: a tela bloqueada e a tela de início."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Обе сохранены в «Фото»: для экрана блокировки и для экрана «Домой»."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "两张都已存到“照片”：锁屏和主屏幕。"
           }
         }
       }
@@ -21105,61 +22286,61 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Immer einer deiner Favoriten, jeden Morgen der nächste.\nAuf dem Sperrbildschirm, auf dem Startbildschirm etwas dunkler.\nZwischen 4 und 8 Uhr, am liebsten beim Laden; der erste gleich beim Einschalten."
+            "value" : "Immer einer deiner Favoriten, jeden Morgen um 4 Uhr der nächste. Auf dem iPhone setzt ihn eine Automation in „Kurzbefehle“; du richtest sie einmal ein."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "One of your favourites at a time, the next one every morning.\nOn the lock screen, and a little darker on the home screen.\nBetween 4 and 8 o'clock, preferably while the phone charges; the first one as soon as you switch it on."
+            "value" : "One of your favourites at a time, the next one every morning at 4 o'clock. On the iPhone a Shortcuts automation sets it; you set it up once."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Uno de tus favoritos cada vez, el siguiente cada mañana.\nEn la pantalla de bloqueo y, algo más oscuro, en la de inicio.\nEntre las 4 y las 8, mejor mientras se carga el teléfono; el primero en cuanto lo activas."
+            "value" : "Uno de tus favoritos cada vez, el siguiente cada mañana a las 4. En el iPhone lo establece una automatización de Atajos; la configuras una sola vez."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Un de vos favoris à la fois, le suivant chaque matin.\nSur l'écran de verrouillage et, un peu plus sombre, sur l'écran d'accueil.\nEntre 4 et 8 heures, de préférence pendant la charge ; le premier dès l'activation."
+            "value" : "Un de vos favoris à la fois, le suivant chaque matin à 4 heures. Sur l'iPhone, une automatisation de Raccourcis le définit ; vous la configurez une seule fois."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Uno dei tuoi preferiti alla volta, il successivo ogni mattina.\nSulla schermata di blocco e, un po' più scuro, sulla schermata Home.\nTra le 4 e le 8, meglio mentre il telefono è in carica; il primo appena lo attivi."
+            "value" : "Uno dei tuoi preferiti alla volta, il successivo ogni mattina alle 4. Su iPhone lo imposta un'automazione di Comandi rapidi; la configuri una sola volta."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "お気に入りを1枚ずつ、毎朝次の1枚へ。\nロック画面に、ホーム画面には少し暗くして。\n4時から8時のあいだ、できれば充電中に。最初の1枚はオンにした時点で。"
+            "value" : "お気に入りを1枚ずつ、毎朝4時に次の1枚へ。iPhoneでは「ショートカット」のオートメーションが設定します。設定は1回だけです。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "즐겨찾기 중 하나씩, 매일 아침 다음 것으로.\n잠금 화면에, 홈 화면에는 조금 더 어둡게.\n4시에서 8시 사이, 가능하면 충전 중에. 첫 번째는 켜는 즉시."
+            "value" : "즐겨찾기 중 하나씩, 매일 아침 4시에 다음 것으로. iPhone에서는 단축어 자동화가 설정합니다. 자동화는 한 번만 만들면 됩니다."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Um dos seus favoritos de cada vez, o próximo toda manhã.\nNa tela de bloqueio e, um pouco mais escuro, na tela inicial.\nEntre 4 e 8 horas, de preferência enquanto carrega; o primeiro assim que você ativar."
+            "value" : "Um dos seus favoritos de cada vez, o próximo toda manhã às 4 horas. No iPhone, uma automação do app Atalhos o define; você a configura uma vez."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "По одному из ваших избранных, каждое утро следующий.\nНа экране блокировки и, чуть темнее, на главном экране.\nМежду 4 и 8 часами, лучше во время зарядки; первый сразу после включения."
+            "value" : "По одному из ваших избранных, каждое утро в 4 часа следующий. На iPhone его ставит автоматизация в «Командах»; настроить её нужно один раз."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "每次一张你的收藏，每天早上换下一张。\n设为锁屏，并以稍暗的效果设为主屏幕。\n在 4 点到 8 点之间，最好在充电时；开启后立即换上第一张。"
+            "value" : "每次一张你的收藏，每天早上 4 点换下一张。在 iPhone 上由“快捷指令”自动化来设置，只需设置一次。"
           }
         }
       }
@@ -21625,61 +22806,61 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Das Widget „Mandala des Tages“ für den Startbildschirm zeigt dieselben Favoriten, wenn es keinen eigenen hat; mit Pro wechselt es jeden Morgen, auch wenn der Tageshintergrund aus ist."
+            "value" : "Das Widget „Mandala des Tages“ für den Home-Bildschirm zeigt dieselben Favoriten, wenn es keinen eigenen hat; mit Pro wechselt es jeden Morgen."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "The home screen widget “Mandala of the day” shows the same favourites unless it has one of its own; with Pro it changes every morning, even while the daily wallpaper is off."
+            "value" : "The home screen widget “Mandala of the day” shows the same favourites unless it has one of its own; with Pro it changes every morning."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "El widget «Mandala del día» muestra los mismos favoritos si no tiene uno propio; con Pro cambia cada mañana, aunque el fondo diario esté desactivado."
+            "value" : "El widget «Mandala del día» de la pantalla de inicio muestra los mismos favoritos si no tiene uno propio; con Pro cambia cada mañana."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Le widget « Mandala du jour » montre les mêmes favoris s'il n'a pas le sien ; avec Pro il change chaque matin, même si le fond d'écran du jour est désactivé."
+            "value" : "Le widget « Mandala du jour » de l'écran d'accueil montre les mêmes favoris s'il n'a pas le sien ; avec Pro il change chaque matin."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Il widget «Mandala del giorno» mostra gli stessi preferiti se non ne ha uno suo; con Pro cambia ogni mattina, anche quando lo sfondo del giorno è spento."
+            "value" : "Il widget «Mandala del giorno» della schermata Home mostra gli stessi preferiti se non ne ha uno suo; con Pro cambia ogni mattina."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ホーム画面のウィジェット「今日のマンダラ」も、専用のお気に入りを選んでいなければ同じお気に入りを表示します。Pro なら毎日の壁紙がオフでも毎朝替わります。"
+            "value" : "ホーム画面のウィジェット「今日のマンダラ」も、専用のお気に入りを選んでいなければ同じお気に入りを表示します。Pro なら毎朝替わります。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "홈 화면 위젯 ‘오늘의 만다라’도 따로 고른 즐겨찾기가 없으면 같은 즐겨찾기를 보여 줍니다. Pro는 매일 배경화면이 꺼져 있어도 매일 아침 바뀝니다."
+            "value" : "홈 화면 위젯 ‘오늘의 만다라’도 따로 고른 즐겨찾기가 없으면 같은 즐겨찾기를 보여 줍니다. Pro는 매일 아침 바뀝니다."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "O widget “Mandala do dia” mostra os mesmos favoritos se não tiver um próprio; com Pro ele muda toda manhã, mesmo com o papel de parede diário desligado."
+            "value" : "O widget “Mandala do dia” da tela de início mostra os mesmos favoritos se não tiver um próprio; com Pro ele muda toda manhã."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Виджет «Мандала дня» показывает то же избранное, если у него нет своей мандалы; с Pro он меняется каждое утро, даже если ежедневные обои выключены."
+            "value" : "Виджет «Мандала дня» на экране «Домой» показывает то же избранное, если у него нет своего; с Pro он меняется каждое утро."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "主屏幕小组件“今日曼陀罗”在没有单独选择收藏时显示同样的收藏；有 Pro 时即使每日壁纸关闭，它也会每天早上更换。"
+            "value" : "主屏幕小组件“今日曼陀罗”在没有单独选择收藏时显示同样的收藏；有 Pro 时每天早上更换。"
           }
         }
       }

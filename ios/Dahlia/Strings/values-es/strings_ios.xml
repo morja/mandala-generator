@@ -26,4 +26,28 @@
     <!-- The widget list on the Dahlia page (WP-10): iOS changes a widget through Edit Widget. -->
     <string name="menu_widgets_about">Cada widget tiene su propio mandala y sus colores. Para cambiarlos, mantén pulsado el widget y elige Editar widget.</string>
     <string name="menu_widgets_empty">Para añadir uno, mantén pulsado un espacio vacío de la pantalla de inicio, toca Editar y luego Añadir widget, y elige Dahlia.</string>
+    <!-- The wallpaper page, the daily page and the Shortcuts action (WP-11): iOS lets no app set the wallpaper. -->
+    <string name="ios_wallpaper_about">Este mandala llenando la pantalla de este iPhone. iOS no deja que ninguna app establezca el fondo por sí misma, así que Dahlia lo guarda en Fotos para que lo establezcas tú.</string>
+    <string name="ios_wallpaper_save_both">Guardar ambos en Fotos</string>
+    <string name="ios_wallpaper_set_title">Establecerlo en iOS</string>
+    <string name="ios_wallpaper_set_one">Abre la imagen en Fotos, toca Compartir y luego Usar como fondo de pantalla. Toca Añadir y luego Establecer como par de fondos.</string>
+    <string name="ios_wallpaper_set_pair">Abre la imagen de la pantalla de bloqueo en Fotos, toca Compartir, luego Usar como fondo de pantalla y toca Añadir. Elige Personalizar pantalla de inicio, toca Fotos y elige la imagen de la pantalla de inicio.</string>
+    <string name="ios_wallpaper_saved">Guardado en Fotos. Ábrelo allí y toca Compartir y luego Usar como fondo de pantalla.</string>
+    <string name="ios_wallpapers_saved">Se han guardado ambos en Fotos: el de la pantalla de bloqueo y el de la pantalla de inicio.</string>
+    <string name="ios_daily_today">Hoy: %1$s</string>
+    <string name="menu_daily_about">Uno de tus favoritos cada vez, el siguiente cada mañana a las 4. En el iPhone lo establece una automatización de Atajos; la configuras una sola vez.</string>
+    <string name="menu_daily_widget_note">El widget «Mandala del día» de la pantalla de inicio muestra los mismos favoritos si no tiene uno propio; con Pro cambia cada mañana.</string>
+    <string name="ios_daily_automation_title">Configurar la automatización</string>
+    <string name="ios_daily_automation_steps">1. Abre Atajos, toca Automatización y luego Nueva automatización.\n2. Elige Hora del día, selecciona una hora como las 7:00 y Diariamente, elige Ejecutar inmediatamente y toca Siguiente.\n3. Toca Nueva automatización en blanco y añade Mandala del día de Dahlia, con Pantalla en Pantalla de bloqueo.\n4. Añade Establecer foto de fondo, elige la pantalla de bloqueo y desactiva Mostrar vista previa.\n5. Para la pantalla de inicio, añade Mandala del día otra vez con Pantalla de inicio y un segundo Establecer foto de fondo para la pantalla de inicio.</string>
+    <string name="ios_daily_open_shortcuts">Abrir Atajos</string>
+    <string name="ios_daily_ready_shortcut">Añadir el atajo ya hecho</string>
+    <string name="ios_daily_ready_note">El atajo ya hecho establece ambas pantallas. Añádelo y, en el paso 3, añade Ejecutar atajo con él en lugar de los pasos 3 a 5.</string>
+    <string name="ios_daily_needs_pro">La acción de Atajos «Mandala del día» viene con Pro; el widget muestra el primer favorito marcado.</string>
+    <string name="ios_intent_title">Mandala del día</string>
+    <string name="ios_intent_description">El mandala de hoy de tus favoritos, a pantalla completa, listo para Establecer foto de fondo.</string>
+    <string name="ios_intent_screen">Pantalla</string>
+    <string name="ios_intent_needs_pro">Mandala del día viene con Dahlia Pro. Abre Dahlia para conseguirlo.</string>
+    <!-- Siri and Spotlight phrases of the action; ${applicationName} is the app's name. -->
+    <string name="shortcut_phrase_1">${applicationName} mandala del día</string>
+    <string name="shortcut_phrase_2">Mandala del día de ${applicationName}</string>
 </resources>

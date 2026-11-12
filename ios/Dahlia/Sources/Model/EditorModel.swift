@@ -31,6 +31,10 @@ final class EditorModel {
     var message: Message?
     /// The save sheet, its frame and a running export (WP-8); its operations are in EditorModel+Save.swift.
     let save = SaveState()
+    /// The wallpaper page's preview of the pair (WP-11); its operations are in EditorModel+Wallpaper.swift.
+    let wallpaper = WallpaperState()
+    /// The favourites that take turns as wallpaper and in the widgets, by id; nil for all (ADR-0014, WP-11).
+    var dailyChosen: Set<String>? = DailyChoiceStore.load()
     /// The user's own palettes in the order made (ADR-0021).
     private(set) var myPalettes: [CustomPalette]
     /// The preview without the scene effects, while it matches the settings (hold the picture to see it).

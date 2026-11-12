@@ -245,6 +245,48 @@ object IosSave {
         ),
     )
 
+    // ── The wallpaper (ADR-0014, PLAN-4 WP-11) ──
+
+    /** The home screen's brightness relative to the lock screen, within the pair's range. */
+    fun withHomeBrightness(choice: SaveChoice, brightness: Double): SaveChoice =
+        choice.copy(homeBrightness = brightness.coerceIn(SaveChoice.MIN_HOME_BRIGHTNESS, 1.0))
+
+    /** The pair slider's lowest value, its highest and its default. */
+    fun homeBrightnessRange(): List<Double> = listOf(SaveChoice.MIN_HOME_BRIGHTNESS, 1.0, SaveChoice.DEFAULT_HOME_BRIGHTNESS)
+
+    /**
+     * The mandala filling a portrait screen of `width` × `height`, before its finish (Android's
+     * `DailyWallpaper.setNext`): Fill's zoom for the screen's shape, centred, the quote where the
+     * mandala puts it. [DrawnFrame.pair] then finishes the lock and the home screen from it.
+     */
+    fun drawWallpaper(
+        params: MandalaParameters, width: Int, height: Int, threads: Int, ticket: RenderTicket, imageLoader: ImageLoader?,
+        textRenderer: TextRenderer?, progress: (Int) -> Unit,
+    ): DrawnFrame? = try {
+        val aspect = Editing.aspect(SaveFormat.SCREEN, maxOf(width, height).toDouble() / minOf(width, height))
+        val zoom = MandalaRenderer.fillZoom(params, aspect, threads)
+        if (ticket.isCancelled()) throw RenderCancelledException()
+        var shown = -1
+        val image = MandalaRenderer.render(
+            params,
+            RenderOptions(
+                width = width, height = height, framing = Framing(zoom = zoom), supersample = false, threads = threads,
+                isCancelled = ticket::isCancelled, imageLoader = imageLoader, textRenderer = textRenderer,
+                onProgress = { share ->
+                    val percent = (share * 100).toInt()
+                    if (percent > shown) {
+                        shown = percent
+                        progress(percent)
+                    }
+                },
+            ),
+        ).image
+        DrawnFrame(image, threads)
+    } catch (e: Throwable) {
+        // Cancelled or failed; the caller tells them apart by the ticket.
+        null
+    }
+
     // ── The line drawing (ADR-0013) ──
 
     fun hasPointLayers(params: MandalaParameters): Boolean = VectorExport.hasPointLayers(params)
@@ -265,7 +307,20 @@ class DrawnFrame internal constructor(private val image: Image8, private val thr
         val done = finish.apply(image, threads)
         return Rendered(IosBridge.rgba(done), done.width, done.height, 0)
     }
+
+    /**
+     * The wallpaper pair from one drawing (ADR-0014): the lock screen with `finish`, the home screen
+     * the lock screen darkened to `homeBrightness`, as Android's `DailyWallpaper.setNext`.
+     */
+    fun pair(finish: Finish, homeBrightness: Double): WallpaperPair {
+        val lock = finish.apply(image, threads)
+        val home = Finish(brightness = homeBrightness.coerceIn(SaveChoice.MIN_HOME_BRIGHTNESS, 1.0)).apply(lock, threads)
+        return WallpaperPair(Rendered(IosBridge.rgba(lock), lock.width, lock.height, 0), Rendered(IosBridge.rgba(home), home.width, home.height, 0))
+    }
 }
+
+/** The lock and the home screen of the wallpaper pair. */
+class WallpaperPair internal constructor(val lock: Rendered, val home: Rendered)
 
 /** The turning frame preview; the layers are drawn once and kept, later frames only turn and blend them. */
 class MovingFrames internal constructor(private val params: MandalaParameters, private val options: RenderOptions) {
