@@ -87,6 +87,7 @@ import com.mathis.mandala.editing.Editing
 import com.mathis.mandala.editing.Editing.strokeCount
 import com.mathis.mandala.editing.Editing.switched
 import com.mathis.mandala.editing.Editing.switchedTo
+import com.mathis.mandala.editing.Editing.switchedOnOff
 import com.mathis.mandala.editing.Editing.withEmblem
 import com.mathis.mandala.editing.Editing.withText
 import com.mathis.mandala.app.EditorViewModel
@@ -489,14 +490,7 @@ private fun SceneTab(params: MandalaParameters, vm: EditorViewModel) {
     Effects(params.effectsLayer, vm::updateEffects, vm::randomizeEffects, vm::newSparklePattern, vm::newLightPattern, vm::resetEffects)
     HorizontalDivider(color = t.outline, modifier = Modifier.padding(top = Spacing.md))
     val switchBackground: (Boolean) -> Unit = { on ->
-        vm.updateBackground { b ->
-            when {
-                !on -> b.copy(isEnabled = false)
-                // A picture background without its picture starts as Auto instead.
-                b.type == BaseLayerType.IMAGE && b.imageURL == null || b.type !in Editing.backgrounds -> b.switchedTo(BaseLayerType.AUTO)
-                else -> b.switchedTo(b.type)
-            }
-        }
+        vm.updateBackground { it.switchedOnOff(on) }
     }
     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(top = Spacing.sm)) {
         Text(

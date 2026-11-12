@@ -12,6 +12,7 @@ enum AppFiles {
 
     static let settings = folder.appendingPathComponent("last-settings.json")
     static let favorites = folder.appendingPathComponent("favorites.json")
+    static let palettes = folder.appendingPathComponent("palettes.json")
 
     /// Writes to a temporary file and moves it over the old one, so a crash never leaves half a file.
     static func write(_ text: String, to url: URL) throws {
@@ -46,6 +47,18 @@ enum FavoritesStore {
 
     static func save(_ favorites: [Favorite]) {
         try? AppFiles.write(IosBridge.shared.encodeFavorites(favorites: favorites), to: AppFiles.favorites)
+    }
+}
+
+/// The user's own palettes in `palettes.json`, in the macOS app's format (ADR-0021), as Android's `MyPalettesStore`.
+enum PalettesStore {
+    static func load() -> [CustomPalette] {
+        guard let text = try? String(contentsOf: AppFiles.palettes, encoding: .utf8) else { return [] }
+        return IosEditing.shared.decodePalettes(json: text)
+    }
+
+    static func save(_ palettes: [CustomPalette]) {
+        try? AppFiles.write(IosEditing.shared.encodePalettes(palettes: palettes), to: AppFiles.palettes)
     }
 }
 

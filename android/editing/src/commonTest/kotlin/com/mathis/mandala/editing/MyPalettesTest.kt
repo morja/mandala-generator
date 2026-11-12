@@ -1,10 +1,10 @@
-package com.mathis.mandala.app
+package com.mathis.mandala.editing
 
 import com.mathis.mandala.core.BuiltInPalettes
 import com.mathis.mandala.core.CustomPalette
 import com.mathis.mandala.core.OwnPalettes
-import org.junit.Assert.assertEquals
-import org.junit.Test
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 /** The list of own palettes (ADR-0021). */
 class MyPalettesTest {

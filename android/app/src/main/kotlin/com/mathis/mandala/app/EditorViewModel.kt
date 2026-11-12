@@ -6,6 +6,7 @@ import com.mathis.mandala.editing.DrawTool
 import com.mathis.mandala.editing.Editing
 import com.mathis.mandala.editing.Favorites
 import com.mathis.mandala.editing.Fit
+import com.mathis.mandala.editing.MyPalettes
 import com.mathis.mandala.editing.History
 import com.mathis.mandala.editing.MoveTarget
 import com.mathis.mandala.editing.PlayField

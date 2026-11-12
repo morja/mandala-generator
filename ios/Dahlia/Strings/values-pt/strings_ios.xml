@@ -10,4 +10,6 @@
     <string name="ios_photos_denied">O Dahlia não tem permissão para adicionar imagens a Fotos. Você pode permitir em Ajustes.</string>
     <string name="ios_open_settings">Ajustes</string>
     <string name="ios_favourite_label">Favorito: %1$s</string>
+    <string name="ios_picture_from_photos">Fotos</string>
+    <string name="ios_picture_from_files">Arquivos</string>
 </resources>

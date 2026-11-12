@@ -33,6 +33,15 @@ final class EditorModel {
     private(set) var favorites: [Favorite]
     var message: Message?
     private(set) var saving: SaveProgress?
+    /// The user's own palettes in the order made (ADR-0021).
+    private(set) var myPalettes: [CustomPalette]
+    /// The preview without the scene effects, while it matches the settings (hold the picture to see it).
+    private(set) var plainPreview: CGImage?
+    /// Android's fast preview (on by default) and the small pictures beside the styles; kept across starts.
+    private(set) var fastPreview: Bool
+    private(set) var chipPreviews: Bool
+    /// Whether Pro is owned: the purchase comes in WP-9, so Pro marks show and nothing is unlocked.
+    let proOwned = false
 
     @ObservationIgnored private let engine = Engine()
 
@@ -46,14 +55,20 @@ final class EditorModel {
     /// When the settings last changed, for the latency log while a slider is dragged.
     @ObservationIgnored private var changedAt = Date()
     @ObservationIgnored private var saveTask: Task<Void, Never>?
+    @ObservationIgnored private var plainTask: Task<Void, Never>?
+    @ObservationIgnored private var plainTicket: RenderTicket?
+    @ObservationIgnored private var plainFor: (params: MandalaParameters, fast: Bool)?
 
-    /// Android's fast preview, on by default; the switch comes with the menu (WP-7).
-    let fastPreview = true
+    private static let fastPreviewKey = "fastPreview"
+    private static let chipPreviewsKey = "chipPreviews"
 
     init() {
         // Saved settings, else the starter the icon was made from, else the first starter.
         params = SettingsStore.load() ?? Starters.firstMandala ?? Starters.all.first?.parameters ?? IosBridge.shared.decode(json: "{}")
         favorites = FavoritesStore.loadOrSeed()
+        myPalettes = PalettesStore.load()
+        fastPreview = UserDefaults.standard.object(forKey: Self.fastPreviewKey) as? Bool ?? true
+        chipPreviews = UserDefaults.standard.object(forKey: Self.chipPreviewsKey) as? Bool ?? true
         renderPreview()
     }
 
@@ -77,6 +92,36 @@ final class EditorModel {
         change(IosEditing.shared.withValue(params: params, layer: Int32(selected), slider: slider, value: value))
     }
 
+    /// Any change of the settings from a control; nothing happens when they stay the same.
+    func apply(_ next: MandalaParameters) { change(next) }
+
+    func setBlend(_ mode: LayerBlendMode) { change(IosEditing.shared.withBlend(params: params, layer: Int32(selected), mode: mode)) }
+
+    // Layers: the shared rules give the new settings and the layer to select.
+
+    func addLayer() { layerOperation(IosEditing.shared.addLayer(params: params)) }
+
+    func duplicateSelected() { layerOperation(IosEditing.shared.duplicateLayer(params: params, layer: Int32(selected))) }
+
+    func removeSelected() { layerOperation(IosEditing.shared.removeLayer(params: params, layer: Int32(selected))) }
+
+    func moveLayer(_ index: Int, by delta: Int) { layerOperation(IosEditing.shared.moveLayer(params: params, layer: Int32(index), delta: Int32(delta))) }
+
+    private func layerOperation(_ edited: Edited) {
+        let before = params
+        selected = max(0, min(Int(edited.selected), edited.params.layers.count - 1))
+        if edited.params != before { params = edited.params; settingsChanged() }
+    }
+
+    /// The layer die: a new look for the selected layer.
+    func randomizeSelected() { change(IosEditing.shared.randomLayer(params: params, layer: Int32(selected))) }
+
+    /// The Style group's variation: same style, other values.
+    func varySelected() { change(IosEditing.shared.randomVariant(params: params, layer: Int32(selected))) }
+
+    /// Same look, a new arrangement of the selected layer.
+    func reseedSelected() { change(IosEditing.shared.reseedLayer(params: params, layer: Int32(selected))) }
+
     private func change(_ next: MandalaParameters) {
         guard next != params else { return }
         params = next
@@ -92,6 +137,7 @@ final class EditorModel {
 
     private func settingsChanged() {
         changedAt = Date()
+        dropPlainPreview()
         renderPreview()
         // Saved once the settings rest a moment (Android: 400 ms).
         saveTask?.cancel()
@@ -151,6 +197,115 @@ final class EditorModel {
     func memoryWarning() {
         recent.removeAll()
         Task { await engine.dropCache() }
+    }
+
+    // ── Hold to compare: the picture without the scene effects ──
+
+    private func dropPlainPreview() {
+        plainTicket?.cancel()
+        plainTask?.cancel()
+        plainFor = nil
+        plainPreview = nil
+    }
+
+    /// Draws the preview without the effects once, when a finger starts holding the picture; kept until the
+    /// settings change. The layer images come from the engine's cache, so only the picture is put together again.
+    func preparePlainPreview() {
+        let p = params
+        guard p.effectsLayer.isEnabled, plainPreview == nil else { return }
+        if let plainFor, plainFor.params == p, plainFor.fast == fastPreview { return }
+        plainTicket?.cancel()
+        plainTask?.cancel()
+        let ticket = RenderTicket()
+        plainTicket = ticket
+        plainFor = (p, fastPreview)
+        let fast = fastPreview
+        plainTask = Task {
+            guard let result = await engine.preview(IosEditing.shared.withoutEffects(params: p), fast: fast, ticket: ticket),
+                  !ticket.isCancelled(), let image = result.cgImage else {
+                // Not drawn: allow another try for the same settings.
+                if !ticket.isCancelled() { plainFor = nil }
+                return
+            }
+            // Only while it still belongs to the settings shown.
+            if params == p, fastPreview == fast { plainPreview = image }
+        }
+    }
+
+    // ── Appearance of the editor ──
+
+    func setFastPreview(_ on: Bool) {
+        guard on != fastPreview else { return }
+        fastPreview = on
+        UserDefaults.standard.set(on, forKey: Self.fastPreviewKey)
+        // The kept previews were drawn with the other glow.
+        recent.removeAll()
+        dropPlainPreview()
+        renderPreview()
+    }
+
+    func setChipPreviews(_ on: Bool) {
+        chipPreviews = on
+        UserDefaults.standard.set(on, forKey: Self.chipPreviewsKey)
+    }
+
+    // ── Own palettes (ADR-0021) ──
+
+    nonisolated static func newPaletteID() -> String { UUID().uuidString.uppercased() }
+
+    private func changeMyPalettes(_ next: [CustomPalette]) {
+        myPalettes = next
+        Task.detached(priority: .utility) { PalettesStore.save(next) }
+    }
+
+    /// Saves an own palette, new or changed; layers and the emblem using it take the new version.
+    func saveMyPalette(_ edited: CustomPalette) {
+        // The Mac's palettes.json needs an id on every stop.
+        let stops = edited.stops.map { $0.id.isEmpty ? CustomPaletteStop(id: Self.newPaletteID(), position: $0.position, hue: $0.hue, saturation: $0.saturation, brightness: $0.brightness) : $0 }
+        let palette = CustomPalette(id: edited.id, name: edited.name, stops: stops)
+        changeMyPalettes(IosEditing.shared.putPalette(list: myPalettes, palette: palette))
+        change(IosEditing.shared.withPaletteSaved(params: params, saved: palette))
+    }
+
+    /// Deletes an own palette; layers using it go back to the built-in palette that looks most like it.
+    func deleteMyPalette(_ id: String) {
+        changeMyPalettes(IosEditing.shared.removePalette(list: myPalettes, id: id))
+        change(IosEditing.shared.withPaletteDeleted(params: params, id: id))
+    }
+
+    /// Keeps a palette that came with a favourite or a file; a new id if one of the user's has its id.
+    func keepPalette(_ palette: CustomPalette) {
+        let known = myPalettes.contains { $0.id == palette.id } || palette.id.isEmpty
+        let id = known ? Self.newPaletteID() : palette.id
+        let stops = palette.stops.map { $0.id.isEmpty ? CustomPaletteStop(id: Self.newPaletteID(), position: $0.position, hue: $0.hue, saturation: $0.saturation, brightness: $0.brightness) : $0 }
+        let kept = CustomPalette(id: id, name: palette.name, stops: stops)
+        changeMyPalettes(IosEditing.shared.putPalette(list: myPalettes, palette: kept))
+        change(IosEditing.shared.withPaletteKept(params: params, old: palette, kept: kept))
+    }
+
+    /// Colours from the picture as it is shown now, dark to bright; nil while there is no picture.
+    func coloursFromPicture() async -> [CustomPaletteStop]? {
+        guard let image = preview else { return nil }
+        return await Task.detached(priority: .userInitiated) { () -> [CustomPaletteStop]? in
+            guard let rgba = Pictures.rgba(image) else { return nil }
+            return IosEditing.shared.coloursFromPicture(rgba: rgba).map {
+                CustomPaletteStop(id: EditorModel.newPaletteID(), position: $0.position, hue: $0.hue, saturation: $0.saturation, brightness: $0.brightness)
+            }
+        }.value
+    }
+
+    // ── Background picture ──
+
+    /// Uses a picked photo or file as the background (copied into the app's folder).
+    func useBackgroundPicture(_ data: Data) {
+        Task {
+            do {
+                let url = try await Task.detached(priority: .userInitiated) { try BackgroundPictures.store(data) }.value
+                change(IosEditing.shared.withBackgroundPicture(params: params, url: url))
+            } catch {
+                message = Message(text: Texts.pictureFailed(error.localizedDescription))
+            }
+        }
     }
 
     // ── Favourites ──
@@ -223,6 +378,8 @@ enum Timing {
     static let debounce = Duration.milliseconds(150)
     static let saveDelay = Duration.milliseconds(400)
     static let recentPreviews = 30
+    /// How long the picture is held before it shows without effects (Android's long press).
+    static let holdSeconds = 0.4
     static let quickMinLayers = Int(Editing.shared.QUICK_MIN_LAYERS)
     static let quickAfterMs: Int64 = Editing.shared.QUICK_AFTER_MS
 }

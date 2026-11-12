@@ -5,17 +5,25 @@ import SwiftUI
 // these and the tokens only.
 
 /// A section that opens and closes: a framed surface with its title, a short summary while folded, and
-/// a chevron (Android's `Group`).
-struct ControlGroup<Content: View>: View {
+/// a chevron (Android's `Group`). `changed` puts a dot beside the title when something inside differs from
+/// its default, `trailing` shows something before the chevron (a colour dot), `inset` marks a child section.
+struct ControlGroup<Content: View, Trailing: View>: View {
     let title: String
     var summary: String? = nil
+    var changed = false
+    var inset = false
+    let trailing: Trailing
     @State private var open: Bool
     @ViewBuilder let content: () -> Content
     @Environment(\.tokens) private var t
 
-    init(_ title: String, summary: String? = nil, initiallyOpen: Bool = false, @ViewBuilder content: @escaping () -> Content) {
+    init(_ title: String, summary: String? = nil, initiallyOpen: Bool = false, changed: Bool = false, inset: Bool = false,
+         @ViewBuilder trailing: () -> Trailing, @ViewBuilder content: @escaping () -> Content) {
         self.title = title
         self.summary = summary
+        self.changed = changed
+        self.inset = inset
+        self.trailing = trailing()
         _open = State(initialValue: initiallyOpen)
         self.content = content
     }
@@ -27,8 +35,12 @@ struct ControlGroup<Content: View>: View {
             } label: {
                 HStack(spacing: Spacing.sm) {
                     Text(title).textRole(.heading).foregroundStyle(t.text)
+                    if changed {
+                        Circle().fill(t.accent).frame(width: Spacing.sm, height: Spacing.sm).accessibilityLabel(Texts.groupChanged)
+                    }
                     Text(summary ?? "").textRole(.note).foregroundStyle(t.textMuted).lineLimit(1)
                         .frame(maxWidth: .infinity, alignment: .leading)
+                    trailing
                     Image(systemName: open ? "chevron.up" : "chevron.down").textRole(.note).foregroundStyle(t.textMuted)
                 }
                 .padding(.horizontal, Spacing.md)
@@ -36,7 +48,9 @@ struct ControlGroup<Content: View>: View {
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
-            .accessibilityValue(open ? "open" : "closed")
+            .accessibilityLabel([title, summary ?? "", changed ? Texts.groupChanged : ""].filter { !$0.isEmpty }.joined(separator: ", "))
+            .accessibilityHint(open ? Texts.groupClose(title) : Texts.groupOpen(title))
+            .accessibilityValue(open ? Texts.groupStateOpen : Texts.groupStateClosed)
             if open {
                 Rectangle().fill(t.outline).frame(height: Sizes.swatchRing / 2)
                 VStack(alignment: .leading, spacing: Spacing.sm, content: content)
@@ -47,8 +61,19 @@ struct ControlGroup<Content: View>: View {
         }
         .background(t.surface, in: RoundedRectangle(cornerRadius: Radius.sm))
         .overlay(RoundedRectangle(cornerRadius: Radius.sm).strokeBorder(t.outline, lineWidth: Sizes.swatchRing / 2))
+        .padding(.leading, inset ? Spacing.sm : 0)
     }
 }
+
+extension ControlGroup where Trailing == EmptyView {
+    init(_ title: String, summary: String? = nil, initiallyOpen: Bool = false, changed: Bool = false, inset: Bool = false,
+         @ViewBuilder content: @escaping () -> Content) {
+        self.init(title, summary: summary, initiallyOpen: initiallyOpen, changed: changed, inset: inset, trailing: { EmptyView() }, content: content)
+    }
+}
+
+/// Whether any value differs from its default, pairs of (value, default) (Android's `differs`).
+func differs(_ values: (Double, Double)...) -> Bool { values.contains { abs($0.0 - $0.1) > 1e-6 } }
 
 /// Label on the left, slider in the middle, value on the right: one line per setting. A double tap on
 /// the line puts the setting back to its default, also offered as an accessibility action.
@@ -90,12 +115,21 @@ struct SliderRow: View {
 struct Chip: View {
     let label: String
     let selected: Bool
+    var picture: UIImage? = nil
     let action: () -> Void
     @Environment(\.tokens) private var t
 
     var body: some View {
         Button(action: action) {
-            Text(label).textRole(.body).lineLimit(1)
+            HStack(spacing: Spacing.sm) {
+                if let picture {
+                    Image(uiImage: picture).resizable().aspectRatio(contentMode: .fill)
+                        .frame(width: Sizes.swatchSmall, height: Sizes.swatchSmall)
+                        .clipShape(RoundedRectangle(cornerRadius: Radius.sm))
+                        .accessibilityHidden(true)
+                }
+                Text(label).textRole(.body).lineLimit(1)
+            }
                 .foregroundStyle(selected ? t.accent : t.text)
                 .padding(.horizontal, Spacing.md)
                 .frame(minHeight: Sizes.icon + Spacing.md)
@@ -227,5 +261,134 @@ struct MessageBar: View {
             try? await Task.sleep(for: .seconds(message.action == nil ? 4 : 6))
             dismiss()
         }
+    }
+}
+
+
+/// A labelled on/off row; the whole row switches (Android's `SwitchRow`).
+struct SwitchRow: View {
+    let label: String
+    let checked: Bool
+    let onChange: (Bool) -> Void
+    @Environment(\.tokens) private var t
+
+    var body: some View {
+        HStack {
+            Text(label).textRole(.body).foregroundStyle(t.text)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            Toggle("", isOn: Binding(get: { checked }, set: { onChange($0) })).labelsHidden().tint(t.accent)
+                .accessibilityLabel(label)
+        }
+        .frame(minHeight: Sizes.icon * 2)
+        .contentShape(Rectangle())
+        .onTapGesture { onChange(!checked) }
+    }
+}
+
+/// A direct random action with a visible explanation of what changes: label, muted detail and a die on the
+/// right where a slider ends (Android's `RandomActionRow`).
+struct RandomActionRow: View {
+    let label: String
+    var detail: String? = nil
+    let description: String
+    let action: () -> Void
+    @Environment(\.tokens) private var t
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: Spacing.sm) {
+                Text(label).textRole(.body).foregroundStyle(t.text)
+                Text(detail ?? "").textRole(.note).foregroundStyle(t.textMuted).lineLimit(1)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                Image(systemName: "dice").foregroundStyle(t.accent)
+            }
+            .frame(minHeight: Sizes.icon * 2)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(label)
+        .accessibilityHint(description)
+    }
+}
+
+/// A muted line saying what comes with Pro. The Pro sheet and its "About Pro" button come with the purchase (WP-9).
+struct ProNote: View {
+    let text: String
+    @Environment(\.tokens) private var t
+
+    var body: some View {
+        Text(text).textRole(.note).foregroundStyle(t.textMuted).padding(.top, Spacing.sm)
+    }
+}
+
+/// A large action with its icon above the label, several side by side (Android's `ActionTile`).
+struct ActionTile: View {
+    let icon: String
+    let label: String
+    let enabled: Bool
+    let action: () -> Void
+    @Environment(\.tokens) private var t
+
+    var body: some View {
+        Button(action: action) {
+            VStack(spacing: Spacing.xs) {
+                Image(systemName: icon).foregroundStyle(enabled ? t.accent : t.textMuted)
+                Text(label).textRole(.note).foregroundStyle(enabled ? t.text : t.textMuted).lineLimit(1).minimumScaleFactor(0.8)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, Spacing.md)
+            .background(t.surfaceRaised, in: RoundedRectangle(cornerRadius: Radius.md))
+        }
+        .buttonStyle(.plain)
+        .disabled(!enabled)
+    }
+}
+
+/// A small muted heading with a line after it, inside a group (Android's `SubHeading`).
+struct SubHeading: View {
+    let text: String
+    @Environment(\.tokens) private var t
+
+    var body: some View {
+        HStack(spacing: Spacing.sm) {
+            Text(text).textRole(.note).foregroundStyle(t.textMuted)
+            Rectangle().fill(t.outline).frame(height: Sizes.swatchRing / 2)
+        }
+        .padding(.top, Spacing.md)
+    }
+}
+
+/// A colour from hue, saturation and brightness in 0…1, as the own palettes and the background store it.
+func hsbColour(_ h: Double, _ s: Double, _ b: Double) -> Color {
+    Color(hue: min(max(h, 0), 1), saturation: min(max(s, 0), 1), brightness: min(max(b, 0), 1)) // token-exempt: the user's own colour
+}
+
+/// Hue, saturation and brightness in one section, with the colour as its summary dot (Android's `ColourGroup`).
+struct ColourGroup: View {
+    let title: String
+    let hue: Double
+    let saturation: Double
+    let brightness: Double
+    /// Defaults of hue, saturation and brightness, for the double-tap reset.
+    let defaults: (Double, Double, Double)
+    var inset = false
+    var brightnessRange: ClosedRange<Double> = 0...1
+    let onChange: (Double, Double, Double) -> Void
+
+    var body: some View {
+        ControlGroup(title, changed: differs((hue, defaults.0), (saturation, defaults.1), (brightness, defaults.2)), inset: inset,
+                     trailing: { ColourDot(colour: hsbColour(hue, saturation, brightness)) }) {
+            SliderRow(label: Texts.hue, value: hue, range: 0...1, defaultValue: defaults.0) { onChange($0, saturation, brightness) }
+            SliderRow(label: Texts.saturation, value: saturation, range: 0...1, defaultValue: defaults.1) { onChange(hue, $0, brightness) }
+            SliderRow(label: Texts.brightness, value: brightness, range: brightnessRange, defaultValue: defaults.2) { onChange(hue, saturation, $0) }
+        }
+    }
+}
+
+struct ColourDot: View {
+    let colour: Color
+
+    var body: some View {
+        Circle().fill(colour).frame(width: Sizes.swatchSmall, height: Sizes.swatchSmall).accessibilityHidden(true)
     }
 }

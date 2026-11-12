@@ -95,21 +95,21 @@ object IosBridge {
      * The editor's preview at 512 px with the layer cache, or null when `ticket` was cancelled
      * meanwhile (a newer change is on its way). `fast` blurs the glow at 800 px as Android's fast preview.
      */
-    fun renderPreview(params: MandalaParameters, cache: LayerCache, fast: Boolean, threads: Int, ticket: RenderTicket): Rendered? = renderOrNull {
+    fun renderPreview(params: MandalaParameters, cache: LayerCache, fast: Boolean, threads: Int, ticket: RenderTicket, imageLoader: ImageLoader?): Rendered? = renderOrNull {
         MandalaRenderer.render(
             params,
             RenderOptions(
-                outputSize = PREVIEW_SIZE, threads = threads, layerCache = cache, isCancelled = ticket::isCancelled,
+                outputSize = PREVIEW_SIZE, threads = threads, layerCache = cache, isCancelled = ticket::isCancelled, imageLoader = imageLoader,
                 glowReferenceWidth = if (fast) FAST_GLOW_REFERENCE else FULL_GLOW_REFERENCE,
             ),
         )
     }
 
     /** A small, rough picture while a slow change is drawn (Android's quick preview); never cached. */
-    fun renderQuick(params: MandalaParameters, threads: Int, ticket: RenderTicket): Rendered? = renderOrNull {
+    fun renderQuick(params: MandalaParameters, threads: Int, ticket: RenderTicket, imageLoader: ImageLoader?): Rendered? = renderOrNull {
         MandalaRenderer.render(
             params,
-            RenderOptions(outputSize = QUICK_SIZE, glowReferenceWidth = QUICK_GLOW_REFERENCE, threads = threads, isCancelled = ticket::isCancelled),
+            RenderOptions(outputSize = QUICK_SIZE, glowReferenceWidth = QUICK_GLOW_REFERENCE, threads = threads, isCancelled = ticket::isCancelled, imageLoader = imageLoader),
         )
     }
 
@@ -117,12 +117,12 @@ object IosBridge {
      * The square picture as saved at `size` px, supersampled as the free export on Android. `progress`
      * gets whole percents (0–100) on the rendering thread; null when `ticket` was cancelled.
      */
-    fun renderSquare(params: MandalaParameters, size: Int, threads: Int, ticket: RenderTicket, progress: (Int) -> Unit): Rendered? = renderOrNull {
+    fun renderSquare(params: MandalaParameters, size: Int, threads: Int, ticket: RenderTicket, imageLoader: ImageLoader?, progress: (Int) -> Unit): Rendered? = renderOrNull {
         var shown = -1
         MandalaRenderer.render(
             params,
             RenderOptions(
-                outputSize = size, supersample = true, threads = threads, isCancelled = ticket::isCancelled,
+                outputSize = size, supersample = true, threads = threads, isCancelled = ticket::isCancelled, imageLoader = imageLoader,
                 onProgress = { share ->
                     val percent = (share * 100).toInt()
                     if (percent > shown) {
@@ -132,6 +132,24 @@ object IosBridge {
                 },
             ),
         )
+    }
+
+    /**
+     * A background picture for core from sRGB RGBA bytes (`size` × `size`, alpha ignored): what Swift's
+     * `ImageLoader` (ImageIO) hands back from `load`.
+     */
+    @OptIn(ExperimentalForeignApi::class)
+    fun image8(rgba: NSData, size: Int): Image8 {
+        val out = Image8(size, size, Encoding.SRGB)
+        val n = size * size
+        val src = ByteArray(n * 4)
+        if (rgba.length.toInt() >= src.size) src.usePinned { platform.posix.memcpy(it.addressOf(0), rgba.bytes, src.size.toULong()) }
+        for (p in 0 until n) {
+            out.data[p * 3] = src[p * 4]
+            out.data[p * 3 + 1] = src[p * 4 + 1]
+            out.data[p * 3 + 2] = src[p * 4 + 2]
+        }
+        return out
     }
 
     private inline fun renderOrNull(render: () -> RenderResult): Rendered? = try {

@@ -8,6 +8,7 @@ sim="${IOS_SIMULATOR:-iPhone 17}"
 # Stale generated files and source rules first (cheap): the catalogue and Tokens.swift against Android's files.
 "$here/scripts/gen-strings" --check
 "$here/scripts/gen-tokens" --check
+"$here/scripts/gen-style-previews" --check
 "$here/scripts/check-sources"
 "$here/Dahlia/scripts/generate"
 xcodebuild -project "$here/Dahlia/Dahlia.xcodeproj" -scheme Dahlia -configuration Debug \

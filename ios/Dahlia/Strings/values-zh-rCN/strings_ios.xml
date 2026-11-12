@@ -10,4 +10,6 @@
     <string name="ios_photos_denied">Dahlia 无法向“照片”添加图片。你可以在“设置”中允许。</string>
     <string name="ios_open_settings">设置</string>
     <string name="ios_favourite_label">收藏：%1$s</string>
+    <string name="ios_picture_from_photos">照片</string>
+    <string name="ios_picture_from_files">文件</string>
 </resources>
