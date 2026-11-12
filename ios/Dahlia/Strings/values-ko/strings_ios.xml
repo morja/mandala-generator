@@ -11,4 +11,5 @@
     <string name="ios_picture_from_photos">사진</string>
     <string name="ios_picture_from_files">파일</string>
     <string name="ios_select">선택</string>
+    <string name="tour_save_body">화살표로 그림을 사진에 저장합니다.</string>
 </resources>

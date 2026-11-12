@@ -13,4 +13,5 @@
     <string name="ios_picture_from_photos">Photos</string>
     <string name="ios_picture_from_files">Files</string>
     <string name="ios_select">Select</string>
+    <string name="tour_save_body">The arrow saves your picture to Photos.</string>
 </resources>

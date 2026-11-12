@@ -11,4 +11,5 @@
     <string name="ios_picture_from_photos">Fotos</string>
     <string name="ios_picture_from_files">Dateien</string>
     <string name="ios_select">Auswählen</string>
+    <string name="tour_save_body">Der Pfeil speichert dein Bild in „Fotos“.</string>
 </resources>
