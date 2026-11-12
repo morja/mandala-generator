@@ -26,4 +26,29 @@
     <!-- The widget list on the Dahlia page (WP-10): iOS changes a widget through Edit Widget. -->
     <string name="menu_widgets_about">Jedes Widget hat sein eigenes Mandala und seine eigenen Farben. Zum Ändern das Widget gedrückt halten und „Widget bearbeiten“ wählen.</string>
     <string name="menu_widgets_empty">Zum Hinzufügen eine freie Stelle auf dem Home-Bildschirm gedrückt halten, „Bearbeiten“ und dann „Widget hinzufügen“ tippen und Dahlia wählen.</string>
+    <!-- The wallpaper page, the daily page and the Shortcuts action (WP-11): iOS lets no app set the wallpaper. -->
+    <string name="ios_wallpaper_about">Dieses Mandala füllt den Bildschirm dieses iPhones. iOS lässt keine App den Hintergrund selbst setzen, deshalb sichert Dahlia es in Fotos, und du legst es dort fest.</string>
+    <string name="ios_wallpaper_save_both">Beide in Fotos sichern</string>
+    <string name="ios_wallpaper_set_title">In iOS festlegen</string>
+    <string name="ios_wallpaper_set_one">Öffne das Bild in Fotos, tippe auf „Teilen“ und dann auf „Als Hintergrundbild verwenden“. Tippe auf „Hinzufügen“ und dann auf „Als Hintergrundbildpaar festlegen“.</string>
+    <string name="ios_wallpaper_set_pair">Öffne das Bild für den Sperrbildschirm in Fotos, tippe auf „Teilen“, dann auf „Als Hintergrundbild verwenden“ und auf „Hinzufügen“. Wähle „Home-Bildschirm anpassen“, tippe auf „Fotos“ und wähle das Bild für den Home-Bildschirm.</string>
+    <string name="ios_wallpaper_saved">In Fotos gesichert. Öffne es dort und tippe auf „Teilen“, dann auf „Als Hintergrundbild verwenden“.</string>
+    <string name="ios_wallpapers_saved">Beide in Fotos gesichert: für den Sperrbildschirm und den Home-Bildschirm.</string>
+    <string name="ios_daily_today">Heute: %1$s</string>
+    <string name="menu_daily_about">Immer einer deiner Favoriten, jeden Morgen um 4 Uhr der nächste. Auf dem iPhone setzt ihn eine Automation in „Kurzbefehle“; du richtest sie einmal ein.</string>
+    <string name="menu_daily_widget_note">Das Widget „Mandala des Tages“ für den Home-Bildschirm zeigt dieselben Favoriten, wenn es keinen eigenen hat; mit Pro wechselt es jeden Morgen.</string>
+    <string name="ios_daily_automation_title">Automation einrichten</string>
+    <string name="ios_daily_automation_steps">1. Erstelle in „Kurzbefehle“ einen neuen Kurzbefehl und füge „Mandala des Tages“ von Dahlia hinzu, mit „Bildschirm“ auf „Sperrbildschirm“.\n2. Füge danach „Hintergrundbild festlegen“ hinzu, wähle den Sperrbildschirm und schalte „Vorschau anzeigen“ aus.\n3. Für den Home-Bildschirm füge „Mandala des Tages“ noch einmal mit „Home-Bildschirm“ hinzu und ein zweites „Hintergrundbild festlegen“ für den Home-Bildschirm.\n4. Damit er täglich läuft, lege eine Automation mit „Tageszeit“ an, mit einer Uhrzeit wie 7:00, „Täglich“ und „Sofort ausführen“.</string>
+    <string name="ios_daily_open_shortcuts">„Kurzbefehle“ öffnen</string>
+    <string name="ios_daily_ready_shortcut">Fertigen Kurzbefehl hinzufügen</string>
+    <string name="ios_daily_ready_note">Der fertige Kurzbefehl enthält schon die Schritte 1 bis 3. Füge ihn hinzu und mache dann Schritt 4 dafür.</string>
+    <string name="ios_daily_needs_pro">Die Kurzbefehle-Aktion „Mandala des Tages“ gibt es mit Pro; das Widget zeigt den ersten markierten Favoriten.</string>
+    <string name="ios_intent_title">Mandala des Tages</string>
+    <string name="ios_intent_description">Das heutige Mandala aus deinen Favoriten, bildschirmfüllend, bereit für „Hintergrundbild festlegen“.</string>
+    <string name="ios_intent_screen">Bildschirm</string>
+    <string name="ios_intent_needs_pro">„Mandala des Tages“ gibt es mit Dahlia Pro. Öffne Dahlia, um es zu holen.</string>
+    <!-- Siri and Spotlight phrases of the action; ${applicationName} is the app's name. -->
+    <string name="shortcut_phrase_1">${applicationName} Mandala des Tages</string>
+    <string name="shortcut_phrase_2">Mandala des Tages von ${applicationName}</string>
+    <string name="pair_home_screen">Home-Bildschirm</string>
 </resources>

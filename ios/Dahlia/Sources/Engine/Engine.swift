@@ -11,6 +11,8 @@ extension RenderTicket: @retroactive @unchecked Sendable {}
 extension SaveChoice: @retroactive @unchecked Sendable {}
 extension Framing: @retroactive @unchecked Sendable {}
 extension Finish: @retroactive @unchecked Sendable {}
+/// Immutable once made: the two finished pictures of the wallpaper pair (WP-11).
+extension WallpaperPair: @retroactive @unchecked Sendable {}
 extension DrawnFrame: @retroactive @unchecked Sendable {}
 extension MovingFrames: @retroactive @unchecked Sendable {}
 extension VideoFrameSource: @retroactive @unchecked Sendable {}

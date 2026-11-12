@@ -21,6 +21,8 @@ struct WidgetInputs: Sendable {
     let mark: Bool
     /// Pixels per point of this screen.
     let scale: CGFloat
+    /// With Pro, once the Shortcuts action ran: today's and tomorrow's wallpaper pair are rendered ahead too (WP-11).
+    var wallpaper: WallpaperSource? = nil
 }
 
 /// A widget on the home screen with its settings, for the menu's widget list and for rendering fixed favourites.
@@ -40,7 +42,7 @@ final class WidgetSync {
     /// Days rendered ahead (F8 a); after them a widget stays on the last picture.
     nonisolated static let daysAhead = 7
 
-    private let painter = WidgetPainter()
+    private let painter = WidgetPainter.shared
     private var waiting: Task<Void, Never>?
     private var running: Task<Void, Never>?
     private var ticket: RenderTicket?
@@ -91,7 +93,7 @@ final class WidgetSync {
 
     /// The favourite of day `number`: with Pro the ticked favourites in turn, without Pro always the first (F7 a).
     nonisolated static func turn(_ inputs: WidgetInputs, day number: Int) -> Favorite? {
-        DailyTurn.shared.turn(favorites: inputs.favourites, chosen: inputs.chosen, next: Int32(inputs.pro ? number : 0))?.first as? Favorite
+        DailyWallpaper.favourite(inputs.favourites, chosen: inputs.chosen, pro: inputs.pro, day: number)
     }
 
     /// The days from today on: their number, start (4:00) and favourite.
@@ -192,12 +194,23 @@ final class WidgetSync {
             }
             drawn += 1
         }
+        // The wallpaper pairs of today and tomorrow for the Shortcuts action, after the widgets (WP-11).
+        var wallpapersDrawn = 0
+        if let source = inputs.wallpaper, !ticket.isCancelled() {
+            let today = WidgetDay.number(of: Date())
+            let wallpapers = [today, today + 1].compactMap { source.job(day: $0) }
+            for job in wallpapers where !WallpaperFiles.exists(job) {
+                if ticket.isCancelled() { break }
+                if await WallpaperFiles.ensure(job, painter: painter, ticket: ticket).drawn { wallpapersDrawn += 1 }
+            }
+            if !ticket.isCancelled() { WallpaperFiles.keepOnly(wallpapers) }
+        }
         await painter.collect()
         let current = WidgetFiles.readIndex()
         write(index, old: current)
         removeUnused(in: folder, keep: index.files.union(old?.files ?? []).union(["index.json"]))
-        if !placed.isEmpty { scheduleRefresh(after: WidgetDay.start(of: (days.first?.number ?? WidgetDay.number(of: Date())) + 1)) }
-        Engine.trace("widgets placed=\(placed.count) favourites=\(favourites.count) drawn=\(drawn)/\(jobs.count) " +
+        if !placed.isEmpty || inputs.wallpaper != nil { scheduleRefresh(after: WidgetDay.start(of: (days.first?.number ?? WidgetDay.number(of: Date())) + 1)) }
+        Engine.trace("widgets placed=\(placed.count) favourites=\(favourites.count) drawn=\(drawn)/\(jobs.count) wallpapers=\(wallpapersDrawn) " +
                      "cancelled=\(ticket.isCancelled()) in \(Int(Date().timeIntervalSince(started) * 1000)) ms")
     }
 
@@ -290,6 +303,10 @@ final class WidgetSync {
 
 /// Renders the widget pictures on its own utility queue, so the editor's previews on the engine's queue go first.
 actor WidgetPainter {
+    /// One painter for the widgets, the wallpapers rendered ahead and the Shortcuts action, so two of these never
+    /// render at the same time and need the memory twice.
+    static let shared = WidgetPainter()
+
     private let queue = DispatchSerialQueue(label: "one.tearoom.mandala.widgets", qos: .utility)
     nonisolated var unownedExecutor: UnownedSerialExecutor { queue.asUnownedSerialExecutor() }
 
@@ -304,6 +321,25 @@ actor WidgetPainter {
             supersample: false, finish: IosSave.shared.identityFinish(), threads: IosBridge.shared.processors(), ticket: ticket,
             imageLoader: loader, textRenderer: text
         ) { _ in }?.cgImage
+    }
+
+    /// The wallpaper pair filling the screen (Android's `DailyWallpaper.setNext`), drawn and written unless its files
+    /// exist; the Kotlin buffers go right after. Whether the files exist now, and whether they were drawn here.
+    func ensureWallpaper(_ job: WallpaperJob, ticket: RenderTicket) -> (ready: Bool, drawn: Bool) {
+        if WallpaperFiles.exists(job) { return (true, false) }
+        if ticket.isCancelled() { return (false, false) }
+        defer { IosBridge.shared.collect() }
+        let pngs: (lock: Data, home: Data)? = {
+            guard let drawn = IosSave.shared.drawWallpaper(params: job.params, width: Int32(job.width), height: Int32(job.height),
+                                                           threads: IosBridge.shared.processors(), ticket: ticket, imageLoader: loader,
+                                                           textRenderer: text, progress: { _ in }),
+                  !ticket.isCancelled() else { return nil }
+            let pair = drawn.pair(finish: job.finish, homeBrightness: job.homeBrightness)
+            guard let lock = pair.lock.cgImage.flatMap({ Pictures.png($0) }), let home = pair.home.cgImage.flatMap({ Pictures.png($0) }) else { return nil }
+            return (lock, home)
+        }()
+        guard let pngs, !ticket.isCancelled() else { return (false, false) }
+        return (WallpaperFiles.write(lock: pngs.lock, home: pngs.home, for: job), true)
     }
 
     /// The Kotlin buffers of the drawn pictures go at once.

@@ -26,4 +26,29 @@
     <!-- The widget list on the Dahlia page (WP-10): iOS changes a widget through Edit Widget. -->
     <string name="menu_widgets_about">每个小组件都有自己的曼陀罗和颜色。要更改，请长按小组件并选择“编辑小组件”。</string>
     <string name="menu_widgets_empty">要添加，请长按主屏幕空白处，轻点“编辑”，再轻点“添加小组件”，然后选择 Dahlia。</string>
+    <!-- The wallpaper page, the daily page and the Shortcuts action (WP-11): iOS lets no app set the wallpaper. -->
+    <string name="ios_wallpaper_about">这张曼陀罗铺满这台 iPhone 的屏幕。iOS 不允许应用自行设置壁纸，所以 Dahlia 会把它存到“照片”，由你在那里设置。</string>
+    <string name="ios_wallpaper_save_both">两张都存到“照片”</string>
+    <string name="ios_wallpaper_set_title">在 iOS 中设置</string>
+    <string name="ios_wallpaper_set_one">在“照片”中打开图片，轻点“共享”，然后轻点“用作壁纸”。轻点“添加”，再轻点“设为壁纸对”。</string>
+    <string name="ios_wallpaper_set_pair">在“照片”中打开锁屏图片，轻点“共享”，然后轻点“用作壁纸”，再轻点“添加”。选取“自定主屏幕”，轻点“照片”，然后选取主屏幕图片。</string>
+    <string name="ios_wallpaper_saved">已存到“照片”。请在那里打开它，轻点“共享”，然后轻点“用作壁纸”。</string>
+    <string name="ios_wallpapers_saved">两张都已存到“照片”：锁屏和主屏幕。</string>
+    <string name="ios_daily_today">今天：%1$s</string>
+    <string name="menu_daily_about">每次一张你的收藏，每天早上 4 点换下一张。在 iPhone 上由“快捷指令”自动化来设置，只需设置一次。</string>
+    <string name="menu_daily_widget_note">主屏幕小组件“今日曼陀罗”在没有单独选择收藏时显示同样的收藏；有 Pro 时每天早上更换。</string>
+    <string name="ios_daily_automation_title">设置自动化</string>
+    <string name="ios_daily_automation_steps">1. 在“快捷指令”中新建快捷指令，添加 Dahlia 的“今日曼陀罗”，并把“屏幕”设为“锁定屏幕”。\n2. 在其后添加“设置壁纸照片”，选取锁定屏幕，并关闭“显示预览”。\n3. 对于主屏幕，再添加一次“今日曼陀罗”并选“主屏幕”，再添加第二个用于主屏幕的“设置壁纸照片”。\n4. 要让它每天运行，请添加“特定时间”自动化，设定 7:00 之类的时间、“每天”和“立即运行”。</string>
+    <string name="ios_daily_open_shortcuts">打开“快捷指令”</string>
+    <string name="ios_daily_ready_shortcut">添加现成的快捷指令</string>
+    <string name="ios_daily_ready_note">现成的快捷指令已包含第 1 至 3 步。添加后，为它完成第 4 步。</string>
+    <string name="ios_daily_needs_pro">快捷指令操作“今日曼陀罗”包含在 Pro 中；小组件显示第一个已勾选的收藏。</string>
+    <string name="ios_intent_title">今日曼陀罗</string>
+    <string name="ios_intent_description">今天从你的收藏中选出的曼陀罗，铺满屏幕，可直接用于“设置壁纸照片”。</string>
+    <string name="ios_intent_screen">屏幕</string>
+    <string name="ios_intent_needs_pro">“今日曼陀罗”包含在 Dahlia Pro 中。打开 Dahlia 即可获得。</string>
+    <!-- Siri and Spotlight phrases of the action; ${applicationName} is the app's name. -->
+    <string name="shortcut_phrase_1">${applicationName} 今日曼陀罗</string>
+    <string name="shortcut_phrase_2">${applicationName} 的今日曼陀罗</string>
+    <string name="pair_home_screen">主屏幕</string>
 </resources>

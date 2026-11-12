@@ -19,6 +19,9 @@ ROOT = Path(__file__).resolve().parents[2]
 ANDROID = ROOT / "android/app/src/main/res"
 IOS = ROOT / "ios/Dahlia/Strings"
 OUT = ROOT / "ios/Dahlia/Resources/Localizable.xcstrings"
+# Siri and Spotlight phrases of the App Shortcut (WP-11): iOS keys them by the English phrase, in their own catalogue.
+PHRASES = ROOT / "ios/Dahlia/Resources/AppShortcuts.xcstrings"
+PHRASE_PREFIX = "shortcut_phrase_"
 
 # Android resource folder -> catalogue language. values-night and values-v31 hold no texts.
 LANGS = {"values": "en", "values-de": "de", "values-es": "es", "values-fr": "fr", "values-it": "it",
@@ -69,13 +72,14 @@ def build():
     android = {lang: collect(ANDROID, folder) for folder, lang in LANGS.items()}
     ios = {lang: collect(IOS, folder) for folder, lang in LANGS.items() if (IOS / folder).exists()}
     overrides = set(ios.get("en", {}))
-    keys = set(android["en"]) | overrides
+    keys = {k for k in set(android["en"]) | overrides if not k.startswith(PHRASE_PREFIX)}
     strings = {}
     for key in sorted(keys):
         locs = {}
         for lang in LANGS.values():
             if key in overrides:
-                value = ios.get(lang, {}).get(key, ios["en"][key] if lang == "en" else None)
+                # A language the iOS file lacks takes the iOS English text: iOS shows the bare key otherwise.
+                value = ios.get(lang, {}).get(key, ios["en"][key])
             else:
                 value = android[lang].get(key)
             if value is None:
@@ -88,20 +92,38 @@ def build():
     return {"sourceLanguage": "en", "strings": strings, "version": "1.0"}
 
 
+def build_phrases():
+    """The App Shortcut phrases, keyed by their English text with ${applicationName} as in the Swift source."""
+    ios = {lang: collect(IOS, folder) for folder, lang in LANGS.items() if (IOS / folder).exists()}
+    strings = {}
+    for key in sorted(k for k in ios["en"] if k.startswith(PHRASE_PREFIX)):
+        english = ios["en"][key]
+        locs = {lang: unit(ios[lang][key]) for lang in LANGS.values() if key in ios.get(lang, {})}
+        strings[english] = {"extractionState": "manual", "localizations": locs}
+    return {"sourceLanguage": "en", "strings": strings, "version": "1.0"}
+
+
+def dump(catalogue):
+    # Xcode's own layout (two spaces, " : "), so opening the catalogue in Xcode does not rewrite it.
+    return json.dumps(catalogue, indent=2, sort_keys=True, ensure_ascii=False, separators=(",", " : ")) + "\n"
+
+
 def main():
     catalogue = build()
+    phrases = build_phrases()
     if "--check" in sys.argv:
-        try:
-            current = json.loads(OUT.read_text())
-        except (OSError, ValueError):
-            current = None
-        if current != catalogue:
-            print("ios/Dahlia/Resources/Localizable.xcstrings is out of date: run ios/scripts/gen-strings", file=sys.stderr)
-            sys.exit(1)
+        for path, wanted in ((OUT, catalogue), (PHRASES, phrases)):
+            try:
+                current = json.loads(path.read_text())
+            except (OSError, ValueError):
+                current = None
+            if current != wanted:
+                print(f"{path.relative_to(ROOT)} is out of date: run ios/scripts/gen-strings", file=sys.stderr)
+                sys.exit(1)
         return
     OUT.parent.mkdir(parents=True, exist_ok=True)
-    # Xcode's own layout (two spaces, " : "), so opening the catalogue in Xcode does not rewrite it.
-    OUT.write_text(json.dumps(catalogue, indent=2, sort_keys=True, ensure_ascii=False, separators=(",", " : ")) + "\n")
+    OUT.write_text(dump(catalogue))
+    PHRASES.write_text(dump(phrases))
     n = len(catalogue["strings"])
     missing = {l: sum(1 for s in catalogue["strings"].values() if l not in s["localizations"]) for l in LANGS.values()}
     print(f"{n} keys written; missing per language: " + ", ".join(f"{l} {c}" for l, c in missing.items() if c))

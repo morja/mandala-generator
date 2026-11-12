@@ -37,9 +37,12 @@ extension EditorModel {
 
     var widgetInputs: WidgetInputs {
         let scale = (UIApplication.shared.connectedScenes.first as? UIWindowScene)?.screen.scale ?? 3
-        return WidgetInputs(favourites: favorites, chosen: DailyChoiceStore.load(), pro: proOwned,
+        let chosen = DailyChoiceStore.load()
+        // The wallpapers ahead only with Pro and once an automation runs the Shortcuts action (WP-11).
+        let wallpaper = proOwned && DailyWallpaper.actionUsed ? WallpaperSource(favourites: favorites, chosen: chosen, choice: save.choice) : nil
+        return WidgetInputs(favourites: favorites, chosen: chosen, pro: proOwned,
                             appLight: UserDefaults.standard.bool(forKey: "lightTheme"), quoteLanguages: quoteLanguages,
-                            mark: widgetMark, scale: max(2, scale))
+                            mark: widgetMark, scale: max(2, scale), wallpaper: wallpaper)
     }
 
     /// At launch, after the first preview had its turn.
@@ -52,6 +55,8 @@ extension EditorModel {
     }
 
     func widgetsChanged() {
+        // Every return to the app: the action has no window to ask for the screen (WP-11).
+        WallpaperFiles.rememberScreen()
         guard Self.widgetsRun else { return }
         widgets.request(widgetInputs)
     }

@@ -26,4 +26,29 @@
     <!-- The widget list on the Dahlia page (WP-10): iOS changes a widget through Edit Widget. -->
     <string name="menu_widgets_about">Chaque widget a son propre mandala et ses couleurs. Pour les changer, maintenez le doigt sur le widget et choisissez Modifier le widget.</string>
     <string name="menu_widgets_empty">Pour en ajouter un, maintenez le doigt sur un espace libre de l\'écran d\'accueil, touchez Modifier, puis Ajouter un widget, et choisissez Dahlia.</string>
+    <!-- The wallpaper page, the daily page and the Shortcuts action (WP-11): iOS lets no app set the wallpaper. -->
+    <string name="ios_wallpaper_about">Ce mandala plein écran sur cet iPhone. iOS ne laisse aucune app définir le fond d\'écran elle-même ; Dahlia l\'enregistre donc dans Photos et vous le définissez là-bas.</string>
+    <string name="ios_wallpaper_save_both">Enregistrer les deux dans Photos</string>
+    <string name="ios_wallpaper_set_title">Le définir dans iOS</string>
+    <string name="ios_wallpaper_set_one">Ouvrez l\'image dans Photos, touchez Partager, puis Utiliser comme fond d\'écran. Touchez Ajouter, puis Définir comme paire de fonds d\'écran.</string>
+    <string name="ios_wallpaper_set_pair">Ouvrez l\'image de l\'écran verrouillé dans Photos, touchez Partager, puis Utiliser comme fond d\'écran, et touchez Ajouter. Choisissez Personnaliser l\'écran d\'accueil, touchez Photos et choisissez l\'image de l\'écran d\'accueil.</string>
+    <string name="ios_wallpaper_saved">Enregistré dans Photos. Ouvrez-le là-bas et touchez Partager, puis Utiliser comme fond d\'écran.</string>
+    <string name="ios_wallpapers_saved">Les deux sont enregistrés dans Photos : l\'écran verrouillé et l\'écran d\'accueil.</string>
+    <string name="ios_daily_today">Aujourd\'hui : %1$s</string>
+    <string name="menu_daily_about">Un de vos favoris à la fois, le suivant chaque matin à 4 heures. Sur l\'iPhone, une automatisation de Raccourcis le définit ; vous la configurez une seule fois.</string>
+    <string name="menu_daily_widget_note">Le widget « Mandala du jour » de l\'écran d\'accueil montre les mêmes favoris s\'il n\'a pas le sien ; avec Pro il change chaque matin.</string>
+    <string name="ios_daily_automation_title">Configurer l\'automatisation</string>
+    <string name="ios_daily_automation_steps">1. Dans Raccourcis, créez un nouveau raccourci et ajoutez Mandala du jour de Dahlia, avec Écran sur Écran verrouillé.\n2. Ajoutez ensuite Définir la photo du fond d\'écran, choisissez l\'écran verrouillé et désactivez Afficher l\'aperçu.\n3. Pour l\'écran d\'accueil, ajoutez à nouveau Mandala du jour avec Écran d\'accueil et une seconde action Définir la photo du fond d\'écran pour l\'écran d\'accueil.\n4. Pour qu\'il s\'exécute chaque jour, ajoutez une automatisation avec Heure de la journée, une heure comme 7:00, Tous les jours et Exécuter immédiatement.</string>
+    <string name="ios_daily_open_shortcuts">Ouvrir Raccourcis</string>
+    <string name="ios_daily_ready_shortcut">Ajouter le raccourci prêt à l\'emploi</string>
+    <string name="ios_daily_ready_note">Le raccourci prêt à l\'emploi contient déjà les étapes 1 à 3. Ajoutez-le, puis faites l\'étape 4 pour lui.</string>
+    <string name="ios_daily_needs_pro">L\'action Raccourcis « Mandala du jour » est incluse avec Pro ; le widget montre le premier favori coché.</string>
+    <string name="ios_intent_title">Mandala du jour</string>
+    <string name="ios_intent_description">Le mandala du jour tiré de vos favoris, plein écran, prêt pour Définir la photo du fond d\'écran.</string>
+    <string name="ios_intent_screen">Écran</string>
+    <string name="ios_intent_needs_pro">Mandala du jour est inclus avec Dahlia Pro. Ouvrez Dahlia pour l\'obtenir.</string>
+    <!-- Siri and Spotlight phrases of the action; ${applicationName} is the app's name. -->
+    <string name="shortcut_phrase_1">${applicationName} mandala du jour</string>
+    <string name="shortcut_phrase_2">Mandala du jour de ${applicationName}</string>
+    <string name="pair_home_screen">Écran d\'accueil</string>
 </resources>

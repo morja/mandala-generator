@@ -2,6 +2,7 @@ import CoreGraphics
 import Foundation
 @preconcurrency import MandalaCore
 import Observation
+import UIKit
 
 /// A short message at the bottom of the editor (Dahlia's own part; iOS has no snackbar).
 struct Message: Identifiable, Equatable {
@@ -31,6 +32,10 @@ final class EditorModel {
     var message: Message?
     /// The save sheet, its frame and a running export (WP-8); its operations are in EditorModel+Save.swift.
     let save = SaveState()
+    /// The wallpaper page's preview of the pair (WP-11); its operations are in EditorModel+Wallpaper.swift.
+    let wallpaper = WallpaperState()
+    /// The favourites that take turns as wallpaper and in the widgets, by id; nil for all (ADR-0014, WP-11).
+    var dailyChosen: Set<String>? = DailyChoiceStore.load()
     /// The user's own palettes in the order made (ADR-0021).
     private(set) var myPalettes: [CustomPalette]
     /// The preview without the scene effects, while it matches the settings (hold the picture to see it).
@@ -93,11 +98,30 @@ final class EditorModel {
         thermalObserver = NotificationCenter.default.addObserver(forName: ProcessInfo.thermalStateDidChangeNotification, object: nil, queue: .main) { [weak self] _ in
             MainActor.assumeIsolated { self?.thermalStateChanged() }
         }
+        proStore.onMessage = { [weak self] shown in self?.proMessage(shown) }
+        // Started by the Shortcuts action in the background (WP-11), the app draws no preview and no widget pictures
+        // beside the action's own picture; they start once a scene is active (`startIfDeferred`).
+        if UIApplication.shared.applicationState == .background {
+            deferredStart = true
+        } else {
+            start()
+        }
+    }
+
+    @ObservationIgnored private var deferredStart = false
+
+    private func start() {
         renderPreview()
         shellStart()
-        proStore.onMessage = { [weak self] shown in self?.proMessage(shown) }
         // After the first preview: the widgets get their pictures, also the starter favourites of a first start.
         widgetsStart()
+    }
+
+    /// The first time a scene is active after a launch in the background.
+    func startIfDeferred() {
+        guard deferredStart else { return }
+        deferredStart = false
+        start()
     }
 
     /// The preview's glow: the fast one when chosen, and always while the phone is hot.

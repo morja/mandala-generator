@@ -31,6 +31,8 @@ struct DahliaApp: App {
                 // Each return to the app asks StoreKit again, as Android asks Play on every resume (ADR-0022).
                 .onChange(of: scenePhase) { _, phase in if phase == .active { Task { await model.proStore.resumed() } } }
                 // The widgets (WP-10): a return may be a new day; the theme and Pro change what they show.
+                // A launch by the Shortcuts action in the background left the preview and widgets for now (WP-11).
+                .onChange(of: scenePhase, initial: true) { _, phase in if phase == .active { model.startIfDeferred() } }
                 .onChange(of: scenePhase) { _, phase in if phase == .active { model.widgetsChanged() } }
                 .onChange(of: lightTheme) { model.widgetsChanged() }
                 .onChange(of: model.proOwned) { model.widgetsChanged() }
@@ -45,6 +47,7 @@ struct DahliaApp: App {
                 .task { ShotSetup.runIfAsked(model) }
                 .task { await ShotSetup.exportProbeIfAsked(model) }
                 .task { ReviewPrompt.applyLaunchArguments() }
+                .task { await WallpaperProbe.runIfAsked() }
                 #endif
         }
         // The background app refresh renders the next widget pictures (approval A10); iOS ends it by cancelling.

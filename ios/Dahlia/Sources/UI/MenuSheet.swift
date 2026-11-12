@@ -4,7 +4,8 @@ import UniformTypeIdentifiers
 
 /// The menu as a sheet from below (Android's `MenuSheet`, DM-7 B): the mandala on screen with what keeps it, three dice
 /// for a new one shown beside the current mandala, the theme and "More" (the line drawing, files, the two switches);
-/// the Dahlia page with Pro (WP-9) and the home screen widgets (WP-10). The wallpaper page comes with WP-11.
+/// the Dahlia page with Pro (WP-9) and the home screen widgets (WP-10); the wallpaper and daily pages (WP-11) are in
+/// WallpaperPages.swift.
 struct MenuSheet: View {
     let close: @MainActor () -> Void
     @Environment(EditorModel.self) private var model
@@ -14,12 +15,12 @@ struct MenuSheet: View {
     #if DEBUG
     @AppStorage(EditorModel.widgetMarkKey) private var widgetMark = true
     #endif
-    @State private var page = Self.initialPage
+    @State var page = Self.initialPage
     @State private var showOpen = false
     @State private var showExport = false
     @State private var showAbout = Self.initialAbout
 
-    private enum Page { case main, more, dahlia, lineDrawing, pro, widgets }
+    enum Page { case main, more, dahlia, lineDrawing, pro, widgets, wallpaper, daily, dailyFavourites }
 
     /// The placed home screen widgets, read from WidgetKit whenever the Dahlia page or the widget list opens.
     @State private var widgetRows: [WidgetRow] = []
@@ -31,6 +32,9 @@ struct MenuSheet: View {
         case "dahlia", "about": return .dahlia
         case "propage": return .pro
         case "widgets": return .widgets
+        case "wallpaper": return .wallpaper
+        case "daily": return .daily
+        case "dailyFavourites": return .dailyFavourites
         default: return .main
         }
         #else
@@ -63,6 +67,12 @@ struct MenuSheet: View {
                     proPage
                 } else if page == .widgets {
                     widgetsPage
+                } else if page == .wallpaper {
+                    WallpaperPage(page: $page, close: close)
+                } else if page == .daily {
+                    DailyPage(page: $page)
+                } else if page == .dailyFavourites {
+                    DailyFavouritesPage(page: $page)
                 } else {
                     mainPage
                 }
@@ -114,6 +124,9 @@ struct MenuSheet: View {
                     close()
                 }
                 .disabled(!model.canAddFavorite)
+                // The screen-sized picture or the pair to Photos, with how to set it in iOS (WP-11).
+                Pill(icon: "iphone", label: Texts.menuWallpaper) { page = .wallpaper }
+                    .disabled(model.save.busy)
                 // The square picture through the share sheet, drawn after the menu closed (Android's KeepRow).
                 Pill(icon: "square.and.arrow.up", label: Texts.share) {
                     // With Pro features but without Pro the Pro sheet opens on top of the menu; "Share without them" goes on.
@@ -131,6 +144,11 @@ struct MenuSheet: View {
                 ForEach(Self.dice, id: \.kind) { die in DieTile(die: die) { model.tryNew(die.kind) } }
             }
             divider.padding(.top, Spacing.xl)
+            // A setting that keeps running, so a row of its own with its state (Android's main page).
+            MenuRow(icon: "calendar", label: Texts.dailyWallpaper,
+                    detail: model.proOwned ? model.dailyToday.map { Texts.dailyToday(WidgetSync.name($0)) } : Texts.dailyPro,
+                    action: { page = .daily }) { chevron }
+            divider
             MenuRow(icon: "moon", label: Texts.menuTheme, detail: nil, action: nil) { themeChoice }
             divider
             MenuRow(icon: "slider.horizontal.3", label: Texts.menuMore, detail: nil, action: { page = .more }) { chevron }
@@ -298,9 +316,9 @@ struct MenuSheet: View {
 
     // ── Parts ──
 
-    private var divider: some View { Rectangle().fill(t.outline).frame(height: Sizes.swatchRing / 2) }
+    var divider: some View { Rectangle().fill(t.outline).frame(height: Sizes.swatchRing / 2) }
 
-    private var chevron: some View { Image(systemName: "chevron.right").foregroundStyle(t.textMuted) }
+    var chevron: some View { Image(systemName: "chevron.right").foregroundStyle(t.textMuted) }
 
     /// Dark or light, as two halves of one rounded control (not following the system, as on Android).
     private var themeChoice: some View {
@@ -363,7 +381,7 @@ private struct DieTile: View {
 }
 
 /// A raised tile with an icon above its label (Android's menu pills).
-private struct Pill: View {
+struct Pill: View {
     let icon: String
     let label: String
     let action: () -> Void
@@ -385,7 +403,7 @@ private struct Pill: View {
 }
 
 /// A menu line: icon, title, a muted line below it and something at the end; the whole line is tappable when it has an action.
-private struct MenuRow<Trailing: View>: View {
+struct MenuRow<Trailing: View>: View {
     let icon: String
     let label: String
     let detail: String?
@@ -414,7 +432,7 @@ private struct MenuRow<Trailing: View>: View {
 }
 
 /// A menu line with an icon, a title, a line below it and a switch; the whole line switches.
-private struct SwitchMenuRow: View {
+struct SwitchMenuRow: View {
     let icon: String
     let label: String
     let detail: String
@@ -439,7 +457,7 @@ private struct SwitchMenuRow: View {
     }
 }
 
-private struct BackRow: View {
+struct BackRow: View {
     let label: String
     let action: () -> Void
     @Environment(\.tokens) private var t
@@ -458,7 +476,7 @@ private struct BackRow: View {
 }
 
 /// A square picture on black (the current mandala or a new one).
-private struct Thumb: View {
+struct Thumb: View {
     let image: CGImage?
     @Environment(\.tokens) private var t
 

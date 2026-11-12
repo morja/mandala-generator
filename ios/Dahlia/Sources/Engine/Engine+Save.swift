@@ -31,6 +31,19 @@ extension Engine {
 
     func finished(_ drawn: DrawnFrame, finish: Finish) -> Rendered { drawn.finished(finish: finish) }
 
+    /// The mandala filling a portrait screen of this size, before its finish (the wallpaper page, WP-11).
+    func wallpaper(_ params: MandalaParameters, size: PixelSize, ticket: RenderTicket,
+                   progress: @escaping @Sendable (Int) -> Void = { _ in }) -> DrawnFrame? {
+        if ticket.isCancelled() { return nil }
+        return IosSave.shared.drawWallpaper(params: params, width: size.width, height: size.height, threads: threads, ticket: ticket,
+                                            imageLoader: loader, textRenderer: text) { percent in progress(Int(percent.int32Value)) }
+    }
+
+    /// The lock screen with the finish and the home screen darker, from one drawing (ADR-0014).
+    func pair(_ drawn: DrawnFrame, finish: Finish, homeBrightness: Double) -> WallpaperPair {
+        drawn.pair(finish: finish, homeBrightness: homeBrightness)
+    }
+
     /// The turning frame preview's renderer; its kept layer images live until `close`.
     func movingFrames(_ params: MandalaParameters, size: PixelSize, framing: Framing, textFollows: Bool, finish: Finish, ticket: RenderTicket) -> MovingFrames {
         IosSave.shared.movingFrames(params: params, width: size.width, height: size.height, framing: framing, textFollows: textFollows,

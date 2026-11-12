@@ -105,7 +105,11 @@ extension EditorModel {
 
     /// The last adjustment of saved pictures (ADR-0014), part of Pro.
     func setFinish(_ finish: Finish) {
-        if pro { changeChoice(IosSave.shared.withFinish(choice: save.choice, finish: finish)) }
+        guard pro else { return }
+        let before = save.choice.finish
+        changeChoice(IosSave.shared.withFinish(choice: save.choice, finish: finish))
+        // The wallpapers rendered ahead for the Shortcuts action carry the finish (WP-11).
+        if save.choice.finish != before { widgetsChanged() }
     }
 
     private func changeChoice(_ next: SaveChoice) {
@@ -237,6 +241,73 @@ extension EditorModel {
                 message = Message(text: Texts.saveFailed)
             }
         }
+    }
+
+    /// The current mandala filled to this iPhone's screen, to Photos (WP-11, F5 a; iOS lets no app set the wallpaper):
+    /// one picture without Pro (ADR-0014 point 1), with Pro the pair, the lock screen with the save sheet's finish and the
+    /// home screen darker (Android's `setPair`). The menu closes first; the progress shows above the editor.
+    func saveWallpaper() {
+        guard !save.busy, mayKeep(Texts.actionSave, then: { [weak self] in self?.saveWallpaper() }) else { return }
+        WallpaperFiles.rememberScreen()
+        let p = params, pair = pro, finish = effectiveFinish, home = save.choice.homeBrightness
+        let pixels = WallpaperFiles.pixels
+        let size = PixelSize(width: Int32(pixels.width), height: Int32(pixels.height))
+        runPictureExport(pair ? Texts.creatingWallpapers : Texts.creatingWallpaper) { [self] ticket in
+            guard await PhotoLibrary.mayAdd() else {
+                photosDenied()
+                return
+            }
+            let drawn = await engine.wallpaper(p, size: size, ticket: ticket) { [weak self] percent in
+                Task { @MainActor [weak self] in
+                    guard let self, self.save.export?.share != nil else { return }
+                    self.save.export?.share = Double(percent) / 100
+                }
+            }
+            guard let drawn, !ticket.isCancelled() else {
+                if !ticket.isCancelled() { message = Message(text: Texts.saveFailed) }
+                return
+            }
+            save.export = ExportProgress(label: Texts.addingToPhotos)
+            let pngs = await wallpaperPNGs(drawn, pair: pair, finish: finish, homeBrightness: home)
+            guard pngs.count == (pair ? 2 : 1) else {
+                message = Message(text: Texts.saveFailed)
+                return
+            }
+            let name = IosSave.shared.fileName(params: p, width: size.width, height: size.height)
+            do {
+                // The home screen first, so the lock screen is the newest picture in Photos.
+                if pair { try await PhotoLibrary.addPNG(pngs[1], fileName: name.replacingOccurrences(of: ".png", with: "-home.png")) }
+                try await PhotoLibrary.addPNG(pngs[0], fileName: pair ? name.replacingOccurrences(of: ".png", with: "-lock.png") : name)
+                message = Message(text: pair ? Texts.wallpapersSaved : Texts.wallpaperSaved)
+            } catch PhotoLibrary.Failure.denied {
+                photosDenied()
+            } catch {
+                message = Message(text: Texts.saveFailed)
+            }
+        }
+    }
+
+    /// The finished pictures as PNG, the lock screen first; the drawn pixels go when this returns.
+    private func wallpaperPNGs(_ drawn: DrawnFrame, pair: Bool, finish: Finish, homeBrightness: Double) async -> [Data] {
+        let pictures: [Rendered]
+        if pair {
+            let both = await engine.pair(drawn, finish: finish, homeBrightness: homeBrightness)
+            pictures = [both.lock, both.home]
+        } else {
+            pictures = [await engine.finished(drawn, finish: finish)]
+        }
+        return await Task.detached(priority: .userInitiated) { pictures.compactMap { $0.cgImage.flatMap { Pictures.png($0) } } }.value
+    }
+
+    /// The home screen's brightness in the pair, part of Pro (ADR-0014).
+    func setHomeBrightness(_ brightness: Double) {
+        guard pro else { return }
+        let next = IosSave.shared.withHomeBrightness(choice: save.choice, brightness: brightness)
+        guard next != save.choice else { return }
+        save.choice = next
+        refreshWallpaperPreview()
+        // The pictures rendered ahead for the Shortcuts action carry the pair's brightness.
+        widgetsChanged()
     }
 
     /// The square picture at 1024 px through the share sheet, from the menu (Android's `shareImage`).

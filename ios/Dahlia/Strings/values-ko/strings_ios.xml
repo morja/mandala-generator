@@ -26,4 +26,29 @@
     <!-- The widget list on the Dahlia page (WP-10): iOS changes a widget through Edit Widget. -->
     <string name="menu_widgets_about">위젯마다 만다라와 색을 따로 정할 수 있습니다. 바꾸려면 위젯을 길게 누르고 위젯 편집을 고르세요.</string>
     <string name="menu_widgets_empty">추가하려면 홈 화면의 빈 곳을 길게 누르고 편집, 위젯 추가를 차례로 누른 뒤 Dahlia를 선택하세요.</string>
+    <!-- The wallpaper page, the daily page and the Shortcuts action (WP-11): iOS lets no app set the wallpaper. -->
+    <string name="ios_wallpaper_about">이 iPhone 화면을 가득 채우는 만다라입니다. iOS에서는 앱이 배경화면을 직접 설정할 수 없어서, Dahlia가 사진 앱에 저장하고 설정은 직접 하셔야 합니다.</string>
+    <string name="ios_wallpaper_save_both">둘 다 사진에 저장</string>
+    <string name="ios_wallpaper_set_title">iOS에서 설정하기</string>
+    <string name="ios_wallpaper_set_one">사진 앱에서 이미지를 열고 공유를 탭한 다음 배경화면으로 사용을 탭하세요. 추가를 탭한 다음 배경화면 쌍으로 설정을 탭하세요.</string>
+    <string name="ios_wallpaper_set_pair">사진 앱에서 잠금 화면용 이미지를 열고 공유를 탭한 다음 배경화면으로 사용을 탭하고 추가를 탭하세요. 홈 화면 사용자화를 선택하고 사진을 탭한 다음 홈 화면용 이미지를 고르세요.</string>
+    <string name="ios_wallpaper_saved">사진에 저장했습니다. 사진 앱에서 열고 공유를 탭한 다음 배경화면으로 사용을 탭하세요.</string>
+    <string name="ios_wallpapers_saved">잠금 화면용과 홈 화면용 둘 다 사진에 저장했습니다.</string>
+    <string name="ios_daily_today">오늘: %1$s</string>
+    <string name="menu_daily_about">즐겨찾기 중 하나씩, 매일 아침 4시에 다음 것으로. iPhone에서는 단축어 자동화가 설정합니다. 자동화는 한 번만 만들면 됩니다.</string>
+    <string name="menu_daily_widget_note">홈 화면 위젯 ‘오늘의 만다라’도 따로 고른 즐겨찾기가 없으면 같은 즐겨찾기를 보여 줍니다. Pro는 매일 아침 바뀝니다.</string>
+    <string name="ios_daily_automation_title">자동화 설정</string>
+    <string name="ios_daily_automation_steps">1. 단축어 앱에서 새로운 단축어를 만들고 Dahlia의 오늘의 만다라를 추가한 다음 화면을 잠금 화면으로 설정하세요.\n2. 그 뒤에 배경화면 사진 설정을 추가하고 잠금 화면을 선택한 다음 미리보기 보기를 끄세요.\n3. 홈 화면용으로는 오늘의 만다라를 홈 화면으로 한 번 더 추가하고, 홈 화면용 배경화면 사진 설정을 하나 더 추가하세요.\n4. 매일 실행되게 하려면 시간 자동화를 추가하고 7:00 같은 시각, 매일, 즉시 실행을 설정하세요.</string>
+    <string name="ios_daily_open_shortcuts">단축어 열기</string>
+    <string name="ios_daily_ready_shortcut">준비된 단축어 추가</string>
+    <string name="ios_daily_ready_note">준비된 단축어에는 1~3단계가 이미 들어 있습니다. 추가한 다음 그 단축어에 4단계를 하세요.</string>
+    <string name="ios_daily_needs_pro">단축어 동작 ‘오늘의 만다라’는 Pro에 포함되어 있습니다. 위젯은 처음 체크한 즐겨찾기를 보여 줍니다.</string>
+    <string name="ios_intent_title">오늘의 만다라</string>
+    <string name="ios_intent_description">즐겨찾기 중 오늘의 만다라를 화면 가득 채워, 배경화면 사진 설정에 바로 쓸 수 있게 합니다.</string>
+    <string name="ios_intent_screen">화면</string>
+    <string name="ios_intent_needs_pro">오늘의 만다라는 Dahlia Pro에 포함되어 있습니다. Dahlia를 열어 받으세요.</string>
+    <!-- Siri and Spotlight phrases of the action; ${applicationName} is the app's name. -->
+    <string name="shortcut_phrase_1">${applicationName} 오늘의 만다라</string>
+    <string name="shortcut_phrase_2">${applicationName}의 오늘의 만다라</string>
+    <string name="pair_home_screen">홈 화면</string>
 </resources>
