@@ -20,8 +20,8 @@ ADR-0001 to ADR-0008 were written for the Android repository before both apps mo
 | [0012](0012-app-name-dahlia.md) | App name: Dahlia – Mandala Maker | accepted |
 | [0013](0013-svg-line-drawing.md) | SVG line drawing as a Pro export | accepted |
 | [0014](0014-pro-wallpapers-and-finish.md) | Pro wallpapers and a finishing step | accepted |
-| [0015](0015-iphone-app.md) | iPhone app on the shared Kotlin core | proposed |
-| [0016](0016-one-pro-line.md) | One line between free and Pro for Android and iPhone | accepted |
+| [0015](0015-iphone-app.md) | iPhone app on the shared Kotlin core | accepted |
+| [0016](0016-one-pro-line.md) | One line between free and Pro for Android and iPhone | accepted, point 4 amended for iPhone widgets |
 | [0017](0017-text-after-scene-effects.md) | Text above the finished scene | accepted |
 | [0018](0018-effects-reach-emblem-and-text.md) | Which layers the scene effects reach | accepted |
 | [0019](0019-languages-and-quotes.md) | App languages and quotes per language | accepted |

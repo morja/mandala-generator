@@ -7,24 +7,33 @@ What needs approval: new packages, new design tokens, new folders in the root di
 - **Core Image's random tile as a data file** · `CIRandomGenerator` turns out to be one 256 x 256 tile of 8-bit RGBA values repeated without end (measured 19 October 2026). Shipping that tile (256 KB, read once from Core Image on a Mac) would make the grain of the effects layer, the grain background and the heavy painted effect pixel-identical to the Mac; today they have the same strength but another pattern (Mac favourites with grain: 30–40 dB instead of about 45). Open point: the table is output of Apple's framework, so whether it may be shipped is your call · Alternative without approval: keep the own hash grain (same look, different pattern) · Recommendation: only if exact grain matters to you; visually the difference is not noticeable.
 - **Bundled fonts for the text layer** · Android has none of the macOS fonts (Zapfino, Didot, Papyrus …), so they map to the closest system family. Open-licence look-alikes (for example from Google Fonts, OFL) could be shipped in the app · Alternative without approval: system families (current) · Recommendation: decide after looking at quotes on the phone.
 
-iPhone app (PLAN-4 revision of 12 November 2026, section 5; IDs A1–A11 as in the plan):
-
-- **A1 Bundle id of the iPhone app** · Final, cannot change after the first upload; the debug build gets `<id>.debug` with its own name and marked icon · Alternative without approval: none, WP-1 needs it · Recommendation: `one.tearoom.mandala`, the same as the Android package (PLAN-4 F1).
-- **A2 App Group** `group.<bundle id>` (e.g. `group.one.tearoom.mandala`) · Shared container for the widget pictures, the widget index, the Pro flag and the appearance; the widget extension cannot render (SPIKE-3 finding 7) · Alternative without approval: none; no widgets without it · Recommendation: approve with A1.
-- **A3 Minimum iOS version** · iOS 26 runs on the iPhone 11 and later and the SE 2/3; one design generation and two system versions to test; leaves out about 10–15 % of active iPhones today (estimate) · Alternative: iOS 18 (about 5 % more reach, estimate; two design generations, XS/XR the slowest phones) · Recommendation: iOS 26 (PLAN-4 F2).
-- **A4 Pro product in App Store Connect** · Non-consumable `pro` (same id as on Play), 2.99 € (ADR-0016), Family Sharing per PLAN-4 F4 · Alternative without approval: none · Recommendation: approve as described with Family Sharing on.
-- **A5 Collector setting of the iPhone app** · A fixed Kotlin/Native collector target (64 MB) set at app start through the iOS facade, only if WP-1 confirms on the iPhone 15 what the simulator showed (worst case 16–23 % faster, SPIKE-4 finding 7); remove the ignored `gcMutatorsCooperate` from `android/core/build.gradle.kts` · Alternative without approval: the default autotuned collector · Recommendation: measure, then set it if the device confirms.
-- **A6 XcodeGen for `ios/`** · The project is generated from `ios/project.yml` (already installed, used by SpikeBench and planned for Lazy Moves); the `.xcodeproj` is not committed, the signing team sits in a local ignored xcconfig · Alternative without approval: a committed Xcode project · Recommendation: XcodeGen (a build tool, not a Swift package).
-- **A7 Shared editing module `android/editing`** · Kotlin Multiplatform (JVM and iOS) for the platform-free rules now in the Android app (`Editing.kt`, `Randomize.kt`, `PlayField.kt`, `History.kt`, the daily turn, the favourites merge), so the die, the play field and the history behave the same on both phones; new folder in `android/` and a deviation from `android/AGENTS.md` ("editing rules in `Editing.kt`") · Alternative without approval: port the rules to Swift and keep two copies in step · Recommendation: approve; built Android first (PLAN-4 WP-3).
-- **A8 MP4 written by the iOS app** · The moving picture through AVFoundation (`AVAssetWriter`, H.264, BT.709, core's I420 frames repacked), the same exception as `VideoExport.kt` on Android (ADR-0010 point 10, `android/AGENTS.md`) · Alternative without approval: no moving picture on iOS · Recommendation: approve.
-- **A9 iOS text roles as design tokens** · Six text roles in `Tokens.swift`, mapped onto Dynamic Type styles (SF Pro); colours, spacing and radii are generated from `Tokens.kt` and need no approval · Alternative without approval: system text styles used directly in screens · Recommendation: approve, roles listed in WP-4 before use.
-- **A10 iOS permissions and capabilities** · Photos add-only access (one usage text, for saving pictures and videos), App Groups, background app refresh to render widget pictures ahead · Alternative without approval: widgets update only when the app is opened · Recommendation: approve.
-- **A11 Deviations from ADRs for the iPhone app** · ADR-0004: iOS parity is tested against the JVM renders, not the Mac; ADR-0010 point 10 and ADR-0014: no "Set as wallpaper", daily or live wallpaper on iOS, replaced per PLAN-4 F5 and F6; ADR-0016 point 4: iPhone widgets free with the daily turn as Pro, if F7 follows Android (ADR-0020); the daily turn by date instead of a counter on iOS · Alternative without approval: none that keeps the plan · Recommendation: approve together with the answers to F5–F7; each is recorded in an ADR when built.
-- **Swift packages for the iPhone app** · None requested; StoreKit, WidgetKit, App Intents, AVFoundation, PhotoKit, Core Text and ImageIO are system frameworks · Alternative: — · Recommendation: nothing to approve now; a package that turns out to be needed comes here first.
-
 Format: `- **What** · What for and why · Alternative without approval · Recommendation`
 
 ## Approved
+
+12 November 2026 (Mathis, "Alles wie empfohlen" to PLAN-4's questions and approvals; ADR-0015 accepted after SPIKE-3 and SPIKE-4): the iPhone app's approvals A1–A11 as PLAN-4 section 5 words them, with these values:
+
+- **A1 Bundle id** `one.tearoom.mandala`, the same as the Android package (F1 a); debug build `one.tearoom.mandala.debug` with its own name and marked icon.
+
+- **A2 App Group** `group.one.tearoom.mandala` for widget pictures, widget index, Pro flag and appearance.
+
+- **A3 Minimum iOS** iOS 26 (F2 a); iPhone only, on the iPad as an iPhone app (F3 a).
+
+- **A4 Pro product** non-consumable `pro`, 2.99 € (ADR-0016), Family Sharing on (F4 a).
+
+- **A5 Collector setting** a fixed collector target of 64 MB set at app start through the facade, **only if WP-1's measurement on the iPhone 15 confirms** the simulator's gain; otherwise the default autotuned collector. Removing the ignored `gcMutatorsCooperate` from `android/core/build.gradle.kts` is approved either way.
+
+- **A6 XcodeGen** for `ios/`, the `.xcodeproj` not committed, the signing team in a local ignored xcconfig.
+
+- **A7 Shared editing module** `android/editing` (Kotlin Multiplatform, JVM and iOS), built Android first in WP-3, with the deviation from `android/AGENTS.md`.
+
+- **A8 MP4 written by the iOS app** through AVFoundation, the same exception as `VideoExport.kt`.
+
+- **A9 iOS text roles** as six design tokens in `Tokens.swift`, mapped onto Dynamic Type; the roles are listed in WP-4 before use.
+
+- **A10 Permissions and capabilities:** Photos add-only access with one usage text, App Groups, background app refresh for widget pictures.
+
+- **A11 Deviations from ADRs:** ADR-0004 (iOS parity against the JVM), ADR-0010 point 10 and ADR-0014 (wallpaper routes replaced per F5 a and F6 c), ADR-0016 point 4 (iPhone widgets free, the daily turn Pro, F7 a; amended 12 November 2026), ADR-0020 gets an iOS counterpart, the daily turn by date on iOS; each recorded in an ADR when built. No Swift packages requested.
 
 11 November 2026 (Mathis, for the iPhone app, PLAN-4 and ADR-0015): `core` as a Kotlin Multiplatform module with JVM and iOS targets (Kotlin Multiplatform Gradle plugin 2.4.20, deviation from ADR-0002) and the new root folder `ios/` for the SwiftUI app; no new Swift packages. ADR-0015 itself stays proposed until the speed spike (SPIKE-3).
 
