@@ -19452,6 +19452,28 @@
         }
       }
     },
+    "ios_debug_widget_mark" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mark widget pictures"
+          }
+        }
+      }
+    },
+    "ios_debug_widget_mark_detail" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Debug build: a small dot bottom right; turn it off for screenshots."
+          }
+        }
+      }
+    },
     "ios_export_stopped_background" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -24219,61 +24241,61 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Jedes Widget hat sein eigenes Mandala und seine eigenen Farben. Auch ein langer Druck auf ein Widget öffnet seine Einstellungen."
+            "value" : "Jedes Widget hat sein eigenes Mandala und seine eigenen Farben. Zum Ändern das Widget gedrückt halten und „Widget bearbeiten“ wählen."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Each widget has its own mandala and colours. A long press on a widget opens its settings too."
+            "value" : "Each widget has its own mandala and colours. To change them, touch and hold the widget and choose Edit Widget."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Cada widget tiene su propio mandala y sus colores. Al mantener pulsado un widget también se abren sus ajustes."
+            "value" : "Cada widget tiene su propio mandala y sus colores. Para cambiarlos, mantén pulsado el widget y elige Editar widget."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Chaque widget a son propre mandala et ses couleurs. Un appui long sur un widget ouvre aussi ses réglages."
+            "value" : "Chaque widget a son propre mandala et ses couleurs. Pour les changer, maintenez le doigt sur le widget et choisissez Modifier le widget."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ogni widget ha il suo mandala e i suoi colori. Anche una pressione prolungata sul widget apre le sue impostazioni."
+            "value" : "Ogni widget ha il suo mandala e i suoi colori. Per cambiarli, tieni premuto il widget e scegli Modifica widget."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ウィジェットごとにマンダラと色を選べます。ウィジェットを長押ししても設定を開けます。"
+            "value" : "ウィジェットごとにマンダラと色を選べます。変えるには、ウィジェットを長押しして「ウィジェットを編集」を選びます。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "위젯마다 만다라와 색을 따로 정할 수 있습니다. 위젯을 길게 눌러도 설정이 열립니다."
+            "value" : "위젯마다 만다라와 색을 따로 정할 수 있습니다. 바꾸려면 위젯을 길게 누르고 위젯 편집을 고르세요."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Cada widget tem sua própria mandala e suas cores. Tocar e segurar um widget também abre os ajustes dele."
+            "value" : "Cada widget tem sua própria mandala e suas cores. Para mudá-las, toque e segure o widget e escolha Editar Widget."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "У каждого виджета своя мандала и свои цвета. Настройки также открываются долгим нажатием на виджет."
+            "value" : "У каждого виджета своя мандала и свои цвета. Чтобы изменить их, нажмите и удерживайте виджет и выберите «Изменить виджет»."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "每个小组件都有自己的曼陀罗和颜色。长按小组件也能打开它的设置。"
+            "value" : "每个小组件都有自己的曼陀罗和颜色。要更改，请长按小组件并选择“编辑小组件”。"
           }
         }
       }
@@ -24487,61 +24509,61 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Zum Hinzufügen eine freie Stelle auf dem Startbildschirm lange drücken, „Widgets“ wählen, dann Dahlia."
+            "value" : "Zum Hinzufügen eine freie Stelle auf dem Home-Bildschirm gedrückt halten, „Bearbeiten“ und dann „Widget hinzufügen“ tippen und Dahlia wählen."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "To add one, touch and hold an empty spot on the home screen, choose Widgets, then Dahlia."
+            "value" : "To add one, touch and hold an empty spot on the home screen, tap Edit, then Add Widget, and choose Dahlia."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Para añadir uno, mantén pulsado un espacio vacío de la pantalla de inicio, elige Widgets y luego Dahlia."
+            "value" : "Para añadir uno, mantén pulsado un espacio vacío de la pantalla de inicio, toca Editar y luego Añadir widget, y elige Dahlia."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Pour en ajouter un, appuyez longuement sur un espace libre de l'écran d'accueil, choisissez Widgets, puis Dahlia."
+            "value" : "Pour en ajouter un, maintenez le doigt sur un espace libre de l'écran d'accueil, touchez Modifier, puis Ajouter un widget, et choisissez Dahlia."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Per aggiungerne uno, tieni premuto uno spazio vuoto della schermata Home, scegli Widget, poi Dahlia."
+            "value" : "Per aggiungerne uno, tieni premuto uno spazio vuoto della schermata Home, tocca Modifica, poi Aggiungi widget, e scegli Dahlia."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "追加するには、ホーム画面の空いている所を長押しし、「ウィジェット」から Dahlia を選びます。"
+            "value" : "追加するには、ホーム画面の空いている所を長押しし、「編集」、「ウィジェットを追加」の順にタップして Dahlia を選びます。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "추가하려면 홈 화면의 빈 곳을 길게 누르고 위젯을 고른 뒤 Dahlia를 선택하세요."
+            "value" : "추가하려면 홈 화면의 빈 곳을 길게 누르고 편집, 위젯 추가를 차례로 누른 뒤 Dahlia를 선택하세요."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Para adicionar, toque e segure um espaço vazio da tela inicial, escolha Widgets e depois Dahlia."
+            "value" : "Para adicionar, toque e segure um espaço vazio da tela inicial, toque em Editar e depois em Adicionar Widget, e escolha Dahlia."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Чтобы добавить, нажмите и удерживайте пустое место на главном экране, выберите «Виджеты», затем Dahlia."
+            "value" : "Чтобы добавить, нажмите и удерживайте пустое место на экране «Домой», коснитесь «Править», затем «Добавить виджет» и выберите Dahlia."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "要添加，请长按主屏幕空白处，选择“小组件”，然后选择 Dahlia。"
+            "value" : "要添加，请长按主屏幕空白处，轻点“编辑”，再轻点“添加小组件”，然后选择 Dahlia。"
           }
         }
       }

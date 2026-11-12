@@ -25,4 +25,10 @@
     <string name="pro_purchase_not_started">The App Store could not open the purchase. Please try again.</string>
     <string name="editor_pro_unavailable">Purchases are turned off on this iPhone. They can be allowed in Settings under Screen Time.</string>
     <string name="editor_pro_adds_wallpapers">Wallpapers: home and lock screen as a pair, and a new one every day through Shortcuts.</string>
+    <!-- The widget list on the Dahlia page (WP-10): iOS changes a widget through Edit Widget. -->
+    <string name="menu_widgets_about">Each widget has its own mandala and colours. To change them, touch and hold the widget and choose Edit Widget.</string>
+    <string name="menu_widgets_empty">To add one, touch and hold an empty spot on the home screen, tap Edit, then Add Widget, and choose Dahlia.</string>
+    <!-- Debug builds only (global rule for local builds): the dot on widget pictures, off for screenshots. -->
+    <string name="ios_debug_widget_mark">Mark widget pictures</string>
+    <string name="ios_debug_widget_mark_detail">Debug build: a small dot bottom right; turn it off for screenshots.</string>
 </resources>

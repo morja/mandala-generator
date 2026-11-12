@@ -23,4 +23,7 @@
     <string name="pro_purchase_not_started">Der App Store konnte den Kauf nicht öffnen. Bitte versuch es noch einmal.</string>
     <string name="editor_pro_unavailable">Käufe sind auf diesem iPhone ausgeschaltet. Du kannst sie in den Einstellungen unter Bildschirmzeit erlauben.</string>
     <string name="editor_pro_adds_wallpapers">Hintergründe: Start- und Sperrbildschirm als Paar und jeden Tag ein neuer über Kurzbefehle.</string>
+    <!-- The widget list on the Dahlia page (WP-10): iOS changes a widget through Edit Widget. -->
+    <string name="menu_widgets_about">Jedes Widget hat sein eigenes Mandala und seine eigenen Farben. Zum Ändern das Widget gedrückt halten und „Widget bearbeiten“ wählen.</string>
+    <string name="menu_widgets_empty">Zum Hinzufügen eine freie Stelle auf dem Home-Bildschirm gedrückt halten, „Bearbeiten“ und dann „Widget hinzufügen“ tippen und Dahlia wählen.</string>
 </resources>

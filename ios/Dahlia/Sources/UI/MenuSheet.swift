@@ -4,19 +4,25 @@ import UniformTypeIdentifiers
 
 /// The menu as a sheet from below (Android's `MenuSheet`, DM-7 B): the mandala on screen with what keeps it, three dice
 /// for a new one shown beside the current mandala, the theme and "More" (the line drawing, files, the two switches);
-/// the Dahlia page with Pro (WP-9). What belongs to later packages (wallpapers, widgets) is not here yet.
+/// the Dahlia page with Pro (WP-9) and the home screen widgets (WP-10). The wallpaper page comes with WP-11.
 struct MenuSheet: View {
     let close: @MainActor () -> Void
     @Environment(EditorModel.self) private var model
     @Environment(TourModel.self) private var tour
     @Environment(\.tokens) private var t
     @AppStorage("lightTheme") private var lightTheme = false
+    #if DEBUG
+    @AppStorage(EditorModel.widgetMarkKey) private var widgetMark = true
+    #endif
     @State private var page = Self.initialPage
     @State private var showOpen = false
     @State private var showExport = false
     @State private var showAbout = Self.initialAbout
 
-    private enum Page { case main, more, dahlia, lineDrawing, pro }
+    private enum Page { case main, more, dahlia, lineDrawing, pro, widgets }
+
+    /// The placed home screen widgets, read from WidgetKit whenever the Dahlia page or the widget list opens.
+    @State private var widgetRows: [WidgetRow] = []
 
     private static var initialPage: Page {
         #if DEBUG
@@ -24,6 +30,7 @@ struct MenuSheet: View {
         case "more": return .more
         case "dahlia", "about": return .dahlia
         case "propage": return .pro
+        case "widgets": return .widgets
         default: return .main
         }
         #else
@@ -54,6 +61,8 @@ struct MenuSheet: View {
                     dahliaPage
                 } else if page == .pro {
                     proPage
+                } else if page == .widgets {
+                    widgetsPage
                 } else {
                     mainPage
                 }
@@ -75,6 +84,7 @@ struct MenuSheet: View {
         .task { await ShotSetup.proOverIfAsked("menu", model) }
         #endif
         .sheet(isPresented: $showAbout) { AboutView { showAbout = false } }
+        .task(id: page) { if page == .dahlia || page == .widgets { widgetRows = await model.widgetRows() } }
         .fileImporter(isPresented: $showOpen, allowedContentTypes: [.json, .plainText, .data]) { result in
             if case .success(let url) = result {
                 model.openFile(url)
@@ -160,6 +170,15 @@ struct MenuSheet: View {
             divider
             SwitchMenuRow(icon: "eye", label: Texts.chipPreviews, detail: Texts.chipPreviewsDetail,
                           checked: model.chipPreviews) { model.setChipPreviews($0) }
+            #if DEBUG
+            // Debug builds only: the dot on widget pictures (global rule), off for screenshots.
+            divider
+            SwitchMenuRow(icon: "circle.bottomrighthalf.filled", label: Texts.widgetMarkDebug, detail: Texts.widgetMarkDebugDetail,
+                          checked: widgetMark) { on in
+                widgetMark = on
+                model.setWidgetMark(on)
+            }
+            #endif
         }
     }
 
@@ -196,7 +215,7 @@ struct MenuSheet: View {
         }
     }
 
-    // ── Dahlia page: Pro, guide, tour, rating, About (widgets follow with WP-10) ──
+    // ── Dahlia page: Pro, widgets, guide, tour, rating, About ──
 
     private var dahliaPage: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -207,6 +226,11 @@ struct MenuSheet: View {
             MenuRow(icon: "star", label: Texts.proTitle, detail: model.proOwned ? Texts.menuProActive : Texts.menuProDetail, action: {
                 if model.proOwned { page = .pro } else { model.showPro() }
             }) { chevron }
+            divider
+            // Each widget's own mandala and colours (ADR-0020); on iOS changed through the system's Edit Widget.
+            MenuRow(icon: "square.grid.2x2", label: Texts.menuWidgets,
+                    detail: widgetRows.isEmpty ? Texts.menuWidgetsNone : Texts.widgetsCount(widgetRows.count),
+                    action: { page = .widgets }) { chevron }
             divider
             MenuRow(icon: "questionmark.circle", label: Texts.menuGuide, detail: nil, action: { Links.openGuide() }) { chevron }
             divider
@@ -220,6 +244,33 @@ struct MenuSheet: View {
             MenuRow(icon: "heart", label: Texts.menuRate, detail: nil, action: { ReviewPrompt.openReviewPage() }) { chevron }
             divider
             MenuRow(icon: "info.circle", label: Texts.menuAbout, detail: nil, action: { showAbout = true }) { chevron }
+        }
+    }
+
+    // ── Widgets page: the placed widgets by size with what each shows (Android's WidgetsPage). iOS opens a widget's
+    //    settings only from the home screen, so the rows do not open anything. ──
+
+    private var widgetsPage: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            BackRow(label: Texts.menuDahlia) { page = .dahlia }
+            Text(Texts.menuWidgets).textRole(.title).foregroundStyle(t.text).padding(.top, Spacing.sm)
+            Text(Texts.menuWidgetsAbout).textRole(.body).foregroundStyle(t.textMuted).padding(.top, Spacing.xs)
+            divider.padding(.top, Spacing.md)
+            ForEach(widgetRows) { row in
+                HStack(spacing: Spacing.md) {
+                    Thumb(image: row.thumbnail).frame(width: Sizes.favourite / 2, height: Sizes.favourite / 2)
+                    VStack(alignment: .leading, spacing: 0) {
+                        Text(row.title).textRole(.body).foregroundStyle(t.text)
+                        Text(row.detail).textRole(.note).foregroundStyle(t.textMuted).lineLimit(2)
+                    }
+                    Spacer(minLength: 0)
+                }
+                .padding(.vertical, Spacing.md)
+                divider
+            }
+            if widgetRows.isEmpty {
+                Text(Texts.menuWidgetsEmpty).textRole(.note).foregroundStyle(t.textMuted).padding(.top, Spacing.md)
+            }
         }
     }
 

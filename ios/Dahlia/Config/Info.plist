@@ -3,10 +3,32 @@
 <!-- Keys Xcode cannot generate from build settings; merged with the generated Info.plist (project.yml). -->
 <plist version="1.0">
 <dict>
-	<!-- The continued processing task of a long video export (WP-8, PLAN-4 section 3.2); each export adds a suffix. -->
+	<!-- The continued processing task of a long video export (WP-8, PLAN-4 section 3.2); each export adds a suffix.
+	     The app refresh that renders the widget pictures ahead (WP-10, approval A10). -->
 	<key>BGTaskSchedulerPermittedIdentifiers</key>
 	<array>
 		<string>$(PRODUCT_BUNDLE_IDENTIFIER).export.*</string>
+		<string>$(PRODUCT_BUNDLE_IDENTIFIER).widgets</string>
+	</array>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>fetch</string>
+	</array>
+	<!-- The App Group and the widget's tap, per build (Debug.xcconfig, Release.xcconfig). -->
+	<key>DahliaAppGroup</key>
+	<string>$(DAHLIA_APP_GROUP)</string>
+	<key>DahliaURLScheme</key>
+	<string>$(DAHLIA_URL_SCHEME)</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>$(PRODUCT_BUNDLE_IDENTIFIER).widget</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>$(DAHLIA_URL_SCHEME)</string>
+			</array>
+		</dict>
 	</array>
 </dict>
 </plist>

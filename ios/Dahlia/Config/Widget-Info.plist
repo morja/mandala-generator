@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- The widget extension's keys that Xcode cannot generate from build settings (project.yml). -->
+<plist version="1.0">
+<dict>
+	<key>NSExtension</key>
+	<dict>
+		<key>NSExtensionPointIdentifier</key>
+		<string>com.apple.widgetkit-extension</string>
+	</dict>
+	<!-- The App Group and the tap's URL scheme, per build (Debug.xcconfig, Release.xcconfig). -->
+	<key>DahliaAppGroup</key>
+	<string>$(DAHLIA_APP_GROUP)</string>
+	<key>DahliaURLScheme</key>
+	<string>$(DAHLIA_URL_SCHEME)</string>
+</dict>
+</plist>

@@ -23,4 +23,7 @@
     <string name="pro_purchase_not_started">L’App Store non è riuscito ad aprire l’acquisto. Riprova.</string>
     <string name="editor_pro_unavailable">Gli acquisti sono disattivati su questo iPhone. Puoi consentirli in Impostazioni, in Tempo di utilizzo.</string>
     <string name="editor_pro_adds_wallpapers">Sfondi: Home e blocco in coppia, e uno nuovo ogni giorno con Comandi Rapidi.</string>
+    <!-- The widget list on the Dahlia page (WP-10): iOS changes a widget through Edit Widget. -->
+    <string name="menu_widgets_about">Ogni widget ha il suo mandala e i suoi colori. Per cambiarli, tieni premuto il widget e scegli Modifica widget.</string>
+    <string name="menu_widgets_empty">Per aggiungerne uno, tieni premuto uno spazio vuoto della schermata Home, tocca Modifica, poi Aggiungi widget, e scegli Dahlia.</string>
 </resources>

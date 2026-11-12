@@ -25,7 +25,7 @@ final class EditorModel {
     var rendering = true
     private(set) var previewError: String?
     /// Saved on every change (the list rules are the shared module's `Favorites`).
-    var favorites: [Favorite] { didSet { saveFavoritesLater() } }
+    var favorites: [Favorite] { didSet { saveFavoritesLater(); widgetsChanged() } }
     /// History, dice, play field and the picture's size (WP-7); its operations are in EditorModel+Shell.swift.
     let shell = ShellState()
     var message: Message?
@@ -55,6 +55,8 @@ final class EditorModel {
     private(set) var hot = false
 
     @ObservationIgnored let engine = Engine()
+    /// The home screen widgets' pictures and index in the App Group (WP-10); EditorModel+Widgets.swift asks it.
+    @ObservationIgnored let widgets = WidgetSync()
 
     // ── Preview pipeline state ──
     @ObservationIgnored private var previewTask: Task<Void, Never>?
@@ -94,6 +96,8 @@ final class EditorModel {
         renderPreview()
         shellStart()
         proStore.onMessage = { [weak self] shown in self?.proMessage(shown) }
+        // After the first preview: the widgets get their pictures, also the starter favourites of a first start.
+        widgetsStart()
     }
 
     /// The preview's glow: the fast one when chosen, and always while the phone is hot.
@@ -230,6 +234,8 @@ final class EditorModel {
         guard let next = IosEditingParts.shared.quoteLanguageToggled(current: quoteLanguages, language: language) else { return }
         quoteLanguages = next
         QuoteLanguagesStore.save(next)
+        // The quote of the day beside a wide widget's picture comes from these languages.
+        widgetsChanged()
     }
 
     /// Whether the words on the picture are among the user's quotes (the bookmark is filled).

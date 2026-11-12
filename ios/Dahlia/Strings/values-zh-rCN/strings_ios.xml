@@ -23,4 +23,7 @@
     <string name="pro_purchase_not_started">App Store 无法打开购买页面。请重试。</string>
     <string name="editor_pro_unavailable">此 iPhone 已关闭购买。可在“设置”的“屏幕使用时间”中允许。</string>
     <string name="editor_pro_adds_wallpapers">壁纸：主屏幕和锁屏成对设置，以及通过快捷指令每天一张新壁纸。</string>
+    <!-- The widget list on the Dahlia page (WP-10): iOS changes a widget through Edit Widget. -->
+    <string name="menu_widgets_about">每个小组件都有自己的曼陀罗和颜色。要更改，请长按小组件并选择“编辑小组件”。</string>
+    <string name="menu_widgets_empty">要添加，请长按主屏幕空白处，轻点“编辑”，再轻点“添加小组件”，然后选择 Dahlia。</string>
 </resources>

@@ -23,4 +23,7 @@
     <string name="pro_purchase_not_started">App Store не смог открыть покупку. Попробуйте снова.</string>
     <string name="editor_pro_unavailable">Покупки на этом iPhone отключены. Их можно разрешить в «Настройки» → «Экранное время».</string>
     <string name="editor_pro_adds_wallpapers">Обои: главный экран и экран блокировки парой и новые каждый день через «Быстрые команды».</string>
+    <!-- The widget list on the Dahlia page (WP-10): iOS changes a widget through Edit Widget. -->
+    <string name="menu_widgets_about">У каждого виджета своя мандала и свои цвета. Чтобы изменить их, нажмите и удерживайте виджет и выберите «Изменить виджет».</string>
+    <string name="menu_widgets_empty">Чтобы добавить, нажмите и удерживайте пустое место на экране «Домой», коснитесь «Править», затем «Добавить виджет» и выберите Dahlia.</string>
 </resources>

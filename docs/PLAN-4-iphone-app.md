@@ -384,11 +384,11 @@ Checked on 12 November 2026 from Apple's pages or reports of them: the iOS 27 de
 
 - **Background time and memory of an App Intent** (about 30 s reported, no memory figure found): measure the intent rendering the worst case at screen size in the background in WP-11; the design avoids depending on it by returning pictures rendered ahead.
 
-- **Widget memory** (30 MB, forums): load a 1024 px picture with ImageIO downsampling in the extension and watch the footprint in WP-10.
+- **Widget memory** (30 MB, forums): load a 1024 px picture with ImageIO downsampling in the extension and watch the footprint in WP-10. Measured in WP-10 ([IOS-10](IOS-10-widgets.md) finding 3): about 14 MB steady and 15 MB at the peak in the simulator with four widgets, once each picture is decoded at the size it was written; the device is still to measure.
 
 - **Widget refresh budget** (Apple's page did not load; from memory a few dozen reloads a day, reloads from the running app not counted): the design needs none during the day; check that a timeline entry at 4:00 shows without a reload over two mornings.
 
-- **Reading widget configurations from the app** (`WidgetCenter` current configurations with their intents, from memory iOS 17 and later): check in WP-10, needed for the Dahlia page's widget list and for rendering fixed favourites ahead.
+- **Reading widget configurations from the app** (`WidgetCenter` current configurations with their intents, from memory iOS 17 and later): check in WP-10, needed for the Dahlia page's widget list and for rendering fixed favourites ahead. Checked in WP-10 (IOS-10): `currentConfigurations()` returns each placed widget with its family and its configuration intent (`widgetConfigurationIntent(of:)`) on iOS 27.2.
 
 - **StoreKit 2:** entitlements available offline, Ask to Buy as pending, refund through `revocationDate`, Family Sharing irreversible once on, a restore button required by App Review (guideline 3.1.1, from memory). Check with the StoreKit configuration file and a sandbox tester in WP-9, and in the current App Review Guidelines.
 
