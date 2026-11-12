@@ -380,9 +380,9 @@ The app's name is decided (ADR-0012, "Dahlia – Mandala Maker", 22 characters, 
 
 Checked on 12 November 2026 from Apple's pages or reports of them: the iOS 27 device list (iPhone 11 and later, SE 2nd and 3rd generation; MacRumors and others reporting Apple's list); iOS 26 shares of June 2026 (Apple's App Store page as reported by 9to5Mac and MacRumors); the widget extension's memory limit of about 30 MB (Apple engineers on the developer forums, not in the documentation). Everything else below is from memory or forum reports and is checked where named.
 
-- **"Set Wallpaper" in a personal automation without a confirmation** on iOS 26 and 27: forum reports conflict, nothing official found. Check in WP-11 on the iPhone 15: a time-of-day automation with "Run Immediately", the intent's picture, lock and home separately, locked and unlocked phone, and how the lock screen's depth effect treats a mandala.
+- **"Set Wallpaper" in a personal automation without a confirmation** on iOS 26 and 27: forum reports conflict, nothing official found. Check in WP-11 on the iPhone 15: a time-of-day automation with "Run Immediately", the intent's picture, lock and home separately, locked and unlocked phone, and how the lock screen's depth effect treats a mandala. Prepared in WP-11 ([IOS-11](IOS-11-wallpaper-and-shortcuts.md)): the action runs from Shortcuts in the simulator; the device steps for Mathis are in IOS-11. iOS 27 moved automations into shortcuts (IOS-11 finding 4); the iPhone 15 runs iOS 26.6.1.
 
-- **Background time and memory of an App Intent** (about 30 s reported, no memory figure found): measure the intent rendering the worst case at screen size in the background in WP-11; the design avoids depending on it by returning pictures rendered ahead.
+- **Background time and memory of an App Intent** (about 30 s reported, no memory figure found): measure the intent rendering the worst case at screen size in the background in WP-11; the design avoids depending on it by returning pictures rendered ahead. Measured in WP-11 in the simulator (IOS-11 finding 2): 7–8 ms rendered ahead, 1.1–1.25 s and up to about 400 MB peak when drawn in the action; the device figure comes from the debug line after the first automation run.
 
 - **Widget memory** (30 MB, forums): load a 1024 px picture with ImageIO downsampling in the extension and watch the footprint in WP-10. Measured in WP-10 ([IOS-10](IOS-10-widgets.md) finding 3): about 14 MB steady and 15 MB at the peak in the simulator with four widgets, once each picture is decoded at the size it was written; the device is still to measure.
 
@@ -398,7 +398,7 @@ Checked on 12 November 2026 from Apple's pages or reports of them: the iOS 27 de
 
 - **Mac fonts on iOS** (Zapfino, Didot, Papyrus …, from memory): checked in WP-6 ([IOS-5](IOS-5-emblem-text-draw.md) finding 3): all fourteen fonts of the text tab are installed on iOS 26 under their macOS names; nothing is bundled.
 
-- **Live Photo on the lock screen** (iOS 17 and later plays it on wake, from memory): check in WP-11 if F6 is (b) or (c).
+- **Live Photo on the lock screen** (iOS 17 and later plays it on wake, from memory): check in WP-11 if F6 is (b) or (c). Not built in WP-11 (F6 c); what the check needs is in IOS-11.
 
 - **Collector target on the device** (SPIKE-4 measured only the simulator): measured in WP-1 (IOS-1 finding 5): 64 MB is 3–8 % slower on the iPhone 15 with about 40 % less peak memory; the default stays.
 
