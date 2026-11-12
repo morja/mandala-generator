@@ -2,7 +2,6 @@ import CoreGraphics
 import Foundation
 @preconcurrency import MandalaCore
 import Observation
-import os
 
 /// A short message at the bottom of the editor (Dahlia's own part; iOS has no snackbar).
 struct Message: Identifiable, Equatable {
@@ -36,7 +35,6 @@ final class EditorModel {
     private(set) var saving: SaveProgress?
 
     @ObservationIgnored private let engine = Engine()
-    @ObservationIgnored private let log = Logger(subsystem: "one.tearoom.mandala", category: "editor")
 
     // ── Preview pipeline state ──
     @ObservationIgnored private var previewTask: Task<Void, Never>?
@@ -140,7 +138,7 @@ final class EditorModel {
             renderedParams = p
             millisPerLayer = result.millis / Int64(max(1, redrawn))
             let latency = Int(Date().timeIntervalSince(changedAt) * 1000)
-            log.info("DAHLIA preview render=\(result.millis)ms shownAfterChange=\(latency)ms redrawn=\(redrawn)")
+            Engine.trace("preview render=\(result.millis)ms shownAfterChange=\(latency)ms redrawn=\(redrawn)")
         }
     }
 

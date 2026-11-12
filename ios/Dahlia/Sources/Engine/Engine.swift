@@ -20,10 +20,19 @@ actor Engine {
     private let cache: LayerCache
     private let threads: Int32
 
-    static let log = Logger(subsystem: "one.tearoom.mandala", category: "engine")
+    private static let log = Logger(subsystem: "one.tearoom.mandala", category: "engine")
+
+    /// Timing lines for the measurements in IOS-1: to the log, and in debug builds also to the console
+    /// (`devicectl … --console` shows them), each starting with DAHLIA.
+    nonisolated static func trace(_ line: String) {
+        log.info("DAHLIA \(line, privacy: .public)")
+        #if DEBUG
+        print("DAHLIA \(line)")
+        #endif
+    }
 
     /// The collector target the app starts with (PLAN-4 approval A5): 0 keeps Kotlin/Native's
-    /// autotuned collector. Set to 64 only if the iPhone 15 measurement confirms the gain (DEV-1).
+    /// autotuned collector. Set to 64 only if the iPhone 15 measurement confirms the gain (IOS-1).
     static let collectorTargetMB = 0
 
     init() {
@@ -31,12 +40,12 @@ actor Engine {
         threads = IosBridge.shared.processors()
         // Debug builds may try another target: launch with `-collectorTargetMB 64`.
         #if DEBUG
-        let target = UserDefaults.standard.object(forKey: "collectorTargetMB") as? Int ?? Self.collectorTargetMB
+        let target = UserDefaults.standard.string(forKey: "collectorTargetMB").flatMap { Int($0) } ?? Self.collectorTargetMB
         #else
         let target = Self.collectorTargetMB
         #endif
         IosBridge.shared.tuneGc(targetHeapMb: Int32(target))
-        Self.log.info("DAHLIA engine threads=\(IosBridge.shared.processors()) gc \(IosBridge.shared.gcSettings(), privacy: .public)")
+        Self.trace("engine threads=\(IosBridge.shared.processors()) gc \(IosBridge.shared.gcSettings())")
     }
 
     /// The editor's 512 px preview with the layer cache; nil when cancelled.

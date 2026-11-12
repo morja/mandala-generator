@@ -18,6 +18,9 @@ struct DahliaApp: App {
                 .onReceive(NotificationCenter.default.publisher(for: UIApplication.didReceiveMemoryWarningNotification)) { _ in
                     model.memoryWarning()
                 }
+                #if DEBUG
+                .task { await DragProbe.runIfAsked(model) }
+                #endif
         }
     }
 }
