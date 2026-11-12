@@ -111,7 +111,7 @@ struct EditorView: View {
         .onAppear {
             #if DEBUG
             switch ShotSetup.sheet {
-            case "menu", "more", "dahlia", "about": showMenu = true
+            case "menu", "more", "dahlia", "about", "propage": showMenu = true
             case "favourites": showFavorites = true
             case "save": showSave = true
             default: break
@@ -143,6 +143,8 @@ struct EditorView: View {
         .sheet(isPresented: Binding(get: { model.shell.play != nil }, set: { if !$0 { model.closePlay() } })) {
             PlaySheet()
         }
+        // From the Pro mark while no other sheet is open; the save sheet and the menu show it on top of themselves.
+        .proSheet(active: !showFavorites && !showSave && !showMenu && model.shell.play == nil)
     }
 }
 
@@ -215,8 +217,13 @@ struct CanvasView: View {
                 }
             }
             .overlay(alignment: .topLeading) {
-                // The mandala uses Pro features the user does not own (ADR-0016); the Pro sheet comes with WP-9.
-                if model.missingPro { CanvasLabel(text: Texts.proMark, accent: true).accessibilityLabel(Texts.proMarkDescription) }
+                // The mandala uses Pro features the user does not own (ADR-0016); a tap opens the Pro sheet, as on Android.
+                if model.missingPro {
+                    Button { model.showPro() } label: { CanvasLabel(text: Texts.proMark, accent: true) }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel(Texts.proMarkDescription)
+                        .accessibilityHint(Texts.proMarkAction)
+                }
             }
             .overlay(alignment: .topTrailing) {
                 if comparing { CanvasLabel(text: Texts.withoutEffects, accent: false) }

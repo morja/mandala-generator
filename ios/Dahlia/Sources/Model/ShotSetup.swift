@@ -30,6 +30,8 @@ enum ShotSetup {
         case "spray": model.setDrawTool(.spray)
         default: break
         }
+        // After the mandala is set up, so the sheet lists the Pro features it uses.
+        if sheet == "pro" { openPro(model) }
     }
 
     /// The save sheet's state for screenshots and the export probe.
@@ -39,6 +41,21 @@ enum ShotSetup {
         if d.object(forKey: "shotVideo") != nil { model.setMoving(d.bool(forKey: "shotVideo")) }
         if d.bool(forKey: "shotFill") { model.setFill(true) }
         if d.integer(forKey: "probeSeconds") > 0 { model.setVideoSeconds(d.integer(forKey: "probeSeconds")) }
+    }
+
+    /// `-shotSheet pro` (with `-proOwned NO`): the Pro sheet for the mandala on screen. A launch outside Xcode has no
+    /// StoreKit configuration, so `-shotPrice "3,99 €"` shows a price for layout screenshots (WP-9); buying needs Xcode
+    /// or the sandbox.
+    static func openPro(_ model: EditorModel) {
+        if let price = UserDefaults.standard.string(forKey: "shotPrice") { model.proStore.showPriceForScreenshots(price) }
+        model.showPro()
+    }
+
+    /// `-shotProOver save|menu`: once that sheet is open, the Pro sheet opens on top of it, as a gate there would open it.
+    static func proOverIfAsked(_ sheet: String, _ model: EditorModel) async {
+        guard UserDefaults.standard.string(forKey: "shotProOver") == sheet else { return }
+        try? await Task.sleep(for: .seconds(1))
+        openPro(model)
     }
 
     static var openSave: Bool { UserDefaults.standard.bool(forKey: "shotSave") }

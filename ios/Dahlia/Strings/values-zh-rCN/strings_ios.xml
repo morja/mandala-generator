@@ -14,4 +14,13 @@
     <string name="message_video_saved">已将 %1$d × %2$d 视频保存到“照片”</string>
     <string name="ios_export_stopped_background">Dahlia 在后台停留太久，保存已停止。</string>
     <string name="tour_save_body">箭头可将图片存储到“照片”。</string>
+    <!-- The Pro purchase through the App Store (WP-9). -->
+    <string name="pro_pending">购买正在等待批准或付款。完成后即可解锁 Pro。</string>
+    <string name="pro_product_unavailable">App Store 目前不提供 Pro。请稍后再试。</string>
+    <string name="pro_play_unavailable">目前无法连接 App Store，因此暂时没有价格。请检查网络连接后重试。</string>
+    <string name="pro_restore_not_found">App Store 未找到此 Apple 账户的 Pro 购买记录。如果你用其他 Apple 账户购买了 Pro，请在“设置”&gt;你的姓名&gt;“媒体与购买项目”中登录该账户，然后再次轻点“恢复购买”。</string>
+    <string name="pro_restore_unreachable">无法连接 App Store，因此未能检查。请稍后再试。</string>
+    <string name="pro_purchase_not_started">App Store 无法打开购买页面。请重试。</string>
+    <string name="editor_pro_unavailable">此 iPhone 已关闭购买。可在“设置”的“屏幕使用时间”中允许。</string>
+    <string name="editor_pro_adds_wallpapers">壁纸：主屏幕和锁屏成对设置，以及通过快捷指令每天一张新壁纸。</string>
 </resources>

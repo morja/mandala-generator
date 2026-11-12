@@ -16,4 +16,13 @@
     <string name="message_video_saved">Saved a %1$d × %2$d video to Photos</string>
     <string name="ios_export_stopped_background">Saving stopped because Dahlia was in the background too long.</string>
     <string name="tour_save_body">The arrow saves your picture to Photos.</string>
+    <!-- The Pro purchase through the App Store (WP-9). -->
+    <string name="pro_pending">The purchase is waiting for approval or payment. Pro unlocks once it goes through.</string>
+    <string name="pro_product_unavailable">The App Store does not offer Pro right now. Please try again later.</string>
+    <string name="pro_play_unavailable">The App Store cannot be reached right now, so there is no price yet. Check the connection and try again.</string>
+    <string name="pro_restore_not_found">The App Store found no Pro purchase for this Apple Account. If you bought Pro with another Apple Account, sign in with it under Settings, your name, Media &amp; Purchases, and tap Restore purchase again.</string>
+    <string name="pro_restore_unreachable">The App Store could not be reached, so nothing was checked. Please try again later.</string>
+    <string name="pro_purchase_not_started">The App Store could not open the purchase. Please try again.</string>
+    <string name="editor_pro_unavailable">Purchases are turned off on this iPhone. They can be allowed in Settings under Screen Time.</string>
+    <string name="editor_pro_adds_wallpapers">Wallpapers: home and lock screen as a pair, and a new one every day through Shortcuts.</string>
 </resources>

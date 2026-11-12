@@ -15558,61 +15558,61 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Hintergründe: Start- und Sperrbildschirm als Paar, jeden Tag ein neuer und ein Live-Hintergrund."
+            "value" : "Hintergründe: Start- und Sperrbildschirm als Paar und jeden Tag ein neuer über Kurzbefehle."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Wallpapers: home and lock as a pair, a new one every day, and a live wallpaper."
+            "value" : "Wallpapers: home and lock screen as a pair, and a new one every day through Shortcuts."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Fondos de pantalla: inicio y bloqueo en pareja, uno nuevo cada día y un fondo animado."
+            "value" : "Fondos de pantalla: inicio y bloqueo en pareja, y uno nuevo cada día con Atajos."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Fonds d’écran : accueil et verrouillage en duo, un nouveau chaque jour et un fond d’écran animé."
+            "value" : "Fonds d’écran : accueil et verrouillage en duo, et un nouveau chaque jour avec Raccourcis."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sfondi: Home e blocco in coppia, uno nuovo ogni giorno e uno sfondo animato."
+            "value" : "Sfondi: Home e blocco in coppia, e uno nuovo ogni giorno con Comandi Rapidi."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "壁紙は、ホームとロックのペア、毎日新しい壁紙、ライブ壁紙に対応します。"
+            "value" : "壁紙は、ホームとロックのペアと、ショートカットで毎日新しい壁紙に対応します。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "배경화면: 홈 화면과 잠금 화면 한 쌍, 매일 새 배경화면, 라이브 배경화면."
+            "value" : "배경화면: 홈 화면과 잠금 화면 한 쌍, 단축어로 매일 새 배경화면."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Planos de fundo: tela inicial e de bloqueio em par, um novo a cada dia e um plano de fundo animado."
+            "value" : "Planos de fundo: tela inicial e de bloqueio em par, e um novo a cada dia com Atalhos."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Обои: главный экран и экран блокировки парой, новые каждый день и живые обои."
+            "value" : "Обои: главный экран и экран блокировки парой и новые каждый день через «Быстрые команды»."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "壁纸：主屏幕和锁屏成对设置、每天一张新壁纸，以及动态壁纸。"
+            "value" : "壁纸：主屏幕和锁屏成对设置，以及通过快捷指令每天一张新壁纸。"
           }
         }
       }
@@ -16403,61 +16403,61 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Pro wird über Google Play verkauft und ist in dieser Installation gerade nicht verfügbar."
+            "value" : "Käufe sind auf diesem iPhone ausgeschaltet. Du kannst sie in den Einstellungen unter Bildschirmzeit erlauben."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Pro is sold through Google Play and is not available in this installation right now."
+            "value" : "Purchases are turned off on this iPhone. They can be allowed in Settings under Screen Time."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Pro se vende a través de Google Play y ahora mismo no está disponible en esta instalación."
+            "value" : "Las compras están desactivadas en este iPhone. Puedes permitirlas en Ajustes, en Tiempo de uso."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Pro est vendu via Google Play et n'est pas disponible dans cette installation pour le moment."
+            "value" : "Les achats sont désactivés sur cet iPhone. Vous pouvez les autoriser dans Réglages, sous Temps d’écran."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Pro è in vendita su Google Play e al momento non è disponibile in questa installazione."
+            "value" : "Gli acquisti sono disattivati su questo iPhone. Puoi consentirli in Impostazioni, in Tempo di utilizzo."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ProはGoogle Playで販売しています。現在このインストールでは利用できません。"
+            "value" : "このiPhoneでは購入がオフになっています。「設定」の「スクリーンタイム」で許可できます。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Pro는 Google Play에서 판매되며, 지금은 이 설치본에서 구매할 수 없습니다."
+            "value" : "이 iPhone에서는 구매가 꺼져 있습니다. 설정의 스크린 타임에서 허용할 수 있습니다."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "O Pro é vendido pelo Google Play e não está disponível nesta instalação no momento."
+            "value" : "As compras estão desativadas neste iPhone. Você pode permiti-las em Ajustes, em Tempo de Uso."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Pro продаётся через Google Play и сейчас недоступен в этой установке."
+            "value" : "Покупки на этом iPhone отключены. Их можно разрешить в «Настройки» → «Экранное время»."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Pro 通过 Google Play 销售，当前安装版本暂时无法购买。"
+            "value" : "此 iPhone 已关闭购买。可在“设置”的“屏幕使用时间”中允许。"
           }
         }
       }
@@ -29313,61 +29313,61 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Der Kauf steht noch aus. Pro wird freigeschaltet, sobald er bezahlt ist."
+            "value" : "Der Kauf wartet auf Zustimmung oder Bezahlung. Pro wird freigeschaltet, sobald er durch ist."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "The purchase is pending. Pro unlocks once it is paid."
+            "value" : "The purchase is waiting for approval or payment. Pro unlocks once it goes through."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "La compra está pendiente. Pro se desbloquea cuando se complete el pago."
+            "value" : "La compra está esperando aprobación o pago. Pro se desbloquea cuando se complete."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "L'achat est en attente. Pro sera débloqué une fois le paiement effectué."
+            "value" : "L’achat attend une approbation ou un paiement. Pro sera débloqué dès qu’il aboutit."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "L'acquisto è in sospeso. Pro si sblocca appena è pagato."
+            "value" : "L’acquisto è in attesa di approvazione o pagamento. Pro si sblocca appena va a buon fine."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "購入は保留中です。支払いが完了するとProのロックが解除されます。"
+            "value" : "購入は承認または支払いを待っています。完了するとProのロックが解除されます。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "구매가 대기 중입니다. 결제가 완료되면 Pro가 잠금 해제됩니다."
+            "value" : "구매가 승인 또는 결제를 기다리고 있습니다. 완료되면 Pro가 잠금 해제됩니다."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "A compra está pendente. O Pro será desbloqueado assim que for paga."
+            "value" : "A compra está aguardando aprovação ou pagamento. O Pro será desbloqueado assim que for concluída."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Покупка ожидает оплаты. Pro разблокируется после оплаты."
+            "value" : "Покупка ожидает одобрения или оплаты. Pro разблокируется, как только она пройдёт."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "购买正在处理中。付款完成后即可解锁 Pro。"
+            "value" : "购买正在等待批准或付款。完成后即可解锁 Pro。"
           }
         }
       }
@@ -29378,61 +29378,61 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Google Play ist gerade nicht erreichbar, daher gibt es noch keinen Preis. Prüf die Verbindung und versuch es noch einmal."
+            "value" : "Der App Store ist gerade nicht erreichbar, daher gibt es noch keinen Preis. Prüf die Verbindung und versuch es noch einmal."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Google Play cannot be reached right now, so there is no price yet. Check the connection and try again."
+            "value" : "The App Store cannot be reached right now, so there is no price yet. Check the connection and try again."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ahora mismo no se puede conectar con Google Play, por eso aún no hay precio. Comprueba la conexión y vuelve a intentarlo."
+            "value" : "Ahora mismo no se puede conectar con el App Store, por eso aún no hay precio. Comprueba la conexión y vuelve a intentarlo."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Google Play est injoignable pour le moment, le prix n’est donc pas encore disponible. Vérifiez la connexion et réessayez."
+            "value" : "L’App Store est injoignable pour le moment, le prix n’est donc pas encore disponible. Vérifiez la connexion et réessayez."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Al momento Google Play non è raggiungibile, quindi il prezzo non è ancora disponibile. Controlla la connessione e riprova."
+            "value" : "Al momento l’App Store non è raggiungibile, quindi il prezzo non è ancora disponibile. Controlla la connessione e riprova."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "現在Google Playに接続できないため、価格を表示できません。接続を確認して、もう一度お試しください。"
+            "value" : "現在App Storeに接続できないため、価格を表示できません。接続を確認して、もう一度お試しください。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "지금은 Google Play에 연결할 수 없어 가격을 표시할 수 없습니다. 연결을 확인하고 다시 시도하세요."
+            "value" : "지금은 App Store에 연결할 수 없어 가격을 표시할 수 없습니다. 연결을 확인하고 다시 시도하세요."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "No momento, não é possível acessar o Google Play, por isso ainda não há preço. Verifique a conexão e tente novamente."
+            "value" : "No momento, não é possível acessar a App Store, por isso ainda não há preço. Verifique a conexão e tente novamente."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Сейчас нет связи с Google Play, поэтому цена пока недоступна. Проверьте подключение и попробуйте снова."
+            "value" : "Сейчас нет связи с App Store, поэтому цена пока недоступна. Проверьте подключение и попробуйте снова."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "目前无法连接 Google Play，因此暂时没有价格。请检查网络连接后重试。"
+            "value" : "目前无法连接 App Store，因此暂时没有价格。请检查网络连接后重试。"
           }
         }
       }
@@ -29508,61 +29508,61 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Google Play bietet Pro für dieses Konto gerade nicht an. Bitte versuch es später noch einmal."
+            "value" : "Der App Store bietet Pro gerade nicht an. Bitte versuch es später noch einmal."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Google Play does not offer Pro to this account right now. Please try again later."
+            "value" : "The App Store does not offer Pro right now. Please try again later."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Google Play no ofrece Pro a esta cuenta en este momento. Vuelve a intentarlo más tarde."
+            "value" : "El App Store no ofrece Pro en este momento. Vuelve a intentarlo más tarde."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Google Play ne propose pas Pro à ce compte pour le moment. Veuillez réessayer plus tard."
+            "value" : "L’App Store ne propose pas Pro pour le moment. Veuillez réessayer plus tard."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Al momento Google Play non offre Pro a questo account. Riprova più tardi."
+            "value" : "Al momento l’App Store non offre Pro. Riprova più tardi."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "現在、Google PlayではこのアカウントにProを提供していません。しばらくしてからもう一度お試しください。"
+            "value" : "現在、App StoreではProを提供していません。しばらくしてからもう一度お試しください。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "지금은 Google Play에서 이 계정에 Pro를 제공하지 않습니다. 나중에 다시 시도하세요."
+            "value" : "지금은 App Store에서 Pro를 제공하지 않습니다. 나중에 다시 시도하세요."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "No momento, o Google Play não oferece o Pro para esta conta. Tente novamente mais tarde."
+            "value" : "No momento, a App Store não oferece o Pro. Tente novamente mais tarde."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Сейчас Google Play не предлагает Pro для этого аккаунта. Попробуйте позже."
+            "value" : "Сейчас App Store не предлагает Pro. Попробуйте позже."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Google Play 目前不向此账号提供 Pro。请稍后再试。"
+            "value" : "App Store 目前不提供 Pro。请稍后再试。"
           }
         }
       }
@@ -29638,61 +29638,61 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Google Play konnte den Kauf nicht öffnen. Bitte versuch es noch einmal."
+            "value" : "Der App Store konnte den Kauf nicht öffnen. Bitte versuch es noch einmal."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Google Play could not open the purchase. Please try again."
+            "value" : "The App Store could not open the purchase. Please try again."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Google Play no pudo abrir la compra. Vuelve a intentarlo."
+            "value" : "El App Store no pudo abrir la compra. Vuelve a intentarlo."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Google Play n’a pas pu ouvrir l’achat. Veuillez réessayer."
+            "value" : "L’App Store n’a pas pu ouvrir l’achat. Veuillez réessayer."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Google Play non è riuscito ad aprire l’acquisto. Riprova."
+            "value" : "L’App Store non è riuscito ad aprire l’acquisto. Riprova."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Google Playで購入画面を開けませんでした。もう一度お試しください。"
+            "value" : "App Storeで購入画面を開けませんでした。もう一度お試しください。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Google Play에서 구매 화면을 열 수 없습니다. 다시 시도하세요."
+            "value" : "App Store에서 구매 화면을 열 수 없습니다. 다시 시도하세요."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "O Google Play não conseguiu abrir a compra. Tente novamente."
+            "value" : "A App Store não conseguiu abrir a compra. Tente novamente."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Google Play не смог открыть покупку. Попробуйте снова."
+            "value" : "App Store не смог открыть покупку. Попробуйте снова."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Google Play 无法打开购买页面。请重试。"
+            "value" : "App Store 无法打开购买页面。请重试。"
           }
         }
       }
@@ -29768,61 +29768,61 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Google Play hat für dieses Google-Konto keinen Pro-Kauf gefunden. Play ordnet einen Kauf dem Konto zu, das Dahlia installiert hat: Wenn du Pro mit einem anderen Konto gekauft hast, deinstalliere Dahlia, wechsle im Play Store zu diesem Konto und installiere Dahlia von dort neu. Beim Deinstallieren gehen deine Favoriten verloren, wenn Android sie nicht aus der Sicherung zurückholt."
+            "value" : "Der App Store hat für diesen Apple Account keinen Pro-Kauf gefunden. Wenn du Pro mit einem anderen Apple Account gekauft hast, melde dich unter Einstellungen, dein Name, Medien & Käufe damit an und tippe noch einmal auf „Kauf wiederherstellen“."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Google Play found no Pro purchase for this Google account. Play links a purchase to the account that installed Dahlia: if you bought Pro with another account, uninstall Dahlia, switch to that account in the Play Store and install Dahlia again from there. Uninstalling removes your favourites unless Android restores them from its backup."
+            "value" : "The App Store found no Pro purchase for this Apple Account. If you bought Pro with another Apple Account, sign in with it under Settings, your name, Media & Purchases, and tap Restore purchase again."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Google Play no ha encontrado ninguna compra de Pro para esta cuenta de Google. Play asocia cada compra a la cuenta que instaló Dahlia: si compraste Pro con otra cuenta, desinstala Dahlia, cámbiate a esa cuenta en Play Store y vuelve a instalar Dahlia desde allí. Al desinstalar se pierden tus favoritos, salvo que Android los restaure desde su copia de seguridad."
+            "value" : "El App Store no ha encontrado ninguna compra de Pro para esta cuenta de Apple. Si compraste Pro con otra cuenta de Apple, inicia sesión con ella en Ajustes, tu nombre, Contenido y compras, y vuelve a tocar «Restaurar compra»."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Google Play n’a trouvé aucun achat de Pro pour ce compte Google. Play associe un achat au compte qui a installé Dahlia : si vous avez acheté Pro avec un autre compte, désinstallez Dahlia, passez à ce compte dans le Play Store et réinstallez Dahlia depuis celui-ci. La désinstallation supprime vos favoris, sauf si Android les restaure depuis sa sauvegarde."
+            "value" : "L’App Store n’a trouvé aucun achat de Pro pour ce compte Apple. Si vous avez acheté Pro avec un autre compte Apple, connectez-vous avec celui-ci dans Réglages, votre nom, Contenu multimédia et achats, puis touchez à nouveau « Restaurer l’achat »."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Google Play non ha trovato acquisti di Pro per questo account Google. Play collega un acquisto all’account che ha installato Dahlia: se hai acquistato Pro con un altro account, disinstalla Dahlia, passa a quell’account nel Play Store e reinstalla Dahlia da lì. La disinstallazione rimuove i tuoi preferiti, a meno che Android non li ripristini dal backup."
+            "value" : "L’App Store non ha trovato acquisti di Pro per questo Account Apple. Se hai acquistato Pro con un altro Account Apple, accedi con quello in Impostazioni, il tuo nome, Contenuti multimediali e acquisti, e tocca di nuovo «Ripristina acquisto»."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "このGoogleアカウントではProの購入が見つかりませんでした。Playでは、購入はDahliaをインストールしたアカウントに結びつきます。別のアカウントでProを購入した場合は、Dahliaをアンインストールし、Playストアでそのアカウントに切り替えてから、Dahliaをもう一度インストールしてください。アンインストールするとお気に入りは削除されます（Androidのバックアップから復元される場合を除く）。"
+            "value" : "このApple AccountではProの購入が見つかりませんでした。別のApple AccountでProを購入した場合は、「設定」>ユーザ名>「メディアと購入」でそのアカウントにサインインし、もう一度「購入を復元」をタップしてください。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "이 Google 계정으로 구매한 Pro를 찾지 못했습니다. Play는 구매를 Dahlia를 설치한 계정에 연결합니다. 다른 계정으로 Pro를 구매했다면 Dahlia를 삭제하고 Play 스토어에서 그 계정으로 전환한 후 Dahlia를 다시 설치하세요. 삭제하면 즐겨찾기가 사라집니다. 단, Android가 백업에서 복원하는 경우는 예외입니다."
+            "value" : "이 Apple 계정으로 구매한 Pro를 찾지 못했습니다. 다른 Apple 계정으로 Pro를 구매했다면 설정 > 사용자 이름 > 미디어 및 구입 항목에서 그 계정으로 로그인한 후 '구매 복원'을 다시 탭하세요."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "O Google Play não encontrou nenhuma compra do Pro para esta Conta do Google. O Play vincula a compra à conta que instalou o Dahlia: se você comprou o Pro com outra conta, desinstale o Dahlia, mude para essa conta na Play Store e instale o Dahlia de novo a partir dela. Ao desinstalar, seus favoritos são apagados, a menos que o Android os restaure do backup."
+            "value" : "A App Store não encontrou nenhuma compra do Pro para esta Conta Apple. Se você comprou o Pro com outra Conta Apple, inicie sessão com ela em Ajustes, seu nome, Mídia e Compras, e toque em “Restaurar compra” de novo."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Google Play не нашёл покупку Pro для этого аккаунта Google. Play привязывает покупку к аккаунту, с которого установлена Dahlia: если вы купили Pro с другого аккаунта, удалите Dahlia, переключитесь на этот аккаунт в Play Маркете и установите Dahlia заново. При удалении избранное пропадёт, если Android не восстановит его из резервной копии."
+            "value" : "App Store не нашёл покупку Pro для этого Аккаунта Apple. Если вы купили Pro с другого Аккаунта Apple, войдите в него в «Настройки» → ваше имя → «Медиаматериалы и покупки» и снова нажмите «Восстановить покупку»."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Google Play 未找到此 Google 账号的 Pro 购买记录。Play 会将购买记录关联到安装 Dahlia 的账号：如果你用其他账号购买了 Pro，请卸载 Dahlia，在 Play 商店中切换到该账号，然后从该账号重新安装 Dahlia。卸载会删除你的收藏，除非 Android 从备份中恢复它们。"
+            "value" : "App Store 未找到此 Apple 账户的 Pro 购买记录。如果你用其他 Apple 账户购买了 Pro，请在“设置”>你的姓名>“媒体与购买项目”中登录该账户，然后再次轻点“恢复购买”。"
           }
         }
       }
@@ -29833,61 +29833,61 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Google Play war nicht erreichbar, daher wurde nichts geprüft. Bitte versuch es später noch einmal."
+            "value" : "Der App Store war nicht erreichbar, daher wurde nichts geprüft. Bitte versuch es später noch einmal."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Google Play could not be reached, so nothing was checked. Please try again later."
+            "value" : "The App Store could not be reached, so nothing was checked. Please try again later."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "No se pudo conectar con Google Play, así que no se ha comprobado nada. Vuelve a intentarlo más tarde."
+            "value" : "No se pudo conectar con el App Store, así que no se ha comprobado nada. Vuelve a intentarlo más tarde."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Google Play n’a pas pu être joint, rien n’a donc été vérifié. Veuillez réessayer plus tard."
+            "value" : "L’App Store n’a pas pu être joint, rien n’a donc été vérifié. Veuillez réessayer plus tard."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Google Play non è raggiungibile, quindi non è stato verificato nulla. Riprova più tardi."
+            "value" : "L’App Store non è raggiungibile, quindi non è stato verificato nulla. Riprova più tardi."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Google Playに接続できなかったため、確認できませんでした。しばらくしてからもう一度お試しください。"
+            "value" : "App Storeに接続できなかったため、確認できませんでした。しばらくしてからもう一度お試しください。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Google Play에 연결할 수 없어 확인하지 못했습니다. 나중에 다시 시도하세요."
+            "value" : "App Store에 연결할 수 없어 확인하지 못했습니다. 나중에 다시 시도하세요."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Não foi possível acessar o Google Play, então nada foi verificado. Tente novamente mais tarde."
+            "value" : "Não foi possível acessar a App Store, então nada foi verificado. Tente novamente mais tarde."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Не удалось связаться с Google Play, поэтому ничего не проверено. Попробуйте позже."
+            "value" : "Не удалось связаться с App Store, поэтому ничего не проверено. Попробуйте позже."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "无法连接 Google Play，因此未能检查。请稍后再试。"
+            "value" : "无法连接 App Store，因此未能检查。请稍后再试。"
           }
         }
       }

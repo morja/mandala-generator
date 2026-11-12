@@ -14,4 +14,13 @@
     <string name="message_video_saved">Video %1$d × %2$d in „Fotos“ gespeichert</string>
     <string name="ios_export_stopped_background">Speichern abgebrochen, weil Dahlia zu lange im Hintergrund war.</string>
     <string name="tour_save_body">Der Pfeil speichert dein Bild in „Fotos“.</string>
+    <!-- The Pro purchase through the App Store (WP-9). -->
+    <string name="pro_pending">Der Kauf wartet auf Zustimmung oder Bezahlung. Pro wird freigeschaltet, sobald er durch ist.</string>
+    <string name="pro_product_unavailable">Der App Store bietet Pro gerade nicht an. Bitte versuch es später noch einmal.</string>
+    <string name="pro_play_unavailable">Der App Store ist gerade nicht erreichbar, daher gibt es noch keinen Preis. Prüf die Verbindung und versuch es noch einmal.</string>
+    <string name="pro_restore_not_found">Der App Store hat für diesen Apple Account keinen Pro-Kauf gefunden. Wenn du Pro mit einem anderen Apple Account gekauft hast, melde dich unter Einstellungen, dein Name, Medien &amp; Käufe damit an und tippe noch einmal auf „Kauf wiederherstellen“.</string>
+    <string name="pro_restore_unreachable">Der App Store war nicht erreichbar, daher wurde nichts geprüft. Bitte versuch es später noch einmal.</string>
+    <string name="pro_purchase_not_started">Der App Store konnte den Kauf nicht öffnen. Bitte versuch es noch einmal.</string>
+    <string name="editor_pro_unavailable">Käufe sind auf diesem iPhone ausgeschaltet. Du kannst sie in den Einstellungen unter Bildschirmzeit erlauben.</string>
+    <string name="editor_pro_adds_wallpapers">Hintergründe: Start- und Sperrbildschirm als Paar und jeden Tag ein neuer über Kurzbefehle.</string>
 </resources>

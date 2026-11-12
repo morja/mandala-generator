@@ -14,4 +14,13 @@
     <string name="message_video_saved">Video %1$d × %2$d salvato in Foto</string>
     <string name="ios_export_stopped_background">Salvataggio interrotto perché Dahlia è rimasta troppo a lungo in background.</string>
     <string name="tour_save_body">La freccia salva l\'immagine in Foto.</string>
+    <!-- The Pro purchase through the App Store (WP-9). -->
+    <string name="pro_pending">L’acquisto è in attesa di approvazione o pagamento. Pro si sblocca appena va a buon fine.</string>
+    <string name="pro_product_unavailable">Al momento l’App Store non offre Pro. Riprova più tardi.</string>
+    <string name="pro_play_unavailable">Al momento l’App Store non è raggiungibile, quindi il prezzo non è ancora disponibile. Controlla la connessione e riprova.</string>
+    <string name="pro_restore_not_found">L’App Store non ha trovato acquisti di Pro per questo Account Apple. Se hai acquistato Pro con un altro Account Apple, accedi con quello in Impostazioni, il tuo nome, Contenuti multimediali e acquisti, e tocca di nuovo «Ripristina acquisto».</string>
+    <string name="pro_restore_unreachable">L’App Store non è raggiungibile, quindi non è stato verificato nulla. Riprova più tardi.</string>
+    <string name="pro_purchase_not_started">L’App Store non è riuscito ad aprire l’acquisto. Riprova.</string>
+    <string name="editor_pro_unavailable">Gli acquisti sono disattivati su questo iPhone. Puoi consentirli in Impostazioni, in Tempo di utilizzo.</string>
+    <string name="editor_pro_adds_wallpapers">Sfondi: Home e blocco in coppia, e uno nuovo ogni giorno con Comandi Rapidi.</string>
 </resources>

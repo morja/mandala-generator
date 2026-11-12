@@ -37,6 +37,9 @@ targets:
       # The licence text of the libraries, shown in About (the same file as on Android).
       - path: ../../android/app/src/main/assets/licenses/apache-2.0.txt
         buildPhase: resources
+      # The local StoreKit configuration (WP-9): in the project for the scheme's Run action, not in the app.
+      - path: Config/Dahlia.storekit
+        buildPhase: none
     dependencies:
       # The Kotlin core, always the release (optimised) framework (SPIKE-3); built by scripts/build-core.
       - framework: ../build/MandalaCore.xcframework
@@ -61,6 +64,10 @@ targets:
         ASSETCATALOG_COMPILER_APPICON_NAME: $(DAHLIA_APP_ICON)
         ENABLE_USER_SCRIPT_SANDBOXING: NO
         OTHER_LDFLAGS: ["-lc++"]
+        # The App Group (approval A2) for the Pro flag and later the widget. Simulator builds only: a device build needs
+        # the group on the App IDs (one.tearoom.mandala and .debug), which Xcode adds once an account is signed in
+        # (IOS-9). Then this line loses its [sdk=…] condition. Without it `AppGroup.defaults` is nil.
+        "CODE_SIGN_ENTITLEMENTS[sdk=iphonesimulator*]": Config/Dahlia.entitlements
   # Parity test (PLAN-4 section 3.11): renders the fixtures through the framework, compared with the JVM.
   # Not hosted in the app, so it runs without launching it; started by ios/scripts/check-full.
   DahliaTests:
@@ -81,12 +88,35 @@ targets:
         GENERATE_INFOPLIST_FILE: YES
         OTHER_LDFLAGS: ["-lc++"]
         CODE_SIGNING_ALLOWED: NO
+  # The Pro purchase (WP-9) against the local StoreKit configuration with StoreKitTest. Hosted in the app, because
+  # StoreKit needs an app around it; the purchase code is compiled in, so the tests need no access to the app module.
+  DahliaStoreTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: StoreTests
+      - path: Sources/Model/ProStore.swift
+      - path: Sources/Model/ProPolicy.swift
+      - path: Config/Dahlia.storekit
+        buildPhase: resources
+    dependencies:
+      - target: Dahlia
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        CODE_SIGNING_ALLOWED: NO
 schemes:
   Dahlia:
     build:
       targets:
         Dahlia: all
         DahliaTests: [test]
+        DahliaStoreTests: [test]
+    run:
+      # Running from Xcode buys against the local configuration (3.99 €, Family Sharing); Debug > StoreKit > Manage
+      # Transactions refunds or approves Ask to Buy. Launch with -proOwned NO, or the debug build counts as Pro.
+      storeKitConfiguration: Config/Dahlia.storekit
     test:
       targets:
         - DahliaTests
+        - DahliaStoreTests

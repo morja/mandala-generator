@@ -38,16 +38,11 @@ final class EditorModel {
     /// Android's fast preview (on by default) and the small pictures beside the styles; kept across starts.
     private(set) var fastPreview: Bool
     private(set) var chipPreviews: Bool
-    /// Whether Pro is owned. The one seam the purchase fills (WP-9); until then release builds unlock nothing.
-    /// Debug builds count as Pro, as Android's test builds do (`pro_for_testing`); `-proOwned NO` shows the free app.
-    private(set) var proOwned: Bool = {
-        #if DEBUG
-        let d = UserDefaults.standard
-        return d.object(forKey: "proOwned") == nil ? true : d.bool(forKey: "proOwned")
-        #else
-        return false
-        #endif
-    }()
+    /// The Pro purchase through StoreKit (WP-9), started at app launch; observed through its own properties.
+    @ObservationIgnored let proStore: ProStore
+    /// Whether Pro is owned: a verified purchase, or a debug build's test Pro (`-proOwned NO` shows the free app).
+    /// Release builds unlock only through a verified purchase (`ProStore`).
+    var proOwned: Bool { proStore.unlocked }
     /// What drags on the picture move (the selected layer, the emblem or the text); nil while they do not (ADR-0011).
     private(set) var moveTarget: MoveTarget?
     /// The tool that turns drags on the picture into strokes; nil while the picture is not for drawing.
@@ -82,7 +77,8 @@ final class EditorModel {
     private static let fastPreviewKey = "fastPreview"
     private static let chipPreviewsKey = "chipPreviews"
 
-    init() {
+    init(proStore: ProStore = .shared) {
+        self.proStore = proStore
         // Saved settings, else the starter the icon was made from, else the first starter.
         params = SettingsStore.load() ?? Starters.firstMandala ?? Starters.all.first?.parameters ?? IosBridge.shared.decode(json: "{}")
         favorites = FavoritesStore.loadOrSeed()
@@ -97,6 +93,7 @@ final class EditorModel {
         }
         renderPreview()
         shellStart()
+        proStore.onMessage = { [weak self] shown in self?.proMessage(shown) }
     }
 
     /// The preview's glow: the fast one when chosen, and always while the phone is hot.

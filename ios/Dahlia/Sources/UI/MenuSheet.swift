@@ -3,8 +3,8 @@ import UniformTypeIdentifiers
 @preconcurrency import MandalaCore
 
 /// The menu as a sheet from below (Android's `MenuSheet`, DM-7 B): the mandala on screen with what keeps it, three dice
-/// for a new one shown beside the current mandala, the theme and "More" (the line drawing, files, the two switches).
-/// What belongs to later packages (wallpapers, Pro, widgets) is not here yet.
+/// for a new one shown beside the current mandala, the theme and "More" (the line drawing, files, the two switches);
+/// the Dahlia page with Pro (WP-9). What belongs to later packages (wallpapers, widgets) is not here yet.
 struct MenuSheet: View {
     let close: @MainActor () -> Void
     @Environment(EditorModel.self) private var model
@@ -16,13 +16,14 @@ struct MenuSheet: View {
     @State private var showExport = false
     @State private var showAbout = Self.initialAbout
 
-    private enum Page { case main, more, dahlia, lineDrawing }
+    private enum Page { case main, more, dahlia, lineDrawing, pro }
 
     private static var initialPage: Page {
         #if DEBUG
         switch ShotSetup.sheet {
         case "more": return .more
         case "dahlia", "about": return .dahlia
+        case "propage": return .pro
         default: return .main
         }
         #else
@@ -51,6 +52,8 @@ struct MenuSheet: View {
                     lineDrawingPage
                 } else if page == .dahlia {
                     dahliaPage
+                } else if page == .pro {
+                    proPage
                 } else {
                     mainPage
                 }
@@ -64,6 +67,13 @@ struct MenuSheet: View {
         .presentationBackground(t.background)
         // The comparison belongs to the open menu only.
         .onDisappear { model.closeCandidate() }
+        // A Pro request from here (the line drawing, Share, "Dahlia Pro") shows on top of the menu.
+        .proSheet()
+        // A purchase closes the menu too, so the thanks shows in the editor (Android, QA-6 finding 15).
+        .onChange(of: model.proOwned) { _, owned in if owned && page != .pro { close() } }
+        #if DEBUG
+        .task { await ShotSetup.proOverIfAsked("menu", model) }
+        #endif
         .sheet(isPresented: $showAbout) { AboutView { showAbout = false } }
         .fileImporter(isPresented: $showOpen, allowedContentTypes: [.json, .plainText, .data]) { result in
             if case .success(let url) = result {
@@ -96,8 +106,12 @@ struct MenuSheet: View {
                 .disabled(!model.canAddFavorite)
                 // The square picture through the share sheet, drawn after the menu closed (Android's KeepRow).
                 Pill(icon: "square.and.arrow.up", label: Texts.share) {
-                    close()
-                    model.shareImage()
+                    // With Pro features but without Pro the Pro sheet opens on top of the menu; "Share without them" goes on.
+                    let share: @MainActor () -> Void = {
+                        close()
+                        model.shareImage()
+                    }
+                    if model.mayKeep(Texts.share, then: share) { share() }
                 }
                 .disabled(model.save.busy)
             }
@@ -162,7 +176,8 @@ struct MenuSheet: View {
                 MenuRow(icon: "doc.badge.arrow.up", label: look == .lines ? Texts.lineDrawingLines : Texts.lineDrawingColour, detail: nil,
                         action: model.save.busy ? nil : {
                             Task {
-                                if let made = await model.lineDrawing(look) { lineDrawing = SvgDocument(text: made.text, name: made.name) } else if !model.proOwned { close() }
+                                // Without Pro the Pro sheet opens on top of the menu.
+                                if let made = await model.lineDrawing(look) { lineDrawing = SvgDocument(text: made.text, name: made.name) }
                             }
                         }) { chevron }
                 divider
@@ -181,13 +196,18 @@ struct MenuSheet: View {
         }
     }
 
-    // ── Dahlia page: guide, tour, rating, About (Pro and widgets follow with WP-9 and WP-10) ──
+    // ── Dahlia page: Pro, guide, tour, rating, About (widgets follow with WP-10) ──
 
     private var dahliaPage: some View {
         VStack(alignment: .leading, spacing: 0) {
             BackRow(label: Texts.menuBack) { page = .main }
             Text(Texts.menuDahlia).textRole(.title).foregroundStyle(t.text).padding(.top, Spacing.sm)
             divider.padding(.top, Spacing.sm)
+            // With Pro a page with what it includes, otherwise the Pro sheet (Android's DahliaPage).
+            MenuRow(icon: "star", label: Texts.proTitle, detail: model.proOwned ? Texts.menuProActive : Texts.menuProDetail, action: {
+                if model.proOwned { page = .pro } else { model.showPro() }
+            }) { chevron }
+            divider
             MenuRow(icon: "questionmark.circle", label: Texts.menuGuide, detail: nil, action: { Links.openGuide() }) { chevron }
             divider
             // The short tour of the editor that a new install starts with.
@@ -200,6 +220,28 @@ struct MenuSheet: View {
             MenuRow(icon: "heart", label: Texts.menuRate, detail: nil, action: { ReviewPrompt.openReviewPage() }) { chevron }
             divider
             MenuRow(icon: "info.circle", label: Texts.menuAbout, detail: nil, action: { showAbout = true }) { chevron }
+        }
+    }
+
+    // ── Pro page: with Pro, the thanks and what it includes, in the sentences the Pro sheet sells it with ──
+
+    private var proPage: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            BackRow(label: Texts.menuDahlia) { page = .dahlia }
+            Text(Texts.proTitle).textRole(.title).foregroundStyle(t.text).padding(.top, Spacing.sm)
+            Text(Texts.menuProThanks).textRole(.body).foregroundStyle(t.textMuted).padding(.top, Spacing.xs)
+            divider.padding(.top, Spacing.md)
+            ForEach([("slider.horizontal.3", Texts.proAddsMaking), ("square.and.arrow.down", Texts.proAddsSaving),
+                     ("photo", Texts.proAddsWallpapers)], id: \.0) { icon, text in
+                HStack(alignment: .top, spacing: Spacing.md) {
+                    Image(systemName: icon).foregroundStyle(t.textMuted).frame(width: Sizes.icon)
+                    Text(text).textRole(.body).foregroundStyle(t.text).fixedSize(horizontal: false, vertical: true)
+                    Spacer(minLength: 0)
+                }
+                .padding(.vertical, Spacing.md)
+                divider
+            }
+            Text(Texts.menuProOnce).textRole(.note).foregroundStyle(t.textMuted).padding(.top, Spacing.md)
         }
     }
 

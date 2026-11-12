@@ -14,4 +14,13 @@
     <string name="message_video_saved">%1$d × %2$d 동영상을 사진에 저장했습니다</string>
     <string name="ios_export_stopped_background">Dahlia가 너무 오래 백그라운드에 있어서 저장이 중단되었습니다.</string>
     <string name="tour_save_body">화살표로 그림을 사진에 저장합니다.</string>
+    <!-- The Pro purchase through the App Store (WP-9). -->
+    <string name="pro_pending">구매가 승인 또는 결제를 기다리고 있습니다. 완료되면 Pro가 잠금 해제됩니다.</string>
+    <string name="pro_product_unavailable">지금은 App Store에서 Pro를 제공하지 않습니다. 나중에 다시 시도하세요.</string>
+    <string name="pro_play_unavailable">지금은 App Store에 연결할 수 없어 가격을 표시할 수 없습니다. 연결을 확인하고 다시 시도하세요.</string>
+    <string name="pro_restore_not_found">이 Apple 계정으로 구매한 Pro를 찾지 못했습니다. 다른 Apple 계정으로 Pro를 구매했다면 설정 &gt; 사용자 이름 &gt; 미디어 및 구입 항목에서 그 계정으로 로그인한 후 \'구매 복원\'을 다시 탭하세요.</string>
+    <string name="pro_restore_unreachable">App Store에 연결할 수 없어 확인하지 못했습니다. 나중에 다시 시도하세요.</string>
+    <string name="pro_purchase_not_started">App Store에서 구매 화면을 열 수 없습니다. 다시 시도하세요.</string>
+    <string name="editor_pro_unavailable">이 iPhone에서는 구매가 꺼져 있습니다. 설정의 스크린 타임에서 허용할 수 있습니다.</string>
+    <string name="editor_pro_adds_wallpapers">배경화면: 홈 화면과 잠금 화면 한 쌍, 단축어로 매일 새 배경화면.</string>
 </resources>

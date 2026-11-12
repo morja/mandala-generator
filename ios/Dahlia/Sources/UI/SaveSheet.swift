@@ -66,6 +66,10 @@ struct SaveSheet: View {
             #endif
         }
         .onDisappear { model.setSaveOpen(false) }
+        .proSheet()
+        #if DEBUG
+        .task { await ShotSetup.proOverIfAsked("save", model) }
+        #endif
     }
 
     /// The preset the frame is on; none once a Pro user has moved or zoomed by hand.
