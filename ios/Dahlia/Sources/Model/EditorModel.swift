@@ -190,6 +190,11 @@ final class EditorModel {
         saving = SaveProgress(share: 0)
         Task {
             defer { saving = nil }
+            // Asked before drawing, so a refusal costs no render.
+            guard await PhotoLibrary.mayAdd() else {
+                message = Message(text: Texts.photosDenied, actionLabel: Texts.openSettings) { Links.openSettings() }
+                return
+            }
             let ticket = RenderTicket()
             let size = Int(IosBridge.shared.EXPORT_SIZE)
             let result = await engine.square(snapshot, size: size, ticket: ticket) { percent in

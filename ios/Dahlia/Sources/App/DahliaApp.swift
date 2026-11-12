@@ -1,6 +1,5 @@
 import SwiftUI
 import UIKit
-import os
 
 @main
 struct DahliaApp: App {
@@ -19,17 +18,6 @@ struct DahliaApp: App {
                 .onReceive(NotificationCenter.default.publisher(for: UIApplication.didReceiveMemoryWarningNotification)) { _ in
                     model.memoryWarning()
                 }
-                .task { await debugProbes() }
         }
-    }
-
-    /// Checks that only make sense on a device or simulator by hand, started by launch arguments.
-    private func debugProbes() async {
-        #if DEBUG
-        if UserDefaults.standard.bool(forKey: "probeAlbum") {
-            let answer = await PhotoLibrary.probeAlbum()
-            Logger(subsystem: "one.tearoom.mandala", category: "probe").info("DAHLIA probeAlbum \(answer, privacy: .public)")
-        }
-        #endif
     }
 }

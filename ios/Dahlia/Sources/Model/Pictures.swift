@@ -40,7 +40,7 @@ enum Pictures {
 }
 
 /// Adds pictures to the Photos library with add-only access (approval A10), without an own album:
-/// creating an album needs full library access (checked in WP-1, see `probeAlbum`).
+/// creating an album makes iOS ask for full library access (checked in WP-1, IOS-1 finding).
 enum PhotoLibrary {
     enum Failure: Error { case denied, failed(String) }
 
@@ -65,20 +65,4 @@ enum PhotoLibrary {
             throw Failure.failed(error.localizedDescription)
         }
     }
-
-    #if DEBUG
-    /// PLAN-4 section 7: whether add-only access may create an album. Launch with `-probeAlbum YES`
-    /// after saving once; the answer goes to the log ("DAHLIA probeAlbum").
-    static func probeAlbum() async -> String {
-        guard await mayAdd() else { return "no add-only access" }
-        do {
-            try await PHPhotoLibrary.shared().performChanges {
-                PHAssetCollectionChangeRequest.creationRequestForAssetCollection(withTitle: "Dahlia")
-            }
-            return "album created (status \(PHPhotoLibrary.authorizationStatus(for: .readWrite).rawValue))"
-        } catch {
-            return "album refused: \(error.localizedDescription)"
-        }
-    }
-    #endif
 }
