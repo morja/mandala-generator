@@ -8,7 +8,7 @@ import Foundation
 /// start moving or drawing; `-shotSheet` and `-shotTourStep` open a sheet or the tour; `-startTab layers|scene|emblem|text|draw` (read by `ControlTabs`) opens a tab.
 /// The save sheet (WP-8): `-shotSave YES` opens it, `-shotFormat <SaveFormat name>` (SQUARE, SCREEN, FOUR_FIVE …),
 /// `-shotVideo YES` the Video tab, `-shotFill YES` Fill, `-shotAdjust YES` with Adjust open (read by `SaveSheet`).
-/// `-exportProbe image|image2048|video|video1080` saves once without a tap (`-probeSeconds 30`), for the memory and
+/// `-exportProbe image|image2048|video|video1080|video1080share` saves once without a tap (`-probeSeconds 30`), for the memory and
 /// colour measurements in IOS-7; Photos access is granted beforehand with `xcrun simctl privacy … grant photos-add`.
 @MainActor
 enum ShotSetup {
@@ -55,6 +55,8 @@ enum ShotSetup {
         case "image2048": model.saveImage(large: true)
         case "video": model.saveVideo(large: false, share: false)
         case "video1080": model.saveVideo(large: true, share: false)
+        // Without Photos (no permission prompt on a phone nobody is holding): ends in the share sheet.
+        case "video1080share": model.saveVideo(large: true, share: true)
         default: return
         }
         try? await Task.sleep(for: .milliseconds(200))

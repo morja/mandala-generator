@@ -249,12 +249,13 @@ struct SaveSheet: View {
                      pro ? Texts.saveSize(Int(big.width), Int(big.height)) : Texts.saveSizePro(Int(big.width), Int(big.height))]
         let large = save.large && pro
         let pick: (Int) -> Void = { i in
-            if i == 0 { save.large = false } else if pro { save.large = true } else { model.requestPro(ProRequest(note: Texts.saveVideoPro)) }
+            if i == 0 { save.large = false } else if pro { save.large = true } else { model.requestPro(ProRequest(note: choice.moving ? Texts.saveVideoPro : nil)) }
         }
         HStack(spacing: Spacing.sm) {
             if choice.moving {
                 // A video goes mostly straight to a story or status, so Share stands beside Save.
-                if save.makingVideo {
+                // Cancel only while frames are made; once the file is complete it goes to Photos or the share sheet.
+                if save.makingVideo && save.export?.share != nil {
                     OutlinedButton(label: Texts.saveCancel, enabled: true) { model.cancelExport() }
                 } else {
                     OutlinedButton(label: Texts.shareAction, enabled: !busy) { model.saveVideo(large: large, share: true) }
@@ -381,12 +382,14 @@ private struct SaveFrame: View {
             .clipShape(RoundedRectangle(cornerRadius: Radius.md))
             .contentShape(Rectangle())
             .gesture(drag(geo.size).simultaneously(with: pinch(geo.size)), isEnabled: enabled)
-            .onTapGesture(count: 2) { if enabled { model.setFill(false) } }
+            // Beside the drag, so a double tap is not taken for the start of a move.
+            .simultaneousGesture(TapGesture(count: 2).onEnded { model.setFill(false) }, isEnabled: enabled)
         }
     }
 
     private func drag(_ size: CGSize) -> some Gesture {
-        DragGesture(minimumDistance: 0)
+        // The default distance: a touch alone does not end Whole or Fill, only a move does (as on Android).
+        DragGesture()
             .onChanged { value in
                 let dx = (value.translation.width - lastDrag.width) / size.width
                 let dy = (value.translation.height - lastDrag.height) / size.height
@@ -401,6 +404,7 @@ private struct SaveFrame: View {
             .onChanged { value in
                 let factor = value.magnification / lastZoom
                 lastZoom = value.magnification
+                guard factor != 1 else { return }
                 let px = value.startLocation.x / size.width, py = value.startLocation.y / size.height
                 model.setFraming(IosSave.shared.zoomedAround(framing: model.save.shownFraming, px: px, py: py, factor: factor))
             }

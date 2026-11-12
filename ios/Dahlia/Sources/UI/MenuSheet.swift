@@ -71,16 +71,6 @@ struct MenuSheet: View {
                 close()
             }
         }
-        .fileExporter(isPresented: Binding(get: { lineDrawing != nil }, set: { if !$0 { lineDrawing = nil } }), document: lineDrawing,
-                      contentType: .svg, defaultFilename: lineDrawing?.name) { result in
-            switch result {
-            case .success: model.lineDrawingSaved(true)
-            case .failure(let error):
-                if (error as? CocoaError)?.code != .userCancelled { model.lineDrawingSaved(false, reason: error.localizedDescription) }
-            }
-            lineDrawing = nil
-            close()
-        }
         .fileExporter(isPresented: $showExport, document: SettingsDocument(text: model.settingsFileText), contentType: .json,
                       defaultFilename: model.suggestedSettingsName) { result in
             switch result {
@@ -177,6 +167,17 @@ struct MenuSheet: View {
                         }) { chevron }
                 divider
             }
+        }
+        // On this page, not beside "Save settings": two file exporters on one view show only one.
+        .fileExporter(isPresented: Binding(get: { lineDrawing != nil }, set: { if !$0 { lineDrawing = nil } }), document: lineDrawing,
+                      contentType: .svg, defaultFilename: lineDrawing?.name) { result in
+            switch result {
+            case .success: model.lineDrawingSaved(true)
+            case .failure(let error):
+                if (error as? CocoaError)?.code != .userCancelled { model.lineDrawingSaved(false, reason: error.localizedDescription) }
+            }
+            lineDrawing = nil
+            close()
         }
     }
 

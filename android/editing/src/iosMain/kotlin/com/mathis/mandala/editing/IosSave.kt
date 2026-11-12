@@ -192,6 +192,9 @@ object IosSave {
         Rendered(IosBridge.rgba(result.image), result.image.width, result.image.height, result.millis)
     } catch (e: RenderCancelledException) {
         null
+    } catch (e: Throwable) {
+        // Swift cannot catch a Kotlin exception; the caller tells "not cancelled" from the ticket and says it failed.
+        null
     }
 
     /** The frame preview without the finish, which [DrawnFrame.finished] applies so its sliders need no new render. */
@@ -207,7 +210,7 @@ object IosSave {
             ),
         ).image
         DrawnFrame(image, threads)
-    } catch (e: RenderCancelledException) {
+    } catch (e: Throwable) {
         null
     }
 
@@ -270,7 +273,7 @@ class MovingFrames internal constructor(private val params: MandalaParameters, p
     fun at(t: Double): Rendered? = try {
         val image = MandalaRenderer.render(LayerAnimation.at(params, t), options).image
         Rendered(IosBridge.rgba(image), image.width, image.height, 0)
-    } catch (e: RenderCancelledException) {
+    } catch (e: Throwable) {
         null
     }
 
@@ -299,14 +302,17 @@ class VideoFrameSource internal constructor(
 
     /**
      * Renders frame `index` and writes it into the planes (rows `yStride` and `uvStride` bytes apart);
-     * false when the ticket was cancelled.
+     * false when the ticket was cancelled or the frame could not be drawn (Swift tells the two apart by the ticket).
      */
-    fun write(index: Int, yPlane: COpaquePointer, yStride: Int, uvPlane: COpaquePointer, uvStride: Int): Boolean {
-        val image = try {
-            MandalaRenderer.render(LayerAnimation.frame(params, index, frameCount), options).image
-        } catch (e: RenderCancelledException) {
-            return false
-        }
+    fun write(index: Int, yPlane: COpaquePointer, yStride: Int, uvPlane: COpaquePointer, uvStride: Int): Boolean = try {
+        writeFrame(index, yPlane, yStride, uvPlane, uvStride)
+        true
+    } catch (e: Throwable) {
+        false
+    }
+
+    private fun writeFrame(index: Int, yPlane: COpaquePointer, yStride: Int, uvPlane: COpaquePointer, uvStride: Int) {
+        val image = MandalaRenderer.render(LayerAnimation.frame(params, index, frameCount), options).image
         VideoFrames.toI420(image, y, u, v, par)
         y.usePinned { pinned ->
             for (r in 0 until height) memcpy(yPlane.reinterpret<ByteVar>() + r.toLong() * yStride, pinned.addressOf(r * width), width.toULong())
@@ -324,7 +330,6 @@ class VideoFrameSource internal constructor(
                 }
             }
         }
-        return true
     }
 
     /** Ends the worker pool's use and lets the kept layer images go. */

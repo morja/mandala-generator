@@ -60,6 +60,8 @@ extension EditorModel {
             save.frameTicket?.cancel()
             save.frameTask?.cancel()
             save.lastDrawn = nil
+            save.recentFrames.removeAll()
+            save.recentOrder.removeAll()
         }
     }
 
@@ -257,8 +259,11 @@ extension EditorModel {
         }
         Task {
             await work(ticket)
-            if expired { message = Message(text: Texts.stoppedInBackground) }
+            // Only when the picture was not kept; a late expiry while Photos was at work changes nothing.
+            if expired && ticket.isCancelled() && save.export?.share != nil { message = Message(text: Texts.stoppedInBackground) }
             background.end(success: !ticket.isCancelled())
+            // The drawn picture's Kotlin buffers go at once, not at the collector's next turn.
+            await engine.collect()
             save.export = nil
             save.busy = false
             save.exportTicket = nil
@@ -278,7 +283,14 @@ extension EditorModel {
                 self.save.export?.share = Double(percent) / 100
             }
         }
-        guard let rendered else { return nil }
+        guard let rendered else {
+            #if DEBUG
+            peak.cancel()
+            #endif
+            // Cancelled says nothing; a failed render says so (Android's message_image_failed).
+            if !ticket.isCancelled() { message = Message(text: Texts.saveFailed) }
+            return nil
+        }
         save.export = ExportProgress(label: save.export?.label ?? Texts.creatingImage)
         let png = await Task.detached(priority: .userInitiated) { rendered.cgImage.flatMap { Pictures.png($0) } }.value
         #if DEBUG
@@ -320,12 +332,12 @@ extension EditorModel {
             ticket.cancel()
         }
         let subtitle = "\(Texts.saveSize(Int(size.width), Int(size.height))) · \(Texts.videoSeconds(seconds))"
-        background.continueInBackground(title: label, subtitle: subtitle, units: frames)
         Task {
             var success = false
             defer {
-                if expired { message = Message(text: Texts.stoppedInBackground) }
+                if expired && !success { message = Message(text: Texts.stoppedInBackground) }
                 background.end(success: success)
+                Task { await engine.collect() }
                 save.export = nil
                 save.busy = false
                 save.makingVideo = false
@@ -337,6 +349,8 @@ extension EditorModel {
                     return
                 }
             }
+            // After the Photos question, so iOS's progress does not show for a refused video.
+            background.continueInBackground(title: label, subtitle: subtitle, units: frames)
             #if DEBUG
             let peak = Footprint.watch()
             defer { peak.cancel() }
@@ -359,6 +373,8 @@ extension EditorModel {
                     guard await engine.writeFrame(source, index: f, into: FrameBuffer(buffer: buffer)), !ticket.isCancelled() else {
                         writer.cancel()
                         await engine.close(source)
+                        // Not cancelled: core could not draw the frame.
+                        if !ticket.isCancelled() { message = Message(text: Texts.videoFailed(Texts.saveFailed)) }
                         return
                     }
                     try writer.append(buffer, index: f)
@@ -367,23 +383,23 @@ extension EditorModel {
                     background.progress(f + 1)
                 }
                 await engine.close(source)
-                try await writer.finish()
+                try await writer.finish(frames: frames)
             } catch {
                 writer.cancel()
                 await engine.close(source)
                 message = Message(text: Texts.videoFailed(error.localizedDescription))
                 return
             }
+            // The file is complete; from here Cancel and the background's end no longer stop it.
+            success = true
+            save.export = ExportProgress(label: share ? Texts.preparingShare : Texts.addingToPhotos)
             #if DEBUG
             peak.cancel()
             Engine.trace("video \(size.width)x\(size.height) \(seconds)s frames=\(frames) took=\(Int(Date().timeIntervalSince(start)))s peakFootprint=\(await peak.value)MB")
             #endif
-            success = true
             if share {
-                save.export = ExportProgress(label: Texts.preparingShare)
                 ShareSheet.present(url)
             } else {
-                save.export = ExportProgress(label: Texts.addingToPhotos)
                 do {
                     try await PhotoLibrary.addVideo(url, fileName: fileName)
                     message = Message(text: Texts.videoSaved(Int(size.width), Int(size.height)))

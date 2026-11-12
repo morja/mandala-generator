@@ -85,9 +85,11 @@ final class VideoWriter: @unchecked Sendable {
         }
     }
 
-    /// Ends the stream and closes the file; the video is complete only after this.
-    func finish() async throws {
+    /// Ends the stream and closes the file; the video is complete only after this. `frames` gives the last
+    /// frame its length, so the loop does not skip at the seam.
+    func finish(frames: Int) async throws {
         input.markAsFinished()
+        writer.endSession(atSourceTime: CMTime(value: CMTimeValue(frames), timescale: fps))
         await writer.finishWriting()
         if writer.status != .completed { throw writer.error ?? Failure.buffer }
     }
@@ -218,13 +220,15 @@ final class BackgroundWork {
 
     private func attach(_ task: BGContinuedProcessingTask) {
         guard !finished else {
-            task.setTaskCompleted(success: true)
+            // The export ended before iOS started the task.
+            task.setTaskCompleted(success: false)
             return
         }
         self.task = task
         task.progress.totalUnitCount = total
         task.progress.completedUnitCount = done
-        task.expirationHandler = { [weak self] in
+        // iOS calls this on a queue of its own; @Sendable keeps Swift from asserting the main actor there.
+        task.expirationHandler = { @Sendable [weak self] in
             Task { @MainActor in self?.expire(reason: "continued task") }
         }
         Self.lastOutcome = "running"
@@ -240,7 +244,9 @@ final class BackgroundWork {
         }
         Engine.trace("background time ended (\(reason))")
         expired()
-        end(success: false)
+        // The assertion must end now; the continued task ends from the export's own clean-up (`end`), so the
+        // half-written file and the kept layers are let go before the app is suspended.
+        if reason == "assertion" { end(success: false) }
     }
 
     /// Continued processing tasks are registered per identifier, any time before the request (the wildcard in

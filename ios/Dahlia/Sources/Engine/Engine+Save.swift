@@ -59,4 +59,7 @@ extension Engine {
     }
 
     func close(_ source: VideoFrameSource) { source.close() }
+
+    /// After an export: the Kotlin buffers of the drawn picture or the video's frames go at once.
+    func collect() { IosBridge.shared.collect() }
 }
