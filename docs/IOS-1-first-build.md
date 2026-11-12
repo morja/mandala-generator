@@ -51,7 +51,7 @@ What WP-1 of [PLAN-4](PLAN-4-iphone-app.md) built, the collector measurement on 
 
 ### Selbst entschieden
 
-- UI questions sent to the master chat (actions in the navigation bar, a fixed tab row, Save opening a small sheet) are built as recommended; no answer had come when this report was written, so a different choice is a small change in `EditorView.swift`, `ControlTabs.swift` and `Sheets.swift`.
+- UI questions sent to the master chat (actions in the navigation bar, a fixed tab row, Save opening a small sheet) are built as recommended. Mathis confirmed all three on 12 November 2026 as option a (F12, F13, F14 of PLAN-4 section 6).
 
 - Favourites as a system sheet with medium and large detents, closed after a favourite is opened (as Android); the save sheet at medium height.
 
