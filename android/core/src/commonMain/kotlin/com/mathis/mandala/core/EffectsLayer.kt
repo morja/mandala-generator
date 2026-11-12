@@ -101,7 +101,7 @@ internal class EffectsLayer(private val par: Parallel, private val fx: LayerEffe
             val hi = min(height, smoothBottom + contrastReach)
             var w = FloatImage(width, hi - lo)
             par.forRange(hi - lo) { from, until ->
-                val row = FloatArray(n)
+                val row = par.scratch.get().floats(Scratch.ROW_A, n)
                 for (r in from until until) {
                     source.readRow(lo + r, row)
                     arraycopy(row, 0, w.data, r * n, n)
@@ -126,7 +126,7 @@ internal class EffectsLayer(private val par: Parallel, private val fx: LayerEffe
                 }
             }
             par.forRange(y1 - y0) { from, until ->
-                val row = FloatArray(n)
+                val row = par.scratch.get().floats(Scratch.ROW_A, n)
                 for (y in y0 + from until y0 + until) {
                     if (s.relief > 0) reliefRow(w, y - top, top, height, s.reliefAngle, s.relief, row) else arraycopy(w.data, (y - top) * n, row, 0, n)
                     WorkingSpace.writeRow(row, out, y)

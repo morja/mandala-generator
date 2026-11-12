@@ -100,8 +100,10 @@ internal class EmblemLayer(private val par: Parallel, private val fx: LayerEffec
         val out = if (base.encoding == Encoding.SRGB) base else Image8(canvasW, base.height, Encoding.SRGB)
         val n = canvasW * 3
         fun blendRow(y: Int, over: FloatArray?) {
-            val row = FloatArray(n)
-            val c = FloatArray(w * 3)
+            // Both rows are overwritten before they are read (the base row, then the emblem colour).
+            val rows = par.scratch.get()
+            val row = rows.floats(Scratch.ROW_A, n)
+            val c = rows.floats(Scratch.ROW_B, w * 3)
             WorkingSpace.readRow(base, y + area[1], row)
             colour.readRow(y, c)
             for (x in 0 until w) {
