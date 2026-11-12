@@ -10,4 +10,5 @@
     <string name="ios_favourite_label">즐겨찾기: %1$s</string>
     <string name="ios_picture_from_photos">사진</string>
     <string name="ios_picture_from_files">파일</string>
+    <string name="ios_select">선택</string>
 </resources>

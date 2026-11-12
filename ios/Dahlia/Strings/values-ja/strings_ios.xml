@@ -10,4 +10,5 @@
     <string name="ios_favourite_label">お気に入り: %1$s</string>
     <string name="ios_picture_from_photos">写真</string>
     <string name="ios_picture_from_files">ファイル</string>
+    <string name="ios_select">選択</string>
 </resources>

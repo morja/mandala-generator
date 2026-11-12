@@ -61,11 +61,11 @@ object IosShell {
     fun surprise(current: MandalaParameters, pro: Boolean): MandalaParameters = current.randomAll(Random, surpriseLayers(pro))
 
     /** A small picture of a new mandala for the menu's comparison (Android: `Editing.CANDIDATE_SIZE`, fast glow). */
-    fun renderCandidate(params: MandalaParameters, threads: Int, ticket: RenderTicket, loader: ImageLoader?): Rendered? = try {
+    fun renderCandidate(params: MandalaParameters, fast: Boolean, threads: Int, ticket: RenderTicket, loader: ImageLoader?): Rendered? = try {
         val size = Editing.CANDIDATE_SIZE
         val result = MandalaRenderer.render(
             params,
-            RenderOptions(outputSize = size, threads = threads, isCancelled = ticket::isCancelled, imageLoader = loader, glowReferenceWidth = size * 2),
+            RenderOptions(outputSize = size, threads = threads, isCancelled = ticket::isCancelled, imageLoader = loader, glowReferenceWidth = if (fast) size * 2 else RenderOptions().glowReferenceWidth),
         )
         Rendered(IosBridge.rgba(result.image), size, size, 0)
     } catch (e: RenderCancelledException) {

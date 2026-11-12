@@ -10,4 +10,5 @@
     <string name="ios_favourite_label">Favori : %1$s</string>
     <string name="ios_picture_from_photos">Photos</string>
     <string name="ios_picture_from_files">Fichiers</string>
+    <string name="ios_select">Sélectionner</string>
 </resources>

@@ -44,7 +44,12 @@ struct MenuSheet: View {
         }
         .fileExporter(isPresented: $showExport, document: SettingsDocument(text: model.settingsFileText), contentType: .json,
                       defaultFilename: model.suggestedSettingsName) { result in
-            if case .success = result { model.settingsSaved(true) } else { model.settingsSaved(false) }
+            switch result {
+            case .success: model.settingsSaved(true)
+            case .failure(let error):
+                // Leaving the panel without saving is not a failure.
+                if (error as? CocoaError)?.code != .userCancelled { model.settingsSaved(false) }
+            }
             close()
         }
     }

@@ -108,6 +108,7 @@ struct FavoriteTile: View {
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(Texts.favouriteLabel(favorite.parameters.layers.map { Texts.style($0.style) }.joined(separator: ", ")))
         .accessibilityAddTraits(selected ? [.isButton, .isSelected] : .isButton)
+        .accessibilityAction(named: Texts.select) { toggle() }
     }
 }
 

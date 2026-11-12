@@ -14,7 +14,7 @@ extension EditorModel {
         let p = params
         Task {
             let last = await Task.detached(priority: .userInitiated) { PreviewStore.load(for: p) }.value
-            if preview == nil, let last { preview = last }
+            if preview == nil, params == p, let last { preview = last }
         }
     }
 
@@ -36,8 +36,13 @@ extension EditorModel {
     private func recordHistory(_ state: MandalaParameters) {
         shell.history.record(state: state)
         shell.refreshHistoryState()
+        // One save at a time, the newest state last (Android writes in turn).
         let entries = shell.history.entries
-        Task.detached(priority: .utility) { HistoryStore.save(entries) }
+        let previous = shell.historySaveTask
+        shell.historySaveTask = Task.detached(priority: .utility) {
+            await previous?.value
+            HistoryStore.save(entries)
+        }
     }
 
     func goBack() { navigate { shell.history.back() } }
@@ -52,6 +57,16 @@ extension EditorModel {
         selected = max(0, min(selected, target.layers.count - 1))
         settingsChanged()
         shell.refreshHistoryState()
+    }
+
+    /// Favourites are saved in turn off the main thread, the newest list last (Android: `collectLatest` on IO).
+    func saveFavoritesLater() {
+        let list = favorites
+        let previous = favoritesSaveTask
+        favoritesSaveTask = Task.detached(priority: .utility) {
+            await previous?.value
+            FavoritesStore.save(list)
+        }
     }
 
     // ── The dice ──
@@ -72,9 +87,10 @@ extension EditorModel {
         let ticket = RenderTicket()
         shell.candidateTicket = ticket
         shell.candidateTask = Task {
-            guard let result = await engine.candidate(next, ticket: ticket), !ticket.isCancelled() else { return }
+            guard let result = await engine.candidate(next, fast: fastPreview, ticket: ticket), !ticket.isCancelled() else { return }
             guard shell.candidate?.params == next else { return }
-            shell.candidate?.image = result.cgImage
+            // A picture that cannot be made keeps the old one (Android: the previous image stays).
+            if let image = result.cgImage { shell.candidate?.image = image }
             shell.candidate?.rendering = false
         }
     }
@@ -112,7 +128,8 @@ extension EditorModel {
     /// The new favourite's id, or nil without a preview to make its thumbnail from. Newest first, as on Android and the Mac.
     @discardableResult
     func keepFavorite(announce: Bool) -> String? {
-        guard let image = preview else { return nil }
+        // The thumbnail must be of the settings as they are now, so not while a preview is being drawn.
+        guard let image = preview, !rendering else { return nil }
         let favorite = IosBridge.shared.makeFavorite(
             id: UUID().uuidString.uppercased(), params: params, thumbnailBase64: Pictures.thumbnail(image),
             nowMillis: Int64(Date().timeIntervalSince1970 * 1000)
@@ -152,13 +169,15 @@ extension EditorModel {
             let text = await Task.detached(priority: .userInitiated) { () -> String? in
                 let scoped = url.startAccessingSecurityScopedResource()
                 defer { if scoped { url.stopAccessingSecurityScopedResource() } }
-                return try? String(contentsOf: url, encoding: .utf8)
+                // Lossy, as Android's decodeToString: a stray byte does not reject the file.
+                return (try? Data(contentsOf: url)).map { String(decoding: $0, as: UTF8.self) }
             }.value
             guard let text else {
                 message = Message(text: Texts.fileUnreadable)
                 return
             }
-            guard let opened = IosShell.shared.decodeFile(text: text) else {
+            let opened = await Task.detached(priority: .userInitiated) { IosShell.shared.decodeFile(text: text) }.value
+            guard let opened else {
                 message = Message(text: Texts.fileUnknown)
                 return
             }
@@ -169,7 +188,8 @@ extension EditorModel {
                     replace(settings)
                 }
             } else if let imported = opened.favorites {
-                let merged = IosShell.shared.mergeFavorites(list: favorites, imported: imported)
+                let current = favorites
+                let merged = await Task.detached(priority: .userInitiated) { IosShell.shared.mergeFavorites(list: current, imported: imported) }.value
                 favorites = merged.list
                 let added = Int(merged.added)
                 let already = imported.count - added
@@ -293,7 +313,9 @@ extension EditorModel {
 
     func savePreviewLater(_ p: MandalaParameters, _ image: CGImage) {
         shell.previewSaveTask?.cancel()
+        let previous = shell.previewSaveTask
         shell.previewSaveTask = Task.detached(priority: .utility) {
+            await previous?.value
             try? await Task.sleep(for: .seconds(1))
             guard !Task.isCancelled else { return }
             PreviewStore.save(p, image)

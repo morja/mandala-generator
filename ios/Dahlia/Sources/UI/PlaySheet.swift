@@ -135,12 +135,16 @@ private struct PlayPad: View {
         .aspectRatio(Self.padAspect, contentMode: .fit)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(Texts.playFieldDescription)
+        .accessibilityValue("\(Texts.percent(Int(state.x * Self.percentOf))), \(Texts.percent(Int(state.y * Self.percentOf)))")
         .accessibilityAdjustableAction { direction in
-            // VoiceOver: swipe up or down moves the point up or down.
+            // VoiceOver: swipe up or down moves the point up or down; the two actions move it across.
             model.playTouch(x: state.x, y: state.y + (direction == .increment ? -Self.step : Self.step))
         }
+        .accessibilityAction(named: Texts.playColour) { model.playTouch(x: state.x - Self.step, y: state.y) }
+        .accessibilityAction(named: Texts.playShape) { model.playTouch(x: state.x + Self.step, y: state.y) }
     }
 
+    private static let percentOf = 100.0
     private static let step = 0.1
 
     private func label(_ text: String) -> some View {

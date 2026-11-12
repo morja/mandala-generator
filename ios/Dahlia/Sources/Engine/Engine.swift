@@ -71,9 +71,9 @@ actor Engine {
     }
 
     /// The small picture of a new mandala for the menu's comparison; nil when cancelled.
-    func candidate(_ params: MandalaParameters, ticket: RenderTicket) -> Rendered? {
+    func candidate(_ params: MandalaParameters, fast: Bool, ticket: RenderTicket) -> Rendered? {
         if ticket.isCancelled() { return nil }
-        return IosShell.shared.renderCandidate(params: params, threads: threads, ticket: ticket, loader: loader)
+        return IosShell.shared.renderCandidate(params: params, fast: fast, threads: threads, ticket: ticket, loader: loader)
     }
 
     /// After a memory warning: the kept layer images go first.

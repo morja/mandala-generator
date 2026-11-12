@@ -4,6 +4,7 @@ import Foundation
 // Texts of the shell (WP-7): menu, history, favourites, play field, files. Keys are Android's (strings*.xml) or those
 // of ios/Dahlia/Strings; ios/scripts/check-sources fails when one is missing from the catalogue.
 extension Texts {
+    static let select = shellText("ios_select")
     static let undo = shellText("editor_undo")
     static let back = shellText("editor_back")
     static let forward = shellText("editor_forward")

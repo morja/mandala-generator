@@ -31,7 +31,7 @@ final class EditorModel {
     var rendering = true
     private(set) var previewError: String?
     /// Saved on every change (the list rules are the shared module's `Favorites`).
-    var favorites: [Favorite] { didSet { FavoritesStore.save(favorites) } }
+    var favorites: [Favorite] { didSet { saveFavoritesLater() } }
     /// History, dice, play field and the picture's size (WP-7); its operations are in EditorModel+Shell.swift.
     let shell = ShellState()
     var message: Message?
@@ -58,6 +58,7 @@ final class EditorModel {
     /// When the settings last changed, for the latency log while a slider is dragged.
     @ObservationIgnored private var changedAt = Date()
     @ObservationIgnored private var saveTask: Task<Void, Never>?
+    @ObservationIgnored var favoritesSaveTask: Task<Void, Never>?
     @ObservationIgnored private var plainTask: Task<Void, Never>?
     @ObservationIgnored private var plainTicket: RenderTicket?
     @ObservationIgnored private var plainFor: (params: MandalaParameters, fast: Bool)?

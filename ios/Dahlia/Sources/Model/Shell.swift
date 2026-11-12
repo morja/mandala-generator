@@ -55,6 +55,7 @@ final class ShellState {
     @ObservationIgnored var playBase: MandalaParameters?
     @ObservationIgnored var playLand: PlayLandscape?
     @ObservationIgnored var previewSaveTask: Task<Void, Never>?
+    @ObservationIgnored var historySaveTask: Task<Void, Never>?
 
     static let previewFractionKey = "previewFraction"
 
