@@ -21,7 +21,7 @@ settings:
     SWIFT_STRICT_CONCURRENCY: complete
     CODE_SIGN_STYLE: Automatic
     TARGETED_DEVICE_FAMILY: "1"
-    MARKETING_VERSION: "0.1"
+    MARKETING_VERSION: "1.0"
     CURRENT_PROJECT_VERSION: "1"
 targets:
   Dahlia:
@@ -68,10 +68,9 @@ targets:
         ASSETCATALOG_COMPILER_APPICON_NAME: $(DAHLIA_APP_ICON)
         ENABLE_USER_SCRIPT_SANDBOXING: NO
         OTHER_LDFLAGS: ["-lc++"]
-        # The App Group (approval A2, group.<bundle id> from the xcconfig) for the Pro flag and the widget. Simulator
-        # builds only: a device build needs the group on the App IDs, which Xcode adds once an account is signed in
-        # (IOS-9, IOS-10). Then this line and the widget's lose their [sdk=…] condition. Without it `AppGroup.container` is nil.
-        "CODE_SIGN_ENTITLEMENTS[sdk=iphonesimulator*]": Config/Dahlia.entitlements
+        # The App Group (approval A2, group.<bundle id> from the xcconfig) for the Pro flag and the widget, on device
+        # and simulator since 12 November 2026; automatic signing adds the group to the App IDs (IOS-9, IOS-10).
+        CODE_SIGN_ENTITLEMENTS: Config/Dahlia.entitlements
   # The home screen widget "Mandala of the day" (WP-10, ADR-0020 amended for the iPhone). Never links MandalaCore: an
   # extension may use about 30 MB, so it only shows the pictures the app rendered into the App Group.
   DahliaWidget:
@@ -89,7 +88,7 @@ targets:
         INFOPLIST_FILE: Config/Widget-Info.plist
         INFOPLIST_KEY_CFBundleDisplayName: $(DAHLIA_DISPLAY_NAME)
         SKIP_INSTALL: YES
-        "CODE_SIGN_ENTITLEMENTS[sdk=iphonesimulator*]": Config/Widget.entitlements
+        CODE_SIGN_ENTITLEMENTS: Config/Widget.entitlements
   # Parity test (PLAN-4 section 3.11): renders the fixtures through the framework, compared with the JVM.
   # Not hosted in the app, so it runs without launching it; started by ios/scripts/check-full.
   DahliaTests:
