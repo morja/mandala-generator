@@ -2,6 +2,7 @@ package com.mathis.mandala.app
 
 import com.mathis.mandala.editing.Editing
 import com.mathis.mandala.editing.Favorites
+import com.mathis.mandala.editing.MyQuotes
 import com.mathis.mandala.core.Favorite
 import org.junit.Assert.assertEquals
 import org.junit.Rule

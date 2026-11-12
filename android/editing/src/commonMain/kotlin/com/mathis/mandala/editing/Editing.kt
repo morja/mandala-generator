@@ -137,6 +137,12 @@ object Editing {
         /** Glitter above about 0.6 is garish confetti. */
         val effectsGlitter = 0.0..0.6
         val textGlow = 0.0..3.0
+        /** The emblem's turn in degrees, either way. */
+        val emblemRotation = -180.0..180.0
+        /** Copies of a drawn line or spray stroke around the centre. */
+        val drawSymmetry = 1..16
+        /** Spray brush diameter as a fraction of the canvas width. */
+        val sprayBrush = 0.01..0.2
         /** Brighter colour backgrounds drown the mandala, whose lines are added with Screen. */
         val backgroundBrightness = 0.0..0.6
     }

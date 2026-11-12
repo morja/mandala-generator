@@ -757,7 +757,7 @@ private fun EmblemTab(em: EmblemLayerSettings, vm: EditorViewModel, position: Po
     Group(stringResource(R.string.controls_shape), changed = differs(em.size to defaults.size, em.weight to defaults.weight, em.rotation to defaults.rotation)) {
         ValueSlider(stringResource(R.string.controls_size), em.size, Editing.Ranges.emblemSize.floats(), default = defaults.size) { v -> update { it.copy(size = v) } }
         ValueSlider(stringResource(R.string.controls_weight), em.weight, Editing.Ranges.emblemWeight.floats(), default = defaults.weight) { v -> update { it.copy(weight = v) } }
-        ValueSlider(stringResource(R.string.controls_rotate), em.rotation, -180f..180f, default = defaults.rotation, display = { "${it.roundToInt()}°" }) { v ->
+        ValueSlider(stringResource(R.string.controls_rotate), em.rotation, Editing.Ranges.emblemRotation.floats(), default = defaults.rotation, display = { "${it.roundToInt()}°" }) { v ->
             update { it.copy(rotation = v) }
         }
     }
@@ -1049,7 +1049,7 @@ private fun DrawTab(params: MandalaParameters, vm: EditorViewModel) {
     }
     when (tool) {
         DrawTool.LINES -> {
-            SteppedSlider(stringResource(R.string.controls_symmetry), lines.symmetry.coerceIn(1, 16), 1..16, default = DrawingLayerSettings().symmetry) { v -> vm.updateDrawing { it.copy(symmetry = v) } }
+            SteppedSlider(stringResource(R.string.controls_symmetry), lines.symmetry.coerceIn(Editing.Ranges.drawSymmetry.first, Editing.Ranges.drawSymmetry.last), Editing.Ranges.drawSymmetry, default = DrawingLayerSettings().symmetry) { v -> vm.updateDrawing { it.copy(symmetry = v) } }
             ColourGroup(stringResource(R.string.controls_line_colour), lines.currentHue, lines.currentSaturation, lines.currentBrightness,
                 DrawingLayerSettings().let { Triple(it.currentHue, it.currentSaturation, it.currentBrightness) }, initiallyOpen = true) { h, s, b ->
                 vm.updateDrawing { it.copy(currentHue = h, currentSaturation = s, currentBrightness = b) }
@@ -1064,8 +1064,8 @@ private fun DrawTab(params: MandalaParameters, vm: EditorViewModel) {
             }
         }
         DrawTool.SPRAY -> {
-            SteppedSlider(stringResource(R.string.controls_symmetry), spray.symmetry.coerceIn(1, 16), 1..16, default = GraffitiLayerSettings().symmetry) { v -> vm.updateGraffiti { it.copy(symmetry = v) } }
-            ValueSlider(stringResource(R.string.controls_brush_size), spray.currentBrushSize, 0.01f..0.2f, default = GraffitiLayerSettings().currentBrushSize) { v -> vm.updateGraffiti { it.copy(currentBrushSize = v) } }
+            SteppedSlider(stringResource(R.string.controls_symmetry), spray.symmetry.coerceIn(Editing.Ranges.drawSymmetry.first, Editing.Ranges.drawSymmetry.last), Editing.Ranges.drawSymmetry, default = GraffitiLayerSettings().symmetry) { v -> vm.updateGraffiti { it.copy(symmetry = v) } }
+            ValueSlider(stringResource(R.string.controls_brush_size), spray.currentBrushSize, Editing.Ranges.sprayBrush.floats(), default = GraffitiLayerSettings().currentBrushSize) { v -> vm.updateGraffiti { it.copy(currentBrushSize = v) } }
             ValueSlider(stringResource(R.string.controls_paint), spray.currentOpacity, default = GraffitiLayerSettings().currentOpacity) { v -> vm.updateGraffiti { it.copy(currentOpacity = v) } }
             ColourGroup(stringResource(R.string.controls_spray_colour), spray.currentHue, spray.currentSaturation, spray.currentBrightness,
                 GraffitiLayerSettings().let { Triple(it.currentHue, it.currentSaturation, it.currentBrightness) }, initiallyOpen = true) { h, s, b ->

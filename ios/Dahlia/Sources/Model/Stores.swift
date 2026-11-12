@@ -13,6 +13,7 @@ enum AppFiles {
     static let settings = folder.appendingPathComponent("last-settings.json")
     static let favorites = folder.appendingPathComponent("favorites.json")
     static let palettes = folder.appendingPathComponent("palettes.json")
+    static let myQuotes = folder.appendingPathComponent("my-quotes.json")
 
     /// Writes to a temporary file and moves it over the old one, so a crash never leaves half a file.
     static func write(_ text: String, to url: URL) throws {
@@ -59,6 +60,34 @@ enum PalettesStore {
 
     static func save(_ palettes: [CustomPalette]) {
         try? AppFiles.write(IosEditing.shared.encodePalettes(palettes: palettes), to: AppFiles.palettes)
+    }
+}
+
+/// The user's own quotes in `my-quotes.json`, as Android's `MyQuotesStore`.
+enum MyQuotesStore {
+    static func load() -> [Quote] {
+        guard let text = try? String(contentsOf: AppFiles.myQuotes, encoding: .utf8) else { return [] }
+        return IosEditingParts.shared.decodeQuotes(json: text)
+    }
+
+    static func save(_ quotes: [Quote]) {
+        try? AppFiles.write(IosEditingParts.shared.encodeQuotes(quotes: quotes), to: AppFiles.myQuotes)
+    }
+}
+
+/// The quote languages switched on in the quote list, kept across starts; until the user chooses, the
+/// device's preferred languages that have quotes, then English (ADR-0019, as Android's `QuoteLanguages`).
+enum QuoteLanguagesStore {
+    private static let key = "quoteLanguages"
+
+    static func load() -> [String] {
+        let saved = UserDefaults.standard.stringArray(forKey: key)
+        let device = Locale.preferredLanguages.map { Locale(identifier: $0).language.languageCode?.identifier ?? $0 }
+        return IosEditingParts.shared.quoteLanguages(saved: saved, preferred: device)
+    }
+
+    static func save(_ languages: [String]) {
+        UserDefaults.standard.set(languages, forKey: key)
     }
 }
 

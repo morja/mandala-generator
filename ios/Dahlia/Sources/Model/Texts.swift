@@ -119,6 +119,194 @@ enum Texts {
     static let photos = text("ios_picture_from_photos")
     static let files = text("ios_picture_from_files")
 
+
+    // ── Emblem, Text and Draw tabs, moving on the picture (WP-6) ──
+    static let emblemShow = text("controls_emblem_show")
+    static let emblemOffNote = text("controls_emblem_off_note")
+    static let randomEmblem = text("controls_random_emblem")
+    static let proNoteEmblem = text("controls_pro_note_emblem")
+    static let motif = text("controls_motif")
+    static let variant = text("controls_variant")
+    static let petals = text("controls_petals")
+    static let organic = text("controls_organic")
+    static let newShape = text("controls_new_shape")
+    static let branches = text("controls_branches")
+    static let roots = text("controls_roots")
+    static let styleAndFrame = text("controls_style_and_frame")
+    static let frame = text("controls_frame")
+    static let size = text("controls_size")
+    static let weight = text("controls_weight")
+    static let rotate = text("controls_rotate")
+    static let spread = text("controls_spread")
+    static let glow = text("controls_glow")
+    static let textShow = text("controls_text_show")
+    static let textOffNote = text("controls_text_off_note")
+    static let randomTextLook = text("controls_random_text_look")
+    static let proNoteText = text("controls_pro_note_text")
+    static let words = text("controls_words")
+    static let collection = text("controls_collection")
+    static let newQuote = text("controls_new_quote")
+    static let keep = text("controls_keep")
+    static let kept = text("controls_kept")
+    static let textField = text("controls_text_field")
+    static let author = text("controls_author")
+    static let showAuthor = text("controls_show_author")
+    static let quotes = text("controls_quotes")
+    static let quotesCollection = text("controls_quotes_collection")
+    static let quotesPublicDomain = text("controls_quotes_public_domain")
+    static let yourQuotes = text("controls_your_quotes")
+    static let removeQuote = text("controls_remove_quote")
+    static let font = text("controls_font")
+    static let sizeAndPlace = text("controls_size_and_place")
+    static let width = text("controls_width")
+    static let tracking = text("controls_tracking")
+    static let height = text("controls_height")
+    static let light = text("controls_light")
+    static let cloud = text("controls_cloud")
+    static let cloudSize = text("controls_cloud_size")
+    static let cloudColour = text("controls_cloud_colour")
+    static let shadow = text("controls_shadow")
+    static let shadowColour = text("controls_shadow_colour")
+    static let moveOnImage = text("controls_move_on_image")
+    static let done = text("controls_done")
+    static let drawOnImage = text("controls_draw_on_image")
+    static let drawShowLines = text("controls_draw_show_lines")
+    static let drawShowSpray = text("controls_draw_show_spray")
+    static let undo = text("controls_undo")
+    static let clear = text("controls_clear")
+    static let symmetry = text("controls_symmetry")
+    static let lineColour = text("controls_line_colour")
+    static let lineAndLight = text("controls_line_and_light")
+    static let brushSize = text("controls_brush_size")
+    static let paint = text("controls_paint")
+    static let sprayColour = text("controls_spray_colour")
+    static let softnessAndBlending = text("controls_softness_and_blending")
+    static let softness = text("controls_softness")
+    static let drawHint = text("editor_draw_hint")
+    static let moveEmblemHint = text("editor_move_emblem_hint")
+    static let moveTextHint = text("editor_move_text_hint")
+    static let proMarkDescription = text("editor_pro_mark_description")
+    static let withoutEffects = text("editor_without_effects")
+    /// The Pro mark on the picture: the brand word, the same in every language (as on Android).
+    static let proMark = "Pro"
+
+    static func moveLayerHint(_ n: Int) -> String { format("editor_move_layer_hint", n) }
+    static func emblemShapeSeed(_ seed: String) -> String { format("controls_emblem_shape_seed", seed) }
+    static func drawTool(_ tool: DrawTool, count: Int) -> String { "\(drawTool(tool)) (\(count))" }
+
+    static func drawTool(_ tool: DrawTool) -> String {
+        switch tool {
+        case .lines: text("draw_tool_lines")
+        case .spray: text("draw_tool_spray")
+        default: tool.name
+        }
+    }
+
+    static func motif(_ m: EmblemMotif) -> String {
+        switch m {
+        case .om: text("motif_om")
+        case .treeOfLife: text("motif_tree_of_life")
+        case .flowerOfLife: text("motif_flower_of_life")
+        case .lotus: text("motif_lotus")
+        case .yinYang: text("motif_yin_yang")
+        case .dharmaWheel: text("motif_dharma_wheel")
+        case .unalome: text("motif_unalome")
+        case .tripleMoon: text("motif_triple_moon")
+        case .sriYantra: text("motif_sri_yantra")
+        default: m.displayName
+        }
+    }
+
+    static func flowerVariant(_ v: EmblemFlowerVariant) -> String {
+        switch v {
+        case .seed: text("flower_seed")
+        case .flower: text("flower_flower")
+        case .fruit: text("flower_fruit")
+        case .metatron: text("flower_metatron")
+        default: v.displayName
+        }
+    }
+
+    static func rendering(_ r: EmblemRendering) -> String {
+        switch r {
+        case .line: text("rendering_line")
+        case .doubleLine: text("rendering_double_line")
+        case .filled: text("rendering_filled")
+        case .beads: text("rendering_beads")
+        default: r.displayName
+        }
+    }
+
+    static func frame(_ f: EmblemFrame) -> String {
+        switch f {
+        case .none: text("frame_none")
+        case .ring: text("frame_ring")
+        case .doubleRing: text("frame_double_ring")
+        case .lotus: text("frame_lotus")
+        case .gates: text("frame_gates")
+        case .enso: text("frame_enso")
+        default: f.displayName
+        }
+    }
+
+    static func glowMode(_ m: EmblemGlowMode) -> String {
+        switch m {
+        case .light: text("glow_light")
+        case .shadow: text("glow_shadow")
+        default: m.displayName
+        }
+    }
+
+    static func slider(_ s: EmblemSlider) -> String {
+        switch s {
+        case .organic: organic
+        case .branches: branches
+        case .size: size
+        case .weight: weight
+        case .rotate: rotate
+        case .offsetX: across
+        case .offsetY: upAndDown
+        case .colourPosition: position
+        case .spread: spread
+        case .glow: glow
+        case .opacity: opacity
+        default: s.name
+        }
+    }
+
+    static func slider(_ s: TextSlider) -> String {
+        switch s {
+        case .size: size
+        case .width: width
+        case .tracking: tracking
+        case .height: height
+        case .glow: glow
+        case .cloud: cloud
+        case .cloudSize: cloudSize
+        case .shadow: shadow
+        case .hue, .cloudHue, .shadowHue: hue
+        case .saturation, .cloudSaturation, .shadowSaturation: saturation
+        case .brightness, .cloudBrightness, .shadowBrightness: brightness
+        default: s.name
+        }
+    }
+
+    static func slider(_ s: DrawSlider) -> String {
+        switch s {
+        case .lineSymmetry, .spraySymmetry: symmetry
+        case .lineWeight: weight
+        case .lineGlow: glow
+        case .lineOpacity, .sprayOpacity: opacity
+        case .brushSize: brushSize
+        case .paint: paint
+        case .softness: softness
+        case .lineHue, .sprayHue: hue
+        case .lineSaturation, .spraySaturation: saturation
+        case .lineBrightness, .sprayBrightness: brightness
+        default: s.name
+        }
+    }
+
     static func saveSquare(_ size: Int) -> String { format("ios_save_square", size, size) }
     static func savedToPhotos(_ size: Int) -> String { format("message_saved_to_pictures", size, size) } // iOS variant: Photos
     static func layerHide(_ n: Int) -> String { format("controls_layer_hide", n) }
@@ -132,6 +320,13 @@ enum Texts {
     static func layerMoveDown(_ n: Int) -> String { format("controls_layer_move_down", n) }
     static func withPro(_ label: String) -> String { format("controls_with_pro", label) }
     static func blendSummary(_ mode: LayerBlendMode, _ opacity: Double) -> String { format("controls_blend_summary", blend(mode), Int((opacity * 100).rounded())) }
+    /// The blend summary cut after the mode's name, so a row can shorten the name and keep the percentage
+    /// whole; the cut follows the language's own format.
+    static func blendSummaryParts(_ mode: LayerBlendMode, _ opacity: Double) -> (head: String, tail: String) {
+        let full = blendSummary(mode, opacity)
+        guard let range = full.range(of: blend(mode)) else { return (full, "") }
+        return (String(full[..<range.upperBound]), String(full[range.upperBound...]))
+    }
     static func groupOpen(_ title: String) -> String { format("controls_group_open", title) }
     static func groupClose(_ title: String) -> String { format("controls_group_close", title) }
     static let groupStateOpen = text("controls_group_state_open")
