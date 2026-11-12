@@ -184,6 +184,15 @@ private struct DebugMark: View {
 enum WidgetImage {
     static func load(_ url: URL, maxPixels: CGFloat) -> CGImage? {
         guard maxPixels > 0, let source = CGImageSourceCreateWithURL(url as CFURL, [kCGImageSourceShouldCache: false] as CFDictionary) else { return nil }
+        // The app writes each picture at the size it is shown: then it is decoded once as it is, with no scaled copy
+        // beside it (the thumbnail call keeps the full decode and the copy at the same time).
+        let properties = CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [CFString: Any]
+        let side = max(properties?[kCGImagePropertyPixelWidth] as? Int ?? .max, properties?[kCGImagePropertyPixelHeight] as? Int ?? .max)
+        if CGFloat(side) <= maxPixels.rounded(.up) {
+            let image = CGImageSourceCreateImageAtIndex(source, 0, [kCGImageSourceShouldCacheImmediately: true] as CFDictionary)
+            WidgetDebug.recordFootprint("picture \(side)px as it is")
+            return image
+        }
         let options: [CFString: Any] = [
             kCGImageSourceCreateThumbnailFromImageAlways: true,
             kCGImageSourceCreateThumbnailWithTransform: true,

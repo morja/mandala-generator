@@ -23,7 +23,8 @@ extension EditorModel {
     /// `-widgetMark NO` turns it off for screenshots). Release builds never mark them.
     var widgetMark: Bool {
         #if DEBUG
-        UserDefaults.standard.object(forKey: Self.widgetMarkKey) as? Bool ?? true
+        // A launch argument arrives as text ("NO"), so `bool(forKey:)` reads it, not a cast.
+        UserDefaults.standard.object(forKey: Self.widgetMarkKey) == nil ? true : UserDefaults.standard.bool(forKey: Self.widgetMarkKey)
         #else
         false
         #endif
