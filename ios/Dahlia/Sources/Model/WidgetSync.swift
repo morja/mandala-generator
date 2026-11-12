@@ -195,12 +195,13 @@ final class WidgetSync {
             drawn += 1
         }
         // The wallpaper pairs of today and tomorrow for the Shortcuts action, after the widgets (WP-11).
+        var wallpapersDrawn = 0
         if let source = inputs.wallpaper, !ticket.isCancelled() {
             let today = WidgetDay.number(of: Date())
             let wallpapers = [today, today + 1].compactMap { source.job(day: $0) }
             for job in wallpapers where !WallpaperFiles.exists(job) {
                 if ticket.isCancelled() { break }
-                if await WallpaperFiles.render(job, painter: painter, ticket: ticket) { drawn += 1 }
+                if await WallpaperFiles.ensure(job, painter: painter, ticket: ticket).drawn { wallpapersDrawn += 1 }
             }
             if !ticket.isCancelled() { WallpaperFiles.keepOnly(wallpapers) }
         }
@@ -209,7 +210,7 @@ final class WidgetSync {
         write(index, old: current)
         removeUnused(in: folder, keep: index.files.union(old?.files ?? []).union(["index.json"]))
         if !placed.isEmpty || inputs.wallpaper != nil { scheduleRefresh(after: WidgetDay.start(of: (days.first?.number ?? WidgetDay.number(of: Date())) + 1)) }
-        Engine.trace("widgets placed=\(placed.count) favourites=\(favourites.count) drawn=\(drawn)/\(jobs.count) " +
+        Engine.trace("widgets placed=\(placed.count) favourites=\(favourites.count) drawn=\(drawn)/\(jobs.count) wallpapers=\(wallpapersDrawn) " +
                      "cancelled=\(ticket.isCancelled()) in \(Int(Date().timeIntervalSince(started) * 1000)) ms")
     }
 
@@ -322,13 +323,23 @@ actor WidgetPainter {
         ) { _ in }?.cgImage
     }
 
-    /// The wallpaper pair filling the screen (Android's `DailyWallpaper.setNext`); nil when cancelled or failed.
-    func wallpaper(_ job: WallpaperJob, ticket: RenderTicket) -> WallpaperPair? {
-        if ticket.isCancelled() { return nil }
-        let drawn = IosSave.shared.drawWallpaper(params: job.params, width: Int32(job.width), height: Int32(job.height),
-                                                 threads: IosBridge.shared.processors(), ticket: ticket, imageLoader: loader, textRenderer: text) { _ in }
-        guard let drawn, !ticket.isCancelled() else { return nil }
-        return drawn.pair(finish: job.finish, homeBrightness: job.homeBrightness)
+    /// The wallpaper pair filling the screen (Android's `DailyWallpaper.setNext`), drawn and written unless its files
+    /// exist; the Kotlin buffers go right after. Whether the files exist now, and whether they were drawn here.
+    func ensureWallpaper(_ job: WallpaperJob, ticket: RenderTicket) -> (ready: Bool, drawn: Bool) {
+        if WallpaperFiles.exists(job) { return (true, false) }
+        if ticket.isCancelled() { return (false, false) }
+        defer { IosBridge.shared.collect() }
+        let pngs: (lock: Data, home: Data)? = {
+            guard let drawn = IosSave.shared.drawWallpaper(params: job.params, width: Int32(job.width), height: Int32(job.height),
+                                                           threads: IosBridge.shared.processors(), ticket: ticket, imageLoader: loader,
+                                                           textRenderer: text, progress: { _ in }),
+                  !ticket.isCancelled() else { return nil }
+            let pair = drawn.pair(finish: job.finish, homeBrightness: job.homeBrightness)
+            guard let lock = pair.lock.cgImage.flatMap({ Pictures.png($0) }), let home = pair.home.cgImage.flatMap({ Pictures.png($0) }) else { return nil }
+            return (lock, home)
+        }()
+        guard let pngs, !ticket.isCancelled() else { return (false, false) }
+        return (WallpaperFiles.write(lock: pngs.lock, home: pngs.home, for: job), true)
     }
 
     /// The Kotlin buffers of the drawn pictures go at once.

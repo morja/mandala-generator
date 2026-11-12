@@ -105,7 +105,7 @@ struct DailyPage: View {
     @Environment(\.openURL) private var openURL
 
     var body: some View {
-        let chosen = model.dailyChosen
+        let chosen = model.dailyShown
         let count = model.favorites.filter { chosen?.contains($0.id) ?? true }.count
         VStack(alignment: .leading, spacing: 0) {
             BackRow(label: Texts.menuBack) { page = .main }
@@ -172,7 +172,7 @@ struct DailyFavouritesPage: View {
     @Environment(\.tokens) private var t
 
     var body: some View {
-        let chosen = model.dailyChosen
+        let chosen = model.dailyShown
         VStack(alignment: .leading, spacing: 0) {
             BackRow(label: Texts.dailyWallpaper) { page = .daily }
             Text(Texts.dailyFavourites).textRole(.title).foregroundStyle(t.text).padding(.top, Spacing.sm)

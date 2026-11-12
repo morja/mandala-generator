@@ -38,10 +38,10 @@
     <string name="menu_daily_about">Uno dei tuoi preferiti alla volta, il successivo ogni mattina alle 4. Su iPhone lo imposta un\'automazione di Comandi rapidi; la configuri una sola volta.</string>
     <string name="menu_daily_widget_note">Il widget «Mandala del giorno» della schermata Home mostra gli stessi preferiti se non ne ha uno suo; con Pro cambia ogni mattina.</string>
     <string name="ios_daily_automation_title">Configura l\'automazione</string>
-    <string name="ios_daily_automation_steps">1. Apri Comandi rapidi, tocca Automazione, poi Nuova automazione.\n2. Scegli Ora del giorno, imposta un orario come 7:00 e Ogni giorno, scegli Esegui immediatamente e tocca Avanti.\n3. Tocca Nuova automazione vuota e aggiungi Mandala del giorno di Dahlia, con Schermo su Schermata di blocco.\n4. Aggiungi Imposta foto sfondo, scegli la schermata di blocco e disattiva Mostra anteprima.\n5. Per la schermata Home, aggiungi di nuovo Mandala del giorno con Schermata Home e un secondo Imposta foto sfondo per la schermata Home.</string>
+    <string name="ios_daily_automation_steps">1. In Comandi rapidi, crea un nuovo comando e aggiungi Mandala del giorno di Dahlia, con Schermo su Schermata di blocco.\n2. Aggiungi poi Imposta foto sfondo, scegli la schermata di blocco e disattiva Mostra anteprima.\n3. Per la schermata Home, aggiungi di nuovo Mandala del giorno con Schermata Home e un secondo Imposta foto sfondo per la schermata Home.\n4. Per farlo eseguire ogni giorno, aggiungi un\'automazione con Ora del giorno, un orario come 7:00, Ogni giorno ed Esegui immediatamente.</string>
     <string name="ios_daily_open_shortcuts">Apri Comandi rapidi</string>
     <string name="ios_daily_ready_shortcut">Aggiungi il comando già pronto</string>
-    <string name="ios_daily_ready_note">Il comando già pronto imposta entrambe le schermate. Aggiungilo e, al passo 3, aggiungi Esegui comando rapido con quel comando al posto dei passi da 3 a 5.</string>
+    <string name="ios_daily_ready_note">Il comando già pronto contiene già i passi da 1 a 3. Aggiungilo, poi esegui il passo 4 per quel comando.</string>
     <string name="ios_daily_needs_pro">L\'azione di Comandi rapidi «Mandala del giorno» è inclusa con Pro; il widget mostra il primo preferito selezionato.</string>
     <string name="ios_intent_title">Mandala del giorno</string>
     <string name="ios_intent_description">Il mandala di oggi tra i tuoi preferiti, a schermo intero, pronto per Imposta foto sfondo.</string>
@@ -50,4 +50,5 @@
     <!-- Siri and Spotlight phrases of the action; ${applicationName} is the app's name. -->
     <string name="shortcut_phrase_1">${applicationName} mandala del giorno</string>
     <string name="shortcut_phrase_2">Mandala del giorno di ${applicationName}</string>
+    <string name="pair_home_screen">Schermata Home</string>
 </resources>

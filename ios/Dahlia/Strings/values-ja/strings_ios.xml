@@ -38,10 +38,10 @@
     <string name="menu_daily_about">お気に入りを1枚ずつ、毎朝4時に次の1枚へ。iPhoneでは「ショートカット」のオートメーションが設定します。設定は1回だけです。</string>
     <string name="menu_daily_widget_note">ホーム画面のウィジェット「今日のマンダラ」も、専用のお気に入りを選んでいなければ同じお気に入りを表示します。Pro なら毎朝替わります。</string>
     <string name="ios_daily_automation_title">オートメーションを設定</string>
-    <string name="ios_daily_automation_steps">1. 「ショートカット」を開き、「オートメーション」をタップして、「新規オートメーション」をタップします。\n2. 「時刻」を選び、7:00 などの時刻と「毎日」を設定し、「すぐに実行」を選んで「次へ」をタップします。\n3. 「新規空のオートメーション」をタップし、Dahlia の「今日のマンダラ」を追加して、「画面」を「ロック画面」にします。\n4. 「壁紙の写真を設定」を追加し、ロック画面を選んで「プレビューを表示」をオフにします。\n5. ホーム画面用に、「今日のマンダラ」を「ホーム画面」でもう一度追加し、ホーム画面用の「壁紙の写真を設定」をもう1つ追加します。</string>
+    <string name="ios_daily_automation_steps">1. 「ショートカット」で新規ショートカットを作り、Dahlia の「今日のマンダラ」を追加して、「画面」を「ロック画面」にします。\n2. その後に「壁紙の写真を設定」を追加し、ロック画面を選んで「プレビューを表示」をオフにします。\n3. ホーム画面用に、「今日のマンダラ」を「ホーム画面」でもう一度追加し、ホーム画面用の「壁紙の写真を設定」をもう1つ追加します。\n4. 毎日実行するには、「時刻」のオートメーションを追加し、7:00 などの時刻、「毎日」、「すぐに実行」を設定します。</string>
     <string name="ios_daily_open_shortcuts">「ショートカット」を開く</string>
     <string name="ios_daily_ready_shortcut">用意済みのショートカットを追加</string>
-    <string name="ios_daily_ready_note">用意済みのショートカットは両方の画面を設定します。追加したら、手順3〜5の代わりに、手順3でそのショートカットを指定した「ショートカットを実行」を追加します。</string>
+    <string name="ios_daily_ready_note">用意済みのショートカットには手順1〜3が入っています。追加したら、そのショートカットに手順4を行います。</string>
     <string name="ios_daily_needs_pro">ショートカットのアクション「今日のマンダラ」は Pro に含まれます。ウィジェットは最初にチェックしたお気に入りを表示します。</string>
     <string name="ios_intent_title">今日のマンダラ</string>
     <string name="ios_intent_description">お気に入りの中から今日のマンダラを、画面いっぱいに。「壁紙の写真を設定」にそのまま使えます。</string>
@@ -50,4 +50,5 @@
     <!-- Siri and Spotlight phrases of the action; ${applicationName} is the app's name. -->
     <string name="shortcut_phrase_1">${applicationName} 今日のマンダラ</string>
     <string name="shortcut_phrase_2">${applicationName} の今日のマンダラ</string>
+    <string name="pair_home_screen">ホーム画面</string>
 </resources>

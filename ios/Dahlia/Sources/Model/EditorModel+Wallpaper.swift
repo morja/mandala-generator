@@ -51,6 +51,8 @@ extension EditorModel {
         wallpaper.ticket = ticket
         wallpaper.rendering = true
         wallpaper.task = Task {
+            // A failed drawing stops the busy bar too; a cancelled one leaves it to the newer request.
+            defer { if !ticket.isCancelled() { wallpaper.rendering = false } }
             let frame: DrawnFrame
             if let last = wallpaper.drawn, last.params == p, last.aspect == aspect {
                 frame = last.frame
@@ -65,7 +67,6 @@ extension EditorModel {
             guard !ticket.isCancelled() else { return }
             wallpaper.lock = pair.lock.cgImage
             wallpaper.home = pair.home.cgImage
-            wallpaper.rendering = false
         }
     }
 
@@ -84,6 +85,14 @@ extension EditorModel {
         DailyChoiceStore.save(chosen)
         dailyChosen = chosen
         widgetsChanged()
+    }
+
+    /// The ticked favourites that still exist, nil for all: when every ticked one was deleted, all take turns
+    /// (`DailyTurn.turn`), and the picker shows them all ticked.
+    var dailyShown: Set<String>? {
+        guard let chosen = dailyChosen else { return nil }
+        let left = chosen.intersection(favorites.map(\.id))
+        return left.isEmpty ? nil : left
     }
 
     /// Today's favourite of the daily turn (with Pro; the first one without), for the daily page.

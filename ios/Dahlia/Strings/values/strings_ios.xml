@@ -43,10 +43,10 @@
     <string name="menu_daily_about">One of your favourites at a time, the next one every morning at 4 o\'clock. On the iPhone a Shortcuts automation sets it; you set it up once.</string>
     <string name="menu_daily_widget_note">The home screen widget “Mandala of the day” shows the same favourites unless it has one of its own; with Pro it changes every morning.</string>
     <string name="ios_daily_automation_title">Set up the automation</string>
-    <string name="ios_daily_automation_steps">1. Open Shortcuts, tap Automation, then New Automation.\n2. Choose Time of Day, pick a time such as 7:00 and Daily, choose Run Immediately and tap Next.\n3. Tap New Blank Automation and add Mandala of the day from Dahlia, with Screen set to Lock screen.\n4. Add Set Wallpaper Photo, choose the lock screen and turn off Show Preview.\n5. For the home screen, add Mandala of the day again with Home screen and a second Set Wallpaper Photo for the home screen.</string>
+    <string name="ios_daily_automation_steps">1. In Shortcuts, make a new shortcut and add Mandala of the day from Dahlia, with Screen set to Lock screen.\n2. Add Set Wallpaper Photo after it, choose the lock screen and turn off Show Preview.\n3. For the home screen, add Mandala of the day again with Home screen and a second Set Wallpaper Photo for the home screen.\n4. Let it run every day: add an automation with Time of Day, a time such as 7:00, Daily and Run Immediately.</string>
     <string name="ios_daily_open_shortcuts">Open Shortcuts</string>
     <string name="ios_daily_ready_shortcut">Add the ready shortcut</string>
-    <string name="ios_daily_ready_note">The ready shortcut sets both screens. Add it, then in step 3 add Run Shortcut with it instead of steps 3 to 5.</string>
+    <string name="ios_daily_ready_note">The ready shortcut already holds steps 1 to 3. Add it, then do step 4 for it.</string>
     <string name="ios_daily_needs_pro">The Shortcuts action “Mandala of the day” comes with Pro; the widget shows the first ticked favourite.</string>
     <string name="ios_intent_title">Mandala of the day</string>
     <string name="ios_intent_description">Today\'s mandala from your favourites, filling the screen, ready for Set Wallpaper Photo.</string>
@@ -56,4 +56,6 @@
     <string name="shortcut_phrase_1">${applicationName} mandala of the day</string>
     <string name="shortcut_phrase_2">Mandala of the day from ${applicationName}</string>
     <string name="ios_debug_wallpaper_last_run">Debug build, last run of the Shortcuts action: %1$s</string>
+    <!-- The home screen by Apple's name where it differs from Android's (German "Home-Bildschirm"). -->
+    <string name="pair_home_screen">Home screen</string>
 </resources>

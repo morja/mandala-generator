@@ -78,7 +78,8 @@ def build():
         locs = {}
         for lang in LANGS.values():
             if key in overrides:
-                value = ios.get(lang, {}).get(key, ios["en"][key] if lang == "en" else None)
+                # A language the iOS file lacks takes the iOS English text: iOS shows the bare key otherwise.
+                value = ios.get(lang, {}).get(key, ios["en"][key])
             else:
                 value = android[lang].get(key)
             if value is None:

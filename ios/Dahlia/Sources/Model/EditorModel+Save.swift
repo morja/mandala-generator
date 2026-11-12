@@ -105,7 +105,11 @@ extension EditorModel {
 
     /// The last adjustment of saved pictures (ADR-0014), part of Pro.
     func setFinish(_ finish: Finish) {
-        if pro { changeChoice(IosSave.shared.withFinish(choice: save.choice, finish: finish)) }
+        guard pro else { return }
+        let before = save.choice.finish
+        changeChoice(IosSave.shared.withFinish(choice: save.choice, finish: finish))
+        // The wallpapers rendered ahead for the Shortcuts action carry the finish (WP-11).
+        if save.choice.finish != before { widgetsChanged() }
     }
 
     private func changeChoice(_ next: SaveChoice) {
@@ -264,10 +268,7 @@ extension EditorModel {
                 return
             }
             save.export = ExportProgress(label: Texts.addingToPhotos)
-            let both = await engine.pair(drawn, finish: finish, homeBrightness: home)
-            let pngs = await Task.detached(priority: .userInitiated) {
-                (pair ? [both.lock, both.home] : [both.lock]).compactMap { $0.cgImage.flatMap { Pictures.png($0) } }
-            }.value
+            let pngs = await wallpaperPNGs(drawn, pair: pair, finish: finish, homeBrightness: home)
             guard pngs.count == (pair ? 2 : 1) else {
                 message = Message(text: Texts.saveFailed)
                 return
@@ -284,6 +285,18 @@ extension EditorModel {
                 message = Message(text: Texts.saveFailed)
             }
         }
+    }
+
+    /// The finished pictures as PNG, the lock screen first; the drawn pixels go when this returns.
+    private func wallpaperPNGs(_ drawn: DrawnFrame, pair: Bool, finish: Finish, homeBrightness: Double) async -> [Data] {
+        let pictures: [Rendered]
+        if pair {
+            let both = await engine.pair(drawn, finish: finish, homeBrightness: homeBrightness)
+            pictures = [both.lock, both.home]
+        } else {
+            pictures = [await engine.finished(drawn, finish: finish)]
+        }
+        return await Task.detached(priority: .userInitiated) { pictures.compactMap { $0.cgImage.flatMap { Pictures.png($0) } } }.value
     }
 
     /// The home screen's brightness in the pair, part of Pro (ADR-0014).

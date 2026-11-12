@@ -56,30 +56,38 @@ struct MandalaOfTheDayIntent: AppIntent {
     /// favourites, the finish or the day changed since the app last ran). Pro only.
     static func picture(_ side: WallpaperSide) async throws -> URL {
         let started = Date()
-        guard await MainActor.run(body: { ProStore.shared.unlocked }) else { throw MandalaOfTheDayError.needsPro }
+        #if DEBUG
+        let peak = Footprint.watch()
+        defer { peak.cancel() }
+        #endif
+        // The cached purchase first; without one (a new install, a new iPhone before the app was opened) StoreKit is asked.
+        if !(await MainActor.run(body: { ProStore.shared.unlocked })) {
+            await ProStore.shared.check()
+            guard await MainActor.run(body: { ProStore.shared.unlocked }) else { throw MandalaOfTheDayError.needsPro }
+        }
 
         // From now on the app renders today's and tomorrow's pair ahead whenever it runs.
         AppGroup.defaults?.set(Date(), forKey: DailyWallpaper.usedKey)
         guard let job = WallpaperSource.load().job(day: WidgetDay.number(of: Date())) else { throw MandalaOfTheDayError.noFavourite }
 
-        var drawn = false
-        if !WallpaperFiles.exists(job) {
-            let ticket = RenderTicket()
-            let done = await withTaskCancellationHandler {
-                await WallpaperFiles.render(job, painter: .shared, ticket: ticket)
-            } onCancel: {
-                ticket.cancel()
-            }
-            await WidgetPainter.shared.collect()
-            guard done else { throw MandalaOfTheDayError.failed }
-            drawn = true
+        // Rendered ahead, or drawn now; waiting behind the app drawing the same pair finds it done.
+        let ticket = RenderTicket()
+        let result = await withTaskCancellationHandler {
+            await WallpaperFiles.ensure(job, painter: .shared, ticket: ticket)
+        } onCancel: {
+            ticket.cancel()
         }
+        guard result.ready else { throw MandalaOfTheDayError.failed }
+        let drawn = result.drawn
 
         let millis = Int(Date().timeIntervalSince(started) * 1000)
         Engine.trace("wallpaper intent side=\(side.rawValue) \(job.width)x\(job.height) drawn=\(drawn) in \(millis) ms")
         #if DEBUG
-        AppGroup.defaults?.set("\(side.rawValue) \(String(format: "%.1f", Double(millis) / 1000)) s, \(drawn ? "drawn now" : "rendered ahead") · " +
-                               Date().formatted(date: .abbreviated, time: .shortened), forKey: DailyWallpaper.lastRunKey)
+        peak.cancel()
+        let megabytes = await peak.value
+        Engine.trace("wallpaper intent peakFootprint=\(megabytes)MB")
+        AppGroup.defaults?.set("\(side.rawValue) \(String(format: "%.1f", Double(millis) / 1000)) s, \(drawn ? "drawn now" : "rendered ahead"), " +
+                               "peak \(megabytes) MB · " + Date().formatted(date: .abbreviated, time: .shortened), forKey: DailyWallpaper.lastRunKey)
         #endif
         return WallpaperFiles.url(job, side)
     }
@@ -99,3 +107,24 @@ struct DahliaShortcuts: AppShortcutsProvider {
         )
     }
 }
+
+#if DEBUG
+/// Debug launch argument for IOS-11: `-wallpaperProbe lock|home` removes the pictures rendered ahead and runs the action's
+/// code as Shortcuts would, logging its time and peak footprint (`-wallpaperProbeDelay 5` waits, e.g. to press Home first).
+enum WallpaperProbe {
+    static func runIfAsked() async {
+        guard let name = UserDefaults.standard.string(forKey: "wallpaperProbe"), let side = WallpaperSide(rawValue: name) else { return }
+        let delay = max(1, UserDefaults.standard.double(forKey: "wallpaperProbeDelay"))
+        try? await Task.sleep(for: .seconds(delay))
+        WallpaperFiles.keepOnly([], graceSeconds: 0)
+        Engine.trace("wallpaperProbe \(name) start footprint=\(Footprint.current() / 1_048_576)MB")
+        do {
+            let url = try await MandalaOfTheDayIntent.picture(side)
+            let bytes = (try? FileManager.default.attributesOfItem(atPath: url.path)[.size] as? Int) ?? 0
+            Engine.trace("wallpaperProbe \(name) done file=\(url.lastPathComponent) \(bytes / 1024) KB")
+        } catch {
+            Engine.trace("wallpaperProbe \(name) failed: \(error)")
+        }
+    }
+}
+#endif

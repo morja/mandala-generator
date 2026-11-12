@@ -51,11 +51,12 @@ extension EditorModel {
         WidgetDebugSettings.applyLaunchArguments()
         #endif
         guard Self.widgetsRun else { return }
-        WallpaperFiles.rememberScreen()
         widgets.request(widgetInputs, delay: .seconds(2))
     }
 
     func widgetsChanged() {
+        // Every return to the app: the action has no window to ask for the screen (WP-11).
+        WallpaperFiles.rememberScreen()
         guard Self.widgetsRun else { return }
         widgets.request(widgetInputs)
     }

@@ -38,10 +38,10 @@
     <string name="menu_daily_about">Uno de tus favoritos cada vez, el siguiente cada mañana a las 4. En el iPhone lo establece una automatización de Atajos; la configuras una sola vez.</string>
     <string name="menu_daily_widget_note">El widget «Mandala del día» de la pantalla de inicio muestra los mismos favoritos si no tiene uno propio; con Pro cambia cada mañana.</string>
     <string name="ios_daily_automation_title">Configurar la automatización</string>
-    <string name="ios_daily_automation_steps">1. Abre Atajos, toca Automatización y luego Nueva automatización.\n2. Elige Hora del día, selecciona una hora como las 7:00 y Diariamente, elige Ejecutar inmediatamente y toca Siguiente.\n3. Toca Nueva automatización en blanco y añade Mandala del día de Dahlia, con Pantalla en Pantalla de bloqueo.\n4. Añade Establecer foto de fondo, elige la pantalla de bloqueo y desactiva Mostrar vista previa.\n5. Para la pantalla de inicio, añade Mandala del día otra vez con Pantalla de inicio y un segundo Establecer foto de fondo para la pantalla de inicio.</string>
+    <string name="ios_daily_automation_steps">1. En Atajos, crea un atajo nuevo y añade Mandala del día de Dahlia, con Pantalla en Pantalla de bloqueo.\n2. Añade después Establecer foto de fondo, elige la pantalla de bloqueo y desactiva Mostrar vista previa.\n3. Para la pantalla de inicio, añade Mandala del día otra vez con Pantalla de inicio y un segundo Establecer foto de fondo para la pantalla de inicio.\n4. Para que se ejecute cada día, añade una automatización con Hora del día, una hora como las 7:00, Diariamente y Ejecutar inmediatamente.</string>
     <string name="ios_daily_open_shortcuts">Abrir Atajos</string>
     <string name="ios_daily_ready_shortcut">Añadir el atajo ya hecho</string>
-    <string name="ios_daily_ready_note">El atajo ya hecho establece ambas pantallas. Añádelo y, en el paso 3, añade Ejecutar atajo con él en lugar de los pasos 3 a 5.</string>
+    <string name="ios_daily_ready_note">El atajo ya hecho incluye los pasos 1 a 3. Añádelo y haz el paso 4 para él.</string>
     <string name="ios_daily_needs_pro">La acción de Atajos «Mandala del día» viene con Pro; el widget muestra el primer favorito marcado.</string>
     <string name="ios_intent_title">Mandala del día</string>
     <string name="ios_intent_description">El mandala de hoy de tus favoritos, a pantalla completa, listo para Establecer foto de fondo.</string>
@@ -50,4 +50,5 @@
     <!-- Siri and Spotlight phrases of the action; ${applicationName} is the app's name. -->
     <string name="shortcut_phrase_1">${applicationName} mandala del día</string>
     <string name="shortcut_phrase_2">Mandala del día de ${applicationName}</string>
+    <string name="pair_home_screen">Pantalla de inicio</string>
 </resources>

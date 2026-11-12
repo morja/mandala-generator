@@ -89,11 +89,15 @@ enum WallpaperFiles {
 
     // ── Drawing ──
 
-    /// Draws the pair once and writes both pictures; false when cancelled or failed.
-    static func render(_ job: WallpaperJob, painter: WidgetPainter, ticket: RenderTicket) async -> Bool {
-        guard let pair = await painter.wallpaper(job, ticket: ticket),
-              let lock = pair.lock.cgImage.flatMap({ Pictures.png($0) }),
-              let home = pair.home.cgImage.flatMap({ Pictures.png($0) }) else { return false }
+    /// Makes sure both pictures of `job` exist: draws and writes them on the painter's queue unless they are there
+    /// already, checked again on that queue, so an action waiting behind the app's render ahead never draws the same pair
+    /// twice. Returns whether they exist and whether they were drawn now; false when cancelled or failed.
+    static func ensure(_ job: WallpaperJob, painter: WidgetPainter, ticket: RenderTicket) async -> (ready: Bool, drawn: Bool) {
+        await painter.ensureWallpaper(job, ticket: ticket)
+    }
+
+    /// Writes the pair's pictures, the home screen first (`exists` asks for both).
+    static func write(lock: Data, home: Data, for job: WallpaperJob) -> Bool {
         do {
             try home.write(to: url(job, .home), options: .atomic)
             try lock.write(to: url(job, .lock), options: .atomic)
@@ -104,12 +108,16 @@ enum WallpaperFiles {
         }
     }
 
-    /// Removes the pictures of every other job (yesterday's, a changed mandala's).
-    static func keepOnly(_ jobs: [WallpaperJob]) {
+    /// Removes the pictures of every other job (yesterday's, a changed mandala's), except those written in the last
+    /// ten minutes: an action that just returned one (at 3:59, or from favourites not yet saved) may still be handing it
+    /// to "Set Wallpaper Photo".
+    static func keepOnly(_ jobs: [WallpaperJob], graceSeconds: TimeInterval = 600) {
         let keep = Set(jobs.flatMap { job in WallpaperSide.allCases.map { url(job, $0).lastPathComponent } })
         let names = (try? FileManager.default.contentsOfDirectory(atPath: folder.path)) ?? []
         for name in names where !keep.contains(name) {
-            try? FileManager.default.removeItem(at: folder.appendingPathComponent(name))
+            let file = folder.appendingPathComponent(name)
+            let written = (try? FileManager.default.attributesOfItem(atPath: file.path)[.modificationDate] as? Date) ?? .distantPast
+            if Date().timeIntervalSince(written) >= graceSeconds { try? FileManager.default.removeItem(at: file) }
         }
     }
 }
