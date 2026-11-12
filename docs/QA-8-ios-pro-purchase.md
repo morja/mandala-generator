@@ -36,7 +36,7 @@ Erwartung:
 
 - Menü → Dahlia → „Dahlia Pro“ zeigt „Aktiv, danke“ und öffnet die Seite mit dem Dank.
 
-Ergebnis: Bestanden (Mathis, 12. November 2026, iPhone 15 auf Englisch, TestFlight-Build 1.0 (1) statt Sandbox-Account): Das Pro-Fenster zeigte den Preis, Apples Bestätigung „You're all set“ kam, die Pro-Markierungen verschwanden. Ob die Dankesmeldung der App und die Dankesseite im Menü erschienen, ist nicht berichtet.
+Ergebnis: Bestanden (Mathis, 12. November 2026, iPhone 15 auf Englisch, TestFlight-Build 1.0 (1) statt Sandbox-Account): Das Pro-Fenster zeigte den Preis, Apples Bestätigung „You're all set“ kam, die Pro-Markierungen verschwanden. Menü › Dahlia › Dahlia Pro zeigt danach „Thank you for buying Pro“. Die Meldung „Thanks! Pro is unlocked.“ hat Mathis vermutlich nicht gesehen (QA-10, Punkt 5).
 
 ### 2. Wiederherstellen nach Neuinstallation
 
