@@ -1,5 +1,6 @@
 package com.mathis.mandala.app.ui
 
+import com.mathis.mandala.app.label
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -70,15 +71,15 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Constraints
-import com.mathis.mandala.app.Editing
-import com.mathis.mandala.app.Editing.SaveFormat
-import com.mathis.mandala.app.Editing.moved
-import com.mathis.mandala.app.Editing.zoomedAround
+import com.mathis.mandala.editing.Editing
+import com.mathis.mandala.editing.Editing.SaveFormat
+import com.mathis.mandala.editing.Editing.moved
+import com.mathis.mandala.editing.Editing.zoomedAround
 import com.mathis.mandala.app.ExportProgress
-import com.mathis.mandala.app.Fit
+import com.mathis.mandala.editing.Fit
 import com.mathis.mandala.app.FramePreviewState
 import com.mathis.mandala.app.R
-import com.mathis.mandala.app.SaveChoice
+import com.mathis.mandala.editing.SaveChoice
 import com.mathis.mandala.app.WallpaperTarget
 import com.mathis.mandala.app.liveLabel
 import com.mathis.mandala.app.pairLabel

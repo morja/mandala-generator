@@ -45,7 +45,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
-import com.mathis.mandala.app.PlayField
+import com.mathis.mandala.editing.PlayField
 import com.mathis.mandala.app.PlayState
 import com.mathis.mandala.app.R
 import com.mathis.mandala.app.ui.theme.LocalTokens

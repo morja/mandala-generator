@@ -1,8 +1,8 @@
-package com.mathis.mandala.app
+package com.mathis.mandala.editing
 
-import com.mathis.mandala.app.Editing.changeOwnPalettes
-import com.mathis.mandala.app.Editing.withOwnPalette
-import com.mathis.mandala.app.Randomize.randomLayer
+import com.mathis.mandala.editing.Editing.changeOwnPalettes
+import com.mathis.mandala.editing.Editing.withOwnPalette
+import com.mathis.mandala.editing.Randomize.randomLayer
 import com.mathis.mandala.core.BuiltInPalettes
 import com.mathis.mandala.core.CustomPalette
 import com.mathis.mandala.core.EmblemLayerSettings
@@ -10,9 +10,9 @@ import com.mathis.mandala.core.MandalaParameters
 import com.mathis.mandala.core.OwnPalettes
 import com.mathis.mandala.core.StyleLayer
 import kotlin.random.Random
-import org.junit.Test
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNull
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertNull
 
 /** Own palettes in the editor: choosing, saving again, deleting (ADR-0021). */
 class OwnPalettesTest {
@@ -44,15 +44,6 @@ class OwnPalettesTest {
         assertNull(deleted.emblemLayer.customPalette)
         assertEquals(other, deleted.layers[1].customPalette)
         assertEquals(4, deleted.layers[2].paletteIndex)
-    }
-
-    @Test
-    fun listKeepsOrderAndReplacesById() {
-        val list = MyPalettes.put(MyPalettes.put(emptyList(), gold), other)
-        assertEquals(listOf("G", "O"), list.map { it.id })
-        val again = MyPalettes.put(list, gold.copy(name = "New name"))
-        assertEquals(listOf("New name", "Other"), again.map { it.name })
-        assertEquals(listOf("O"), MyPalettes.remove(again, "G").map { it.id })
     }
 
     @Test

@@ -12,7 +12,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.draw.alpha
 import androidx.compose.runtime.saveable.rememberSaveable
 import kotlin.math.roundToInt
-import com.mathis.mandala.app.Editing
+import com.mathis.mandala.editing.Editing
 import com.mathis.mandala.app.PreviewSize
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.ui.semantics.onClick
@@ -46,8 +46,8 @@ import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.positionChanged
-import com.mathis.mandala.app.DrawTool
-import com.mathis.mandala.app.MoveTarget
+import com.mathis.mandala.editing.DrawTool
+import com.mathis.mandala.editing.MoveTarget
 import androidx.compose.foundation.gestures.detectTransformGestures
 import kotlin.math.PI
 import kotlin.math.cos

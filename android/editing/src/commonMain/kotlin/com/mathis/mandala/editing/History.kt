@@ -1,4 +1,4 @@
-package com.mathis.mandala.app
+package com.mathis.mandala.editing
 
 /**
  * Back and forward through earlier settings, like the arrows of the macOS app: every settled state

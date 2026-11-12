@@ -1,18 +1,18 @@
-package com.mathis.mandala.app
+package com.mathis.mandala.editing
 
-import com.mathis.mandala.app.Editing.addLayer
-import com.mathis.mandala.app.Editing.movedBy
-import com.mathis.mandala.app.Editing.switchedTo
+import com.mathis.mandala.editing.Editing.addLayer
+import com.mathis.mandala.editing.Editing.movedBy
+import com.mathis.mandala.editing.Editing.switchedTo
 import com.mathis.mandala.core.BaseLayerSettings
 import com.mathis.mandala.core.BaseLayerType
 import com.mathis.mandala.core.BuiltInPalettes
 import com.mathis.mandala.core.EmblemLayerSettings
 import com.mathis.mandala.core.StyleLayer
 import com.mathis.mandala.core.TextLayerSettings
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertTrue
-import org.junit.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
+import kotlin.test.Test
 
 /** Palettes, background types and slider ranges offered in the controls (TUNE-1). */
 class PickersAndRangesTest {

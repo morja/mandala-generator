@@ -32,7 +32,7 @@ import androidx.compose.ui.res.stringResource
 import com.mathis.mandala.app.ExportProgress
 import com.mathis.mandala.app.R
 import com.mathis.mandala.app.PairPreview
-import com.mathis.mandala.app.SaveChoice
+import com.mathis.mandala.editing.SaveChoice
 import com.mathis.mandala.app.ui.theme.LocalTokens
 import com.mathis.mandala.app.ui.theme.Radius
 import com.mathis.mandala.app.ui.theme.Sizes

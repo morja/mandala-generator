@@ -1,5 +1,6 @@
 package com.mathis.mandala.app.ui
 
+import com.mathis.mandala.app.label
 import androidx.compose.foundation.ScrollState
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.mutableFloatStateOf
@@ -80,14 +81,14 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.selected
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.mathis.mandala.app.DrawTool
-import com.mathis.mandala.app.MoveTarget
-import com.mathis.mandala.app.Editing
-import com.mathis.mandala.app.Editing.strokeCount
-import com.mathis.mandala.app.Editing.switched
-import com.mathis.mandala.app.Editing.switchedTo
-import com.mathis.mandala.app.Editing.withEmblem
-import com.mathis.mandala.app.Editing.withText
+import com.mathis.mandala.editing.DrawTool
+import com.mathis.mandala.editing.MoveTarget
+import com.mathis.mandala.editing.Editing
+import com.mathis.mandala.editing.Editing.strokeCount
+import com.mathis.mandala.editing.Editing.switched
+import com.mathis.mandala.editing.Editing.switchedTo
+import com.mathis.mandala.editing.Editing.withEmblem
+import com.mathis.mandala.editing.Editing.withText
 import com.mathis.mandala.app.EditorViewModel
 import com.mathis.mandala.app.ui.theme.LocalTokens
 import com.mathis.mandala.app.ui.theme.Radius

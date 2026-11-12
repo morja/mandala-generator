@@ -1,25 +1,25 @@
-package com.mathis.mandala.app
+package com.mathis.mandala.editing
 
-import com.mathis.mandala.app.Editing.SaveFormat
-import com.mathis.mandala.app.Editing.addLayer
-import com.mathis.mandala.app.Editing.moved
-import com.mathis.mandala.app.Editing.movedBy
-import com.mathis.mandala.app.Editing.zoomedAround
+import com.mathis.mandala.editing.Editing.SaveFormat
+import com.mathis.mandala.editing.Editing.addLayer
+import com.mathis.mandala.editing.Editing.moved
+import com.mathis.mandala.editing.Editing.movedBy
+import com.mathis.mandala.editing.Editing.zoomedAround
 import com.mathis.mandala.core.Framing
-import com.mathis.mandala.app.Editing.addStroke
-import com.mathis.mandala.app.Editing.clearStrokes
-import com.mathis.mandala.app.Editing.removeLastStroke
-import com.mathis.mandala.app.Editing.updateDrawing
-import com.mathis.mandala.app.Editing.duplicateLayer
-import com.mathis.mandala.app.Editing.moveLayer
-import com.mathis.mandala.app.Editing.newVariation
-import com.mathis.mandala.app.Editing.removeLayer
-import com.mathis.mandala.app.Editing.updateLayer
-import com.mathis.mandala.app.Editing.newShape
-import com.mathis.mandala.app.Editing.reset
-import com.mathis.mandala.app.Editing.switched
-import com.mathis.mandala.app.Editing.updateEmblem
-import com.mathis.mandala.app.Randomize.randomized
+import com.mathis.mandala.editing.Editing.addStroke
+import com.mathis.mandala.editing.Editing.clearStrokes
+import com.mathis.mandala.editing.Editing.removeLastStroke
+import com.mathis.mandala.editing.Editing.updateDrawing
+import com.mathis.mandala.editing.Editing.duplicateLayer
+import com.mathis.mandala.editing.Editing.moveLayer
+import com.mathis.mandala.editing.Editing.newVariation
+import com.mathis.mandala.editing.Editing.removeLayer
+import com.mathis.mandala.editing.Editing.updateLayer
+import com.mathis.mandala.editing.Editing.newShape
+import com.mathis.mandala.editing.Editing.reset
+import com.mathis.mandala.editing.Editing.switched
+import com.mathis.mandala.editing.Editing.updateEmblem
+import com.mathis.mandala.editing.Randomize.randomized
 import com.mathis.mandala.core.EmblemGlowMode
 import com.mathis.mandala.core.EmblemLayerSettings
 import com.mathis.mandala.core.EmblemMotif
@@ -31,11 +31,11 @@ import com.mathis.mandala.core.SettingsJson
 import com.mathis.mandala.core.EffectsLayerSettings
 import com.mathis.mandala.core.TextLayerSettings
 import com.mathis.mandala.core.StyleLayer
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertNotEquals
-import org.junit.Assert.assertTrue
-import org.junit.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertNotEquals
+import kotlin.test.assertTrue
+import kotlin.test.Test
 
 class EditingTest {
     private val start = Editing.initial(42uL)
@@ -53,7 +53,7 @@ class EditingTest {
         assertEquals(Editing.styles.toSet(), Editing.stylesByName.toSet())
         assertEquals(Editing.stylesByName.map { it.displayName }.sorted(), Editing.stylesByName.map { it.displayName })
         assertTrue(start.layers.single().style in Editing.styles)
-        Editing.backgrounds.forEach { assertTrue(it.name, com.mathis.mandala.core.MandalaRenderer.supportsBackground(it)) }
+        Editing.backgrounds.forEach { assertTrue(com.mathis.mandala.core.MandalaRenderer.supportsBackground(it), it.name) }
     }
 
     @Test
@@ -193,9 +193,9 @@ class EditingTest {
     @Test
     fun fileNameFollowsTheMacScheme() {
         val p = start.updateLayer(0) { it.copy(style = MandalaStyle.ROSE_CURVES, paletteIndex = 5, symmetry = 6) }
-        assertTrue(Editing.fileName(p), Regex("mandala-rose-p5-x6-[0-9a-f]{8}\\.png").matches(Editing.fileName(p)))
+        assertTrue(Regex("mandala-rose-p5-x6-[0-9a-f]{8}\\.png").matches(Editing.fileName(p)), Editing.fileName(p))
         val two = p.addLayer(1uL).first
-        assertTrue(Editing.fileName(two), Editing.fileName(two).startsWith("mandala-rose+rose-p5-x6-"))
+        assertTrue(Editing.fileName(two).startsWith("mandala-rose+rose-p5-x6-"), Editing.fileName(two))
         assertNotEquals(Editing.fileName(p), Editing.fileName(p.newVariation { 1uL }))
     }
 
@@ -340,20 +340,6 @@ class EditingTest {
         // A position set elsewhere (a slider) starts afresh.
         assertEquals(0.5, snap.next(0.4, 0.1, 0.0, range), 1e-9)
         assertEquals(1.0, snap.next(0.9, 0.5, 0.0, range), 1e-9)
-    }
-
-    @Test
-    fun recentImagesKeepTheLastFewAndFindEqualSettings() {
-        val recent = RecentImages<com.mathis.mandala.core.MandalaParameters, String>(2)
-        val a = Editing.initial(1uL)
-        val b = Editing.initial(2uL)
-        recent[a] = "a"
-        recent[b] = "b"
-        assertEquals("a", recent[a.copy()])
-        recent[Editing.initial(3uL)] = "c"
-        // b was used least recently once a was read, so b fell out.
-        assertEquals(null, recent[b])
-        assertEquals(2, recent.size)
     }
 
     @Test

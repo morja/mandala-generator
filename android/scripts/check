@@ -2,4 +2,4 @@
 # Fast check (pre-commit): unit and rule tests, the 256 MB memory test, and the app unit tests.
 set -eu
 cd "$(dirname "$0")/.."
-./gradlew --quiet :core:test :core:memoryTest :cli:compileTestKotlin :cli:installDist :app:testDebugUnitTest
+./gradlew --quiet :core:test :core:memoryTest :editing:test :cli:compileTestKotlin :cli:installDist :app:testDebugUnitTest
