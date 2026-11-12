@@ -1,0 +1,23 @@
+# Dahlia – Mandala Maker
+
+Session: master chat · 12 November 2026
+
+## QA-10: Mathis' notes from the first TestFlight build on the iPhone
+
+Build 1.0 (1), installed through TestFlight on the iPhone 15 on 12 November 2026. Collected as Mathis reports them; fixed later in one cleanup package unless marked urgent.
+
+### Notes
+
+1. **The tour reacts with small delays between steps.** Mathis found this a little irritating; not urgent. Likely cause (IOS-8, finding 3): each step first switches the tab and scrolls the row under the tabs, and only then marks the step settled and draws the rings, so the card and rings appear a moment after the tap. To look at: show the card at once and let only the rings follow, or shorten the settling time; compare with Android's tour on the same steps.
+
+2. **Restarting the tour** works from Menu › Dahlia › Tour; Mathis first looked under "Guide", which opens the website guide. Noted as a hint on wording or order, no change decided.
+
+3. **"Remove them" under "Buy for 3.99 €" in the Pro sheet is unclear on its own.** It removes the Pro parts from the current mandala (for example a third layer, the emblem, the quote) so it fits the free version; from the save sheet it reads "Save without them". Same text on Android (`editor_pro_remove`, German "Entfernen"). Proposal for both platforms: a label that names what goes, for example "Remove Pro parts" / "Pro-Teile entfernen"; Mathis decides. Mathis' iPhone is set to English, so the English text is correct.
+
+4. **Typing in the Text tab: the keyboard covers part of the controls, the picture above stays large, and there is no clear way out.** Mathis has to tap somewhere else to dismiss the keyboard, and the layout then jumps back. To do: a "Done" button above the keyboard (keyboard toolbar), the edited field scrolled into view above the keyboard, the picture folded to its small size while typing and restored afterwards, dismiss on scroll; compare with how Android's Text tab handles the keyboard (insets, `imePadding`).
+
+5. **After the purchase Mathis probably did not see the app's message "Thanks! Pro is unlocked."** Apple's "You're all set" appeared, the Pro marks went away and Menu › Dahlia › Dahlia Pro shows "Thank you for buying Pro", so the purchase itself works. Likely cause: the message is shown while Apple's purchase sheet or Dahlia's Pro sheet is still closing and disappears behind it or before it is visible. To check: show it only after both sheets have closed, and keep it on screen as long as other messages (QA-8 case 1).
+
+6. **Two starter favourites carry the same quote.** Since the new starter at position 2 (12 November 2026), both it and starter 13 (Constellation Web, Constellation Web, Universe) show Walt Whitman's "I exist as I am, that is enough." Mathis may change one of them later (a new favourite of his, or another public-domain quote from the collection on starter 13); no change decided. Applies to Android and iPhone alike.
+
+7. **Double tap on a slider does not reset it to its default, as it does on Android.** `SliderRow` (`ios/Dahlia/Sources/UI/Parts.swift`) puts a simultaneous double-tap gesture on the whole row, but the system `Slider` takes the touches on its track and knob, so a double tap on the slider itself (where Android users tap) does nothing; only the label or the value may react. To do: make the double tap work on the slider line itself (an own slider drawn from the tokens, or a gesture that wins over the system slider), keep the accessibility action, and check it on the device.
