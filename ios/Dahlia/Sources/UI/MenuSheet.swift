@@ -177,6 +177,9 @@ struct MenuSheet: View {
                         }) { chevron }
                 divider
             }
+        }
+    }
+
     // ── Dahlia page: guide, tour, rating, About (Pro and widgets follow with WP-9 and WP-10) ──
 
     private var dahliaPage: some View {
