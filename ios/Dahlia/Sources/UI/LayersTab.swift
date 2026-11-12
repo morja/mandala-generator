@@ -101,7 +101,14 @@ struct LayerRow: View {
             VStack(alignment: .leading, spacing: 0) {
                 Text("\(number) · \(Texts.style(layer.style))").textRole(.body)
                     .foregroundStyle(layer.isEnabled ? t.text : t.textMuted).lineLimit(1)
-                Text(Texts.blendSummary(layer.blendMode, layer.opacity)).textRole(.note).foregroundStyle(t.textMuted).lineLimit(1)
+                // A long mode name ("Negativ multiplizieren") gives way, the percentage stays whole.
+                let summary = Texts.blendSummaryParts(layer.blendMode, layer.opacity)
+                HStack(spacing: 0) {
+                    Text(summary.head).lineLimit(1).truncationMode(.tail)
+                    Text(summary.tail).lineLimit(1).fixedSize()
+                }
+                .textRole(.note).foregroundStyle(t.textMuted)
+                .accessibilityElement(children: .combine)
             }
             .padding(.vertical, Spacing.xs)
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -197,23 +204,12 @@ private struct LayerControls: View {
                   step: s.stepped ? 1 : nil, defaultValue: s.defaultValue) { model.setValue(s, $0) }
     }
 
-    /// Where the layer sits (ADR-0011): across and up and down from the centre, and "Centre". Pro; without it a
-    /// note says so. Moving it by hand on the picture comes with WP-6.
+    /// Where the layer sits (ADR-0011), with "Move on image".
     private var positionGroup: some View {
-        let centred = layer.offsetX == 0 && layer.offsetY == 0
-        let moved = Texts.positionMoved
-        return ControlGroup(Texts.position, summary: centred ? Texts.positionCentred : (model.proOwned ? moved : Texts.withPro(moved))) {
-            if !model.proOwned { ProNote(text: Texts.proNotePosition) }
-            if !layer.isEnabled { Text(Texts.positionHiddenNote).textRole(.note).foregroundStyle(t.textMuted) }
-            ForEach(shown(.position), id: \.self) { slider($0, style: layer.style) }
-            Button {
-                model.apply(IosEditing.shared.withValue(params: IosEditing.shared.withValue(params: model.params, layer: Int32(model.selected), slider: .offsetX, value: 0),
-                                                        layer: Int32(model.selected), slider: .offsetY, value: 0))
-            } label: {
-                Text(Texts.centre).textRole(.heading).foregroundStyle(centred ? t.textMuted : t.accent).frame(minHeight: Sizes.icon * 2)
-            }
-            .buttonStyle(.plain)
-            .disabled(centred)
+        let sel = Int32(model.selected)
+        return PositionGroup(x: layer.offsetX, y: layer.offsetY, target: .layer, hidden: !layer.isEnabled) { x, y in
+            let editing = IosEditing.shared
+            model.apply(editing.withValue(params: editing.withValue(params: model.params, layer: sel, slider: .offsetX, value: x), layer: sel, slider: .offsetY, value: y))
         }
     }
 }

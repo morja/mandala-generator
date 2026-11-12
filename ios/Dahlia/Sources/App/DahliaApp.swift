@@ -23,6 +23,8 @@ struct DahliaApp: App {
                     DragProbe.openFileIfAsked(model)
                     await DragProbe.runIfAsked(model)
                 }
+                .task { FontMap.listIfAsked() }
+                .task { ShotSetup.runIfAsked(model) }
                 #endif
         }
     }

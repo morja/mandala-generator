@@ -48,12 +48,15 @@ struct EditorView: View {
             bar
             GeometryReader { geo in
                 let fullSide = min(geo.size.width - Spacing.lg * 2, geo.size.height * 0.5)
-                let fraction = model.shell.previewFraction
+                // Moving and drawing keep the picture large (Android's `pinned`).
+                let pinned = model.moveTarget != nil || model.drawTool != nil
+                let fraction = pinned ? PreviewSize.full : model.shell.previewFraction
                 let folded = fraction < PreviewSize.full
                 VStack(spacing: 0) {
                     // The picture stays in view; only the open tab scrolls, so every change is visible.
                     HStack(alignment: .top, spacing: Spacing.md) {
-                        CanvasView(side: fullSide * fraction, folded: folded) { model.shell.setPreviewFraction(folded ? PreviewSize.full : PreviewSize.small) }
+                        CanvasView(side: fullSide * fraction, folded: folded,
+                                   fold: pinned ? nil : { model.shell.setPreviewFraction(folded ? PreviewSize.full : PreviewSize.small) })
                         if fraction <= PreviewSize.headerBelow, let header {
                             VStack(alignment: .leading, spacing: Spacing.xs) {
                                 Text(header.title).textRole(.body).foregroundStyle(t.text).lineLimit(1)
@@ -91,12 +94,14 @@ struct EditorView: View {
     }
 }
 
-/// The square picture on black with a thin bar while it is drawn (Android's `Canvas`).
+/// The square picture on black with a thin bar while it is drawn (Android's `Canvas`). While moving or
+/// drawing by hand an overlay takes the fingers; otherwise holding the picture shows it without the effects.
 struct CanvasView: View {
     let side: CGFloat
     /// The picture is folded small: a tap makes it large again.
     var folded = false
-    /// Folds or unfolds the picture; the corner button and, while folded, a tap call it.
+    /// Folds or unfolds the picture; the corner button and, while folded, a tap call it. Nil while moving or
+    /// drawing, which keep the picture large (as on Android).
     var fold: (() -> Void)? = nil
     @Environment(EditorModel.self) private var model
     @Environment(\.tokens) private var t
@@ -105,7 +110,10 @@ struct CanvasView: View {
     @State private var holdTask: Task<Void, Never>?
 
     var body: some View {
-        let comparing = holding && model.params.effectsLayer.isEnabled
+        let mark = model.moveMark
+        let drawing = model.drawTool
+        let holdable = mark == nil && drawing == nil
+        let comparing = holding && holdable && model.params.effectsLayer.isEnabled
         VStack(alignment: .leading, spacing: Spacing.xs) {
             ZStack(alignment: .bottom) {
                 t.canvas
@@ -133,7 +141,7 @@ struct CanvasView: View {
             // The image is usually ready when the hold counts: it is drawn as soon as the finger goes down.
             .gesture(DragGesture(minimumDistance: 0)
                 .onChanged { _ in
-                    guard holdTask == nil, !holding else { return }
+                    guard holdable, holdTask == nil, !holding else { return }
                     model.preparePlainPreview()
                     holdTask = Task {
                         try? await Task.sleep(for: .seconds(Timing.holdSeconds))
@@ -146,12 +154,82 @@ struct CanvasView: View {
                     holdTask?.cancel()
                     holdTask = nil
                     holding = false
-                })
+                }, isEnabled: holdable)
+            .overlay {
+                if let mark {
+                    MoveOverlay(mark: mark) { dx, dy, zoom, turn in model.moveBy(dx: dx, dy: dy, zoom: zoom, turnDegrees: turn) }
+                } else if let drawing {
+                    drawingOverlay(drawing)
+                }
+            }
+            .overlay(alignment: .topLeading) {
+                // The mandala uses Pro features the user does not own (ADR-0016); the Pro sheet comes with WP-9.
+                if model.missingPro { CanvasLabel(text: Texts.proMark, accent: true).accessibilityLabel(Texts.proMarkDescription) }
+            }
+            .overlay(alignment: .topTrailing) {
+                if comparing { CanvasLabel(text: Texts.withoutEffects, accent: false) }
+            }
             .frame(width: side, height: side)
             .clipShape(RoundedRectangle(cornerRadius: Radius.md))
-            if let error = model.previewError {
-                Text(error).textRole(.note).foregroundStyle(t.error)
+            if let status = status(mark: mark, drawing: drawing) {
+                // Wraps under the picture instead of being cut ("Nach oben oder unten ziehen, …").
+                Text(status).textRole(.note).foregroundStyle(model.previewError != nil ? t.error : t.textMuted)
+                    .frame(width: side, alignment: .leading)
+                    .fixedSize(horizontal: false, vertical: true)
             }
         }
+        .onChange(of: holdable) { _, can in
+            if !can {
+                holdTask?.cancel()
+                holdTask = nil
+                holding = false
+            }
+        }
+    }
+
+    /// The line under the picture: an error, else what the fingers do while moving or drawing.
+    private func status(mark: MoveMark?, drawing: DrawTool?) -> String? {
+        if let error = model.previewError { return error }
+        if drawing != nil { return Texts.drawHint }
+        guard let mark else { return nil }
+        switch mark.target {
+        case .emblem: return Texts.moveEmblemHint
+        case .text: return Texts.moveTextHint
+        default: return Texts.moveLayerHint(Int(mark.layer?.int32Value ?? 1))
+        }
+    }
+
+    /// The active tool's look, as Android's `drawing`: the macOS overlay's line width, the spray's brush and paint.
+    @ViewBuilder
+    private func drawingOverlay(_ tool: DrawTool) -> some View {
+        let p = model.params
+        if tool == .lines {
+            let d = p.drawingLayer
+            // Same width as the macOS overlay: strokeWeight * 1.5 % of the picture.
+            DrawingOverlay(symmetry: Int(d.symmetry), colour: hsbColour(d.currentHue, d.currentSaturation, d.currentBrightness),
+                           width: d.strokeWeight * Self.lineWidthShare) { model.addStroke(xs: $0, ys: $1) }
+        } else {
+            let g = p.graffitiLayer
+            DrawingOverlay(symmetry: Int(g.symmetry), colour: hsbColour(g.currentHue, g.currentSaturation, g.currentBrightness).opacity(g.currentOpacity),
+                           width: g.currentBrushSize) { model.addStroke(xs: $0, ys: $1) }
+        }
+    }
+
+    /// The macOS drawing overlay's line width per unit of stroke weight, as a share of the picture.
+    private static let lineWidthShare = 0.015
+}
+
+/// A small rounded label on the picture ("Pro", "Without effects").
+private struct CanvasLabel: View {
+    let text: String
+    let accent: Bool
+    @Environment(\.tokens) private var t
+
+    var body: some View {
+        Text(text).textRole(.heading).foregroundStyle(accent ? t.accent : t.textMuted)
+            .padding(.horizontal, Spacing.md)
+            .padding(.vertical, Spacing.xs)
+            .background(t.surface, in: Capsule())
+            .padding(Spacing.sm)
     }
 }

@@ -63,6 +63,8 @@ targets:
     platform: iOS
     sources:
       - path: Tests
+      # The Core Text renderer is compared with the JVM's text in the parity test.
+      - path: Sources/Engine/CoreTextRenderer.swift
     dependencies:
       - framework: ../build/MandalaCore.xcframework
         embed: false

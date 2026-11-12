@@ -1,6 +1,5 @@
 package com.mathis.mandala.app
 
-import com.mathis.mandala.editing.CentreSnap
 import com.mathis.mandala.editing.DailyTurn
 import com.mathis.mandala.editing.DrawTool
 import com.mathis.mandala.editing.Editing
@@ -9,6 +8,9 @@ import com.mathis.mandala.editing.Fit
 import com.mathis.mandala.editing.MyPalettes
 import com.mathis.mandala.editing.History
 import com.mathis.mandala.editing.MoveTarget
+import com.mathis.mandala.editing.MoveGesture
+import com.mathis.mandala.editing.MyQuotes
+import com.mathis.mandala.editing.QuoteChoice
 import com.mathis.mandala.editing.PlayField
 import com.mathis.mandala.editing.Randomize
 import com.mathis.mandala.editing.SaveChoice
@@ -34,7 +36,6 @@ import com.mathis.mandala.editing.Editing.updateDrawing
 import com.mathis.mandala.editing.Editing.updateGraffiti
 import com.mathis.mandala.editing.Editing.duplicateLayer
 import com.mathis.mandala.editing.Editing.moveLayer
-import com.mathis.mandala.editing.Editing.movedBy
 import com.mathis.mandala.editing.Editing.newVariation
 import com.mathis.mandala.editing.Editing.reseedLayer
 import com.mathis.mandala.editing.Editing.removeLayer
@@ -678,7 +679,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
     fun useQuote(quote: Quote) = updateText { it.withQuote(quote) }
 
     /** A quote from the languages switched on in the quote list, or one of the user's own. */
-    fun randomQuote() = useQuote((Quotes.collectionsFor(_quoteLanguages.value).flatMap { it.quotes } + _myQuotes.value).random())
+    fun randomQuote() = useQuote(QuoteChoice.pool(_quoteLanguages.value, _myQuotes.value).random())
 
     private val quoteLanguageStore = QuoteLanguages(application)
     private val _quoteLanguages = MutableStateFlow(quoteLanguageStore.chosen)
@@ -688,9 +689,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
 
     /** Switches a quote language on or off; the last one stays on. */
     fun toggleQuoteLanguage(language: String) {
-        val current = _quoteLanguages.value
-        val next = if (language in current) current - language else current + language
-        if (next.isEmpty()) return
+        val next = QuoteChoice.toggled(_quoteLanguages.value, language) ?: return
         _quoteLanguages.value = next
         quoteLanguageStore.chosen = next
     }
@@ -714,7 +713,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
     /** The bookmark tapped again: the words as they stand leave my quotes. */
     fun unsaveTextAsMyQuote() {
         val text = _params.value.textLayer
-        changeMyQuotes { list -> list.filterNot { it.text == text.text.trim() && it.author == text.customAuthor.trim() } }
+        changeMyQuotes { MyQuotes.removeWords(it, text.text, text.customAuthor) }
     }
 
     private fun changeMyQuotes(change: (List<Quote>) -> List<Quote>) {
@@ -892,28 +891,15 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         if (target != null) _drawTool.value = null
     }
 
-    private val snapX = CentreSnap()
-    private val snapY = CentreSnap()
+    private val moveGesture = MoveGesture()
 
     /**
      * Moves, sizes and turns the move target by a gesture on the canvas (fractions of its width),
-     * snapping it onto the centre lines (UX-1 20). The text only moves up and down and does not turn.
+     * snapping it onto the centre lines (UX-1 20; the rule is the shared `MoveGesture`).
      */
     fun moveBy(dx: Double, dy: Double, zoom: Double, turnDegrees: Double) {
-        val offsets = -Editing.MAX_OFFSET..Editing.MAX_OFFSET
-        when (_moveTarget.value) {
-            MoveTarget.LAYER -> updateSelected {
-                it.movedBy(0.0, 0.0, zoom, turnDegrees)
-                    .copy(offsetX = snapX.next(it.offsetX, dx, 0.0, offsets), offsetY = snapY.next(it.offsetY, dy, 0.0, offsets))
-            }
-            MoveTarget.EMBLEM -> updateEmblem {
-                it.movedBy(0.0, 0.0, zoom, turnDegrees)
-                    .copy(offsetX = snapX.next(it.offsetX, dx, 0.0, offsets), offsetY = snapY.next(it.offsetY, dy, 0.0, offsets))
-            }
-            // The text's height counts up from the bottom.
-            MoveTarget.TEXT -> updateText { it.movedBy(0.0, zoom).copy(offsetY = snapY.next(it.offsetY, -dy, 0.5, 0.0..1.0)) }
-            null -> Unit
-        }
+        val target = _moveTarget.value ?: return
+        _params.update { moveGesture.moved(it, _selected.value, target, dx, dy, zoom, turnDegrees) }
     }
 
     // ── Drawing by hand ──

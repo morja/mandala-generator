@@ -45,6 +45,16 @@ final class EditorModel {
     private(set) var chipPreviews: Bool
     /// Whether Pro is owned: the purchase comes in WP-9, so Pro marks show and nothing is unlocked.
     let proOwned = false
+    /// What drags on the picture move (the selected layer, the emblem or the text); nil while they do not (ADR-0011).
+    private(set) var moveTarget: MoveTarget?
+    /// The tool that turns drags on the picture into strokes; nil while the picture is not for drawing.
+    private(set) var drawTool: DrawTool?
+    /// The user's own quotes, newest first, and the quote languages switched on (ADR-0019).
+    private(set) var myQuotes: [Quote]
+    private(set) var quoteLanguages: [String]
+    /// The phone is hot (thermal state serious or critical): previews use the fast glow and fewer threads
+    /// (PLAN-4 section 3.2); exports keep their pixels.
+    private(set) var hot = false
 
     @ObservationIgnored let engine = Engine()
 
@@ -62,6 +72,9 @@ final class EditorModel {
     @ObservationIgnored private var plainTask: Task<Void, Never>?
     @ObservationIgnored private var plainTicket: RenderTicket?
     @ObservationIgnored private var plainFor: (params: MandalaParameters, fast: Bool)?
+    /// Snapping of a move by hand keeps state between the steps of a gesture (shared `MoveGesture`).
+    @ObservationIgnored private let moveGesture = IosEditingParts.shared.makeMoveGesture()
+    @ObservationIgnored private var thermalObserver: NSObjectProtocol?
 
     private static let fastPreviewKey = "fastPreview"
     private static let chipPreviewsKey = "chipPreviews"
@@ -73,9 +86,18 @@ final class EditorModel {
         myPalettes = PalettesStore.load()
         fastPreview = UserDefaults.standard.object(forKey: Self.fastPreviewKey) as? Bool ?? true
         chipPreviews = UserDefaults.standard.object(forKey: Self.chipPreviewsKey) as? Bool ?? true
+        myQuotes = MyQuotesStore.load()
+        quoteLanguages = QuoteLanguagesStore.load()
+        hot = Self.isHot(ProcessInfo.processInfo.thermalState)
+        thermalObserver = NotificationCenter.default.addObserver(forName: ProcessInfo.thermalStateDidChangeNotification, object: nil, queue: .main) { [weak self] _ in
+            MainActor.assumeIsolated { self?.thermalStateChanged() }
+        }
         renderPreview()
         shellStart()
     }
+
+    /// The preview's glow: the fast one when chosen, and always while the phone is hot.
+    private var previewFast: Bool { fastPreview || hot }
 
     // ── Editing (the rules are the shared module's, android/editing, through IosEditing) ──
 
@@ -155,6 +177,80 @@ final class EditorModel {
         }
     }
 
+    // ── Moving and drawing on the picture (ADR-0011) ──
+
+    /// Starts or ends moving by hand; drawing ends when moving starts, as on Android.
+    func setMoveTarget(_ target: MoveTarget?) {
+        moveTarget = target
+        if target != nil { drawTool = nil }
+    }
+
+    func setDrawTool(_ tool: DrawTool?) {
+        drawTool = tool
+        if tool != nil { moveTarget = nil }
+    }
+
+    /// A step of a drag, pinch or turn on the picture: (dx, dy) as fractions of its side, y down, `zoom` a
+    /// factor, `turnDegrees` clockwise; snapping onto the centre lines is the shared rule's.
+    func moveBy(dx: Double, dy: Double, zoom: Double, turnDegrees: Double) {
+        guard let target = moveTarget else { return }
+        change(IosEditingParts.shared.moved(gesture: moveGesture, params: params, selected: Int32(selected), target: target,
+                                            dx: dx, dy: dy, zoom: zoom, turnDegrees: turnDegrees))
+    }
+
+    /// Where the moved part sits, for the marks on the picture.
+    var moveMark: MoveMark? { IosEditingParts.shared.moveMark(params: params, selected: Int32(selected), target: moveTarget) }
+
+    /// A finished stroke of the active tool, points as fractions of the picture.
+    func addStroke(xs: [Double], ys: [Double]) {
+        guard let tool = drawTool else { return }
+        change(IosEditingParts.shared.withStroke(params: params, tool: tool, xs: xs.map { KotlinDouble(value: $0) }, ys: ys.map { KotlinDouble(value: $0) }))
+    }
+
+    /// Whether the picture uses Pro features the user does not own (the Pro mark on the picture, ADR-0016).
+    var missingPro: Bool { !proOwned && !IosEditingParts.shared.proFeatures(params: params).isEmpty }
+
+    // ── Quotes (ADR-0019) ──
+
+    /// What "New quote" and the text die pick from.
+    var quotePool: [Quote] { IosEditingParts.shared.quotePool(languages: quoteLanguages, mine: myQuotes) }
+
+    func useQuote(_ quote: Quote) { change(IosEditingParts.shared.withQuote(params: params, quote: quote)) }
+
+    func randomQuote() { change(IosEditingParts.shared.withRandomQuote(params: params, pool: quotePool)) }
+
+    /// The text switched on; with no words yet a quote comes in, as on Android.
+    func setTextShown(_ on: Bool) {
+        if on && params.textLayer.text.isEmpty { randomQuote() } else { change(IosEditingParts.shared.textSwitched(params: params, on: on)) }
+    }
+
+    func randomizeText() { change(IosEditingParts.shared.textRandomized(params: params, pool: quotePool)) }
+
+    func toggleQuoteLanguage(_ language: String) {
+        guard let next = IosEditingParts.shared.quoteLanguageToggled(current: quoteLanguages, language: language) else { return }
+        quoteLanguages = next
+        QuoteLanguagesStore.save(next)
+    }
+
+    /// Whether the words on the picture are among the user's quotes (the bookmark is filled).
+    var wordsKept: Bool { IosEditingParts.shared.myQuotesContain(list: myQuotes, text: params.textLayer.text, author: params.textLayer.customAuthor) }
+
+    func keepWords() {
+        changeMyQuotes(IosEditingParts.shared.myQuoteAdded(list: myQuotes, text: params.textLayer.text, author: params.textLayer.customAuthor))
+    }
+
+    func letGoOfWords() {
+        changeMyQuotes(IosEditingParts.shared.myQuoteWordsRemoved(list: myQuotes, text: params.textLayer.text, author: params.textLayer.customAuthor))
+    }
+
+    func removeMyQuote(_ quote: Quote) { changeMyQuotes(IosEditingParts.shared.myQuoteRemoved(list: myQuotes, quote: quote)) }
+
+    private func changeMyQuotes(_ next: [Quote]) {
+        myQuotes = next
+        // One queue for the small files, so a quick keep and let go are written in that order.
+        AppFiles.writes.async { MyQuotesStore.save(next) }
+    }
+
     // ── Preview: latest wins (PLAN-4 section 3.2) ──
 
     /// Every change cancels the running render through its ticket; a state shown recently comes back at
@@ -178,10 +274,10 @@ final class EditorModel {
             guard !Task.isCancelled else { return }
             let redrawn = redrawnLayers(p)
             if redrawn >= Timing.quickMinLayers && millisPerLayer * Int64(redrawn) > Timing.quickAfterMs,
-               let quick = await engine.quick(p, ticket: ticket), !ticket.isCancelled() {
+               let quick = await engine.quick(p, hot: hot, ticket: ticket), !ticket.isCancelled() {
                 preview = quick.cgImage
             }
-            guard let result = await engine.preview(p, fast: fastPreview, ticket: ticket), !ticket.isCancelled(),
+            guard let result = await engine.preview(p, fast: previewFast, hot: hot, ticket: ticket), !ticket.isCancelled(),
                   let image = result.cgImage else { return }
             preview = image
             rendering = false
@@ -220,22 +316,22 @@ final class EditorModel {
     func preparePlainPreview() {
         let p = params
         guard p.effectsLayer.isEnabled, plainPreview == nil else { return }
-        if let plainFor, plainFor.params == p, plainFor.fast == fastPreview { return }
+        if let plainFor, plainFor.params == p, plainFor.fast == previewFast { return }
         plainTicket?.cancel()
         plainTask?.cancel()
         let ticket = RenderTicket()
         plainTicket = ticket
-        plainFor = (p, fastPreview)
-        let fast = fastPreview
+        plainFor = (p, previewFast)
+        let fast = previewFast, hot = hot
         plainTask = Task {
-            guard let result = await engine.preview(IosEditing.shared.withoutEffects(params: p), fast: fast, ticket: ticket),
+            guard let result = await engine.preview(IosEditing.shared.withoutEffects(params: p), fast: fast, hot: hot, ticket: ticket),
                   !ticket.isCancelled(), let image = result.cgImage else {
                 // Not drawn: allow another try for the same settings.
                 if !ticket.isCancelled() { plainFor = nil }
                 return
             }
             // Only while it still belongs to the settings shown.
-            if params == p, fastPreview == fast { plainPreview = image }
+            if params == p, previewFast == fast { plainPreview = image }
         }
     }
 
@@ -251,6 +347,28 @@ final class EditorModel {
         renderPreview()
     }
 
+    // ── Heat (PLAN-4 section 3.2) ──
+
+    private static func isHot(_ state: ProcessInfo.ThermalState) -> Bool {
+        #if DEBUG
+        // Debug builds can try the hot path in the simulator: launch with `-thermalOverride serious`.
+        if let forced = UserDefaults.standard.string(forKey: "thermalOverride") { return forced == "serious" || forced == "critical" }
+        #endif
+        return state == .serious || state == .critical
+    }
+
+    private func thermalStateChanged() {
+        let state = ProcessInfo.processInfo.thermalState
+        let next = Self.isHot(state)
+        Engine.trace("thermal state=\(state.rawValue) hot=\(next)")
+        guard next != hot else { return }
+        hot = next
+        // Cooled down with the full glow chosen: the kept previews have the fast glow, so they go.
+        if !hot && !fastPreview { recent.removeAll() }
+        dropPlainPreview()
+        renderPreview()
+    }
+
     func setChipPreviews(_ on: Bool) {
         chipPreviews = on
         UserDefaults.standard.set(on, forKey: Self.chipPreviewsKey)
@@ -262,7 +380,7 @@ final class EditorModel {
 
     private func changeMyPalettes(_ next: [CustomPalette]) {
         myPalettes = next
-        Task.detached(priority: .utility) { PalettesStore.save(next) }
+        AppFiles.writes.async { PalettesStore.save(next) }
     }
 
     /// Saves an own palette, new or changed; layers and the emblem using it take the new version.

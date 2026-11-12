@@ -1,0 +1,36 @@
+{
+ "baseLayer": {
+  "isEnabled": false
+ },
+ "effectsLayer": {
+  "isEnabled": false
+ },
+ "layers": [
+  {
+   "abstractLevel": 0.0,
+   "colorDrift": 0.4,
+   "complexity": 0.6,
+   "density": 0.5,
+   "glowIntensity": 0.6,
+   "isEnabled": true,
+   "paletteIndex": 8,
+   "ripple": 0.2,
+   "scale": 0.75,
+   "seed": 1357,
+   "style": "floral",
+   "symmetry": 4
+  }
+ ],
+ "outputSize": 512,
+ "seed": 8642,
+ "textLayer": {
+  "blendMode": "multiply",
+  "brightness": 0.3,
+  "customAuthor": "Kahlil Gibran",
+  "fontName": "HelveticaNeue",
+  "fontSize": 0.1,
+  "isEnabled": true,
+  "showAuthor": true,
+  "text": "The soul unfolds itself, like a lotus of countless petals."
+ }
+}

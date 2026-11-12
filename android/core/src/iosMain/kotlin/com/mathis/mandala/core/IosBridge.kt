@@ -3,6 +3,8 @@ package com.mathis.mandala.core
 import kotlinx.cinterop.BetaInteropApi
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.addressOf
+import kotlinx.cinterop.get
+import kotlinx.cinterop.reinterpret
 import kotlinx.cinterop.usePinned
 import platform.Foundation.NSData
 import platform.Foundation.create
@@ -20,6 +22,13 @@ object IosBridge {
         MandalaRenderer.render(
             params,
             RenderOptions(outputSize = size, supersample = supersample, glowReferenceWidth = glowReferenceWidth, threads = threads),
+        )
+
+    /** As [render], with a text renderer (the parity test's text cases, PLAN-4 section 3.11). */
+    fun renderWithText(params: MandalaParameters, size: Int, supersample: Boolean, glowReferenceWidth: Int, threads: Int, textRenderer: TextRenderer?): RenderResult =
+        MandalaRenderer.render(
+            params,
+            RenderOptions(outputSize = size, supersample = supersample, glowReferenceWidth = glowReferenceWidth, threads = threads, textRenderer = textRenderer),
         )
 
     fun processors(): Int = availableProcessors()
@@ -95,21 +104,21 @@ object IosBridge {
      * The editor's preview at 512 px with the layer cache, or null when `ticket` was cancelled
      * meanwhile (a newer change is on its way). `fast` blurs the glow at 800 px as Android's fast preview.
      */
-    fun renderPreview(params: MandalaParameters, cache: LayerCache, fast: Boolean, threads: Int, ticket: RenderTicket, imageLoader: ImageLoader?): Rendered? = renderOrNull {
+    fun renderPreview(params: MandalaParameters, cache: LayerCache, fast: Boolean, threads: Int, ticket: RenderTicket, imageLoader: ImageLoader?, textRenderer: TextRenderer?): Rendered? = renderOrNull {
         MandalaRenderer.render(
             params,
             RenderOptions(
-                outputSize = PREVIEW_SIZE, threads = threads, layerCache = cache, isCancelled = ticket::isCancelled, imageLoader = imageLoader,
+                outputSize = PREVIEW_SIZE, threads = threads, layerCache = cache, isCancelled = ticket::isCancelled, imageLoader = imageLoader, textRenderer = textRenderer,
                 glowReferenceWidth = if (fast) FAST_GLOW_REFERENCE else FULL_GLOW_REFERENCE,
             ),
         )
     }
 
     /** A small, rough picture while a slow change is drawn (Android's quick preview); never cached. */
-    fun renderQuick(params: MandalaParameters, threads: Int, ticket: RenderTicket, imageLoader: ImageLoader?): Rendered? = renderOrNull {
+    fun renderQuick(params: MandalaParameters, threads: Int, ticket: RenderTicket, imageLoader: ImageLoader?, textRenderer: TextRenderer?): Rendered? = renderOrNull {
         MandalaRenderer.render(
             params,
-            RenderOptions(outputSize = QUICK_SIZE, glowReferenceWidth = QUICK_GLOW_REFERENCE, threads = threads, isCancelled = ticket::isCancelled, imageLoader = imageLoader),
+            RenderOptions(outputSize = QUICK_SIZE, glowReferenceWidth = QUICK_GLOW_REFERENCE, threads = threads, isCancelled = ticket::isCancelled, imageLoader = imageLoader, textRenderer = textRenderer),
         )
     }
 
@@ -117,12 +126,12 @@ object IosBridge {
      * The square picture as saved at `size` px, supersampled as the free export on Android. `progress`
      * gets whole percents (0–100) on the rendering thread; null when `ticket` was cancelled.
      */
-    fun renderSquare(params: MandalaParameters, size: Int, threads: Int, ticket: RenderTicket, imageLoader: ImageLoader?, progress: (Int) -> Unit): Rendered? = renderOrNull {
+    fun renderSquare(params: MandalaParameters, size: Int, threads: Int, ticket: RenderTicket, imageLoader: ImageLoader?, textRenderer: TextRenderer?, progress: (Int) -> Unit): Rendered? = renderOrNull {
         var shown = -1
         MandalaRenderer.render(
             params,
             RenderOptions(
-                outputSize = size, supersample = true, threads = threads, isCancelled = ticket::isCancelled, imageLoader = imageLoader,
+                outputSize = size, supersample = true, threads = threads, isCancelled = ticket::isCancelled, imageLoader = imageLoader, textRenderer = textRenderer,
                 onProgress = { share ->
                     val percent = (share * 100).toInt()
                     if (percent > shown) {
@@ -148,6 +157,24 @@ object IosBridge {
             out.data[p * 3] = src[p * 4]
             out.data[p * 3 + 1] = src[p * 4 + 1]
             out.data[p * 3 + 2] = src[p * 4 + 2]
+        }
+        return out
+    }
+
+    /**
+     * A text coverage mask for core from 8-bit alpha bytes (`width` × `height`, row 0 at the top, rows
+     * `bytesPerRow` apart): what Swift's Core Text `TextRenderer` draws, as `drawLines` returns it.
+     */
+    @OptIn(ExperimentalForeignApi::class)
+    fun coverage(alpha: NSData, width: Int, height: Int, bytesPerRow: Int): FloatArray {
+        val out = FloatArray(width * height)
+        if (alpha.length.toInt() < bytesPerRow * height || bytesPerRow * height <= 0) return out
+        // Read in place, without a copy of the bytes (a 2048 px export would hold one more 4 MB array).
+        val src = alpha.bytes!!.reinterpret<kotlinx.cinterop.UByteVar>()
+        for (y in 0 until height) {
+            val row = y * bytesPerRow
+            val o = y * width
+            for (x in 0 until width) out[o + x] = src[row + x].toInt() / 255f
         }
         return out
     }

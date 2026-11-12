@@ -13,7 +13,9 @@ struct PaletteDraft {
 /// The palette of a layer (Android's `PaletteGroup`, ADR-0021): the offered built-in palettes, one that came
 /// with the picture, the user's own ones with a plus to make one, and the editor for them in place, so the
 /// picture above shows every change. The rules (fallback palette, saving, deleting) are the shared module's.
-struct PaletteGroup: View {
+struct PaletteGroup<More: View>: View {
+    /// "Palette" for a layer, "Colour" for the emblem.
+    var title: String = Texts.palette
     let index: Int
     let own: CustomPalette?
     /// A built-in palette chosen (replaces an own one).
@@ -22,6 +24,8 @@ struct PaletteGroup: View {
     let useOwn: (CustomPalette) -> Void
     /// Index and own palette exactly as they were (Cancel).
     let restore: (Int, CustomPalette?) -> Void
+    /// More controls after the palettes (the emblem's colour sliders), as Android's `more`.
+    @ViewBuilder var more: () -> More
 
     @Environment(EditorModel.self) private var model
     @Environment(\.tokens) private var t
@@ -34,7 +38,7 @@ struct PaletteGroup: View {
         let shown = own.flatMap { $0.stops.isEmpty ? nil : $0 }
         let builtIn = palettes[max(0, min(index, palettes.count - 1))]
         let mine = model.myPalettes
-        ControlGroup(Texts.palette, summary: (editing?.palette ?? shown)?.name ?? builtIn.name) {
+        ControlGroup(title, summary: (editing?.palette ?? shown)?.name ?? builtIn.name) {
             if let draft = editing {
                 PaletteEditor(draft: draft, onChange: { next in
                     if next.palette.stops != draft.palette.stops { useOwn(next.palette) }
@@ -91,8 +95,16 @@ struct PaletteGroup: View {
                     }
                 }
             }
+            more()
         }
         .onDisappear { pictureTask?.cancel() }
+    }
+}
+
+extension PaletteGroup where More == EmptyView {
+    init(title: String = Texts.palette, index: Int, own: CustomPalette?, choose: @escaping (Int) -> Void,
+         useOwn: @escaping (CustomPalette) -> Void, restore: @escaping (Int, CustomPalette?) -> Void) {
+        self.init(title: title, index: index, own: own, choose: choose, useOwn: useOwn, restore: restore, more: { EmptyView() })
     }
 }
 

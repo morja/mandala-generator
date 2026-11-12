@@ -83,6 +83,8 @@ struct SliderRow: View {
     let range: ClosedRange<Double>
     var step: Double? = nil
     let defaultValue: Double
+    /// How the value reads on the right ("45°"); two decimals, or whole steps, otherwise.
+    var display: ((Double) -> String)? = nil
     let onChange: (Double) -> Void
     @Environment(\.tokens) private var t
 
@@ -98,7 +100,7 @@ struct SliderRow: View {
                 }
                 .tint(t.accent)
                 .frame(width: geo.size.width * 0.52)
-                Text(step == nil ? String(format: "%.2f", value) : String(Int(value.rounded())))
+                Text(display?(value) ?? (step == nil ? String(format: "%.2f", value) : String(Int(value.rounded()))))
                     .textRole(.value).foregroundStyle(t.textMuted).lineLimit(1)
                     .frame(width: geo.size.width * 0.14, alignment: .trailing)
             }
@@ -373,10 +375,11 @@ struct ColourGroup: View {
     let defaults: (Double, Double, Double)
     var inset = false
     var brightnessRange: ClosedRange<Double> = 0...1
+    var initiallyOpen = false
     let onChange: (Double, Double, Double) -> Void
 
     var body: some View {
-        ControlGroup(title, changed: differs((hue, defaults.0), (saturation, defaults.1), (brightness, defaults.2)), inset: inset,
+        ControlGroup(title, initiallyOpen: initiallyOpen, changed: differs((hue, defaults.0), (saturation, defaults.1), (brightness, defaults.2)), inset: inset,
                      trailing: { ColourDot(colour: hsbColour(hue, saturation, brightness)) }) {
             SliderRow(label: Texts.hue, value: hue, range: 0...1, defaultValue: defaults.0) { onChange($0, saturation, brightness) }
             SliderRow(label: Texts.saturation, value: saturation, range: 0...1, defaultValue: defaults.1) { onChange(hue, $0, brightness) }
@@ -390,5 +393,151 @@ struct ColourDot: View {
 
     var body: some View {
         Circle().fill(colour).frame(width: Sizes.swatchSmall, height: Sizes.swatchSmall).accessibilityHidden(true)
+    }
+}
+
+/// The head of the Emblem and Text tabs (and of the effects): the label, which switches too, the die and
+/// Reset while it is on, and the switch (Android's row in `EmblemTab` and `TextTab`).
+struct SwitchHeader: View {
+    let label: String
+    let checked: Bool
+    let dieLabel: String
+    let onChange: (Bool) -> Void
+    let onDie: () -> Void
+    let onReset: () -> Void
+    @Environment(\.tokens) private var t
+
+    var body: some View {
+        HStack(spacing: 0) {
+            Text(label).textRole(.body).foregroundStyle(t.text)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .frame(minHeight: Sizes.icon * 2)
+                .contentShape(Rectangle())
+                .onTapGesture { onChange(!checked) }
+                .accessibilityHidden(true)
+            if checked {
+                Button(action: onDie) {
+                    Image(systemName: "dice").foregroundStyle(t.accent).frame(width: Sizes.icon * 2, height: Sizes.icon * 2).contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(dieLabel)
+                Button(action: onReset) {
+                    Text(Texts.reset).textRole(.heading).foregroundStyle(t.accent).frame(minHeight: Sizes.icon * 2)
+                }
+                .buttonStyle(.plain)
+                .padding(.horizontal, Spacing.sm)
+            }
+            Toggle("", isOn: Binding(get: { checked }, set: { onChange($0) }))
+                .labelsHidden()
+                .tint(t.accent)
+                .accessibilityLabel(label)
+        }
+        .frame(minHeight: Sizes.icon * 2)
+    }
+}
+
+/// A small caption above a wrapping row of chips (Android's `ChipLine`).
+struct ChipLine<Chips: View>: View {
+    let caption: String
+    @ViewBuilder let chips: () -> Chips
+    @Environment(\.tokens) private var t
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: Spacing.xs) {
+            Text(caption).textRole(.note).foregroundStyle(t.textMuted).padding(.top, Spacing.xs)
+            FlowLayout { chips() }
+        }
+    }
+}
+
+/// A filled action (Android's `Button`), or the tonal "Done" while its mode runs (`FilledTonalButton`).
+struct ModeButton: View {
+    let label: String
+    let active: Bool
+    var enabled = true
+    var wide = false
+    let action: () -> Void
+    @Environment(\.tokens) private var t
+
+    var body: some View {
+        Button(action: action) {
+            Text(label).textRole(.heading).lineLimit(1)
+                .foregroundStyle(active ? t.accent : (enabled ? t.onAccent : t.textMuted))
+                .padding(.horizontal, Spacing.lg)
+                .frame(maxWidth: wide ? .infinity : nil, minHeight: Sizes.icon * 2)
+                .background(active ? t.accentSoft : (enabled ? t.accent : t.surfaceRaised), in: Capsule())
+                .contentShape(Capsule())
+        }
+        .buttonStyle(.plain)
+        .disabled(!enabled)
+    }
+}
+
+/// An outlined round icon action (Android's `OutlinedIconButton`).
+struct OutlinedIconButton: View {
+    let system: String
+    let label: String
+    let enabled: Bool
+    let action: () -> Void
+    @Environment(\.tokens) private var t
+
+    var body: some View {
+        Button(action: action) {
+            Image(systemName: system).foregroundStyle(enabled ? t.text : t.textMuted)
+                .frame(width: Sizes.icon * 2, height: Sizes.icon * 2)
+                .overlay(Circle().strokeBorder(t.outline, lineWidth: Sizes.swatchRing / 2))
+                .contentShape(Circle())
+        }
+        .buttonStyle(.plain)
+        .disabled(!enabled)
+        .accessibilityLabel(label)
+    }
+}
+
+/// Where a layer or the emblem sits (ADR-0011): across and up and down from the centre, "Centre", and
+/// "Move on image", which turns drags on the picture into moves. Pro; without it a note says so
+/// (Android's `PositionGroup`).
+struct PositionGroup: View {
+    let x: Double
+    let y: Double
+    let target: MoveTarget
+    var hidden = false
+    let onChange: (Double, Double) -> Void
+    @Environment(EditorModel.self) private var model
+    @Environment(\.tokens) private var t
+
+    var body: some View {
+        let centred = x == 0 && y == 0
+        let moved = Texts.positionMoved
+        let limit = Editing.shared.MAX_OFFSET
+        ControlGroup(Texts.position, summary: centred ? Texts.positionCentred : (model.proOwned ? moved : Texts.withPro(moved))) {
+            if !model.proOwned { ProNote(text: Texts.proNotePosition) }
+            if hidden { Text(Texts.positionHiddenNote).textRole(.note).foregroundStyle(t.textMuted) }
+            SliderRow(label: Texts.across, value: x, range: -limit...limit, defaultValue: 0) { onChange($0, y) }
+            SliderRow(label: Texts.upAndDown, value: y, range: -limit...limit, defaultValue: 0) { onChange(x, $0) }
+            HStack(spacing: 0) {
+                Button { onChange(0, 0) } label: {
+                    Text(Texts.centre).textRole(.heading).foregroundStyle(centred ? t.textMuted : t.accent).frame(minHeight: Sizes.icon * 2)
+                }
+                .buttonStyle(.plain)
+                .disabled(centred)
+                Spacer(minLength: Spacing.sm)
+                MoveButton(target: target, enabled: !hidden)
+            }
+        }
+    }
+}
+
+/// "Move on image", and "Done" while drags on the picture move `target` (Android's `MoveButton`).
+struct MoveButton: View {
+    let target: MoveTarget
+    var enabled = true
+    @Environment(EditorModel.self) private var model
+
+    var body: some View {
+        let active = model.moveTarget == target
+        ModeButton(label: active ? Texts.done : Texts.moveOnImage, active: active, enabled: active || enabled) {
+            model.setMoveTarget(active ? nil : target)
+        }
     }
 }

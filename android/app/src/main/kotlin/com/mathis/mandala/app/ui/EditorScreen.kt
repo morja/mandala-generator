@@ -48,6 +48,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.positionChanged
 import com.mathis.mandala.editing.DrawTool
 import com.mathis.mandala.editing.MoveTarget
+import com.mathis.mandala.editing.Moving
 import androidx.compose.foundation.gestures.detectTransformGestures
 import kotlin.math.PI
 import kotlin.math.cos
@@ -577,21 +578,11 @@ private class MoveInput(
     val onMove: (dx: Double, dy: Double, zoom: Double, turnDegrees: Double) -> Unit,
 )
 
-private fun moving(params: MandalaParameters, selected: Int, target: MoveTarget?, vm: EditorViewModel): MoveInput? = when (target) {
-    null -> null
-    MoveTarget.LAYER -> params.layers.getOrNull(selected)?.let { l ->
-        MoveInput((0.5 + l.offsetX).toFloat(), (0.5 + l.offsetY).toFloat(), (0.36 * l.scale).toFloat(), target, selected + 1,
-            l.offsetX == 0.0, l.offsetY == 0.0, vm::moveBy)
+/** The move mode's marks from the shared rule (`Moving.mark`), with the gestures going to the view model. */
+private fun moving(params: MandalaParameters, selected: Int, target: MoveTarget?, vm: EditorViewModel): MoveInput? =
+    Moving.mark(params, selected, target)?.let { m ->
+        MoveInput(m.x.toFloat(), m.y.toFloat(), m.radius.toFloat(), m.target, m.layer, m.onCentreX, m.onCentreY, vm::moveBy)
     }
-    MoveTarget.EMBLEM -> params.emblemLayer.let { e ->
-        MoveInput((0.5 + e.offsetX).toFloat(), (0.5 + e.offsetY).toFloat(), (0.5 * e.size).toFloat(), target, null,
-            e.offsetX == 0.0, e.offsetY == 0.0, vm::moveBy)
-    }
-    // The text stays centred across, so only its height has a line to snap to.
-    MoveTarget.TEXT -> params.textLayer.let { tx ->
-        MoveInput(0.5f, (1.0 - tx.offsetY).toFloat(), (tx.fontWidth / 2).toFloat(), target, null, false, tx.offsetY == 0.5, vm::moveBy)
-    }
-}
 
 /** The preview without the scene effects, shown while a finger holds the canvas (UX-1 16). */
 private class Compare(

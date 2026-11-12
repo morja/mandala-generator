@@ -10,6 +10,7 @@ extension Rendered: @retroactive @unchecked Sendable {}
 extension RenderTicket: @retroactive @unchecked Sendable {}
 extension CustomPaletteStop: @retroactive @unchecked Sendable {}
 extension CustomPalette: @retroactive @unchecked Sendable {}
+extension Quote: @retroactive @unchecked Sendable {}
 
 /// Owns every render call (PLAN-4 section 3.2). Kotlin calls block, so the actor runs on its own serial
 /// queue, never on the main thread or Swift's cooperative pool; inside a render core's worker pool
@@ -22,6 +23,7 @@ actor Engine {
     private let cache: LayerCache
     private let threads: Int32
     private let loader = ImageIOLoader()
+    private let text = CoreTextRenderer()
 
     private static let log = Logger(subsystem: "one.tearoom.mandala", category: "engine")
 
@@ -51,21 +53,27 @@ actor Engine {
         Self.trace("engine threads=\(IosBridge.shared.processors()) gc \(IosBridge.shared.gcSettings())")
     }
 
-    /// The editor's 512 px preview with the layer cache; nil when cancelled.
-    func preview(_ params: MandalaParameters, fast: Bool, ticket: RenderTicket) -> Rendered? {
+    /// Worker threads for the editor's previews: all cores, or half of them while the phone is hot
+    /// (PLAN-4 section 3.2, throttling). Exports always use all; they only take longer when it is hot.
+    private func previewThreads(hot: Bool) -> Int32 { hot ? max(1, threads / 2) : threads }
+
+    /// The editor's 512 px preview with the layer cache; nil when cancelled. `hot`: the phone's thermal
+    /// state is serious or worse, so the caller asks for the fast glow and fewer threads are used.
+    func preview(_ params: MandalaParameters, fast: Bool, hot: Bool = false, ticket: RenderTicket) -> Rendered? {
         if ticket.isCancelled() { return nil }
-        return bridge.renderPreview(params: params, cache: cache, fast: fast, threads: threads, ticket: ticket, imageLoader: loader)
+        return bridge.renderPreview(params: params, cache: cache, fast: fast, threads: previewThreads(hot: hot), ticket: ticket,
+                                    imageLoader: loader, textRenderer: text)
     }
 
     /// A small, rough picture first when a change is expected to take long (Android's quick preview).
-    func quick(_ params: MandalaParameters, ticket: RenderTicket) -> Rendered? {
+    func quick(_ params: MandalaParameters, hot: Bool = false, ticket: RenderTicket) -> Rendered? {
         if ticket.isCancelled() { return nil }
-        return bridge.renderQuick(params: params, threads: threads, ticket: ticket, imageLoader: loader)
+        return bridge.renderQuick(params: params, threads: previewThreads(hot: hot), ticket: ticket, imageLoader: loader, textRenderer: text)
     }
 
     /// The square picture as saved; `progress` gets whole percents on the rendering thread.
     func square(_ params: MandalaParameters, size: Int, ticket: RenderTicket, progress: @escaping @Sendable (Int) -> Void) -> Rendered? {
-        bridge.renderSquare(params: params, size: Int32(size), threads: threads, ticket: ticket, imageLoader: loader) { percent in
+        bridge.renderSquare(params: params, size: Int32(size), threads: threads, ticket: ticket, imageLoader: loader, textRenderer: text) { percent in
             progress(Int(percent.int32Value))
         }
     }
@@ -79,6 +87,7 @@ actor Engine {
     /// After a memory warning: the kept layer images go first.
     func dropCache() {
         cache.clear()
+        text.dropFonts()
         bridge.collect()
     }
 }
