@@ -6,7 +6,9 @@ import kotlinx.cinterop.addressOf
 import kotlinx.cinterop.get
 import kotlinx.cinterop.reinterpret
 import kotlinx.cinterop.usePinned
+import kotlinx.cinterop.set
 import platform.Foundation.NSData
+import platform.Foundation.NSMutableData
 import platform.Foundation.create
 
 /**
@@ -59,15 +61,18 @@ object IosBridge {
     fun rgba(image: Image8): NSData {
         val srgb = if (image.encoding == Encoding.SRGB) image else WorkingSpace.convertToSrgb(image)
         val n = image.width * image.height
-        val out = ByteArray(n * 4)
+        // Written straight into the data Swift gets: a 2048 px save of a tall screen is about 40 MB,
+        // and a ByteArray first would hold it twice (PLAN-4 WP-8, memory).
+        val out = NSMutableData.create(length = (n * 4).toULong()) ?: error("No memory for a ${image.width} x ${image.height} picture.")
+        val dst = out.mutableBytes!!.reinterpret<kotlinx.cinterop.ByteVar>()
         val src = srgb.data
         for (p in 0 until n) {
-            out[p * 4] = src[p * 3]
-            out[p * 4 + 1] = src[p * 3 + 1]
-            out[p * 4 + 2] = src[p * 3 + 2]
-            out[p * 4 + 3] = -1
+            dst[p * 4] = src[p * 3]
+            dst[p * 4 + 1] = src[p * 3 + 1]
+            dst[p * 4 + 2] = src[p * 3 + 2]
+            dst[p * 4 + 3] = -1
         }
-        return out.usePinned { NSData.create(bytes = it.addressOf(0), length = out.size.toULong()) }
+        return out
     }
 
     // ── The iPhone app (PLAN-4 WP-1) ──

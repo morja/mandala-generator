@@ -19452,6 +19452,71 @@
         }
       }
     },
+    "ios_export_stopped_background" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Speichern abgebrochen, weil Dahlia zu lange im Hintergrund war."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saving stopped because Dahlia was in the background too long."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se detuvo el guardado porque Dahlia estuvo demasiado tiempo en segundo plano."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enregistrement interrompu : Dahlia est resté trop longtemps en arrière-plan."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Salvataggio interrotto perché Dahlia è rimasta troppo a lungo in background."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dahlia がバックグラウンドに長くあったため、保存を中止しました。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dahlia가 너무 오래 백그라운드에 있어서 저장이 중단되었습니다."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O salvamento parou porque o Dahlia ficou tempo demais em segundo plano."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сохранение остановлено: Dahlia слишком долго была в фоне."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dahlia 在后台停留太久，保存已停止。"
+          }
+        }
+      }
+    },
     "ios_favourite_label" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -26453,61 +26518,61 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Video %1$lld × %2$lld in Movies/%3$@ gespeichert"
+            "value" : "Video %1$lld × %2$lld in „Fotos“ gespeichert"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Saved a %1$lld × %2$lld video to Movies/%3$@"
+            "value" : "Saved a %1$lld × %2$lld video to Photos"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Vídeo de %1$lld × %2$lld guardado en Movies/%3$@"
+            "value" : "Vídeo de %1$lld × %2$lld guardado en Fotos"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Vidéo %1$lld × %2$lld enregistrée dans Movies/%3$@"
+            "value" : "Vidéo %1$lld × %2$lld enregistrée dans Photos"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Video %1$lld × %2$lld salvato in Movies/%3$@"
+            "value" : "Video %1$lld × %2$lld salvato in Foto"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$lld × %2$lld の動画を Movies/%3$@ に保存しました"
+            "value" : "%1$lld × %2$lld の動画を「写真」に保存しました"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$lld × %2$lld 동영상을 Movies/%3$@에 저장했습니다"
+            "value" : "%1$lld × %2$lld 동영상을 사진에 저장했습니다"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Vídeo %1$lld × %2$lld salvo em Movies/%3$@"
+            "value" : "Vídeo %1$lld × %2$lld salvo em Fotos"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Видео %1$lld × %2$lld сохранено в Movies/%3$@"
+            "value" : "Видео %1$lld × %2$lld сохранено в «Фото»"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "已将 %1$lld × %2$lld 视频保存到 Movies/%3$@"
+            "value" : "已将 %1$lld × %2$lld 视频保存到“照片”"
           }
         }
       }

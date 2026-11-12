@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- Keys Xcode cannot generate from build settings; merged with the generated Info.plist (project.yml). -->
+<plist version="1.0">
+<dict>
+	<!-- The continued processing task of a long video export (WP-8, PLAN-4 section 3.2); each export adds a suffix. -->
+	<key>BGTaskSchedulerPermittedIdentifiers</key>
+	<array>
+		<string>$(PRODUCT_BUNDLE_IDENTIFIER).export.*</string>
+	</array>
+</dict>
+</plist>

@@ -3,8 +3,8 @@ import UniformTypeIdentifiers
 @preconcurrency import MandalaCore
 
 /// The menu as a sheet from below (Android's `MenuSheet`, DM-7 B): the mandala on screen with what keeps it, three dice
-/// for a new one shown beside the current mandala, the theme and "More" (files, the two switches). What belongs to
-/// later packages (wallpapers, Pro, widgets, guide, tour, About, the line drawing, share) is not here yet.
+/// for a new one shown beside the current mandala, the theme and "More" (the line drawing, files, the two switches).
+/// What belongs to later packages (wallpapers, Pro, widgets, guide, tour, About) is not here yet.
 struct MenuSheet: View {
     let close: @MainActor () -> Void
     @Environment(EditorModel.self) private var model
@@ -14,7 +14,9 @@ struct MenuSheet: View {
     @State private var showOpen = false
     @State private var showExport = false
 
-    private enum Page { case main, more }
+    @State private var lineDrawing: SvgDocument?
+
+    private enum Page { case main, more, lineDrawing }
 
     var body: some View {
         ScrollView {
@@ -23,6 +25,8 @@ struct MenuSheet: View {
                     Compare(candidate: candidate, close: close)
                 } else if page == .more {
                     morePage
+                } else if page == .lineDrawing {
+                    lineDrawingPage
                 } else {
                     mainPage
                 }
@@ -42,6 +46,16 @@ struct MenuSheet: View {
                 close()
             }
         }
+        .fileExporter(isPresented: Binding(get: { lineDrawing != nil }, set: { if !$0 { lineDrawing = nil } }), document: lineDrawing,
+                      contentType: .svg, defaultFilename: lineDrawing?.name) { result in
+            switch result {
+            case .success: model.lineDrawingSaved(true)
+            case .failure(let error):
+                if (error as? CocoaError)?.code != .userCancelled { model.lineDrawingSaved(false, reason: error.localizedDescription) }
+            }
+            lineDrawing = nil
+            close()
+        }
         .fileExporter(isPresented: $showExport, document: SettingsDocument(text: model.settingsFileText), contentType: .json,
                       defaultFilename: model.suggestedSettingsName) { result in
             switch result {
@@ -59,12 +73,20 @@ struct MenuSheet: View {
     private var mainPage: some View {
         VStack(alignment: .leading, spacing: 0) {
             current
-            Pill(icon: model.isFavorite ? "star.fill" : "star", label: Texts.menuFavourite) {
-                model.addFavorite()
-                close()
+            HStack(spacing: Spacing.sm) {
+                Pill(icon: model.isFavorite ? "star.fill" : "star", label: Texts.menuFavourite) {
+                    model.addFavorite()
+                    close()
+                }
+                .disabled(!model.canAddFavorite)
+                // The square picture through the share sheet, drawn after the menu closed (Android's KeepRow).
+                Pill(icon: "square.and.arrow.up", label: Texts.share) {
+                    close()
+                    model.shareImage()
+                }
+                .disabled(model.save.busy)
             }
             .padding(.top, Spacing.md)
-            .disabled(!model.canAddFavorite)
             Text(Texts.menuNewMandala).textRole(.heading).foregroundStyle(t.text).padding(.top, Spacing.xl).padding(.bottom, Spacing.sm)
             HStack(spacing: Spacing.sm) {
                 ForEach(Self.dice, id: \.kind) { die in DieTile(die: die) { model.tryNew(die.kind) } }
@@ -96,6 +118,8 @@ struct MenuSheet: View {
             BackRow(label: Texts.menuBack) { page = .main }
             Text(Texts.menuMore).textRole(.title).foregroundStyle(t.text).padding(.top, Spacing.sm)
             divider.padding(.top, Spacing.sm)
+            MenuRow(icon: "scribble", label: model.proOwned ? Texts.lineDrawing : Texts.lineDrawingPro, detail: nil, action: { page = .lineDrawing }) { chevron }
+            divider
             MenuRow(icon: "folder", label: Texts.menuOpenFile, detail: Texts.menuOpenFileDetail, action: { showOpen = true }) { chevron }
             divider
             MenuRow(icon: "square.and.arrow.down", label: Texts.menuSaveSettings, detail: Texts.menuSaveSettingsDetail, action: { showExport = true }) { chevron }
@@ -105,6 +129,27 @@ struct MenuSheet: View {
             divider
             SwitchMenuRow(icon: "eye", label: Texts.chipPreviews, detail: Texts.chipPreviewsDetail,
                           checked: model.chipPreviews) { model.setChipPreviews($0) }
+        }
+    }
+
+    // ── Line drawing page (ADR-0013, Pro): an SVG to Files; Photos does not take SVG ──
+
+    private var lineDrawingPage: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            BackRow(label: Texts.menuBack) { page = .more }
+            Text(model.proOwned ? Texts.lineDrawing : Texts.lineDrawingPro).textRole(.title).foregroundStyle(t.text).padding(.top, Spacing.sm)
+            let about = Texts.lineDrawingDetail + (IosSave.shared.hasPointLayers(params: model.params) ? " " + Texts.lineDrawingPoints : "")
+            Text(about).textRole(.body).foregroundStyle(t.textMuted).padding(.top, Spacing.xs)
+            divider.padding(.top, Spacing.md)
+            ForEach(IosSave.shared.lineDrawingLooks(), id: \.self) { look in
+                MenuRow(icon: "doc.badge.arrow.up", label: look == .lines ? Texts.lineDrawingLines : Texts.lineDrawingColour, detail: nil,
+                        action: model.save.busy ? nil : {
+                            Task {
+                                if let made = await model.lineDrawing(look) { lineDrawing = SvgDocument(text: made.text, name: made.name) } else if !model.proOwned { close() }
+                            }
+                        }) { chevron }
+                divider
+            }
         }
     }
 
@@ -352,6 +397,26 @@ struct SettingsDocument: FileDocument {
     let text: String
 
     init(text: String) { self.text = text }
+
+    init(configuration: ReadConfiguration) throws {
+        text = String(decoding: configuration.file.regularFileContents ?? Data(), as: UTF8.self)
+    }
+
+    func fileWrapper(configuration: WriteConfiguration) throws -> FileWrapper {
+        FileWrapper(regularFileWithContents: Data(text.utf8))
+    }
+}
+
+/// The line drawing "Save to Files" writes (ADR-0013).
+struct SvgDocument: FileDocument {
+    static let readableContentTypes: [UTType] = [.svg]
+    let text: String
+    var name = ""
+
+    init(text: String, name: String) {
+        self.text = text
+        self.name = name
+    }
 
     init(configuration: ReadConfiguration) throws {
         text = String(decoding: configuration.file.regularFileContents ?? Data(), as: UTF8.self)

@@ -45,6 +45,8 @@ targets:
     settings:
       base:
         GENERATE_INFOPLIST_FILE: YES
+        # Keys without a build setting (the background task identifiers), merged into the generated plist.
+        INFOPLIST_FILE: Config/Info.plist
         INFOPLIST_KEY_UILaunchScreen_Generation: YES
         # Portrait on the iPhone, like Android's phone layout; the iPad key only satisfies Xcode's check.
         INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone: UIInterfaceOrientationPortrait

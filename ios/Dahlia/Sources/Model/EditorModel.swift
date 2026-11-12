@@ -13,12 +13,6 @@ struct Message: Identifiable, Equatable {
     static func == (a: Message, b: Message) -> Bool { a.id == b.id }
 }
 
-/// The save sheet's state while a picture is made and added to Photos.
-struct SaveProgress: Equatable {
-    /// 0…1 while drawing; nil while Photos is at work.
-    var share: Double?
-}
-
 /// Holds the settings, the selected layer and the favourites; renders the preview after each change
 /// (latest wins), keeps the settings across restarts and saves pictures, as Android's `EditorViewModel`
 /// does for these parts (PLAN-4 WP-1).
@@ -35,7 +29,8 @@ final class EditorModel {
     /// History, dice, play field and the picture's size (WP-7); its operations are in EditorModel+Shell.swift.
     let shell = ShellState()
     var message: Message?
-    private(set) var saving: SaveProgress?
+    /// The save sheet, its frame and a running export (WP-8); its operations are in EditorModel+Save.swift.
+    let save = SaveState()
     /// The user's own palettes in the order made (ADR-0021).
     private(set) var myPalettes: [CustomPalette]
     /// The preview without the scene effects, while it matches the settings (hold the picture to see it).
@@ -43,8 +38,15 @@ final class EditorModel {
     /// Android's fast preview (on by default) and the small pictures beside the styles; kept across starts.
     private(set) var fastPreview: Bool
     private(set) var chipPreviews: Bool
-    /// Whether Pro is owned: the purchase comes in WP-9, so Pro marks show and nothing is unlocked.
-    let proOwned = false
+    /// Whether Pro is owned. The one seam the purchase fills (WP-9): until then nothing is unlocked and the Pro
+    /// marks show. Debug builds can try the Pro side in the simulator: launch with `-proOwned YES`.
+    private(set) var proOwned: Bool = {
+        #if DEBUG
+        return UserDefaults.standard.bool(forKey: "proOwned")
+        #else
+        return false
+        #endif
+    }()
     /// What drags on the picture move (the selected layer, the emblem or the text); nil while they do not (ADR-0011).
     private(set) var moveTarget: MoveTarget?
     /// The tool that turns drags on the picture into strokes; nil while the picture is not for drawing.
@@ -429,44 +431,6 @@ final class EditorModel {
                 change(IosEditing.shared.withBackgroundPicture(params: params, url: url))
             } catch {
                 message = Message(text: Texts.pictureFailed(error.localizedDescription))
-            }
-        }
-    }
-
-    // ── Saving to Photos ──
-
-    /// The square picture at 1024 px, as Android's free export, added to Photos with add-only access.
-    func saveToPhotos(onDone: @escaping @MainActor () -> Void) {
-        guard saving == nil else { return }
-        let snapshot = params
-        saving = SaveProgress(share: 0)
-        Task {
-            defer { saving = nil }
-            // Asked before drawing, so a refusal costs no render.
-            guard await PhotoLibrary.mayAdd() else {
-                message = Message(text: Texts.photosDenied, actionLabel: Texts.openSettings) { Links.openSettings() }
-                return
-            }
-            let ticket = RenderTicket()
-            let size = Int(IosBridge.shared.EXPORT_SIZE)
-            let result = await engine.square(snapshot, size: size, ticket: ticket) { percent in
-                Task { @MainActor in
-                    if self.saving != nil { self.saving = SaveProgress(share: Double(percent) / 100) }
-                }
-            }
-            guard let image = result?.cgImage, let png = Pictures.png(image) else {
-                message = Message(text: Texts.saveFailed)
-                return
-            }
-            saving = SaveProgress(share: nil)
-            do {
-                try await PhotoLibrary.addPNG(png, fileName: IosEditing.shared.fileName(params: snapshot))
-                message = Message(text: Texts.savedToPhotos(size))
-                onDone()
-            } catch PhotoLibrary.Failure.denied {
-                message = Message(text: Texts.photosDenied, actionLabel: Texts.openSettings) { Links.openSettings() }
-            } catch {
-                message = Message(text: Texts.saveFailed)
             }
         }
     }

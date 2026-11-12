@@ -73,6 +73,10 @@ struct EditorView: View {
             }
             .background(t.background)
         }
+        .overlay(alignment: .top) {
+            // Sharing from the menu draws the picture after the menu closed (WP-8).
+            if let export = model.save.export, !showSave { ExportNote(progress: export) }
+        }
         .overlay(alignment: .bottom) {
             if let message = model.message, !showFavorites, !showSave, !showMenu, model.shell.play == nil {
                 MessageBar(message: message) { model.message = nil }
