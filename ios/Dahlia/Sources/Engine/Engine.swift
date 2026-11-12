@@ -70,6 +70,12 @@ actor Engine {
         }
     }
 
+    /// The small picture of a new mandala for the menu's comparison; nil when cancelled.
+    func candidate(_ params: MandalaParameters, ticket: RenderTicket) -> Rendered? {
+        if ticket.isCancelled() { return nil }
+        return IosShell.shared.renderCandidate(params: params, threads: threads, ticket: ticket, loader: loader)
+    }
+
     /// After a memory warning: the kept layer images go first.
     func dropCache() {
         cache.clear()

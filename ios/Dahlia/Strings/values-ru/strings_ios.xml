@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="editor_favourites_empty">Избранного пока нет. Добавьте текущую мандалу.</string>
-    <string name="editor_favourites_hint">Нажмите, чтобы применить.</string>
     <string name="export_saving_to_pictures">Добавление в «Фото»</string>
     <string name="message_image_failed">Не удалось создать изображение.</string>
     <string name="message_saved_to_pictures">Сохранено %1$d × %2$d в «Фото»</string>

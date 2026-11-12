@@ -14648,61 +14648,61 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Noch keine Favoriten. Füge das aktuelle Mandala hinzu."
+            "value" : "Noch keine Favoriten. Füge das aktuelle Mandala hinzu oder öffne die Favoritendatei der Mac-App (favorites.json) über „Datei öffnen“."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "No favourites yet. Add the current mandala."
+            "value" : "No favourites yet. Add the current mandala, or open the favourites file of the Mac app (favorites.json) with Open file."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Aún no hay favoritos. Añade el mandala actual."
+            "value" : "Aún no hay favoritos. Añade el mandala actual o abre el archivo de favoritos de la app para Mac (favorites.json) con Abrir archivo."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Aucun favori pour l'instant. Ajoutez le mandala actuel."
+            "value" : "Aucun favori pour l'instant. Ajoutez le mandala actuel, ou ouvrez le fichier de favoris de l'app Mac (favorites.json) avec Ouvrir un fichier."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Nessun preferito. Aggiungi il mandala attuale."
+            "value" : "Nessun preferito. Aggiungi il mandala attuale oppure apri il file dei preferiti dell'app per Mac (favorites.json) con Apri file."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "お気に入りはまだありません。現在のマンダラを追加してください。"
+            "value" : "お気に入りはまだありません。現在のマンダラを追加するか、「ファイルを開く」でMacアプリのお気に入りファイル（favorites.json）を開いてください。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "아직 즐겨찾기가 없습니다. 현재 만다라를 추가하세요."
+            "value" : "아직 즐겨찾기가 없습니다. 현재 만다라를 추가하거나, 파일 열기로 Mac 앱의 즐겨찾기 파일(favorites.json)을 여세요."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Nenhum favorito ainda. Adicione a mandala atual."
+            "value" : "Nenhum favorito ainda. Adicione a mandala atual ou abra o arquivo de favoritos do app para Mac (favorites.json) com Abrir arquivo."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Избранного пока нет. Добавьте текущую мандалу."
+            "value" : "Избранного пока нет. Добавьте текущую мандалу или откройте файл избранного приложения для Mac (favorites.json) через «Открыть файл»."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "还没有收藏。添加当前曼陀罗。"
+            "value" : "还没有收藏。添加当前曼陀罗，或通过“打开文件”打开 Mac 应用的收藏文件 (favorites.json)。"
           }
         }
       }
@@ -14713,61 +14713,61 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tippen zum Verwenden."
+            "value" : "Tippen zum Verwenden, lange drücken zum Auswählen und Löschen."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tap to use."
+            "value" : "Tap to use, long press to select and delete."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Toca para usar."
+            "value" : "Toca para usar, mantén pulsado para seleccionar y borrar."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Touchez pour utiliser."
+            "value" : "Touchez pour utiliser, appui long pour sélectionner et supprimer."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tocca per usare."
+            "value" : "Tocca per usare, tieni premuto per selezionare ed eliminare."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "タップで使用できます。"
+            "value" : "タップで使用、長押しで選択して削除できます。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "탭하면 사용합니다."
+            "value" : "탭하면 사용하고, 길게 누르면 선택해 삭제할 수 있습니다."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Toque para usar."
+            "value" : "Toque para usar, toque e segure para selecionar e excluir."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Нажмите, чтобы применить."
+            "value" : "Нажмите, чтобы применить, долгое нажатие — выбрать и удалить."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "轻点即可使用。"
+            "value" : "轻点即可使用，长按可选择并删除。"
           }
         }
       }

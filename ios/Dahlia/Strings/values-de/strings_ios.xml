@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="editor_favourites_empty">Noch keine Favoriten. Füge das aktuelle Mandala hinzu.</string>
-    <string name="editor_favourites_hint">Tippen zum Verwenden.</string>
     <string name="export_saving_to_pictures">Wird zu „Fotos“ hinzugefügt</string>
     <string name="message_image_failed">Bild konnte nicht erstellt werden.</string>
     <string name="message_saved_to_pictures">%1$d × %2$d in „Fotos“ gespeichert</string>
