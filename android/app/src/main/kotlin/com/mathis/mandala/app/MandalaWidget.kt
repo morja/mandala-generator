@@ -8,6 +8,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.util.TypedValue
 import android.view.View
 import android.widget.RemoteViews
 import androidx.compose.ui.graphics.asAndroidBitmap
@@ -24,7 +25,8 @@ import java.time.LocalDate
 /**
  * "Mandala of the day" on the home screen (ADR-0020): the daily wallpaper's turn or a fixed favourite,
  * per widget, in the app's colours or always light or dark. Square sizes (2×2 up to 4×4) show the
- * picture alone; a wide one (4×2) shows the picture without its text and the words beside it. A tap
+ * picture alone; a wide one (4×2) shows the picture without its text and the words beside it, when
+ * the measured words fit beside it ([WidgetFit], QA-9 rule a), else the picture alone too. A tap
  * opens the app as it was and offers that favourite. The receiver only asks for a redraw;
  * [WidgetRenderJob] draws each widget on its own. Plain RemoteViews, so no new package.
  */
@@ -100,11 +102,12 @@ class MandalaWidget : AppWidgetProvider() {
         internal fun draw(context: Context, manager: AppWidgetManager, id: Int, inputs: Inputs) {
             val (favourite, light) = choice(context, id, inputs)
             val colours = Colours(context, light)
+            val options = manager.getAppWidgetOptions(id)
             val views = if (favourite == null) {
-                empty(context, id, colours)
+                empty(context, id, colours, options)
             } else {
                 try {
-                    picture(context, id, favourite, manager.getAppWidgetOptions(id), colours)
+                    picture(context, id, favourite, options, colours)
                 } catch (e: Exception) {
                     Log.w(TAG, "Widget $id: rendering failed, showing the thumbnail", e)
                     thumbnail(context, id, favourite, colours) ?: return
@@ -126,8 +129,23 @@ class MandalaWidget : AppWidgetProvider() {
             return if (width > 0 && height > 0) height.toDouble() / width else 1.0
         }
 
-        /** Whether the widget is wide enough for the words beside the picture. */
+        /** Whether the widget's box is wide (its name in the menu); whether it keeps the words is [plan]. */
         fun isWide(options: Bundle): Boolean = 1 / aspect(options) > WIDE_RATIO
+
+        /**
+         * The wide layout's plan for [words] in a box with [options] (ADR-0020, QA-9 rule a): measured
+         * with the views' font at the context's font scale; not wide when the column is too narrow, too
+         * few lines fit or a word would break.
+         */
+        internal fun plan(context: Context, options: Bundle, words: Quote): WidePlan =
+            WidgetMeasure.wide(context, options, isWide(options), words.text, author(words))
+                .let { if (it.quote.isEmpty()) it.copy(quote = words.text) else it }
+
+        private fun author(words: Quote) = if (words.author.isBlank()) "" else "— " + words.author
+
+        /** Whether a widget with [favourite] shows the wide layout in a box with [options]; for the widget sheet. */
+        internal fun showsWide(context: Context, favourite: Favorite, options: Bundle, quoteFor: (MandalaParameters) -> Quote): Boolean =
+            isWide(options) && plan(context, options, quoteFor(favourite.parameters)).wide
 
         /** Small, wide or large, as the widget stands in portrait. */
         fun shape(options: Bundle): WidgetShape = WidgetChoice.shape(
@@ -142,7 +160,7 @@ class MandalaWidget : AppWidgetProvider() {
 
         /**
          * The views a widget with [favourite] shows in a box with [options], in the [wide] or square
-         * layout, for the widget sheet of the local builds (`bin/widget-sheet`), which draws both
+         * layout (null: the one the widget would choose), for the widget sheet of the local builds (`bin/widget-sheet`), which draws both
          * layouts in every launcher size with fixed words and pictures. Without the mark.
          */
         internal fun views(
@@ -150,17 +168,21 @@ class MandalaWidget : AppWidgetProvider() {
             favourite: Favorite?,
             options: Bundle,
             light: Boolean,
-            wide: Boolean,
+            wide: Boolean?,
             quoteFor: (MandalaParameters) -> Quote,
             renderer: (MandalaParameters, Double) -> android.graphics.Bitmap,
         ): RemoteViews {
             val colours = Colours(context, light)
-            return if (favourite == null) empty(context, 0, colours) else picture(context, 0, favourite, options, colours, wide, quoteFor, renderer)
+            return if (favourite == null) empty(context, 0, colours, options) else picture(context, 0, favourite, options, colours, wide, quoteFor, renderer)
         }
 
-        private fun empty(context: Context, id: Int, colours: Colours) = RemoteViews(context.packageName, R.layout.widget_empty).apply {
+        private fun empty(context: Context, id: Int, colours: Colours, options: Bundle) = RemoteViews(context.packageName, R.layout.widget_empty).apply {
             setInt(R.id.widget_root, "setBackgroundResource", colours.background)
             setTextColor(R.id.widget_empty_text, colours.muted)
+            // Smaller where the text would not fit the box at a large font scale (QA-9 finding 6).
+            val (size, lines) = WidgetMeasure.empty(context, options, context.getString(R.string.widget_empty))
+            setTextViewTextSize(R.id.widget_empty_text, TypedValue.COMPLEX_UNIT_PX, size)
+            setInt(R.id.widget_empty_text, "setMaxLines", lines)
             setOnClickPendingIntent(R.id.widget_root, open(context, id, null))
         }
 
@@ -170,22 +192,26 @@ class MandalaWidget : AppWidgetProvider() {
             favourite: Favorite,
             options: Bundle,
             colours: Colours,
-            wide: Boolean = isWide(options),
+            wide: Boolean? = null,
             quoteFor: (MandalaParameters) -> Quote = { words(context, it) },
             renderer: (MandalaParameters, Double) -> android.graphics.Bitmap = ::render,
         ): RemoteViews {
             val params = favourite.parameters
-            return if (!wide) {
-                square(context, id, favourite, colours, renderer(params, aspect(options)))
+            val words = quoteFor(params)
+            val plan = plan(context, options, words)
+            return if (!(wide ?: (isWide(options) && plan.wide))) {
+                val aspect = aspect(options)
+                square(context, id, favourite, colours, renderer(fitted(params, aspect), aspect))
             } else {
-                val words = quoteFor(params)
                 RemoteViews(context.packageName, R.layout.widget_wide).apply {
                     setInt(R.id.widget_root, "setBackgroundResource", colours.background)
                     // The words stand beside the picture, so the picture goes without them.
                     setImageViewBitmap(R.id.widget_image, renderer(params.copy(textLayer = params.textLayer.copy(isEnabled = false)), 1.0))
-                    setTextViewText(R.id.widget_quote, words.text)
+                    setTextViewText(R.id.widget_quote, plan.quote)
                     setTextColor(R.id.widget_quote, colours.text)
-                    setTextViewText(R.id.widget_author, if (words.author.isBlank()) "" else "— " + words.author)
+                    // As many lines as fit above the author, the last ending in an ellipsis.
+                    setInt(R.id.widget_quote, "setMaxLines", maxOf(1, plan.quoteLines))
+                    setTextViewText(R.id.widget_author, author(words))
                     setTextColor(R.id.widget_author, colours.muted)
                     setViewVisibility(R.id.widget_author, if (words.author.isBlank()) View.GONE else View.VISIBLE)
                     setOnClickPendingIntent(R.id.widget_root, open(context, id, favourite.id))
@@ -205,9 +231,31 @@ class MandalaWidget : AppWidgetProvider() {
         private fun thumbnail(context: Context, id: Int, favourite: Favorite, colours: Colours): RemoteViews? =
             Thumbnails.decode(favourite.thumbnailData)?.let { square(context, id, favourite, colours, it.asAndroidBitmap()) }
 
+        /** Width and height of the picture with `aspect` as height over width, its longer side [SIDE]. */
+        private fun canvas(aspect: Double): Pair<Int, Int> =
+            if (aspect >= 1) (SIDE / aspect).toInt() to SIDE else SIDE to (SIDE * aspect).toInt()
+
+        /**
+         * The square picture's settings with words that fit it (QA-9 rule a): the favourite's text size
+         * where the quote and author fit, else smaller in steps down to a lower limit, else without words.
+         * Only the widget's call changes; core draws the text layer as in the app.
+         */
+        internal fun fitted(params: MandalaParameters, aspect: Double): MandalaParameters {
+            val text = params.textLayer
+            if (!text.isEnabled || text.text.isBlank()) return params
+            val (w, h) = canvas(aspect)
+            val renderer = AndroidTextRenderer()
+            val factor = WidgetFit.shrink { WidgetFit.pictureFits(text, w, h, it, renderer) }
+            return when (factor) {
+                1.0 -> params
+                null -> params.copy(textLayer = text.copy(isEnabled = false))
+                else -> params.copy(textLayer = text.copy(fontSize = text.fontSize * factor))
+            }
+        }
+
         /** The picture with `aspect` as height over width, its longer side [SIDE]. */
         internal fun render(params: MandalaParameters, aspect: Double): android.graphics.Bitmap {
-            val (w, h) = if (aspect >= 1) (SIDE / aspect).toInt() to SIDE else SIDE to (SIDE * aspect).toInt()
+            val (w, h) = canvas(aspect)
             return MandalaRenderer.render(
                 params,
                 RenderOptions(width = w, height = h, supersample = false, threads = Runtime.getRuntime().availableProcessors(),

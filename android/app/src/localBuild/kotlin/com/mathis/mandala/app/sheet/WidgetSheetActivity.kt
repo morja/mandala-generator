@@ -76,7 +76,8 @@ class WidgetSheetActivity : Activity() {
             for (box in BOXES.filter { it.launcher in launchers }) {
                 pictures.nextBox()
                 val wide = MandalaWidget.isWide(box.options())
-                // The layout this launcher shows first, then the other one, then the widget without a favourite.
+                // The layout a wide box shows first, then the other one, then the widget without a favourite.
+                // Whether the launcher shows a case's layout is decided per case: the measured words decide.
                 val order = (if (wide) listOf("wide", "square") else listOf("square", "wide")) + "empty"
                 for (layout in order.filter { it in layouts }) {
                     val sets = if (layout == "empty") listOf("none") else data
@@ -85,8 +86,8 @@ class WidgetSheetActivity : Activity() {
                     val sizes = if (layout == "square") texts.take(1) else texts
                     val colours = if (layout == "square") looks.take(1) else looks
                     for (set in sets) for (text in sizes) for (locale in locales) for (look in colours) for (theme in themes) {
-                        val case = Case(box, layout, layout == (if (wide) "wide" else "square"), set, text, locale, look, theme)
-                        cases.put(draw(out, case, fixture, pictures, appLight, mark))
+                        val case = Case(box, layout, set, text, locale, look, theme)
+                        cases.put(draw(out, case, texts, fixture, pictures, appLight, mark))
                     }
                 }
             }
@@ -98,23 +99,38 @@ class WidgetSheetActivity : Activity() {
         }
     }
 
-    private fun draw(out: File, case: Case, fixture: Fixture, pictures: Pictures, appLight: Boolean, mark: Boolean): JSONObject {
-        val box = case.box
-        val config = Configuration(resources.configuration).apply {
-            fontScale = case.text / 100f
+    /** A context with the case's language and day or night, at [text] % text size. */
+    private fun contextFor(case: Case, text: Int) = createConfigurationContext(
+        Configuration(resources.configuration).apply {
+            fontScale = text / 100f
             setLocales(LocaleList(Locale.forLanguageTag(case.locale)))
             uiMode = (uiMode and Configuration.UI_MODE_NIGHT_MASK.inv()) or
                 if (case.theme == "night") Configuration.UI_MODE_NIGHT_YES else Configuration.UI_MODE_NIGHT_NO
-        }
-        val context = createConfigurationContext(config)
+        },
+    )
+
+    private fun draw(out: File, case: Case, texts: List<Int>, fixture: Fixture, pictures: Pictures, appLight: Boolean, mark: Boolean): JSONObject {
+        val box = case.box
+        val context = contextFor(case, case.text)
 
         // What a fresh phone in this language shows: its own quotes, else the English ones (ADR-0019).
         val languages = Quotes.defaultLanguages(listOf(case.locale))
         val favourite = if (case.layout == "empty") null else fixture.favourite(case.set, case.locale, languages)
         val look = WidgetLook.entries.firstOrNull { it.name == case.look } ?: WidgetLook.APP
+        val quoteFor = { params: MandalaParameters -> MandalaWidget.words(context, params, languages, fixture.day) }
+        // The layout the widget itself would choose for these words, text size and language (QA-9 rule a).
+        // The square picture is drawn once for all text sizes, so it counts as shown when any of them shows it.
+        fun showsWide(text: Int): Boolean {
+            val at = contextFor(case, text)
+            return MandalaWidget.showsWide(at, favourite!!, box.options()) { MandalaWidget.words(at, it, languages, fixture.day) }
+        }
+        val picked = favourite != null && when (case.layout) {
+            "wide" -> showsWide(case.text)
+            else -> texts.any { !showsWide(it) }
+        }
         val views = MandalaWidget.views(
             context, favourite, box.options(), WidgetChoice.isLight(look, appLight), wide = case.layout == "wide",
-            quoteFor = { MandalaWidget.words(context, it, languages, fixture.day) },
+            quoteFor = quoteFor,
             renderer = pictures::get,
         )
         WidgetMark.onto(views, mark)
@@ -143,13 +159,13 @@ class WidgetSheetActivity : Activity() {
         val aspect = box.reportedW / box.reportedH
         val shown = when {
             case.layout == "empty" -> "empty, no favourite"
-            case.picked -> "${case.layout}, the launcher shows this"
+            picked -> "${case.layout}, the launcher shows this"
             else -> "${case.layout}, not shown in this box"
         }
         // A layout this launcher does not show in this box counts as a warning: it only matters if the
         // wide threshold or the launcher's reported size changes. What the launcher shows has to pass.
         val findings = SheetRules(view, density).check().map {
-            if (case.picked || case.layout == "empty" || it.level != "error") it
+            if (picked || case.layout == "empty" || it.level != "error") it
             else it.copy(level = "warn", what = it.what + " (layout not shown in this box)")
         }
         return JSONObject()
@@ -162,7 +178,7 @@ class WidgetSheetActivity : Activity() {
     }
 
     private data class Case(
-        val box: Box, val layout: String, val picked: Boolean, val set: String,
+        val box: Box, val layout: String, val set: String,
         val text: Int, val locale: String, val look: String, val theme: String,
     )
 
@@ -265,8 +281,8 @@ private data class Finding(val level: String, val rule: String, val what: String
 private class SheetRules(private val root: View, private val density: Float) {
     private val findings = mutableListOf<Finding>()
 
-    // Words that may end in an ellipsis by design: the quote.
-    private val sentences = setOf(R.id.widget_quote)
+    // Words that may end in an ellipsis by design (QA-9 rule a): the quote, and the author's one line.
+    private val sentences = setOf(R.id.widget_quote, R.id.widget_author)
 
     // Ornaments that sit on purpose at the edge, and the picture that fills its side.
     private val ornaments = setOf(R.id.widget_mark)
@@ -317,7 +333,9 @@ private class SheetRules(private val root: View, private val density: Float) {
     private fun text(view: TextView, label: String) {
         if (view.textSize / density < TINY) findings += Finding("error", "tiny", "$label is ${view.textSize / density} dp")
         val layout = view.layout ?: return
-        val ellipsized = (0 until layout.lineCount).any { layout.getEllipsisCount(it) > 0 }
+        // The widget shortens a quote itself at a whole word (QA-9 rule a), so its own ellipsis counts too.
+        val ellipsized = (0 until layout.lineCount).any { layout.getEllipsisCount(it) > 0 } ||
+            (view.id in sentences && view.text.endsWith("…"))
         if (ellipsized) {
             findings += if (view.id in sentences) Finding("warn", "shortened", "$label ends in an ellipsis after ${layout.lineCount} lines")
             else Finding("error", "cut", "$label \"${view.text}\" ends in an ellipsis")

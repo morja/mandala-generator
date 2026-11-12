@@ -28,12 +28,16 @@
             android:orientation="vertical"
             android:padding="@dimen/widget_padding">
 
+            <!-- MandalaWidget sets maxLines from the measured room (WidgetMeasure); break strategy and
+                 hyphenation are spelled out so the measuring lays out the lines the same way. -->
             <TextView
                 android:id="@+id/widget_quote"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:breakStrategy="high_quality"
                 android:ellipsize="end"
                 android:fontFamily="serif"
+                android:hyphenationFrequency="none"
                 android:maxLines="6"
                 android:textColor="@color/widget_text"
                 android:textSize="@dimen/widget_quote_size" />
@@ -43,6 +47,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/widget_gap"
+                android:ellipsize="end"
                 android:fontFamily="serif"
                 android:maxLines="1"
                 android:textColor="@color/widget_muted"
