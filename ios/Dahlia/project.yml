@@ -1,0 +1,54 @@
+# Dahlia for iPhone (PLAN-4). The Xcode project is generated from this file and not committed:
+#   ios/Dahlia/scripts/generate     (or: xcodegen generate --spec ios/Dahlia/project.yml)
+# Signing: copy Config/Signing.example.xcconfig to Config/Signing.xcconfig (ignored by Git).
+name: Dahlia
+options:
+  bundleIdPrefix: one.tearoom
+  deploymentTarget:
+    iOS: "26.0"
+  createIntermediateGroups: true
+configs:
+  Debug: debug
+  Release: release
+configFiles:
+  Debug: Config/Debug.xcconfig
+  Release: Config/Release.xcconfig
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    SWIFT_STRICT_CONCURRENCY: complete
+    CODE_SIGN_STYLE: Automatic
+    TARGETED_DEVICE_FAMILY: "1"
+    MARKETING_VERSION: "0.1"
+    CURRENT_PROJECT_VERSION: "1"
+targets:
+  Dahlia:
+    type: application
+    platform: iOS
+    sources:
+      - path: Sources
+      - path: Resources
+        excludes:
+          - "*.md"
+      - path: ../../android/app/src/main/assets/starter-favorites.json
+        buildPhase: resources
+    dependencies:
+      # The Kotlin core, always the release (optimised) framework (SPIKE-3); built by scripts/build-core.
+      - framework: ../build/MandalaCore.xcframework
+        embed: false
+    preBuildScripts:
+      - name: Build the Kotlin core
+        script: '"$SRCROOT/scripts/build-core"'
+        basedOnDependencyAnalysis: false
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+        INFOPLIST_KEY_UISupportedInterfaceOrientations: UIInterfaceOrientationPortrait
+        INFOPLIST_KEY_CFBundleDisplayName: $(DAHLIA_DISPLAY_NAME)
+        INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.graphics-design
+        INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription: "Dahlia adds the pictures you save to your photo library."
+        INFOPLIST_KEY_ITSAppUsesNonExemptEncryption: NO
+        ASSETCATALOG_COMPILER_APPICON_NAME: $(DAHLIA_APP_ICON)
+        ENABLE_USER_SCRIPT_SANDBOXING: NO
+        OTHER_LDFLAGS: ["-lc++"]

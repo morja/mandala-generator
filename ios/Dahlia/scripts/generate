@@ -1,0 +1,8 @@
+#!/bin/sh
+# Generates Dahlia.xcodeproj from project.yml (XcodeGen, approval A6) and builds the core once,
+# so Xcode finds the framework. Creates Config/Signing.xcconfig from the example on first use.
+set -eu
+here="$(cd "$(dirname "$0")/.." && pwd)"
+[ -f "$here/Config/Signing.xcconfig" ] || cp "$here/Config/Signing.example.xcconfig" "$here/Config/Signing.xcconfig"
+"$here/scripts/build-core"
+xcodegen generate --quiet --spec "$here/project.yml"
