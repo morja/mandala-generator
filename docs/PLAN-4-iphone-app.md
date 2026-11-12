@@ -326,7 +326,7 @@ Approved: core as a Kotlin Multiplatform module and the root folder `ios/` (11 N
 
 - **A3 Minimum iOS version** · see F2.
 
-- **A4 Pro product in App Store Connect** · non-consumable `pro` (same id as on Play), 2.99 € (ADR-0016), Family Sharing per F4.
+- **A4 Pro product in App Store Connect** · non-consumable `pro` (same id as on Play), 2.99 € (ADR-0016), Family Sharing per F4. *Created 12 November 2026:* product id `one.tearoom.mandala.pro` (not `pro`), 3.99 € (ADR-0016 as amended), Family Sharing on; see [STORE-2](store/STORE-2-app-store.md).
 
 - **A5 Collector setting** · a fixed collector target (64 MB) set at app start, only if WP-1 confirms on the iPhone 15 what the simulator showed (16–23 % faster in the worst case); removing the ignored `gcMutatorsCooperate` from `android/core/build.gradle.kts` · alternative: the default autotuned collector.
 
