@@ -11,5 +11,7 @@
     <string name="ios_picture_from_photos">Фото</string>
     <string name="ios_picture_from_files">Файлы</string>
     <string name="ios_select">Выбрать</string>
+    <string name="message_video_saved">Видео %1$d × %2$d сохранено в «Фото»</string>
+    <string name="ios_export_stopped_background">Сохранение остановлено: Dahlia слишком долго была в фоне.</string>
     <string name="tour_save_body">Стрелка сохраняет изображение в «Фото».</string>
 </resources>

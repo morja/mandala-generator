@@ -312,7 +312,7 @@ enum Texts {
     }
 
     static func saveSquare(_ size: Int) -> String { format("ios_save_square", size, size) }
-    static func savedToPhotos(_ size: Int) -> String { format("message_saved_to_pictures", size, size) } // iOS variant: Photos
+    static func savedToPhotos(_ w: Int, _ h: Int) -> String { format("message_saved_to_pictures", w, h) } // iOS variant: Photos
     static func layerHide(_ n: Int) -> String { format("controls_layer_hide", n) }
     static func layerShow(_ n: Int) -> String { format("controls_layer_show", n) }
     static func sliderReset(_ label: String) -> String { format("controls_slider_reset", label) }

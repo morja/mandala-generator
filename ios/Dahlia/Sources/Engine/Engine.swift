@@ -8,6 +8,14 @@ extension MandalaParameters: @retroactive @unchecked Sendable {}
 extension Favorite: @retroactive @unchecked Sendable {}
 extension Rendered: @retroactive @unchecked Sendable {}
 extension RenderTicket: @retroactive @unchecked Sendable {}
+extension SaveChoice: @retroactive @unchecked Sendable {}
+extension Framing: @retroactive @unchecked Sendable {}
+extension Finish: @retroactive @unchecked Sendable {}
+extension DrawnFrame: @retroactive @unchecked Sendable {}
+extension MovingFrames: @retroactive @unchecked Sendable {}
+extension VideoFrameSource: @retroactive @unchecked Sendable {}
+extension Editing.SaveFormat: @retroactive @unchecked Sendable {}
+extension VectorExport.Look: @retroactive @unchecked Sendable {}
 extension CustomPaletteStop: @retroactive @unchecked Sendable {}
 extension CustomPalette: @retroactive @unchecked Sendable {}
 extension Quote: @retroactive @unchecked Sendable {}
@@ -21,9 +29,10 @@ actor Engine {
 
     private let bridge = IosBridge.shared
     private let cache: LayerCache
-    private let threads: Int32
-    private let loader = ImageIOLoader()
-    private let text = CoreTextRenderer()
+    // Shared with the save sheet's renders (Engine+Save.swift).
+    let threads: Int32
+    let loader = ImageIOLoader()
+    let text = CoreTextRenderer()
 
     private static let log = Logger(subsystem: "one.tearoom.mandala", category: "engine")
 
@@ -32,7 +41,8 @@ actor Engine {
     nonisolated static func trace(_ line: String) {
         log.info("DAHLIA \(line, privacy: .public)")
         #if DEBUG
-        print("DAHLIA \(line)")
+        // Unbuffered, so a log file from `simctl launch --stderr` has the line at once.
+        FileHandle.standardError.write(Data("DAHLIA \(line)\n".utf8))
         #endif
     }
 

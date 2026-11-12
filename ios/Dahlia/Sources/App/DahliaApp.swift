@@ -30,6 +30,7 @@ struct DahliaApp: App {
                 }
                 .task { FontMap.listIfAsked() }
                 .task { ShotSetup.runIfAsked(model) }
+                .task { await ShotSetup.exportProbeIfAsked(model) }
                 .task { ReviewPrompt.applyLaunchArguments() }
                 #endif
         }

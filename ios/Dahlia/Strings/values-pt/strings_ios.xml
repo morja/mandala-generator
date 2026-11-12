@@ -11,5 +11,7 @@
     <string name="ios_picture_from_photos">Fotos</string>
     <string name="ios_picture_from_files">Arquivos</string>
     <string name="ios_select">Selecionar</string>
+    <string name="message_video_saved">Vídeo %1$d × %2$d salvo em Fotos</string>
+    <string name="ios_export_stopped_background">O salvamento parou porque o Dahlia ficou tempo demais em segundo plano.</string>
     <string name="tour_save_body">A seta salva sua imagem em Fotos.</string>
 </resources>

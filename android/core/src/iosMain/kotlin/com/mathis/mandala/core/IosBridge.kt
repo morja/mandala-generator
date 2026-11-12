@@ -6,6 +6,7 @@ import kotlinx.cinterop.addressOf
 import kotlinx.cinterop.get
 import kotlinx.cinterop.reinterpret
 import kotlinx.cinterop.usePinned
+import kotlinx.cinterop.set
 import platform.Foundation.NSData
 import platform.Foundation.create
 
@@ -59,15 +60,19 @@ object IosBridge {
     fun rgba(image: Image8): NSData {
         val srgb = if (image.encoding == Encoding.SRGB) image else WorkingSpace.convertToSrgb(image)
         val n = image.width * image.height
-        val out = ByteArray(n * 4)
+        // Written straight into memory the NSData then owns: immutable data reaches Swift without a copy (an
+        // NSMutableData would be copied when bridged), and a 2048 px save of a tall screen is about 40 MB (PLAN-4 WP-8).
+        val size = (n * 4).toULong()
+        val bytes = platform.posix.malloc(size) ?: error("No memory for a ${image.width} x ${image.height} picture.")
+        val dst = bytes.reinterpret<kotlinx.cinterop.ByteVar>()
         val src = srgb.data
         for (p in 0 until n) {
-            out[p * 4] = src[p * 3]
-            out[p * 4 + 1] = src[p * 3 + 1]
-            out[p * 4 + 2] = src[p * 3 + 2]
-            out[p * 4 + 3] = -1
+            dst[p * 4] = src[p * 3]
+            dst[p * 4 + 1] = src[p * 3 + 1]
+            dst[p * 4 + 2] = src[p * 3 + 2]
+            dst[p * 4 + 3] = -1
         }
-        return out.usePinned { NSData.create(bytes = it.addressOf(0), length = out.size.toULong()) }
+        return NSData.create(bytesNoCopy = bytes, length = size, freeWhenDone = true)
     }
 
     // ── The iPhone app (PLAN-4 WP-1) ──

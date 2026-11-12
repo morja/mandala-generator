@@ -11,5 +11,7 @@
     <string name="ios_picture_from_photos">Fotos</string>
     <string name="ios_picture_from_files">Dateien</string>
     <string name="ios_select">Auswählen</string>
+    <string name="message_video_saved">Video %1$d × %2$d in „Fotos“ gespeichert</string>
+    <string name="ios_export_stopped_background">Speichern abgebrochen, weil Dahlia zu lange im Hintergrund war.</string>
     <string name="tour_save_body">Der Pfeil speichert dein Bild in „Fotos“.</string>
 </resources>

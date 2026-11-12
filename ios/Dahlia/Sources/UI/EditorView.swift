@@ -50,7 +50,7 @@ struct EditorView: View {
     private var calm: Bool {
         scenePhase == .active && model.preview != nil && model.previewError == nil && model.message == nil && !tour.running
             && !showFavorites && !showSave && !showMenu && model.shell.play == nil && model.shell.candidate == nil
-            && model.drawTool == nil && model.moveTarget == nil && model.saving == nil
+            && model.drawTool == nil && model.moveTarget == nil && !model.save.busy
     }
 
     var body: some View {
@@ -86,6 +86,10 @@ struct EditorView: View {
                 .onChange(of: fullSide * chosen, initial: true) { _, side in tour.pictureFull = side }
             }
             .background(t.background)
+        }
+        .overlay(alignment: .top) {
+            // Sharing from the menu draws the picture after the menu closed (WP-8).
+            if let export = model.save.export, !showSave { ExportNote(progress: export) }
         }
         .overlayPreferenceValue(TourBoundsKey.self) { anchors in
             // The insets come from the outer reader: inside the one that ignores the safe area they read zero.
@@ -127,6 +131,9 @@ struct EditorView: View {
         .sheet(isPresented: $showFavorites) {
             FavoritesSheet { showFavorites = false }
         }
+        #if DEBUG
+        .task { if ShotSetup.openSave { ShotSetup.saveSetup(model); showSave = true } }
+        #endif
         .sheet(isPresented: $showSave) {
             SaveSheet { showSave = false }
         }

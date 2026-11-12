@@ -11,5 +11,7 @@
     <string name="ios_picture_from_photos">Photos</string>
     <string name="ios_picture_from_files">Fichiers</string>
     <string name="ios_select">Sélectionner</string>
+    <string name="message_video_saved">Vidéo %1$d × %2$d enregistrée dans Photos</string>
+    <string name="ios_export_stopped_background">Enregistrement interrompu : Dahlia est resté trop longtemps en arrière-plan.</string>
     <string name="tour_save_body">La flèche enregistre votre image dans Photos.</string>
 </resources>
