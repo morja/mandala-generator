@@ -33,7 +33,11 @@ actual class Parallel actual constructor(actual val threads: Int) : AutoCloseabl
         }
     }
 
+    internal actual val scratch = PerThread { Scratch() }
+
     actual override fun close() {
+        // The pool's threads end with it; the calling thread may live on and must not keep its arrays.
+        scratch.remove()
         pool?.shutdown()
     }
 }

@@ -16,6 +16,9 @@ expect class Parallel(threads: Int) : AutoCloseable {
      */
     fun forRange(count: Int, body: (from: Int, until: Int) -> Unit)
 
+    /** Row-sized work arrays per thread, kept as long as this object (see [Scratch]). */
+    internal val scratch: PerThread<Scratch>
+
     override fun close()
 }
 

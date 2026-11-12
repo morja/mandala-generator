@@ -44,9 +44,12 @@ internal object Filters {
         val w = img.width
         val h = img.height
         val d = img.data
+        // The kernel (or the box radii) is the same for every line, so it is made once and shared.
+        val kernel = if (sigma <= 6.0) gaussianKernel(sigma) else null
+        val radii = if (kernel == null) boxRadiiForGauss(sigma) else null
         // Rows
         par.forRange(h) { from, until ->
-            val line = Line(w, sigma)
+            val line = Line(par.scratch.get(), w, kernel, radii)
             for (y in from until until) {
                 arraycopy(d, y * w * 3, line.src, 0, w * 3)
                 // A black row stays black (and is already zero in place).
@@ -58,8 +61,9 @@ internal object Filters {
         val block = 16
         val blocks = (w + block - 1) / block
         par.forRange(blocks) { from, until ->
-            val line = Line(h, sigma)
-            val cols = FloatArray(h * block * 3)
+            val scratch = par.scratch.get()
+            val line = Line(scratch, h, kernel, radii)
+            val cols = scratch.floats(Scratch.BLUR_COLS, h * block * 3)
             for (b in from until until) {
                 val x0 = b * block
                 val bw = min(w, x0 + block) - x0
@@ -87,17 +91,18 @@ internal object Filters {
         else -> boxRadiiForGauss(sigma).sum()
     }
 
-    /** One line of interleaved RGB and its blur, Gaussian up to sigma 6, three box passes above. */
-    private class Line(val n: Int, sigma: Double) {
-        val src = FloatArray(n * 3)
-        val dst = FloatArray(n * 3)
-        private val kernel = if (sigma <= 6.0) gaussianKernel(sigma) else null
-        private val radii = if (kernel == null) boxRadiiForGauss(sigma) else null
-        private val prefix = if (kernel == null) DoubleArray((n + 1) * 3) else null
+    /**
+     * One line of interleaved RGB and its blur, Gaussian up to sigma 6 (`kernel`), three box passes
+     * above (`radii`). The arrays are the thread's scratch rows and may be longer than the line.
+     */
+    private class Line(scratch: Scratch, val n: Int, private val kernel: FloatArray?, private val radii: IntArray?) {
+        val src = scratch.floats(Scratch.BLUR_SRC, n * 3)
+        val dst = scratch.floats(Scratch.BLUR_DST, n * 3)
+        private val prefix = if (kernel == null) scratch.doubles(Scratch.BLUR_PREFIX, (n + 1) * 3) else null
 
         /** Blurs `src` into `dst`; returns false (and leaves `dst` alone) for an all-black line. */
         fun blur(): Boolean {
-            if (src.all { it == 0f }) return false
+            if (isBlack()) return false
             if (kernel != null) {
                 convolve(src, dst, n, kernel)
             } else {
@@ -106,6 +111,11 @@ internal object Filters {
                 boxPass(dst, src, n, r[1], prefix)
                 boxPass(src, dst, n, r[2], prefix)
             }
+            return true
+        }
+
+        private fun isBlack(): Boolean {
+            for (i in 0 until n * 3) if (src[i] != 0f) return false
             return true
         }
     }
@@ -228,27 +238,40 @@ internal object Filters {
         val wx = if (sameW) null else Weights(sw, dstW)
         val wy = if (sameH) null else Weights(sh, dstH)
         par.forRange(untilRow - fromRow) { from, until ->
-            val cache = HashMap<Int, FloatArray>()
-            val vertical = FloatArray(sw * 3)
-            val out = FloatArray(dstW * 3)
-            fun row(y: Int): FloatArray = cache.getOrPut(y) { FloatArray(sw * 3).also { src.readRow(y, it) } }
+            val scratch = par.scratch.get()
+            val n = sw * 3
+            // Source rows in a ring as long as one output row reads: those rows are consecutive, so
+            // they never share a slot, and each is read once while consecutive output rows reuse it.
+            val slots = wy?.taps ?: 1
+            val ring = scratch.ring(slots, n)
+            val ringY = scratch.ints(Scratch.RESAMPLE_RING_ROWS, slots)
+            ringY.fill(-1, 0, slots)
+            val vertical = scratch.floats(Scratch.RESAMPLE_VERTICAL, n)
+            val out = scratch.exactFloats(Scratch.RESAMPLE_OUT, dstW * 3)
+            fun row(y: Int): FloatArray {
+                val slot = y % slots
+                val r = ring[slot]
+                if (ringY[slot] != y) {
+                    src.readRow(y, r)
+                    ringY[slot] = y
+                }
+                return r
+            }
             for (y in fromRow + from until fromRow + until) {
                 if (wy == null) {
-                    arraycopy(row(y), 0, vertical, 0, sw * 3)
-                    cache.remove(y)
+                    src.readRow(y, vertical)
                 } else {
-                    vertical.fill(0f)
+                    vertical.fill(0f, 0, n)
                     val start = wy.starts[y]
-                    cache.keys.removeAll { it < start.coerceIn(0, sh - 1) }
                     for (t in 0 until wy.taps) {
                         val wgt = wy.w[y * wy.taps + t]
                         if (wgt == 0f) continue
                         val r = row((start + t).coerceIn(0, sh - 1))
-                        for (k in 0 until sw * 3) vertical[k] += r[k] * wgt
+                        for (k in 0 until n) vertical[k] += r[k] * wgt
                     }
                 }
                 if (wx == null) {
-                    arraycopy(vertical, 0, out, 0, sw * 3)
+                    arraycopy(vertical, 0, out, 0, n)
                 } else {
                     for (x in 0 until dstW) {
                         var sr = 0f; var sg = 0f; var sb = 0f

@@ -29,7 +29,7 @@ internal object Background {
         val c2 = hsbToRgb(settings.hue2, settings.saturation2, settings.brightness2)
         val out = Image8(width, height, Encoding.DISPLAY_P3)
         val opacity = settings.opacity.toFloat()
-        val fill: (Int, Int, FloatArray) -> Unit = when (settings.type) {
+        val fill: PixelFill = when (settings.type) {
             BaseLayerType.SUNBURST -> sunburst(settings, c1, c2, width, height, centreX, centreY)
             BaseLayerType.GRAIN -> grain(settings, c1)
             else -> if (settings.isRadial) radialGradient(c1, c2, width, height, centreX, centreY) else linearGradient(settings, c1, c2, width, height)
@@ -156,16 +156,16 @@ internal object Background {
     // Core Image blends the two colours in linear light and hands back 8-bit sRGB values,
     // which the macOS renderer then copies into its buffer as they are.
 
-    private fun radialGradient(c1: Rgb, c2: Rgb, width: Int, height: Int, centreX: Double, centreY: Double): (Int, Int, FloatArray) -> Unit {
+    private fun radialGradient(c1: Rgb, c2: Rgb, width: Int, height: Int, centreX: Double, centreY: Double): PixelFill {
         val r1 = min(width, height) * 0.72
-        return { x, y, out ->
+        return PixelFill { x, y, out ->
             val dx = x + 0.5 - centreX
             val dy = y + 0.5 - centreY
             mixLinear(c1, c2, min(1.0, sqrt(dx * dx + dy * dy) / r1), out)
         }
     }
 
-    private fun linearGradient(settings: BaseLayerSettings, c1: Rgb, c2: Rgb, width: Int, height: Int): (Int, Int, FloatArray) -> Unit {
+    private fun linearGradient(settings: BaseLayerSettings, c1: Rgb, c2: Rgb, width: Int, height: Int): PixelFill {
         val angle = settings.gradientAngle * PI * 2
         val ca = cos(angle)
         val sa = sin(angle)
@@ -178,7 +178,7 @@ internal object Background {
         val len2 = 4 * (dx * dx + dy * dy)
         val centreX = width / 2.0
         val centreY = height / 2.0
-        return { x, y, out ->
+        return PixelFill { x, y, out ->
             val px = x + 0.5 - (centreX - dx)
             val py = (height - (y + 0.5)) - (centreY - dy)
             val t = ((px * 2 * dx + py * 2 * dy) / len2).coerceIn(0.0, 1.0)
@@ -201,12 +201,12 @@ internal object Background {
     // ── Grain (CIRandomGenerator tinted by colour 1 in the macOS app) ──
     // Core Image's random pattern is Apple's own; amount, tint and base level match.
 
-    private fun grain(settings: BaseLayerSettings, c1: Rgb): (Int, Int, FloatArray) -> Unit {
+    private fun grain(settings: BaseLayerSettings, c1: Rgb): PixelFill {
         val ga = settings.grainAmount.toFloat()
         val bd = (settings.brightness * 0.6).toFloat()
         val tint = if (settings.grainColored) floatArrayOf(c1.r.toFloat(), c1.g.toFloat(), c1.b.toFloat()) else floatArrayOf(1f, 1f, 1f)
         val base = floatArrayOf(c1.r.toFloat() * bd, c1.g.toFloat() * bd, c1.b.toFloat() * bd)
-        return { x, y, out ->
+        return PixelFill { x, y, out ->
             // The macOS app runs this colour matrix in a default Core Image context, i.e. in linear
             // light, and copies the encoded 8-bit result into its buffer (matched by mean level).
             for (k in 0..2) {
@@ -222,7 +222,7 @@ internal object Background {
 
     // ── Sunburst (computed per pixel in the macOS app too) ──
 
-    private fun sunburst(settings: BaseLayerSettings, c1: Rgb, c2: Rgb, width: Int, height: Int, centreX: Double, centreY: Double): (Int, Int, FloatArray) -> Unit {
+    private fun sunburst(settings: BaseLayerSettings, c1: Rgb, c2: Rgb, width: Int, height: Int, centreX: Double, centreY: Double): PixelFill {
         val cx = centreX.toFloat()
         val cy = centreY.toFloat()
         val size = min(width, height)
@@ -232,7 +232,7 @@ internal object Background {
         val invHalfW = 1.0f / (size * 0.5f)
         val a1 = floatArrayOf(c1.r.toFloat(), c1.g.toFloat(), c1.b.toFloat())
         val a2 = floatArrayOf(c2.r.toFloat(), c2.g.toFloat(), c2.b.toFloat())
-        return { x, y, out ->
+        return PixelFill { x, y, out ->
             val dx = x - cx
             val dy = y - cy
             val angle = atan2(dy, dx)
@@ -244,4 +244,12 @@ internal object Background {
             for (k in 0..2) out[k] = a1[k] * (1.0f - t) + a2[k] * t
         }
     }
+}
+
+/**
+ * Colour of one background pixel. A function interface rather than a Kotlin function type, whose
+ * generic `invoke` would box both coordinates for every pixel.
+ */
+internal fun interface PixelFill {
+    operator fun invoke(x: Int, y: Int, out: FloatArray)
 }
