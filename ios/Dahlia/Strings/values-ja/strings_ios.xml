@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="editor_favourites_empty">お気に入りはまだありません。現在のマンダラを追加してください。</string>
+    <string name="editor_favourites_hint">タップで使用できます。</string>
+    <string name="export_saving_to_pictures">「写真」に追加中</string>
+    <string name="message_image_failed">画像を作成できませんでした。</string>
+    <string name="message_saved_to_pictures">%1$d × %2$d で「写真」に保存しました</string>
+    <string name="ios_save_square">正方形 · %1$d × %2$d</string>
+    <string name="ios_save_to_photos">「写真」に保存</string>
+    <string name="ios_photos_denied">Dahliaは「写真」に画像を追加できません。設定で許可できます。</string>
+    <string name="ios_open_settings">設定</string>
+    <string name="ios_favourite_label">お気に入り: %1$s</string>
+</resources>

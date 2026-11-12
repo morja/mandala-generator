@@ -1,9 +1,14 @@
 #!/bin/sh
 # Fast iOS check (pre-commit): generates the project and builds the Debug app and the test bundle for
-# the simulator. Compile only, nothing is launched. PLAN-4 section 3.11.
+# the simulator, after the checks for a stale string catalogue, a stale Tokens.swift and colour, size and text
+# literals in the screens. Compile only, nothing is launched. PLAN-4 section 3.11.
 set -eu
 here="$(cd "$(dirname "$0")/.." && pwd)"
 sim="${IOS_SIMULATOR:-iPhone 17}"
+# Stale generated files and source rules first (cheap): the catalogue and Tokens.swift against Android's files.
+"$here/scripts/gen-strings" --check
+"$here/scripts/gen-tokens" --check
+"$here/scripts/check-sources"
 "$here/Dahlia/scripts/generate"
 xcodebuild -project "$here/Dahlia/Dahlia.xcodeproj" -scheme Dahlia -configuration Debug \
     -destination "platform=iOS Simulator,name=$sim" -derivedDataPath "$here/build/dd" -quiet build-for-testing

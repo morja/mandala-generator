@@ -64,7 +64,7 @@ struct FavoriteTile: View {
             .clipShape(RoundedRectangle(cornerRadius: Radius.sm))
         }
         .buttonStyle(.plain)
-        .accessibilityLabel("Favourite: " + favorite.parameters.layers.map { Texts.style($0.style) }.joined(separator: ", "))
+        .accessibilityLabel(Texts.favouriteLabel(favorite.parameters.layers.map { Texts.style($0.style) }.joined(separator: ", ")))
     }
 }
 
@@ -85,13 +85,13 @@ struct SaveSheet: View {
                 }
                 .frame(width: Sizes.favourite * 1.5, height: Sizes.favourite * 1.5)
                 .clipShape(RoundedRectangle(cornerRadius: Radius.sm))
-                Text(Texts.saveSquare).textRole(.body).foregroundStyle(t.textMuted)
+                Text(Texts.saveSquare(1024)).textRole(.body).foregroundStyle(t.textMuted)
             }
             Spacer(minLength: 0)
             if let saving = model.saving {
                 VStack(alignment: .leading, spacing: Spacing.xs) {
                     if let share = saving.share {
-                        Text("\(Texts.creatingImage) · \(Int(share * 100)) %").textRole(.note).foregroundStyle(t.textMuted)
+                        Text("\(Texts.creatingImage) · \(Texts.percent(Int(share * 100)))").textRole(.note).foregroundStyle(t.textMuted)
                         ProgressView(value: share).tint(t.accent)
                     } else {
                         Text(Texts.addingToPhotos).textRole(.note).foregroundStyle(t.textMuted)

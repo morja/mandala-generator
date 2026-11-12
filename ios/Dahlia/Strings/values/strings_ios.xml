@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Texts of the iPhone app that exist only there or must differ from Android's (PLAN-4 section 3.9).
+     A key that also exists in android/app/src/main/res wins over it on iOS, in every language. -->
+<resources>
+    <string name="editor_favourites_empty">No favourites yet. Add the current mandala.</string>
+    <string name="editor_favourites_hint">Tap to use.</string>
+    <string name="export_saving_to_pictures">Adding to Photos</string>
+    <string name="message_image_failed">Could not create the image.</string>
+    <string name="message_saved_to_pictures">Saved %1$d × %2$d to Photos</string>
+    <string name="ios_save_square">Square · %1$d × %2$d</string>
+    <string name="ios_save_to_photos">Save to Photos</string>
+    <string name="ios_photos_denied">Dahlia may not add pictures to Photos. You can allow it in Settings.</string>
+    <string name="ios_open_settings">Settings</string>
+    <string name="ios_favourite_label">Favourite: %1$s</string>
+</resources>

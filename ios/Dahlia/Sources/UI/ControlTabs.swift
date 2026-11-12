@@ -28,7 +28,7 @@ struct ControlTabs: View {
                     .accessibilityAddTraits(option == tab ? [.isSelected, .isHeader] : .isHeader)
                 }
             }
-            Rectangle().fill(t.outline).frame(height: 1)
+            Rectangle().fill(t.outline).frame(height: Sizes.swatchRing / 2)
             ScrollView {
                 switch tab {
                 case .layers: LayersTab()

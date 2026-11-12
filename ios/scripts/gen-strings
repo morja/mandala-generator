@@ -1,0 +1,110 @@
+#!/usr/bin/env python3
+"""Generates the iOS string catalogue from Android's strings (PLAN-4 section 3.9).
+
+Source of truth: android/app/src/main/res/values*/strings*.xml, plus the iOS-only files in
+ios/Dahlia/Strings/values*/strings_ios.xml. Android's keys are kept. A key that is also in an iOS file
+takes the iOS text in every language (a language the iOS file lacks falls back to the iOS English text,
+never to Android's text, which names Android places).
+
+  ios/scripts/gen-strings            write ios/Dahlia/Resources/Localizable.xcstrings
+  ios/scripts/gen-strings --check    exit 1 when the catalogue on disk is out of date
+"""
+import json
+import re
+import sys
+import xml.etree.ElementTree as ET
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[2]
+ANDROID = ROOT / "android/app/src/main/res"
+IOS = ROOT / "ios/Dahlia/Strings"
+OUT = ROOT / "ios/Dahlia/Resources/Localizable.xcstrings"
+
+# Android resource folder -> catalogue language. values-night and values-v31 hold no texts.
+LANGS = {"values": "en", "values-de": "de", "values-es": "es", "values-fr": "fr", "values-it": "it",
+         "values-pt": "pt-BR", "values-ru": "ru", "values-ja": "ja", "values-ko": "ko", "values-zh-rCN": "zh-Hans"}
+
+SPEC = re.compile(r"%(?:(\d+)\$)?([-#+ 0,(]*\d*(?:\.\d+)?)([sdf%])")
+
+
+def convert(text, plural=False):
+    """Android format text -> catalogue text: unescape, %s -> %@, %d -> %lld."""
+    text = re.sub(r"\\(.)", lambda m: "\n" if m.group(1) == "n" else m.group(1), text) if "\\" in text else text
+    has_args = any(m.group(3) != "%" for m in SPEC.finditer(text))
+
+    def spec(m):
+        pos, flags, kind = m.groups()
+        if kind == "%":
+            return "%%" if has_args else "%"
+        p = f"{pos}$" if pos else ""
+        return {"s": f"%{p}@", "d": f"%{p}{flags}lld", "f": f"%{p}{flags}f"}[kind]
+    return SPEC.sub(spec, text)
+
+
+def parse(path):
+    """-> {key: str | {quantity: str}} for one Android file."""
+    out = {}
+    for el in ET.parse(path).getroot():
+        if el.get("translatable") == "false" or el.get("name") is None:
+            continue
+        if el.tag == "string":
+            out[el.get("name")] = convert("".join(el.itertext()))
+        elif el.tag == "plurals":
+            out[el.get("name")] = {i.get("quantity"): convert("".join(i.itertext()), True) for i in el.findall("item")}
+    return out
+
+
+def collect(base, folder):
+    merged = {}
+    for f in sorted((base / folder).glob("strings*.xml")):
+        merged.update(parse(f))
+    return merged
+
+
+def unit(value):
+    return {"stringUnit": {"state": "translated", "value": value}}
+
+
+def build():
+    android = {lang: collect(ANDROID, folder) for folder, lang in LANGS.items()}
+    ios = {lang: collect(IOS, folder) for folder, lang in LANGS.items() if (IOS / folder).exists()}
+    overrides = set(ios.get("en", {}))
+    keys = set(android["en"]) | overrides
+    strings = {}
+    for key in sorted(keys):
+        locs = {}
+        for lang in LANGS.values():
+            if key in overrides:
+                value = ios.get(lang, {}).get(key, ios["en"][key] if lang == "en" else None)
+            else:
+                value = android[lang].get(key)
+            if value is None:
+                continue  # missing translation: the app falls back to English
+            if isinstance(value, dict):
+                locs[lang] = {"variations": {"plural": {q: unit(v) for q, v in sorted(value.items())}}}
+            else:
+                locs[lang] = unit(value)
+        strings[key] = {"extractionState": "manual", "localizations": locs}
+    return {"sourceLanguage": "en", "strings": strings, "version": "1.0"}
+
+
+def main():
+    catalogue = build()
+    if "--check" in sys.argv:
+        try:
+            current = json.loads(OUT.read_text())
+        except (OSError, ValueError):
+            current = None
+        if current != catalogue:
+            print("ios/Dahlia/Resources/Localizable.xcstrings is out of date: run ios/scripts/gen-strings", file=sys.stderr)
+            sys.exit(1)
+        return
+    OUT.parent.mkdir(parents=True, exist_ok=True)
+    # Xcode's own layout (two spaces, " : "), so opening the catalogue in Xcode does not rewrite it.
+    OUT.write_text(json.dumps(catalogue, indent=2, sort_keys=True, ensure_ascii=False, separators=(",", " : ")) + "\n")
+    n = len(catalogue["strings"])
+    missing = {l: sum(1 for s in catalogue["strings"].values() if l not in s["localizations"]) for l in LANGS.values()}
+    print(f"{n} keys written; missing per language: " + ", ".join(f"{l} {c}" for l, c in missing.items() if c))
+
+
+main()
