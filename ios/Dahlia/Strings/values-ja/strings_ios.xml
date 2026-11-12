@@ -11,4 +11,5 @@
     <string name="ios_picture_from_photos">写真</string>
     <string name="ios_picture_from_files">ファイル</string>
     <string name="ios_select">選択</string>
+    <string name="tour_save_body">矢印で画像を「写真」に保存します。</string>
 </resources>

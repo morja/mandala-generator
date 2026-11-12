@@ -11,4 +11,5 @@
     <string name="ios_picture_from_photos">Foto</string>
     <string name="ios_picture_from_files">File</string>
     <string name="ios_select">Seleziona</string>
+    <string name="tour_save_body">La freccia salva l\'immagine in Foto.</string>
 </resources>

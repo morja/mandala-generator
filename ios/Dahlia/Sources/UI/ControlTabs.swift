@@ -17,6 +17,11 @@ struct ControlTabs: View {
     /// How far labels may shrink when even the smaller role does not fit (largest text sizes only).
     private static let smallestScale = 0.6
     @Environment(EditorModel.self) private var model
+    @Environment(TourModel.self) private var tour
+    /// The tour opens a step's tab and scrolls its row up under the tabs, and puts both back when it ends.
+    @State private var positions: [Tab: ScrollPosition] = [:]
+    @State private var offsets: [Tab: CGFloat] = [:]
+    @State private var before: TourRestore?
     @Environment(\.tokens) private var t
 
     var body: some View {
@@ -37,6 +42,9 @@ struct ControlTabs: View {
                 tabView(.text) { TextTab() }
                 tabView(.draw) { DrawTab() }
             }
+        }
+        .onChange(of: tour.state?.step) { _, step in
+            Task { await showTourStep(step) }
         }
         .onChange(of: header, initial: true) { _, new in onHeader(new) }
         .onAppear { onHeader(header) }
@@ -88,6 +96,7 @@ struct ControlTabs: View {
                         .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
+                .tourAnchor(option == .layers ? .layersTab : option == .scene ? .sceneTab : nil)
                 .accessibilityAddTraits(option == tab ? [.isSelected, .isHeader] : .isHeader)
             }
         }
@@ -95,11 +104,49 @@ struct ControlTabs: View {
 
     private func tabView<Content: View>(_ option: Tab, @ViewBuilder content: () -> Content) -> some View {
         ScrollView { content() }
+            .scrollPosition(Binding(get: { positions[option] ?? ScrollPosition() }, set: { positions[option] = $0 }))
+            .onScrollGeometryChange(for: CGFloat.self) { $0.contentOffset.y + $0.contentInsets.top } action: { _, y in offsets[option] = y }
             .scrollDismissesKeyboard(.immediately)
             .opacity(tab == option ? Self.shown : 0)
             .allowsHitTesting(tab == option)
             .accessibilityHidden(tab != option)
     }
+
+    /// The tab and the scroll offsets the tour found, to put back when it ends.
+    private struct TourRestore {
+        let tab: Tab
+        var offsets: [Tab: CGFloat] = [:]
+    }
+
+    /// Shows the step's tab with its row under the tabs (or the place the tour found, when the step has none),
+    /// then marks the step settled so its rings appear. nil: the tour ended, everything goes back.
+    private func showTourStep(_ step: TourStep?) async {
+        guard let step else {
+            guard let saved = before else { return }
+            before = nil
+            for (tab, y) in saved.offsets { positions[tab]?.scrollTo(y: y) }
+            tab = saved.tab
+            return
+        }
+        var saved = before ?? TourRestore(tab: tab)
+        let wanted = step.tab.map(tab(of:)) ?? saved.tab
+        if saved.offsets[wanted] == nil { saved.offsets[wanted] = offsets[wanted] ?? 0 }
+        before = saved
+        tab = wanted
+        // The tab shows first; the scroll waits for it.
+        try? await Task.sleep(for: Timing.debounce)
+        withAnimation {
+            switch step.scrollTo {
+            case nil: positions[wanted, default: ScrollPosition()].scrollTo(y: saved.offsets[wanted] ?? 0)
+            case .layerRow, .effectsRow: positions[wanted, default: ScrollPosition()].scrollTo(y: 0)
+            case let row?: positions[wanted, default: ScrollPosition()].scrollTo(id: row, anchor: .top)
+            }
+        }
+        try? await Task.sleep(for: Timing.tourSettle)
+        if tour.state?.step == step { tour.settled = step }
+    }
+
+    private func tab(of tourTab: TourTab) -> Tab { tourTab == .scene ? .scene : .layers }
 
     private var header: ControlHeader { ControlHeader.of(label(tab), tab: tab, params: model.params, selected: model.selected) }
 

@@ -32,6 +32,7 @@ struct LayersTab: View {
                              canMoveUp: i < layers.count - 1, canMoveDown: i > 0,
                              onSelect: { model.select(i) }, onToggle: { model.setVisible(i, !layers[i].isEnabled) },
                              onMoveUp: { model.moveLayer(i, by: 1) }, onMoveDown: { model.moveLayer(i, by: -1) })
+                        .tourAnchor(i == model.selected ? .layerRow : nil)
                 }
             }
             // Without Pro a fourth visible layer can be tried; keeping the mandala then needs Pro (ADR-0016).
@@ -40,14 +41,16 @@ struct LayersTab: View {
             }
             // Actions on the selected (highlighted) layer; its settings follow below.
             HStack(spacing: 0) {
-                ActionButton(label: Texts.layersAdd, enabled: canAdd, action: model.addLayer)
+                ActionButton(label: Texts.layersAdd, enabled: canAdd, action: model.addLayer).tourAnchor(.addLayer)
                 ActionButton(label: Texts.layersDuplicate, enabled: canAdd, action: model.duplicateSelected)
                 ActionButton(label: Texts.delete, enabled: layers.count > 1, action: model.removeSelected)
                 Spacer(minLength: 0)
                 Button(action: model.randomizeSelected) {
                     Image(systemName: "dice").foregroundStyle(t.accent).frame(width: Sizes.icon * 2, height: Sizes.icon * 2).contentShape(Rectangle())
+                        .tourAnchor(.layerDie)
                 }
                 .buttonStyle(.plain)
+                .id(TourTarget.layerDie)
                 .accessibilityLabel(Texts.layerRandomize(model.selected + 1))
             }
             // Open groups stay open across layers, as on Android; an open palette editor belongs to its layer.
@@ -166,12 +169,16 @@ private struct LayerControls: View {
                     }
                 }
             }
+            .tourAnchor(.styleRow)
+            .id(TourTarget.styleRow)
 
             PaletteGroup(index: Int(layer.paletteIndex), own: layer.customPalette,
                          choose: { model.setPalette($0) },
                          useOwn: { model.apply(editing.withOwnPalette(params: model.params, layer: sel, own: $0)) },
                          restore: { model.apply(editing.withLayerPalette(params: model.params, layer: sel, index: Int32($0), own: $1)) })
                 .id(model.selected)
+                .tourAnchor(.paletteRow)
+                .background { Color.clear.id(TourTarget.paletteRow) }
 
             ControlGroup(Texts.blending, summary: Texts.blendSummary(layer.blendMode, layer.opacity)) {
                 FlowLayout {

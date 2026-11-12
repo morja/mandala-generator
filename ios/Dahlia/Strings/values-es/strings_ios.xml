@@ -11,4 +11,5 @@
     <string name="ios_picture_from_photos">Fotos</string>
     <string name="ios_picture_from_files">Archivos</string>
     <string name="ios_select">Seleccionar</string>
+    <string name="tour_save_body">La flecha guarda tu imagen en Fotos.</string>
 </resources>

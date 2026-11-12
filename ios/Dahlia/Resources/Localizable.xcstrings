@@ -36658,61 +36658,61 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Der Pfeil speichert dein Bild oder macht es zum Hintergrund. Teilen findest du im Menü hinter den drei Punkten."
+            "value" : "Der Pfeil speichert dein Bild in „Fotos“."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "The arrow saves your picture or sets it as wallpaper. Share is in the menu behind the three dots."
+            "value" : "The arrow saves your picture to Photos."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "La flecha guarda tu imagen o la pone como fondo de pantalla. Compartir está en el menú de los tres puntos."
+            "value" : "La flecha guarda tu imagen en Fotos."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "La flèche enregistre votre image ou en fait un fond d'écran. Partager se trouve dans le menu des trois points."
+            "value" : "La flèche enregistre votre image dans Photos."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "La freccia salva l'immagine o la imposta come sfondo. Condividi è nel menu dei tre puntini."
+            "value" : "La freccia salva l'immagine in Foto."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "矢印で画像を保存したり壁紙にしたりできます。共有は右上の三点メニューにあります。"
+            "value" : "矢印で画像を「写真」に保存します。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "화살표로 그림을 저장하거나 배경화면으로 설정합니다. 공유는 점 세 개 메뉴에 있습니다."
+            "value" : "화살표로 그림을 사진에 저장합니다."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "A seta salva sua imagem ou a define como plano de fundo. Compartilhar fica no menu dos três pontos."
+            "value" : "A seta salva sua imagem em Fotos."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Стрелка сохраняет изображение или ставит его на обои. «Поделиться» находится в меню за тремя точками."
+            "value" : "Стрелка сохраняет изображение в «Фото»."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "箭头可保存图片或设为壁纸。分享在三个点的菜单里。"
+            "value" : "箭头可将图片存储到“照片”。"
           }
         }
       }

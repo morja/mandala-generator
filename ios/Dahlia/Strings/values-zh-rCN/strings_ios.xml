@@ -11,4 +11,5 @@
     <string name="ios_picture_from_photos">照片</string>
     <string name="ios_picture_from_files">文件</string>
     <string name="ios_select">选择</string>
+    <string name="tour_save_body">箭头可将图片存储到“照片”。</string>
 </resources>
