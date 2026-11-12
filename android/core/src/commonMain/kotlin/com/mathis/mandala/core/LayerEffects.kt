@@ -80,9 +80,15 @@ internal class LayerEffects(
         if (extra == null && refW.toLong() * refH > REF_TILE_AREA) return tiledOverlay(source, refW, refH, active)
         val work = Filters.resampleToFloat(source, refW, refH, par)
         var overlay: FloatImage? = null
+        // Passes between the first and the last blur a copy of `work` in this one image, refilled each time.
+        var spare: FloatImage? = null
         for ((index, pass) in active.withIndex()) {
             val last = index == active.lastIndex && extra == null
-            val blurred = if (last) work else work.copy()
+            val blurred = when {
+                last -> work
+                overlay == null -> work.copy()
+                else -> (spare ?: FloatImage(refW, refH).also { spare = it }).also { arraycopy(work.data, 0, it.data, 0, work.data.size) }
+            }
             Filters.blurInPlace(blurred, pass.radius, par)
             val s = pass.strength.toFloat()
             val acc = overlay
@@ -110,23 +116,35 @@ internal class LayerEffects(
         val core = max(STRIP_ROWS, 2 * reach)
         val n = refW * 3
         val overlay = FloatImage(refW, refH)
+        // One strip's working copy, the sum of its passes and a copy for the middle passes, each as
+        // tall as the tallest strip and reused for every strip (the content is overwritten each time).
+        val tallest = minOf(refH, core + 2 * reach)
+        val workData = FloatArray(tallest * n)
+        val accData = if (active.size > 1) FloatArray(tallest * n) else null
+        val spareData = if (active.size > 2) FloatArray(tallest * n) else null
         for (t0 in 0 until refH step core) {
             val t1 = minOf(refH, t0 + core)
             val lo = max(0, t0 - reach)
             val hi = minOf(refH, t1 + reach)
-            val work = FloatImage(refW, hi - lo)
+            val rows = hi - lo
+            val size = rows * n
+            val work = FloatImage(refW, rows, workData)
             Filters.resampleRows(source, refW, refH, lo, hi, par) { y, row -> arraycopy(row, 0, work.data, (y - lo) * n, n) }
             var acc: FloatImage? = null
             for ((index, pass) in active.withIndex()) {
-                val blurred = if (index == active.lastIndex) work else work.copy()
+                val blurred = when {
+                    index == active.lastIndex -> work
+                    acc == null -> FloatImage(refW, rows, accData!!).also { arraycopy(workData, 0, it.data, 0, size) }
+                    else -> FloatImage(refW, rows, spareData!!).also { arraycopy(workData, 0, it.data, 0, size) }
+                }
                 Filters.blurInPlace(blurred, pass.radius, par)
                 val st = pass.strength.toFloat()
                 val a = acc
                 if (a == null) {
-                    for (i in blurred.data.indices) blurred.data[i] *= st
+                    for (i in 0 until size) blurred.data[i] *= st
                     acc = blurred
                 } else {
-                    for (i in a.data.indices) a.data[i] += blurred.data[i] * st
+                    for (i in 0 until size) a.data[i] += blurred.data[i] * st
                 }
             }
             arraycopy(acc!!.data, (t0 - lo) * n, overlay.data, t0 * n, (t1 - t0) * n)
@@ -215,15 +233,21 @@ internal class LayerEffects(
         // Original bytes of rows [keptFrom, y0), which earlier strips have already overwritten.
         var kept = Image8(w, 0, image.encoding, ByteArray(0))
         var keptFrom = 0
+        // One strip and its colour bleed copy, as tall as the tallest strip, reused for every strip:
+        // each strip overwrites all the rows it uses.
+        val tallest = minOf(h, STRIP_ROWS + 2 * overlap)
+        val stripData = FloatArray(tallest * n)
+        val bleedData = if (heavy) FloatArray(tallest * n) else null
         for (y0 in 0 until h step STRIP_ROWS) {
             val y1 = minOf(h, y0 + STRIP_ROWS)
             val top = max(0, y0 - overlap)
             val bottom = minOf(h, y1 + overlap)
-            val strip = FloatImage(w, bottom - top)
+            val strip = FloatImage(w, bottom - top, stripData)
+            val size = (bottom - top) * n
             val above = kept
             val aboveFrom = keptFrom
             par.forRange(bottom - top) { from, until ->
-                val row = FloatArray(n)
+                val row = scratch(n)
                 for (r in from until until) {
                     val y = top + r
                     if (y < y0) WorkingSpace.readRow(above, y - aboveFrom, row) else WorkingSpace.readRow(image, y, row)
@@ -236,10 +260,11 @@ internal class LayerEffects(
             if (heavy) {
                 Filters.blurInPlace(strip, heavyBlur, par)
                 run {
-                    val bleed = strip.copy()
-                    Filters.colorControls(bleed.data, 0, bleed.data.size, 1.0 + heavyFactor, 0.1 * heavyFactor, 1.0)
+                    val bleed = FloatImage(w, bottom - top, bleedData!!)
+                    arraycopy(stripData, 0, bleedData, 0, size)
+                    Filters.colorControls(bleed.data, 0, size, 1.0 + heavyFactor, 0.1 * heavyFactor, 1.0)
                     Filters.blurInPlace(bleed, bleedBlur, par)
-                    Filters.blend(strip.data, bleed.data, strip.data.size, BlendOp.SCREEN)
+                    Filters.blend(strip.data, bleed.data, size, BlendOp.SCREEN)
                 }
                 val d = strip.data
                 par.forRange(bottom - top) { from, until ->
@@ -266,7 +291,7 @@ internal class LayerEffects(
             kept = Image8(w, y1 - nextFrom, image.encoding, keep)
             keptFrom = nextFrom
             par.forRange(y1 - y0) { from, until ->
-                val row = FloatArray(n)
+                val row = scratch(n)
                 for (k in from until until) {
                     val y = y0 + k
                     arraycopy(strip.data, (y - top) * n, row, 0, n)
@@ -301,7 +326,7 @@ internal class LayerEffects(
         val out = target(image)
         val n = image.width * 3
         par.forRange(image.height) { from, until ->
-            val row = FloatArray(n)
+            val row = scratch(n)
             for (y in from until until) {
                 WorkingSpace.readRow(image, y, row)
                 f(row, n)
@@ -323,7 +348,7 @@ internal class LayerEffects(
         val ca = cos(angle).toFloat()
         val sa = sin(angle).toFloat()
         par.forRange(h) { from, until ->
-            val row = FloatArray(w * 3)
+            val row = scratch(w * 3)
             val tmp = FloatArray(3)
             for (y in from until until) {
                 for (x in 0 until w) {
@@ -348,9 +373,10 @@ internal class LayerEffects(
         val n = w * 3
         val covers = overlay != null && x0 == 0 && y0 == 0 && overlay.width == w && overlay.height == base.height
         par.forRange(base.height) { from, until ->
-            val a = FloatArray(n)
-            val b = FloatArray(n)
-            val src = if (overlay == null || covers) null else FloatArray(overlay.width * 3)
+            val rows = par.scratch.get()
+            val a = rows.floats(Scratch.ROW_A, n)
+            val b = rows.floats(Scratch.ROW_B, n)
+            val src = if (overlay == null || covers) null else rows.floats(Scratch.ROW_C, overlay.width * 3)
             for (y in from until until) {
                 if (covers) {
                     WorkingSpace.readRow(overlay!!, y, b)
@@ -359,7 +385,7 @@ internal class LayerEffects(
                     val inRows = overlay != null && oy >= 0 && oy < overlay.height
                     // Rows the overlay misses stay as they are, unless they still need converting to sRGB.
                     if (!inRows && op != BlendOp.MULTIPLY && base.encoding == Encoding.SRGB) continue
-                    b.fill(0f)
+                    b.fill(0f, 0, n)
                     if (inRows) {
                         WorkingSpace.readRow(overlay!!, oy, src!!)
                         val xs = max(0, x0)

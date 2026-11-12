@@ -60,6 +60,9 @@ actual class Parallel actual constructor(actual val threads: Int) : AutoCloseabl
         }
     }
 
+    internal actual val scratch = PerThread { Scratch() }
+
+    // The map of per-thread arrays goes with this object, so neither the workers nor the caller keep them.
     actual override fun close() {}
 
     /** One worker per core but the caller's, started on first use. */

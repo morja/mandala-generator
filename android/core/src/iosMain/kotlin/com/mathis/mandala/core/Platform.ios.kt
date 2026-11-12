@@ -23,6 +23,14 @@ internal actual class PerThread<T : Any> actual constructor(private val create: 
             if (values.compareAndSet(old, old + (thread to value))) return value
         }
     }
+
+    actual fun remove() {
+        val thread = pthread_self().toLong()
+        while (true) {
+            val old = values.load()
+            if (thread !in old || values.compareAndSet(old, old - thread)) return
+        }
+    }
 }
 
 internal actual fun availableProcessors(): Int = platform.Foundation.NSProcessInfo.processInfo.activeProcessorCount.toInt()

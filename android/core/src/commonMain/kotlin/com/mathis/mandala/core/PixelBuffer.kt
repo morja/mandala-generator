@@ -36,6 +36,8 @@ class PixelBuffer private constructor(
      * enlarged instead of thinner (ADR-0010).
      */
     private val lineWidth: Float = 1f,
+    /** Floats of `data` this buffer and its bands hold; a reused strip's array may be longer. */
+    private val used: Int = data.size,
 ) {
     constructor(width: Int, height: Int) : this(width, height, FloatArray(width * height * 3), 0, height, 0, 0f, 0f, (max(width, height) * 4).toFloat())
 
@@ -44,14 +46,14 @@ class PixelBuffer private constructor(
     val rowsUntil: Int get() = bandHi
 
     fun band(from: Int, until: Int): PixelBuffer =
-        PixelBuffer(width, height, data, max(bandLo, from), min(bandHi, until), originY, rejectX, rejectY, rejectLimit, lineWidth)
+        PixelBuffer(width, height, data, max(bandLo, from), min(bandHi, until), originY, rejectX, rejectY, rejectLimit, lineWidth, used)
 
     /** True when a vertical span [yMin, yMax] can touch this view's rows. */
     fun touchesRows(yMin: Float, yMax: Float): Boolean = yMax >= bandLo - 2 && yMin <= bandHi + 1
 
     fun scale(factor: Float) {
         if (factor == 1f) return
-        for (i in data.indices) data[i] *= factor
+        for (i in 0 until used) data[i] *= factor
     }
 
     fun addPixel(x: Int, y: Int, r: Float, g: Float, b: Float, weight: Float) {
@@ -202,7 +204,7 @@ class PixelBuffer private constructor(
     fun writeRows(out: Image8) {
         val dst = out.data
         val base = originY * width * 3
-        for (i in data.indices) {
+        for (i in 0 until used) {
             val v = data[i]
             dst[base + i] = WorkingSpace.quantize(v / (v + 0.55f))
         }
@@ -214,7 +216,11 @@ class PixelBuffer private constructor(
 
         /** A buffer for rows [from, until) of a width x height canvas. */
         fun strip(width: Int, height: Int, from: Int, until: Int, reject: Reject = Reject.of(width, height), lineWidth: Float = 1f): PixelBuffer =
-            PixelBuffer(width, height, FloatArray(width * (until - from) * 3), from, until, from, reject.x, reject.y, reject.limit, lineWidth)
+            strip(width, height, from, until, reject, lineWidth, FloatArray(width * (until - from) * 3))
+
+        /** Like [strip], drawing into `data` (zero in its first width * (until - from) * 3 floats). */
+        private fun strip(width: Int, height: Int, from: Int, until: Int, reject: Reject, lineWidth: Float, data: FloatArray): PixelBuffer =
+            PixelBuffer(width, height, data, from, until, from, reject.x, reject.y, reject.limit, lineWidth, width * (until - from) * 3)
 
         /**
          * Draws a width x height canvas strip by strip into an 8-bit image, so only one strip is
@@ -228,9 +234,12 @@ class PixelBuffer private constructor(
             draw: (PixelBuffer) -> Unit,
         ): Image8 {
             val out = Image8(width, height, Encoding.DISPLAY_P3)
+            // One array for all strips, cleared before each, as a new one would be.
+            val data = FloatArray(width * min(height, STRIP_ROWS) * 3)
             for (y0 in 0 until height step STRIP_ROWS) {
                 val y1 = min(height, y0 + STRIP_ROWS)
-                val strip = strip(width, height, y0, y1, reject, lineWidth)
+                if (y0 > 0) data.fill(0f, 0, width * (y1 - y0) * 3)
+                val strip = strip(width, height, y0, y1, reject, lineWidth, data)
                 draw(strip)
                 strip.writeRows(out)
                 onStrip(y1.toDouble() / height)

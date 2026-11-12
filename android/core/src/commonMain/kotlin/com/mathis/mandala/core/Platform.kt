@@ -5,6 +5,9 @@ import kotlin.math.floor
 /** One scratch value per thread, created on first use (java.lang.ThreadLocal on the JVM). */
 internal expect class PerThread<T : Any>(create: () -> T) {
     fun get(): T
+
+    /** Drops the calling thread's value, so a thread that outlives the owner does not keep it. */
+    fun remove()
 }
 
 /** `System.arraycopy` for common code; source and target may overlap. */
