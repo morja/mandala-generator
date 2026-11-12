@@ -1,6 +1,6 @@
 # ADR-0020 · Home screen widget "Mandala of the day"
 
-Status: accepted, 26 October 2026 (Mathis, UX-1 14, DM-14). Android only.
+Status: accepted, 26 October 2026 (Mathis, UX-1 14, DM-14). Android first; the iPhone widget is the amendment of 12 November 2026 below.
 
 ## Decision
 
@@ -23,3 +23,16 @@ On Mathis' phone one of three widgets showed the empty text for days while favou
 - **Rendering in a job.** The receiver only asks for a redraw. A JobScheduler job (expedited from Android 12 on) draws the waiting widgets one by one, each with its own try/catch, updates each as soon as its picture is ready and falls back to the favourite's thumbnail when rendering fails. The empty text shows only when there is no favourite at all.
 
 Consequences, in addition: a widget is drawn again when it is placed, resized or reconfigured, after the morning run, and when what it would show changes (a favourite deleted, the daily choice, the app's theme, Pro, the starter favourites written on the first start). Each widget remembers what it last showed, so only the affected ones are drawn.
+
+## Amendment, 12 November 2026: the iPhone widget (PLAN-4 WP-10, IOS-10)
+
+Mathis decided F7 a (free, the daily turn with Pro, ADR-0016 point 4 as amended) and F8 a (seven days ahead), and approved the App Group (A2) and background app refresh (A10). The Android points stay; on the iPhone:
+
+- **WidgetKit, small, medium and large** (`ios/Dahlia/Widget`). Small and large show the picture alone, edge to edge; medium is Android's wide widget (the picture without its words at the left, the favourite's words or the quote of the day beside it). No lock screen widgets (PLAN-4 section 8).
+- **The extension never renders.** It has about 30 MB, so it does not link the Kotlin core. The app renders into its App Group (`group.<bundle id>`: `group.one.tearoom.mandala`, and `.debug` for the debug build) the square picture of the next seven days of the daily turn (always, so a newly placed widget is sharp at once), and for each placed widget its shape: the large picture in the large widget's own shape, the picture without words for a medium widget whose favourite has words, for its fixed favourite or for the days it follows. Sizes come from the widget sizes the extension last saw (`context.displaySize`). Pictures are named after what they show (settings and size), so nothing is drawn twice; every favourite's thumbnail is written too, the fallback while a picture is missing. An index (`Widgets/index.json`, written atomically, last) lists the favourites with names, words and pictures, the seven days with their favourite and quote of the day, the app's light or dark setting and the debug mark. Files the old index named stay one round.
+- **The turn is a function of the date.** A day starts at 4:00 local time and is numbered like Android's `LocalDate.toEpochDay`; with Pro the n-th of the ticked favourites (all while none is ticked) on day n through the shared `DailyTurn`, without Pro always the first. The extension hands WidgetKit one entry per prepared day at 4:00 and, after the seventh, stays on the last picture and asks again the next day.
+- **Rendering ahead** happens at every start and return to the app and on every change Android redraws for (favourites added, changed or deleted, the daily choice, the theme, Pro, the quote languages, the starter favourites of a first start), plus a background app refresh scheduled from the next 4:00 on while widgets are placed. Timelines are reloaded only when the index changed.
+- **Settings per widget** through a configuration App Intent (Edit Widget): *Mandala* (daily turn, or one of the favourites by name) and *Appearance* (like the app, light, dark). A deleted fixed favourite falls back to the daily turn.
+- **Tap:** a `dahlia://widget?favourite=<id>` link (`dahlia-debug` for the debug build) opens the app as it was and offers the widget's mandala with Android's message when it differs.
+- **The Dahlia page lists the placed widgets** from `WidgetCenter` current configurations (size, and the favourite or "name · Daily turn"); on iOS the rows open nothing, since a widget's settings open only from the home screen.
+- **Debug builds mark widget pictures** with the icon's dot, drawn by the extension bottom right; the More page has a debug switch (and `-widgetMark NO`) to turn it off for screenshots.
