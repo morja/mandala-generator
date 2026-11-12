@@ -19,7 +19,10 @@ struct DahliaApp: App {
                     model.memoryWarning()
                 }
                 #if DEBUG
-                .task { await DragProbe.runIfAsked(model) }
+                .task {
+                    DragProbe.openFileIfAsked(model)
+                    await DragProbe.runIfAsked(model)
+                }
                 #endif
         }
     }

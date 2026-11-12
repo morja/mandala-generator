@@ -50,6 +50,7 @@ struct ControlTabs: View {
             }
         }
         .onChange(of: header, initial: true) { _, new in onHeader(new) }
+        .onAppear { onHeader(header) }
     }
 
     private func tabView<Content: View>(_ option: Tab, @ViewBuilder content: () -> Content) -> some View {

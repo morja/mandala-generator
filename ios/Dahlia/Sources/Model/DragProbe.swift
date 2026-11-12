@@ -8,6 +8,12 @@ import Foundation
 /// when the picture caught up after each drag ("DAHLIA preview … shownAfterChange=…").
 @MainActor
 enum DragProbe {
+    /// Debug only: `-openFile <path>` opens a settings or favourites file as the menu's "Open file" does.
+    static func openFileIfAsked(_ model: EditorModel) {
+        guard let path = UserDefaults.standard.string(forKey: "openFile") else { return }
+        model.openFile(URL(fileURLWithPath: path))
+    }
+
     static func runIfAsked(_ model: EditorModel) async {
         guard UserDefaults.standard.bool(forKey: "dragProbe"),
               let heavy = model.favorites.max(by: { visible($0) < visible($1) }) else { return }

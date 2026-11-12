@@ -67,8 +67,9 @@ struct PlaySheet: View {
             }
             // The scene effects on or off: a dark scene can hide the play. Off it is struck through and muted.
             Button { model.setPlayEffects(!state.effects) } label: {
-                Image(systemName: "sparkles").symbolVariant(state.effects ? .none : .slash)
+                Image(systemName: "sparkles")
                     .foregroundStyle(state.effects ? t.accent : t.textMuted)
+                    .overlay { if !state.effects { Image(systemName: "line.diagonal").foregroundStyle(t.textMuted) } }
                     .frame(width: Sizes.swatch, height: Sizes.swatch)
             }
             .buttonStyle(.plain)

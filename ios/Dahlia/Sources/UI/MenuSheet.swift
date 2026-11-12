@@ -20,7 +20,7 @@ struct MenuSheet: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 0) {
                 if let candidate = model.shell.candidate {
-                    Compare(candidate: candidate)
+                    Compare(candidate: candidate, close: close)
                 } else if page == .more {
                     morePage
                 } else {
@@ -282,6 +282,7 @@ private struct Thumb: View {
 /// Second step: the current mandala and the new one side by side; nothing changes before "Use new".
 private struct Compare: View {
     let candidate: Candidate
+    let close: @MainActor () -> Void
     @Environment(EditorModel.self) private var model
     @Environment(\.tokens) private var t
 
@@ -319,6 +320,7 @@ private struct Compare: View {
                 .tint(t.accent)
                 Button {
                     model.useCandidate()
+                    close()
                 } label: {
                     Label(Texts.menuUseNew, systemImage: "checkmark").textRole(.heading).frame(maxWidth: .infinity).padding(.vertical, Spacing.xs)
                 }

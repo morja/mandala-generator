@@ -14,8 +14,38 @@ struct EditorView: View {
     /// Moves the folding along with the change of size, but not with every change of the layout.
     private static let foldAnimation = Animation.easeInOut(duration: 0.25)
 
+    /// Android's top bar in its order: Back and Forward on the left; play field, die, save, favourites and the menu on
+    /// the right. Seven buttons do not fit the system navigation bar on the smallest iPhone (it would hide two), so
+    /// the bar is Dahlia's own row.
+    private var bar: some View {
+        HStack(spacing: 0) {
+            barButton("arrow.uturn.backward", Texts.back, tint: t.text, enabled: model.shell.canGoBack) { model.goBack() }
+            barButton("arrow.uturn.forward", Texts.forward, tint: t.text, enabled: model.shell.canGoForward) { model.goForward() }
+            Spacer(minLength: 0)
+            barButton("safari", Texts.playTitle, tint: t.text) { model.openPlay() }
+            barButton("die.face.5", Texts.newKind(.everything), tint: t.accent) { model.surprise() }
+            barButton("square.and.arrow.down", Texts.saveImage, tint: t.accent) { showSave = true }
+            barButton(model.isFavorite ? "star.fill" : "star", Texts.favourites, tint: t.text) { showFavorites = true }
+            barButton("ellipsis", Texts.more, tint: t.text) { showMenu = true }
+        }
+        .padding(.horizontal, Spacing.sm)
+        .padding(.vertical, Spacing.xs)
+    }
+
+    private func barButton(_ symbol: String, _ label: String, tint: Color, enabled: Bool = true, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Image(systemName: symbol).foregroundStyle(enabled ? tint : t.textMuted)
+                .frame(width: Sizes.swatch + Spacing.xs, height: Sizes.swatch + Spacing.xs)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .disabled(!enabled)
+        .accessibilityLabel(label)
+    }
+
     var body: some View {
-        NavigationStack {
+        VStack(spacing: 0) {
+            bar
             GeometryReader { geo in
                 let fullSide = min(geo.size.width - Spacing.lg * 2, geo.size.height * 0.5)
                 let fraction = model.shell.previewFraction
@@ -39,34 +69,6 @@ struct EditorView: View {
                 }
             }
             .background(t.background)
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItemGroup(placement: .topBarLeading) {
-                    Button { model.goBack() } label: { Image(systemName: "arrow.uturn.backward") }
-                        .disabled(!model.shell.canGoBack)
-                        .accessibilityLabel(Texts.back)
-                    Button { model.goForward() } label: { Image(systemName: "arrow.uturn.forward") }
-                        .disabled(!model.shell.canGoForward)
-                        .accessibilityLabel(Texts.forward)
-                }
-                ToolbarItemGroup(placement: .topBarTrailing) {
-                    Button { model.openPlay() } label: { Image(systemName: "safari") }
-                        .tint(t.text)
-                        .accessibilityLabel(Texts.playTitle)
-                    Button { model.surprise() } label: { Image(systemName: "die.face.5") }
-                        .tint(t.accent)
-                        .accessibilityLabel(Texts.newKind(.everything))
-                    Button { showSave = true } label: { Image(systemName: "square.and.arrow.down") }
-                        .tint(t.accent)
-                        .accessibilityLabel(Texts.saveImage)
-                    Button { showFavorites = true } label: { Image(systemName: model.isFavorite ? "star.fill" : "star") }
-                        .tint(t.text)
-                        .accessibilityLabel(Texts.favourites)
-                    Button { showMenu = true } label: { Image(systemName: "ellipsis") }
-                        .tint(t.text)
-                        .accessibilityLabel(Texts.more)
-                }
-            }
         }
         .overlay(alignment: .bottom) {
             if let message = model.message, !showFavorites, !showSave, !showMenu, model.shell.play == nil {
