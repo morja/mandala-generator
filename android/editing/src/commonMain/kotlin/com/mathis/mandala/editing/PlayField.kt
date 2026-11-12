@@ -56,7 +56,33 @@ object PlayField {
             0.8 * sin(2 * PI * f * (cos(angle) * x + sin(angle) * y) + phase) + 0.25 * sin(2 * PI * f2 * (x - y) + phase2)
     }
 
-    fun apply(base: MandalaParameters, mode: Mode, land: Landscape, touch: Touch): MandalaParameters {
+    /**
+     * The picture as the field shows it. With `effects` off (the switch beside New landscape, Mathis,
+     * 12 November 2026) the scene effects layer is switched off as the Scene tab's "Show effects" does,
+     * its values kept so the switch there finds them again, and the field does not raise bloom,
+     * vignette, stars or grain; background, emblem and text stay as they are.
+     */
+    fun apply(base: MandalaParameters, mode: Mode, land: Landscape, touch: Touch, effects: Boolean = true): MandalaParameters {
+        if (!effects) return withoutEffects(base, played(base, mode, land, touch))
+        return played(base, mode, land, touch)
+    }
+
+    /** The middle, or Reset: the mandala as it was, without its scene effects when they are off. */
+    fun middle(base: MandalaParameters, effects: Boolean): MandalaParameters = if (effects) base else withoutEffects(base, base)
+
+    /**
+     * "Start from here" in the compass: the picture as played becomes the new middle. With the effects
+     * off it keeps the scene effects of the old middle as they were (not raised, still switched as
+     * before), so turning the switch on again brings them back.
+     */
+    fun newMiddle(base: MandalaParameters, mode: Mode, land: Landscape, touch: Touch, effects: Boolean): MandalaParameters =
+        if (effects) played(base, mode, land, touch) else played(base, mode, land, touch).copy(effectsLayer = base.effectsLayer)
+
+    /** `p` with the scene effects layer switched off and `base`'s values in it. */
+    private fun withoutEffects(base: MandalaParameters, p: MandalaParameters) =
+        p.copy(effectsLayer = base.effectsLayer.copy(isEnabled = false))
+
+    private fun played(base: MandalaParameters, mode: Mode, land: Landscape, touch: Touch): MandalaParameters {
         val layers = base.layers.mapIndexed { i, l ->
             if (!l.isEnabled) l else when (mode) {
                 Mode.MAP -> map(l, land.zones.getOrNull(i), land, touch)

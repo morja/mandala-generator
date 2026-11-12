@@ -86,6 +86,7 @@
     <string name="play_done">완료</string>
     <string name="play_hint">한 손가락으로 끌어 보세요.</string>
     <string name="play_new_map">새 풍경</string>
+    <string name="play_effects">효과</string>
     <string name="play_from_here">여기서부터</string>
     <string name="play_keep">즐겨찾기에 추가</string>
     <string name="play_light">빛</string>
