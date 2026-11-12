@@ -1,0 +1,1 @@
+New: in the play field, a switch hides the scene effects, so a dark scene no longer gets in the way while you play. Smaller fixes and less memory use when drawing.
