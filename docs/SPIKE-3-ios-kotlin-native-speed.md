@@ -61,7 +61,7 @@ Short answer: **yes, with conditions. In a release build the iPhone 15 renders t
 
    - Memory manager: the default collector (concurrent mark and sweep) with `gcMutatorsCooperate=true`, so render threads help with marking instead of waiting for it: 5 to 20 % faster (favourite preview 600 → 466 ms, worst 1024 5 577 → 5 359 ms), kept in `android/core/build.gradle.kts`. Switching the collector to stop-the-world (`gc=stwms`), a fixed collection threshold (`GC.autotune = false`, 64 MB target) and the other settings did not fix the Grand Central Dispatch footprint and were slower; the fix was the thread pool (finding 2).
 
-   - Threads through the platform `Parallel`: the worst case at 1024 takes 25.9 s on one thread and 5.3 s on twelve in the simulator (4.9 times). THREADS_DEVICE
+   - Threads through the platform `Parallel`: the worst case at 1024 takes 25.9 s on one thread and 5.3 s on twelve in the simulator (4.9 times). On the iPhone 15 the favourite takes 3.2 / 14.5 / 14.3 s on one thread against 1.3 / 5.2 / 5.4 s on all six cores (preview / 1024 / 2048), 2.4 to 2.8 times; the four efficiency cores add less than performance cores, so the gain stays below six. (One single-thread run at 1024 took 227 s; the app was apparently paused in between, the median is unaffected.)
 
 5. **What had to change in `core`.** About 100 changed lines in common code plus 170 new lines for iOS, as PLAN-4 section 6 estimated:
 
