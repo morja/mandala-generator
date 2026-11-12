@@ -13,4 +13,5 @@
     <string name="ios_select">选择</string>
     <string name="message_video_saved">已将 %1$d × %2$d 视频保存到“照片”</string>
     <string name="ios_export_stopped_background">Dahlia 在后台停留太久，保存已停止。</string>
+    <string name="tour_save_body">箭头可将图片存储到“照片”。</string>
 </resources>

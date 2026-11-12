@@ -34,6 +34,9 @@ targets:
           - "*.md"
       - path: ../../android/app/src/main/assets/starter-favorites.json
         buildPhase: resources
+      # The licence text of the libraries, shown in About (the same file as on Android).
+      - path: ../../android/app/src/main/assets/licenses/apache-2.0.txt
+        buildPhase: resources
     dependencies:
       # The Kotlin core, always the release (optimised) framework (SPIKE-3); built by scripts/build-core.
       - framework: ../build/MandalaCore.xcframework
@@ -67,6 +70,9 @@ targets:
       - path: Tests
       # The Core Text renderer is compared with the JVM's text in the parity test.
       - path: Sources/Engine/CoreTextRenderer.swift
+      # The tour and rating rules are pure and unit-tested.
+      - path: Sources/Model/Tour.swift
+      - path: Sources/Model/ReviewPolicy.swift
     dependencies:
       - framework: ../build/MandalaCore.xcframework
         embed: false

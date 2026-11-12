@@ -4,19 +4,41 @@ import UniformTypeIdentifiers
 
 /// The menu as a sheet from below (Android's `MenuSheet`, DM-7 B): the mandala on screen with what keeps it, three dice
 /// for a new one shown beside the current mandala, the theme and "More" (the line drawing, files, the two switches).
-/// What belongs to later packages (wallpapers, Pro, widgets, guide, tour, About) is not here yet.
+/// What belongs to later packages (wallpapers, Pro, widgets) is not here yet.
 struct MenuSheet: View {
     let close: @MainActor () -> Void
     @Environment(EditorModel.self) private var model
+    @Environment(TourModel.self) private var tour
     @Environment(\.tokens) private var t
     @AppStorage("lightTheme") private var lightTheme = false
-    @State private var page = Page.main
+    @State private var page = Self.initialPage
     @State private var showOpen = false
     @State private var showExport = false
+    @State private var showAbout = Self.initialAbout
+
+    private enum Page { case main, more, dahlia, lineDrawing }
+
+    private static var initialPage: Page {
+        #if DEBUG
+        switch ShotSetup.sheet {
+        case "more": return .more
+        case "dahlia", "about": return .dahlia
+        default: return .main
+        }
+        #else
+        return .main
+        #endif
+    }
+
+    private static var initialAbout: Bool {
+        #if DEBUG
+        return ShotSetup.sheet == "about"
+        #else
+        return false
+        #endif
+    }
 
     @State private var lineDrawing: SvgDocument?
-
-    private enum Page { case main, more, lineDrawing }
 
     var body: some View {
         ScrollView {
@@ -27,6 +49,8 @@ struct MenuSheet: View {
                     morePage
                 } else if page == .lineDrawing {
                     lineDrawingPage
+                } else if page == .dahlia {
+                    dahliaPage
                 } else {
                     mainPage
                 }
@@ -40,6 +64,7 @@ struct MenuSheet: View {
         .presentationBackground(t.background)
         // The comparison belongs to the open menu only.
         .onDisappear { model.closeCandidate() }
+        .sheet(isPresented: $showAbout) { AboutView { showAbout = false } }
         .fileImporter(isPresented: $showOpen, allowedContentTypes: [.json, .plainText, .data]) { result in
             if case .success(let url) = result {
                 model.openFile(url)
@@ -95,6 +120,8 @@ struct MenuSheet: View {
             MenuRow(icon: "moon", label: Texts.menuTheme, detail: nil, action: nil) { themeChoice }
             divider
             MenuRow(icon: "slider.horizontal.3", label: Texts.menuMore, detail: nil, action: { page = .more }) { chevron }
+            divider
+            MenuRow(icon: "info.circle", label: Texts.menuDahlia, detail: Texts.menuDahliaDetail, action: { page = .dahlia }) { chevron }
         }
     }
 
@@ -150,6 +177,25 @@ struct MenuSheet: View {
                         }) { chevron }
                 divider
             }
+    // ── Dahlia page: guide, tour, rating, About (Pro and widgets follow with WP-9 and WP-10) ──
+
+    private var dahliaPage: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            BackRow(label: Texts.menuBack) { page = .main }
+            Text(Texts.menuDahlia).textRole(.title).foregroundStyle(t.text).padding(.top, Spacing.sm)
+            divider.padding(.top, Spacing.sm)
+            MenuRow(icon: "questionmark.circle", label: Texts.menuGuide, detail: nil, action: { Links.openGuide() }) { chevron }
+            divider
+            // The short tour of the editor that a new install starts with.
+            MenuRow(icon: "map", label: Texts.menuTour, detail: nil, action: {
+                close()
+                tour.start()
+            }) { chevron }
+            divider
+            // The permanent way to rate: the App Store review page, never an own pre-question.
+            MenuRow(icon: "heart", label: Texts.menuRate, detail: nil, action: { ReviewPrompt.openReviewPage() }) { chevron }
+            divider
+            MenuRow(icon: "info.circle", label: Texts.menuAbout, detail: nil, action: { showAbout = true }) { chevron }
         }
     }
 

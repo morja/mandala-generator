@@ -5,7 +5,7 @@ import Foundation
 /// Debug only: puts the editor into a state for screenshots in the simulator, where tapping through is
 /// slow (IOS-5). Launch arguments: `-shotFavourite <id prefix>` opens a starter or favourite,
 /// `-shotEmblem YES` switches the emblem on, `-shotMove layer|emblem|text` and `-shotDraw lines|spray`
-/// start moving or drawing; `-startTab layers|scene|emblem|text|draw` (read by `ControlTabs`) opens a tab.
+/// start moving or drawing; `-shotSheet` and `-shotTourStep` open a sheet or the tour; `-startTab layers|scene|emblem|text|draw` (read by `ControlTabs`) opens a tab.
 /// The save sheet (WP-8): `-shotSave YES` opens it, `-shotFormat <SaveFormat name>` (SQUARE, SCREEN, FOUR_FIVE …),
 /// `-shotVideo YES` the Video tab, `-shotFill YES` Fill, `-shotAdjust YES` with Adjust open (read by `SaveSheet`).
 /// `-exportProbe image|image2048|video|video1080` saves once without a tap (`-probeSeconds 30`), for the memory and
@@ -61,6 +61,12 @@ enum ShotSetup {
         while model.save.busy { try? await Task.sleep(for: .milliseconds(100)) }
         Engine.trace("exportProbe \(kind) done message=\(model.message?.text ?? "-")")
     }
+
+    /// A sheet to open at start (WP-12): `-shotSheet menu|more|dahlia|about|favourites|save`.
+    static var sheet: String? { UserDefaults.standard.string(forKey: "shotSheet") }
+
+    /// A tour step to start at, 1 to 8, whatever the gate says: `-shotTourStep 5`.
+    static var tourStep: Int? { UserDefaults.standard.string(forKey: "shotTourStep").flatMap(Int.init) }
 
     /// The tab to open at start.
     static var startTab: String? { UserDefaults.standard.string(forKey: "startTab") }

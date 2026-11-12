@@ -6,11 +6,13 @@ import SwiftUI
 /// The picture folds the way Android's `FoldingCanvas` does, so the controls get room.
 struct EditorView: View {
     @Environment(EditorModel.self) private var model
+    @Environment(TourModel.self) private var tour
     @Environment(\.tokens) private var t
     @State private var showFavorites = false
     @State private var showSave = false
     @State private var showMenu = false
     @State private var header: ControlHeader?
+    @Environment(\.scenePhase) private var scenePhase
     /// Moves the folding along with the change of size, but not with every change of the layout.
     private static let foldAnimation = Animation.easeInOut(duration: 0.25)
 
@@ -22,25 +24,33 @@ struct EditorView: View {
             barButton("arrow.uturn.backward", Texts.back, tint: t.text, enabled: model.shell.canGoBack) { model.goBack() }
             barButton("arrow.uturn.forward", Texts.forward, tint: t.text, enabled: model.shell.canGoForward) { model.goForward() }
             Spacer(minLength: 0)
-            barButton("safari", Texts.playTitle, tint: t.text) { model.openPlay() }
-            barButton("die.face.5", Texts.newKind(.everything), tint: t.accent) { model.surprise() }
-            barButton("square.and.arrow.down", Texts.saveImage, tint: t.accent) { showSave = true }
-            barButton(model.isFavorite ? "star.fill" : "star", Texts.favourites, tint: t.text) { showFavorites = true }
-            barButton("ellipsis", Texts.more, tint: t.text) { showMenu = true }
+            barButton("safari", Texts.playTitle, tint: t.text, target: .play) { model.openPlay() }
+            barButton("die.face.5", Texts.newKind(.everything), tint: t.accent, target: .topDie) { model.surprise() }
+            barButton("square.and.arrow.down", Texts.saveImage, tint: t.accent, target: .save) { showSave = true }
+            barButton(model.isFavorite ? "star.fill" : "star", Texts.favourites, tint: t.text, target: .favourites) { showFavorites = true }
+            barButton("ellipsis", Texts.more, tint: t.text, target: .more) { showMenu = true }
         }
         .padding(.horizontal, Spacing.sm)
         .padding(.vertical, Spacing.xs)
     }
 
-    private func barButton(_ symbol: String, _ label: String, tint: Color, enabled: Bool = true, action: @escaping () -> Void) -> some View {
+    private func barButton(_ symbol: String, _ label: String, tint: Color, enabled: Bool = true, target: TourTarget? = nil, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Image(systemName: symbol).foregroundStyle(enabled ? tint : t.textMuted)
                 .frame(width: Sizes.swatch + Spacing.xs, height: Sizes.swatch + Spacing.xs)
                 .contentShape(Rectangle())
+                .tourAnchor(target)
         }
         .buttonStyle(.plain)
         .disabled(!enabled)
         .accessibilityLabel(label)
+    }
+
+    /// The first picture is drawn without an error and nothing else is on screen or being done.
+    private var calm: Bool {
+        scenePhase == .active && model.preview != nil && model.previewError == nil && model.message == nil && !tour.running
+            && !showFavorites && !showSave && !showMenu && model.shell.play == nil && model.shell.candidate == nil
+            && model.drawTool == nil && model.moveTarget == nil && !model.save.busy
     }
 
     var body: some View {
@@ -50,7 +60,10 @@ struct EditorView: View {
                 let fullSide = min(geo.size.width - Spacing.lg * 2, geo.size.height * 0.5)
                 // Moving and drawing keep the picture large (Android's `pinned`).
                 let pinned = model.moveTarget != nil || model.drawTool != nil
-                let fraction = pinned ? PreviewSize.full : model.shell.previewFraction
+                let chosen = pinned ? PreviewSize.full : model.shell.previewFraction
+                // The tour folds the picture a little where its card would not fit otherwise; the chosen size comes back after it.
+                let shrunk = tour.running && tour.shrinkBy > 0 && fullSide > 0
+                let fraction = shrunk ? max(PreviewSize.small, min(chosen, (chosen * fullSide - tour.shrinkBy) / fullSide)) : chosen
                 let folded = fraction < PreviewSize.full
                 VStack(spacing: 0) {
                     // The picture stays in view; only the open tab scrolls, so every change is visible.
@@ -70,6 +83,7 @@ struct EditorView: View {
                     .animation(Self.foldAnimation, value: fraction)
                     ControlTabs(onHeader: { header = $0 })
                 }
+                .onChange(of: fullSide * chosen, initial: true) { _, side in tour.pictureFull = side }
             }
             .background(t.background)
         }
@@ -77,12 +91,43 @@ struct EditorView: View {
             // Sharing from the menu draws the picture after the menu closed (WP-8).
             if let export = model.save.export, !showSave { ExportNote(progress: export) }
         }
+        .overlayPreferenceValue(TourBoundsKey.self) { anchors in
+            // The insets come from the outer reader: inside the one that ignores the safe area they read zero.
+            GeometryReader { outer in
+                GeometryReader { geo in
+                    if let state = tour.state {
+                        TourOverlay(state: state, bounds: anchors.mapValues { geo[$0] }, size: geo.size, safe: outer.safeAreaInsets)
+                    }
+                }
+                .ignoresSafeArea()
+            }
+        }
         .overlay(alignment: .bottom) {
-            if let message = model.message, !showFavorites, !showSave, !showMenu, model.shell.play == nil {
+            if let message = model.message, !tour.running, !showFavorites, !showSave, !showMenu, model.shell.play == nil {
                 MessageBar(message: message) { model.message = nil }
                     .padding(.bottom, Spacing.lg)
             }
         }
+        .onAppear {
+            #if DEBUG
+            switch ShotSetup.sheet {
+            case "menu", "more", "dahlia", "about": showMenu = true
+            case "favourites": showFavorites = true
+            case "save": showSave = true
+            default: break
+            }
+            #endif
+            tour.onEnd = { automatic in
+                if automatic { model.message = Message(text: Texts.tourAgain) }
+            }
+        }
+        // Once the first picture is drawn, so the tour opens on the mandala, not on an empty frame.
+        .task {
+            while model.preview == nil && model.previewError == nil { try? await Task.sleep(for: Timing.tourStartPoll) }
+            tour.startIfNew()
+        }
+        // The rating prompt (kit ADR-0006) only while the editor is calm, again on each return to the app.
+        .task(id: calm) { if calm { await ReviewPrompt.askIfDue() } }
         .sheet(isPresented: $showFavorites) {
             FavoritesSheet { showFavorites = false }
         }
@@ -178,6 +223,7 @@ struct CanvasView: View {
             }
             .frame(width: side, height: side)
             .clipShape(RoundedRectangle(cornerRadius: Radius.md))
+            .tourAnchor(.picture)
             if let status = status(mark: mark, drawing: drawing) {
                 // Wraps under the picture instead of being cut ("Nach oben oder unten ziehen, …").
                 Text(status).textRole(.note).foregroundStyle(model.previewError != nil ? t.error : t.textMuted)

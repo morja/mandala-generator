@@ -13,4 +13,5 @@
     <string name="ios_select">Seleccionar</string>
     <string name="message_video_saved">Vídeo de %1$d × %2$d guardado en Fotos</string>
     <string name="ios_export_stopped_background">Se detuvo el guardado porque Dahlia estuvo demasiado tiempo en segundo plano.</string>
+    <string name="tour_save_body">La flecha guarda tu imagen en Fotos.</string>
 </resources>

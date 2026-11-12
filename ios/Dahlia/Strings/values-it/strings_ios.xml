@@ -13,4 +13,5 @@
     <string name="ios_select">Seleziona</string>
     <string name="message_video_saved">Video %1$d × %2$d salvato in Foto</string>
     <string name="ios_export_stopped_background">Salvataggio interrotto perché Dahlia è rimasta troppo a lungo in background.</string>
+    <string name="tour_save_body">La freccia salva l\'immagine in Foto.</string>
 </resources>

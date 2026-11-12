@@ -169,6 +169,7 @@ private struct EffectsControls: View {
                     .accessibilityLabel(Texts.showEffects)
             }
             .frame(minHeight: Sizes.icon * 2)
+            .tourAnchor(.effectsRow)
             if !fx.isEnabled {
                 Text(Texts.effectsOffNote).textRole(.note).foregroundStyle(t.textMuted)
             } else {

@@ -438,6 +438,12 @@ enum Texts {
 }
 
 enum Links {
+    /// The guide on the website: German pages for German, English for every other language.
+    @MainActor static func openGuide() {
+        let german = Locale.preferredLanguages.first?.hasPrefix("de") ?? false
+        if let url = URL(string: "https://www.tearoom.one/\(german ? "de" : "en")/apps/dahlia/help") { UIApplication.shared.open(url) }
+    }
+
     @MainActor static func openSettings() {
         if let url = URL(string: UIApplication.openSettingsURLString) { UIApplication.shared.open(url) }
     }

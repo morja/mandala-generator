@@ -34,7 +34,8 @@ struct ControlGroup<Content: View, Trailing: View>: View {
                 open.toggle()
             } label: {
                 HStack(spacing: Spacing.sm) {
-                    Text(title).textRole(.heading).foregroundStyle(t.text)
+                    // The title keeps its line when the summary is empty or long ("Zusätzliche Erlaubnis").
+                    Text(title).textRole(.heading).foregroundStyle(t.text).layoutPriority(1)
                     if changed {
                         Circle().fill(t.accent).frame(width: Spacing.sm, height: Spacing.sm).accessibilityLabel(Texts.groupChanged)
                     }
@@ -93,7 +94,8 @@ struct SliderRow: View {
         let binding = Binding(get: { min(max(value, range.lowerBound), range.upperBound) }, set: { onChange($0) })
         GeometryReader { geo in
             HStack(spacing: 0) {
-                Text(label).textRole(.body).foregroundStyle(t.text).lineLimit(1)
+                // A long word ("Насыщенность") shrinks a little rather than run into the slider.
+                Text(label).textRole(.body).foregroundStyle(t.text).lineLimit(1).minimumScaleFactor(0.8)
                     .frame(width: geo.size.width * 0.34, alignment: .leading)
                 Group {
                     if let step { Slider(value: binding, in: range, step: step) } else { Slider(value: binding, in: range) }
