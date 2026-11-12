@@ -370,6 +370,12 @@ The app's name is decided (ADR-0012, "Dahlia – Mandala Maker", 22 characters, 
 
 **F11 TestFlight.** (a) Internal TestFlight for Mathis' own phone from WP-9 on (builds from App Store Connect, the purchase in the sandbox as in the store), no external testers; drawback: an upload per test build. (b) External TestFlight with a public link before launch; drawback: Apple's beta review and support for testers. (c) No TestFlight, Xcode builds until review; drawback: the store path (signing, purchase, widgets from an archived build) is first seen in review. Recommendation: (a). **Decided 12 November 2026 (Mathis): (a) internal TestFlight.**
 
+**F12 Editor actions on the iPhone** (raised by WP-1, [IOS-1](IOS-1-first-build.md)). (a) In the navigation bar, in Android's order. **Decided 12 November 2026 (Mathis): (a).**
+
+**F13 Control tabs.** (a) A fixed row of five equal text tabs without sideways scrolling. **Decided 12 November 2026 (Mathis): (a).**
+
+**F14 Save.** (a) Save opens a small sheet that grows into the full save sheet in WP-8. **Decided 12 November 2026 (Mathis): (a).**
+
 ### 7. Still to verify
 
 Checked on 12 November 2026 from Apple's pages or reports of them: the iOS 27 device list (iPhone 11 and later, SE 2nd and 3rd generation; MacRumors and others reporting Apple's list); iOS 26 shares of June 2026 (Apple's App Store page as reported by 9to5Mac and MacRumors); the widget extension's memory limit of about 30 MB (Apple engineers on the developer forums, not in the documentation). Everything else below is from memory or forum reports and is checked where named.

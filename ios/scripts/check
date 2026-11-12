@@ -1,0 +1,9 @@
+#!/bin/sh
+# Fast iOS check (pre-commit): generates the project and builds the Debug app and the test bundle for
+# the simulator. Compile only, nothing is launched. PLAN-4 section 3.11.
+set -eu
+here="$(cd "$(dirname "$0")/.." && pwd)"
+sim="${IOS_SIMULATOR:-iPhone 17}"
+"$here/Dahlia/scripts/generate"
+xcodebuild -project "$here/Dahlia/Dahlia.xcodeproj" -scheme Dahlia -configuration Debug \
+    -destination "platform=iOS Simulator,name=$sim" -derivedDataPath "$here/build/dd" -quiet build-for-testing

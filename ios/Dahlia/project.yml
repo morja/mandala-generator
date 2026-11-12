@@ -54,3 +54,27 @@ targets:
         ASSETCATALOG_COMPILER_APPICON_NAME: $(DAHLIA_APP_ICON)
         ENABLE_USER_SCRIPT_SANDBOXING: NO
         OTHER_LDFLAGS: ["-lc++"]
+  # Parity test (PLAN-4 section 3.11): renders the fixtures through the framework, compared with the JVM.
+  # Not hosted in the app, so it runs without launching it; started by ios/scripts/check-full.
+  DahliaTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: Tests
+    dependencies:
+      - framework: ../build/MandalaCore.xcframework
+        embed: false
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        OTHER_LDFLAGS: ["-lc++"]
+        CODE_SIGNING_ALLOWED: NO
+schemes:
+  Dahlia:
+    build:
+      targets:
+        Dahlia: all
+        DahliaTests: [test]
+    test:
+      targets:
+        - DahliaTests
