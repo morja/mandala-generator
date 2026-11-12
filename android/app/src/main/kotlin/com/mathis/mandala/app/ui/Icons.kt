@@ -59,6 +59,10 @@ object EditorIcons {
     /** The play field: a compass, a circle with a needle. */
     val Play = line("M12,3.5a8.5,8.5 0 1,0 0,17a8.5,8.5 0 1,0 0,-17zM15.6,8.4l-2.2,5 -5,2.2 2.2,-5z", soft = "M15.6,8.4l-2.2,5 -5,2.2 2.2,-5z")
     /** "More": two sliders. */
+    /** The scene effects: two sparkles; struck through while they are off (the play field's switch). */
+    val Effects = line(SPARKLES, soft = SPARKLES)
+    val EffectsOff = line(SPARKLES + "M4,4L20,20")
+
     val Tune = line("M4,7.5h8.5M17.5,7.5h2.5M4,16.5h2.5M11.5,16.5h8.5M15,5a2.5,2.5 0 1,0 0,5a2.5,2.5 0 1,0 0,-5zM9,14a2.5,2.5 0 1,0 0,5a2.5,2.5 0 1,0 0,-5z")
     /** The words card: the quote collection, a new quote (two arrows, not a die: the die is the look), keeping a quote. */
     val QuoteList = line("M5,6.5h14M5,12h14M5,17.5h9")
@@ -88,6 +92,8 @@ object EditorIcons {
     val Visible = icon(EYE)
     val Hidden = icon(EYE, strike = true)
 
+    private const val SPARKLES = "M10,4c0.6,3.4 2.6,5.4 6,6c-3.4,0.6 -5.4,2.6 -6,6c-0.6,-3.4 -2.6,-5.4 -6,-6c3.4,-0.6 5.4,-2.6 6,-6z" +
+        "M17.5,14.5c0.3,1.6 1.1,2.4 2.5,2.7c-1.4,0.3 -2.2,1.1 -2.5,2.7c-0.3,-1.6 -1.1,-2.4 -2.5,-2.7c1.4,-0.3 2.2,-1.1 2.5,-2.7z"
     private const val DIE = "M7.5,3.5h9a4,4 0 0,1 4,4v9a4,4 0 0,1 -4,4h-9a4,4 0 0,1 -4,-4v-9a4,4 0 0,1 4,-4z"
     private const val BUBBLE = "M5.5,4.5h13a2,2 0 0,1 2,2v8a2,2 0 0,1 -2,2h-6.5l-4.5,3.5v-3.5h-2a2,2 0 0,1 -2,-2v-8a2,2 0 0,1 2,-2z"
     private const val STAR = "M12,3.5l2.6,5.3 5.8,0.8 -4.2,4.1 1,5.8 -5.2,-2.7 -5.2,2.7 1,-5.8 -4.2,-4.1 5.8,-0.8z"

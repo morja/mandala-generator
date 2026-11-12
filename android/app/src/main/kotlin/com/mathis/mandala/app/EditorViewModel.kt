@@ -118,6 +118,11 @@ import kotlin.random.Random
 data class PlayState(
     val mode: PlayField.Mode = PlayField.Mode.MAP,
     val touch: PlayField.Touch = PlayField.Touch(),
+    /**
+     * The scene effects (Mathis, 12 November 2026): on every time the field opens; off, the picture is
+     * shown, kept and starred without them, and Back in the editor brings them back.
+     */
+    val effects: Boolean = true,
     /** The favourite made of the picture as it is now; the star stays filled until the picture changes. */
     val keptId: String? = null,
 ) {
@@ -1113,11 +1118,20 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         applyPlay()
     }
 
-    /** Back to the middle: the mandala as it was when the field opened. */
+    /** Back to the middle: the mandala as it was when the field opened (without its effects while they are off). */
     fun resetPlay() {
         val base = playBase ?: return
-        _play.update { it?.copy(touch = PlayField.Touch(), keptId = null) }
-        _params.value = base
+        val state = _play.value ?: return
+        _play.value = state.copy(touch = PlayField.Touch(), keptId = null)
+        _params.value = PlayField.middle(base, state.effects)
+    }
+
+    /** The Effects switch beside New landscape: the scene effects on or off, for the picture as it is now. */
+    fun setPlayEffects(on: Boolean) {
+        val state = _play.value ?: return
+        if (state.effects == on) return
+        _play.value = state.copy(effects = on, keptId = null)
+        applyPlay()
     }
 
     /**
@@ -1147,7 +1161,9 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
             newPlayLandscape()
             applyPlay()
         } else {
-            playBase = _params.value
+            val base = playBase ?: return
+            val land = playLand ?: return
+            playBase = PlayField.newMiddle(base, state.mode, land, state.touch, state.effects)
             _play.value = state.copy(touch = PlayField.Touch(), keptId = null)
         }
     }
@@ -1162,7 +1178,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         val base = playBase ?: return
         val land = playLand ?: return
         val state = _play.value ?: return
-        _params.value = PlayField.apply(base, state.mode, land, state.touch)
+        _params.value = PlayField.apply(base, state.mode, land, state.touch, state.effects)
     }
 
     // ── Images ──

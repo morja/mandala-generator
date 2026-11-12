@@ -25,6 +25,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconToggleButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -68,6 +69,7 @@ internal fun PlaySheet(
     onTouch: (Double, Double) -> Unit,
     onReset: () -> Unit,
     onAgain: () -> Unit,
+    onEffects: (Boolean) -> Unit,
     onKeep: () -> Unit,
     onDismiss: () -> Unit,
 ) {
@@ -107,6 +109,18 @@ internal fun PlaySheet(
                     IconButton(onClick = onAgain) { Icon(EditorIcons.DieOne, contentDescription = stringResource(R.string.play_new_map), tint = t.accent) }
                 } else {
                     IconButton(onClick = onAgain) { Icon(EditorIcons.Centre, contentDescription = stringResource(R.string.play_from_here), tint = t.accent) }
+                }
+                // The scene effects on or off (Mathis, 12 November 2026): a dark scene can hide the play.
+                // Off it is struck through and muted; TalkBack reads its name and whether it is on.
+                val effectsLabel = stringResource(R.string.play_effects)
+                IconToggleButton(
+                    checked = state.effects, onCheckedChange = onEffects,
+                    modifier = Modifier.semantics { contentDescription = effectsLabel },
+                ) {
+                    Icon(
+                        if (state.effects) EditorIcons.Effects else EditorIcons.EffectsOff, contentDescription = null,
+                        tint = if (state.effects) t.accent else t.textMuted,
+                    )
                 }
                 IconButton(onClick = onKeep) {
                     Icon(

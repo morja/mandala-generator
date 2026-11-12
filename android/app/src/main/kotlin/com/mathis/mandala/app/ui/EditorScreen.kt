@@ -272,6 +272,7 @@ fun EditorScreen(
             onTouch = vm::playTouch,
             onReset = vm::resetPlay,
             onAgain = vm::playAgain,
+            onEffects = vm::setPlayEffects,
             onKeep = vm::playKeep,
             onDismiss = vm::closePlay,
         )

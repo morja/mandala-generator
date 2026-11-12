@@ -86,6 +86,7 @@
     <string name="play_done">Done</string>
     <string name="play_hint">Drag with one finger.</string>
     <string name="play_new_map">New landscape</string>
+    <string name="play_effects">Effects</string>
     <string name="play_from_here">Start from here</string>
     <string name="play_keep">Add to favourites</string>
     <string name="play_light">Light</string>

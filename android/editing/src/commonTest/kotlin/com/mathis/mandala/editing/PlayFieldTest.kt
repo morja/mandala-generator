@@ -2,6 +2,7 @@ package com.mathis.mandala.editing
 
 import com.mathis.mandala.editing.PlayField.Mode
 import com.mathis.mandala.editing.PlayField.Touch
+import com.mathis.mandala.core.EffectsLayerSettings
 import com.mathis.mandala.core.MandalaParameters
 import com.mathis.mandala.core.MandalaStyle
 import com.mathis.mandala.core.StyleLayer
@@ -79,5 +80,52 @@ class PlayFieldTest {
         val styles = (0..10).flatMap { i -> (0..10).map { j -> PlayField.apply(base, Mode.MAP, land, Touch(i / 10.0, j / 10.0)).layers[0].style } }.toSet()
         assertTrue(styles.size >= 3, "only $styles")
         assertEquals(MandalaStyle.FLORAL, PlayField.apply(base, Mode.COMPASS, land, Touch(1.0, 0.0)).layers[0].style)
+    }
+
+    /** A dark starting scene: its effects on, with values that the switch must keep. */
+    private val dark = base.copy(effectsLayer = EffectsLayerSettings(isEnabled = true, dimming = 0.8, vignette = 0.7, fade = 0.5, bloom = 0.1))
+
+    @Test
+    fun withTheEffectsOffTheSceneIsSwitchedOffWithItsValuesKept() {
+        val land = PlayField.Landscape(seed = 9, base = dark, paletteCount = 30)
+        val off = dark.effectsLayer.copy(isEnabled = false)
+        for (mode in Mode.entries) {
+            for (touch in listOf(Touch(), Touch(0.5, 0.0), Touch(0.5, 1.0), Touch(0.1, 0.9), Touch(1.0, 1.0))) {
+                val on = PlayField.apply(dark, mode, land, touch)
+                val shown = PlayField.apply(dark, mode, land, touch, effects = false)
+                // No raising of bloom, vignette, stars or grain, and the layers play as with the effects on.
+                assertEquals(off, shown.effectsLayer, "$mode at $touch")
+                assertEquals(on.layers, shown.layers, "$mode at $touch")
+                assertEquals(on.copy(effectsLayer = off), shown)
+            }
+        }
+    }
+
+    @Test
+    fun backgroundEmblemAndTextStayWithTheEffectsOff() {
+        val land = PlayField.Landscape(seed = 4, base = dark, paletteCount = 30)
+        val shown = PlayField.apply(dark, Mode.MAP, land, Touch(0.9, 0.2), effects = false)
+        assertEquals(dark.baseLayer, shown.baseLayer)
+        assertEquals(dark.emblemLayer, shown.emblemLayer)
+        assertEquals(dark.textLayer, shown.textLayer)
+    }
+
+    @Test
+    fun theMiddleWithTheEffectsOffIsTheMandalaWithoutThem() {
+        assertEquals(dark, PlayField.middle(dark, effects = true))
+        assertEquals(dark.copy(effectsLayer = dark.effectsLayer.copy(isEnabled = false)), PlayField.middle(dark, effects = false))
+        val land = PlayField.Landscape(seed = 9, base = dark, paletteCount = 30)
+        for (mode in Mode.entries) assertEquals(PlayField.middle(dark, false), PlayField.apply(dark, mode, land, Touch(), effects = false))
+    }
+
+    @Test
+    fun startingFromHereWithTheEffectsOffKeepsTheOldScene() {
+        val land = PlayField.Landscape(seed = 9, base = dark, paletteCount = 30)
+        val here = Touch(0.5, 1.0)
+        val next = PlayField.newMiddle(dark, Mode.COMPASS, land, here, effects = false)
+        assertEquals(dark.effectsLayer, next.effectsLayer)
+        assertEquals(PlayField.apply(dark, Mode.COMPASS, land, here).layers, next.layers)
+        // Switched on again the new middle shows the old scene; with the effects on it takes the raised one, as before.
+        assertEquals(PlayField.apply(dark, Mode.COMPASS, land, here), PlayField.newMiddle(dark, Mode.COMPASS, land, here, effects = true))
     }
 }
