@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="editor_favourites_empty">아직 즐겨찾기가 없습니다. 현재 만다라를 추가하세요.</string>
+    <string name="editor_favourites_hint">탭하면 사용합니다.</string>
+    <string name="export_saving_to_pictures">사진에 추가 중</string>
+    <string name="message_image_failed">이미지를 만들 수 없습니다.</string>
+    <string name="message_saved_to_pictures">%1$d × %2$d 이미지를 사진에 저장했습니다</string>
+    <string name="ios_save_square">정사각형 · %1$d × %2$d</string>
+    <string name="ios_save_to_photos">사진에 저장</string>
+    <string name="ios_photos_denied">Dahlia가 사진에 이미지를 추가할 수 없습니다. 설정에서 허용할 수 있습니다.</string>
+    <string name="ios_open_settings">설정</string>
+    <string name="ios_favourite_label">즐겨찾기: %1$s</string>
+</resources>

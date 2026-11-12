@@ -38,7 +38,7 @@ struct ControlGroup<Content: View>: View {
             .buttonStyle(.plain)
             .accessibilityValue(open ? "open" : "closed")
             if open {
-                Rectangle().fill(t.outline).frame(height: 1)
+                Rectangle().fill(t.outline).frame(height: Sizes.swatchRing / 2)
                 VStack(alignment: .leading, spacing: Spacing.sm, content: content)
                     .padding(.horizontal, Spacing.lg)
                     .padding(.top, Spacing.sm)
@@ -74,7 +74,7 @@ struct SliderRow: View {
                 .tint(t.accent)
                 .frame(width: geo.size.width * 0.52)
                 Text(step == nil ? String(format: "%.2f", value) : String(Int(value.rounded())))
-                    .textRole(.note).foregroundStyle(t.textMuted).monospacedDigit().lineLimit(1)
+                    .textRole(.value).foregroundStyle(t.textMuted).lineLimit(1)
                     .frame(width: geo.size.width * 0.14, alignment: .trailing)
             }
             .frame(maxHeight: .infinity)
@@ -134,9 +134,9 @@ struct PaletteDot: View {
 
     var body: some View {
         let stops = palette.stops.map { stop in
-            Gradient.Stop(color: Color(.displayP3, red: stop.color.r, green: stop.color.g, blue: stop.color.b), location: stop.position)
+            Gradient.Stop(color: Color(.displayP3, red: stop.color.r, green: stop.color.g, blue: stop.color.b), location: stop.position) // token-exempt: the mandala's own palette from core
         }
-        Circle().fill(stops.count < 2 ? AnyShapeStyle(stops.first?.color ?? .white) : AnyShapeStyle(AngularGradient(stops: stops, center: .center)))
+        Circle().fill(stops.count < 2 ? AnyShapeStyle(stops.first?.color ?? .clear) : AnyShapeStyle(AngularGradient(stops: stops, center: .center)))
     }
 }
 
