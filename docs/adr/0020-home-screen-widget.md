@@ -36,3 +36,8 @@ Mathis decided F7 a (free, the daily turn with Pro, ADR-0016 point 4 as amended)
 - **Tap:** a `dahlia://widget?favourite=<id>` link (`dahlia-debug` for the debug build) opens the app as it was and offers the widget's mandala with Android's message when it differs.
 - **The Dahlia page lists the placed widgets** from `WidgetCenter` current configurations (size, and the favourite or "name · Daily turn"); on iOS the rows open nothing, since a widget's settings open only from the home screen.
 - **Debug builds mark widget pictures** with the icon's dot, drawn by the extension bottom right; the More page has a debug switch (and `-widgetMark NO`) to turn it off for screenshots.
+
+## Amendment, 12 November 2026: debug mark and widget sheet on Android (QA-9)
+
+- **Local builds mark the widget** (debug, fast, free; the global rule of 5 November 2026): `WidgetMark` shows the launcher icon's dot bottom right, set in `MandalaWidget.draw` after the picture, the one place for every layout. The menu's Widgets page has a debug switch (local builds only) to turn it off for screenshots; on by default. The release build's `widget_mark_build` is false and its mark drawable empty, so it never shows; the layouts carry a hidden view for it (the wide layout is wrapped in a frame for that, with no visible change).
+- **The widget sheet** (`bin/widget-sheet`, Cockpit `docs/android-widget-sheet.md`) draws the real views (`MandalaWidget.views`) of both layouts in every measured launcher box, with a fixed favourite, day and own quotes from the local builds' assets (`WidgetSheetActivity`, `src/localBuild`). Findings on a layout the launcher does not show in that box are warnings; what it shows must have no errors. Its pictures carry no mark.

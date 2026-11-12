@@ -9,5 +9,11 @@
             android:name="one.tearoom.review.ReviewDebugReceiver"
             android:exported="true"
             tools:ignore="ExportedReceiver" />
+        <!-- The widget sheet for bin/widget-sheet (Cockpit docs/android-widget-sheet.md), started through adb:
+             it draws the home screen widget in every launcher size and writes the pictures. -->
+        <activity
+            android:name="com.mathis.mandala.app.sheet.WidgetSheetActivity"
+            android:exported="true"
+            tools:ignore="ExportedActivity" />
     </application>
 </manifest>

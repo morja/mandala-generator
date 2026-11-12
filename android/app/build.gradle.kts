@@ -65,11 +65,14 @@ android {
         }
     }
 
-    // The launcher icon with a mark and the rating prompt's adb commands, shared by the local builds;
-    // release keeps the plain icon and has no receiver.
+    // The launcher icon with a mark, the widgets' mark, the widget sheet and the rating prompt's adb
+    // commands, shared by the local builds; release keeps the plain icon and has none of them.
     sourceSets {
         for (name in listOf("debug", "fast", "free")) {
             getByName(name).res.srcDir("src/localBuild/res")
+            // The widget sheet (bin/widget-sheet): its activity and its fixed favourite and own quotes.
+            getByName(name).kotlin.srcDir("src/localBuild/kotlin")
+            getByName(name).assets.srcDir("src/localBuild/assets")
             // The rating prompt's adb commands (kit ReviewDebugReceiver), never in a release.
             getByName(name).manifest.srcFile("src/localBuild/AndroidManifest.xml")
         }

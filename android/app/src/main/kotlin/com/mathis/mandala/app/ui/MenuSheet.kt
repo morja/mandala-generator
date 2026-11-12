@@ -49,6 +49,7 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -59,6 +60,7 @@ import com.mathis.mandala.app.Candidate
 import com.mathis.mandala.app.MandalaWidget
 import com.mathis.mandala.app.NewKind
 import com.mathis.mandala.app.PlacedWidget
+import com.mathis.mandala.app.WidgetMark
 import com.mathis.mandala.app.Thumbnails
 import com.mathis.mandala.app.R
 import com.mathis.mandala.app.WallpaperTarget
@@ -442,6 +444,15 @@ private fun WidgetsPage(actions: MenuActions, onBack: () -> Unit) {
         HorizontalDivider(color = t.outline)
         if (actions.widgets.isEmpty()) {
             Text(stringResource(R.string.menu_widgets_empty), style = MaterialTheme.typography.bodySmall, color = t.textMuted, modifier = Modifier.padding(top = Spacing.md))
+        }
+        // Local builds only: the widgets' debug mark, off for screenshots (global rule of 5 November 2026).
+        val context = LocalContext.current
+        if (WidgetMark.inBuild(context)) {
+            var mark by remember { mutableStateOf(WidgetMark.isOn(context)) }
+            SwitchMenuRow(EditorIcons.Widgets, stringResource(R.string.menu_widget_mark), stringResource(R.string.menu_widget_mark_note), mark) {
+                mark = it
+                WidgetMark.set(context, it)
+            }
         }
     }
 }

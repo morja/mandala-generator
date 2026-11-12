@@ -14,4 +14,15 @@
         android:layout_gravity="center"
         android:contentDescription="@string/widget_label"
         android:scaleType="centerCrop" />
+
+    <!-- Local builds only: the launcher icon's mark (WidgetMark), so the local build's widget is told apart. -->
+    <ImageView
+        android:id="@+id/widget_mark"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="@dimen/widget_gap"
+        android:importantForAccessibility="no"
+        android:src="@drawable/widget_mark"
+        android:visibility="gone" />
 </FrameLayout>

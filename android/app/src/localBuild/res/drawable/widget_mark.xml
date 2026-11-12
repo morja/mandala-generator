@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Local builds only: the mark of the launcher icon (ic_launcher_foreground_marked), on the widgets. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:width="10dp" android:height="10dp">
+        <shape android:shape="oval">
+            <solid android:color="#151413" />
+        </shape>
+    </item>
+    <item android:width="6dp" android:height="6dp" android:gravity="center">
+        <shape android:shape="oval">
+            <solid android:color="#E2A85E" />
+        </shape>
+    </item>
+</layer-list>

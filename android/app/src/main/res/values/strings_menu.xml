@@ -133,6 +133,9 @@
     <string name="menu_widgets_none">None on the home screen yet</string>
     <string name="menu_widgets_about">Each widget has its own mandala and colours. A long press on a widget opens its settings too.</string>
     <string name="menu_widgets_empty">To add one, touch and hold an empty spot on the home screen, choose Widgets, then Dahlia.</string>
+    <!-- Local builds only (debug, fast, free), so English only. -->
+    <string name="menu_widget_mark" translatable="false">Debug: mark on the widgets</string>
+    <string name="menu_widget_mark_note" translatable="false">The launcher icon\'s dot bottom right. Off for screenshots.</string>
     <string name="menu_widget_daily">%1$s · Daily turn</string>
     <plurals name="menu_widgets_count">
         <item quantity="one">%d on the home screen</item>

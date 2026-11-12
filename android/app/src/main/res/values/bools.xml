@@ -2,4 +2,6 @@
 <resources>
     <!-- Test builds (debug, fast) count as Pro, so the Pro features can be tried without a Play install. -->
     <bool name="pro_for_testing">false</bool>
+    <!-- Local builds mark their home screen widgets with the launcher icon's dot (WidgetMark). -->
+    <bool name="widget_mark_build">false</bool>
 </resources>
