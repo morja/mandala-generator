@@ -159,9 +159,8 @@ final class BackgroundWork {
     /// The identifier family in Info.plist (`BGTaskSchedulerPermittedIdentifiers`); each video adds its own suffix.
     nonisolated static var family: String { (Bundle.main.bundleIdentifier ?? "one.tearoom.mandala") + ".export" }
 
-    /// Launch handlers by identifier; continued processing tasks may be registered at any time, once per identifier.
+    /// The exports waiting for their continued processing task, by identifier.
     private static var waiting: [String: BackgroundWork] = [:]
-    private static var registered = false
 
     /// What happened to the last continued processing request, for the log and IOS-7's finding.
     private(set) static var lastOutcome = "none"
@@ -177,9 +176,13 @@ final class BackgroundWork {
     /// Asks iOS for a continued processing task with its own progress (videos), `units` steps long.
     func continueInBackground(title: String, subtitle: String, units: Int) {
         total = Int64(units)
-        Self.registerOnce()
         let id = Self.family + "." + UUID().uuidString.prefix(8)
         identifier = id
+        guard Self.register(id) else {
+            Self.lastOutcome = "not registered"
+            Engine.trace("background continued processing \(Self.lastOutcome)")
+            return
+        }
         Self.waiting[id] = self
         let request = BGContinuedProcessingTaskRequest(identifier: id, title: title, subtitle: subtitle)
         // Fail rather than wait: a queued task would only start after the video is done.
@@ -240,10 +243,10 @@ final class BackgroundWork {
         end(success: false)
     }
 
-    private static func registerOnce() {
-        guard !registered else { return }
-        registered = true
-        let ok = BGTaskScheduler.shared.register(forTaskWithIdentifier: family + ".*", using: .main) { task in
+    /// Continued processing tasks are registered per identifier, any time before the request (the wildcard in
+    /// Info.plist only permits the family); a second registration of one identifier would end the app.
+    private static func register(_ id: String) -> Bool {
+        BGTaskScheduler.shared.register(forTaskWithIdentifier: id, using: .main) { task in
             MainActor.assumeIsolated {
                 guard let task = task as? BGContinuedProcessingTask else {
                     task.setTaskCompleted(success: false)
@@ -252,7 +255,6 @@ final class BackgroundWork {
                 if let work = waiting[task.identifier] { work.attach(task) } else { task.setTaskCompleted(success: false) }
             }
         }
-        if !ok { lastOutcome = "not registered" }
     }
 }
 

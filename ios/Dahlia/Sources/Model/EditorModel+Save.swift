@@ -63,6 +63,9 @@ extension EditorModel {
         }
     }
 
+    /// The screen is known only once the window is up; the size of "This screen" is read again before each export.
+    private func refreshScreenAspect() { save.screenAspect = SaveState.currentScreenAspect() }
+
     func setSaveFormat(_ format: Editing.SaveFormat) { changeChoice(IosSave.shared.withFormat(choice: save.choice, format: format)) }
 
     /// "Fill" or "Whole", free in every format; with Pro it ends placing by hand.
@@ -198,6 +201,7 @@ extension EditorModel {
     /// 2048 px, drawn without supersampling so it needs no more memory than the normal export (Android's `saveImage`).
     func saveImage(large: Bool) {
         if large && !pro { return }
+        refreshScreenAspect()
         guard !save.busy, mayKeep(Texts.actionSave, then: { [weak self] in self?.saveImage(large: large) }) else { return }
         let choice = save.choice, p = params, follows = effectiveTextFollows, finish = effectiveFinish
         let size = IosSave.shared.exportSize(format: choice.format, screenAspect: save.screenAspect, large: large)
@@ -299,6 +303,7 @@ extension EditorModel {
             return
         }
         guard !save.busy else { return }
+        refreshScreenAspect()
         let choice = save.choice, p = params, follows = effectiveTextFollows, finish = choice.finish
         let size = IosSave.shared.videoSize(format: choice.format, screenAspect: save.screenAspect, large: large)
         let seconds = Int(choice.videoSeconds)

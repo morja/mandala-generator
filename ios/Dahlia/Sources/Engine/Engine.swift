@@ -41,7 +41,8 @@ actor Engine {
     nonisolated static func trace(_ line: String) {
         log.info("DAHLIA \(line, privacy: .public)")
         #if DEBUG
-        print("DAHLIA \(line)")
+        // Unbuffered, so a log file from `simctl launch --stderr` has the line at once.
+        FileHandle.standardError.write(Data("DAHLIA \(line)\n".utf8))
         #endif
     }
 
