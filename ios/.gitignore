@@ -1,0 +1,4 @@
+# Generated or local: the Kotlin framework, the generated Xcode project, build output, signing.
+build/
+Dahlia/Dahlia.xcodeproj/
+Dahlia/Config/Signing.xcconfig

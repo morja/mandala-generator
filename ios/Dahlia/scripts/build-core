@@ -1,0 +1,23 @@
+#!/bin/sh
+# Builds the Kotlin core as the release XCFramework into ios/build/ (PLAN-4 section 3.11). Gradle skips
+# the work when core is unchanged. Runs as Xcode's pre-build phase and from the scripts here.
+set -eu
+here="$(cd "$(dirname "$0")" && pwd)"
+repo="$(cd "$here/../../.." && pwd)"
+out="$repo/ios/build"
+
+# Xcode starts scripts without the login shell, so jenv's JAVA_HOME may be missing there.
+if [ -z "${JAVA_HOME:-}" ]; then
+    JAVA_HOME="$(/usr/libexec/java_home -v 21 2>/dev/null || /usr/libexec/java_home)"
+    export JAVA_HOME
+fi
+
+(cd "$repo/android" && ./gradlew --quiet :core:assembleMandalaCoreReleaseXCFramework 2>&1 | grep -v "'expect'/'actual'" | grep -v "^w: " || true)
+built="$repo/android/core/build/XCFrameworks/release/MandalaCore.xcframework"
+[ -d "$built" ] || { echo "error: MandalaCore.xcframework was not built" >&2; exit 1; }
+mkdir -p "$out"
+# Copy only when it changed, so Xcode does not relink for nothing.
+if ! diff -rq "$built" "$out/MandalaCore.xcframework" >/dev/null 2>&1; then
+    rm -rf "$out/MandalaCore.xcframework"
+    cp -R "$built" "$out/"
+fi

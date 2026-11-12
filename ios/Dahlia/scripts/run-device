@@ -1,0 +1,12 @@
+#!/bin/sh
+# Builds the Debug app for a connected iPhone (automatic signing), installs and starts it.
+# Usage: run-device <device id from `xcrun devicectl list devices`> [app arguments]
+set -eu
+here="$(cd "$(dirname "$0")/.." && pwd)"
+device="$1"
+shift
+"$here/scripts/generate"
+xcodebuild -project "$here/Dahlia.xcodeproj" -scheme Dahlia -configuration Debug -destination "id=$device" \
+    -derivedDataPath "$here/../build/dd" -allowProvisioningUpdates -quiet build
+xcrun devicectl device install app --device "$device" "$here/../build/dd/Build/Products/Debug-iphoneos/Dahlia.app"
+xcrun devicectl device process launch --device "$device" --terminate-existing one.tearoom.mandala.debug -- "$@"

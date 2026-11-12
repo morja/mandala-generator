@@ -1,0 +1,13 @@
+#!/bin/sh
+# Builds the Debug app for a simulator, installs and starts it.
+# Usage: run-sim [simulator name, default "iPhone 17"] [app arguments, e.g. -lightTheme YES]
+set -eu
+here="$(cd "$(dirname "$0")/.." && pwd)"
+sim="${1:-iPhone 17}"
+[ $# -gt 0 ] && shift
+"$here/scripts/generate"
+xcodebuild -project "$here/Dahlia.xcodeproj" -scheme Dahlia -configuration Debug \
+    -destination "platform=iOS Simulator,name=$sim" -derivedDataPath "$here/../build/dd" -quiet build
+xcrun simctl boot "$sim" 2>/dev/null || true
+xcrun simctl install "$sim" "$here/../build/dd/Build/Products/Debug-iphonesimulator/Dahlia.app"
+xcrun simctl launch --terminate-running-process "$sim" one.tearoom.mandala.debug "$@"

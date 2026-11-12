@@ -1,0 +1,5 @@
+// Release: the final bundle id (PLAN-4 F1, approval A1) and the plain icon.
+#include? "Signing.xcconfig"
+PRODUCT_BUNDLE_IDENTIFIER = one.tearoom.mandala
+DAHLIA_DISPLAY_NAME = Dahlia
+DAHLIA_APP_ICON = AppIcon
