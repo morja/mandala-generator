@@ -47,10 +47,18 @@ extension EditorModel {
         #if DEBUG
         WidgetDebugSettings.applyLaunchArguments()
         #endif
+        guard Self.widgetsRun else { return }
         widgets.request(widgetInputs, delay: .seconds(2))
     }
 
-    func widgetsChanged() { widgets.request(widgetInputs) }
+    func widgetsChanged() {
+        guard Self.widgetsRun else { return }
+        widgets.request(widgetInputs)
+    }
+
+    /// Not while the app only hosts the StoreKit tests: rendering widget pictures beside them made two timing-sensitive
+    /// tests flaky (IOS-10).
+    private static var widgetsRun: Bool { ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] == nil }
 
     /// The background app refresh (approval A10): renders the next day and returns when done or out of time.
     func refreshWidgetsInBackground() async { await widgets.run(widgetInputs) }
