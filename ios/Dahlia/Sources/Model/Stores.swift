@@ -94,6 +94,20 @@ enum QuoteLanguagesStore {
     }
 }
 
+/// The daily wallpaper's ticked favourites (ADR-0014), which the widgets' daily turn follows too (ADR-0020); nil for
+/// all, as Android's `DailyWallpaper` choice. Read here since WP-10; the page that ticks them comes with WP-11.
+enum DailyChoiceStore {
+    private static let key = "dailyChosen"
+
+    static func load() -> Set<String>? {
+        UserDefaults.standard.stringArray(forKey: key).map(Set.init)
+    }
+
+    static func save(_ chosen: Set<String>?) {
+        if let chosen { UserDefaults.standard.set(chosen.sorted(), forKey: key) } else { UserDefaults.standard.removeObject(forKey: key) }
+    }
+}
+
 /// The 21 starter favourites shared with Android (`android/app/src/main/assets/starter-favorites.json`).
 enum Starters {
     static let all: [Favorite] = {

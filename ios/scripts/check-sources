@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Source rules of the iPhone app (PLAN-4 sections 3.9 and 3.10), like Android's ArchitectureTest.
 
-In the screens (ios/Dahlia/Sources/UI and App) and, for colours, fonts and texts, everything else except the generated Theme/Tokens.swift:
+In the screens (ios/Dahlia/Sources/UI and App, and the widget extension ios/Dahlia/Widget) and, for colours, fonts and
+texts, everything else (Sources, Shared) except the generated Theme/Tokens.swift:
 - no colour literals (Color(...), UIColor(...), named colours such as .white);
 - no fonts other than the text roles (no .font(...)); no font sizes;
 - no number literals in layout calls (frame, padding, spacing, cornerRadius, lineWidth, offset, opacity, ...);
@@ -17,6 +18,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 SOURCES = ROOT / "ios/Dahlia/Sources"
+# The app, the code it shares with the widget extension, and the extension (WP-10).
+ROOTS = [SOURCES, ROOT / "ios/Dahlia/Shared", ROOT / "ios/Dahlia/Widget"]
 CATALOGUE = ROOT / "ios/Dahlia/Resources/Localizable.xcstrings"
 
 COLOUR = re.compile(r"\b(?:Color|UIColor|CGColor)\(|\.(?:white|black|red|green|blue|orange|yellow|gray|grey|purple|pink|brown|cyan|mint|teal|indigo|primary|secondary)\b(?!\()")
@@ -69,7 +72,7 @@ def check_keys():
     catalogue = json.loads(CATALOGUE.read_text())["strings"]
     # Texts.swift and its extensions (ShellTexts.swift ...), plus plurals asked for anywhere.
     keys = set()
-    for f in SOURCES.rglob("*.swift"):
+    for f in (f for r in ROOTS for f in r.rglob("*.swift")):
         src = f.read_text()
         pattern = r'\b(?:text|format|shellText|shellFormat)\("([a-z0-9_]+)"' if f.name.endswith("Texts.swift") else r'\bTexts\.plural\("([a-z0-9_]+)"'
         keys |= set(re.findall(pattern, src))
@@ -77,10 +80,10 @@ def check_keys():
 
 
 problems = []
-for f in sorted(SOURCES.rglob("*.swift")):
+for f in sorted(f for r in ROOTS for f in r.rglob("*.swift")):
     if f.name == "Tokens.swift" and f.parent.name == "Theme":
         continue
-    problems += check_file(f, layout=f.parent.name in ("UI", "App"))
+    problems += check_file(f, layout=f.parent.name in ("UI", "App", "Widget"))
 problems += check_keys()
 if problems:
     print("\n".join(problems), file=sys.stderr)

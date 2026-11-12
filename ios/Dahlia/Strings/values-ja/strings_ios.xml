@@ -23,4 +23,7 @@
     <string name="pro_purchase_not_started">App Storeで購入画面を開けませんでした。もう一度お試しください。</string>
     <string name="editor_pro_unavailable">このiPhoneでは購入がオフになっています。「設定」の「スクリーンタイム」で許可できます。</string>
     <string name="editor_pro_adds_wallpapers">壁紙は、ホームとロックのペアと、ショートカットで毎日新しい壁紙に対応します。</string>
+    <!-- The widget list on the Dahlia page (WP-10): iOS changes a widget through Edit Widget. -->
+    <string name="menu_widgets_about">ウィジェットごとにマンダラと色を選べます。変えるには、ウィジェットを長押しして「ウィジェットを編集」を選びます。</string>
+    <string name="menu_widgets_empty">追加するには、ホーム画面の空いている所を長押しし、「編集」、「ウィジェットを追加」の順にタップして Dahlia を選びます。</string>
 </resources>

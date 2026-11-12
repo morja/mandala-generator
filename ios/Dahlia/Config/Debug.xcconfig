@@ -1,6 +1,10 @@
 // Debug: its own bundle id, name and marked icon, so it sits next to the store app (global rule for local builds).
 #include? "Signing.xcconfig"
-PRODUCT_BUNDLE_IDENTIFIER = one.tearoom.mandala.debug
+DAHLIA_BUNDLE_ID = one.tearoom.mandala.debug
+PRODUCT_BUNDLE_IDENTIFIER = $(DAHLIA_BUNDLE_ID)
 DAHLIA_DISPLAY_NAME = Dahlia Debug
 DAHLIA_APP_ICON = AppIconDebug
+// Its own App Group (group.<bundle id>, approval A2) and URL scheme: never the store app's widget pictures.
+DAHLIA_APP_GROUP = group.one.tearoom.mandala.debug
+DAHLIA_URL_SCHEME = dahlia-debug
 SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG $(inherited)

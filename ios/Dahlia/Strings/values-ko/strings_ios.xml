@@ -23,4 +23,7 @@
     <string name="pro_purchase_not_started">App Store에서 구매 화면을 열 수 없습니다. 다시 시도하세요.</string>
     <string name="editor_pro_unavailable">이 iPhone에서는 구매가 꺼져 있습니다. 설정의 스크린 타임에서 허용할 수 있습니다.</string>
     <string name="editor_pro_adds_wallpapers">배경화면: 홈 화면과 잠금 화면 한 쌍, 단축어로 매일 새 배경화면.</string>
+    <!-- The widget list on the Dahlia page (WP-10): iOS changes a widget through Edit Widget. -->
+    <string name="menu_widgets_about">위젯마다 만다라와 색을 따로 정할 수 있습니다. 바꾸려면 위젯을 길게 누르고 위젯 편집을 고르세요.</string>
+    <string name="menu_widgets_empty">추가하려면 홈 화면의 빈 곳을 길게 누르고 편집, 위젯 추가를 차례로 누른 뒤 Dahlia를 선택하세요.</string>
 </resources>

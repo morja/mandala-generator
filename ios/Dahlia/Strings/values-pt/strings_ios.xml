@@ -23,4 +23,7 @@
     <string name="pro_purchase_not_started">A App Store não conseguiu abrir a compra. Tente novamente.</string>
     <string name="editor_pro_unavailable">As compras estão desativadas neste iPhone. Você pode permiti-las em Ajustes, em Tempo de Uso.</string>
     <string name="editor_pro_adds_wallpapers">Planos de fundo: tela inicial e de bloqueio em par, e um novo a cada dia com Atalhos.</string>
+    <!-- The widget list on the Dahlia page (WP-10): iOS changes a widget through Edit Widget. -->
+    <string name="menu_widgets_about">Cada widget tem sua própria mandala e suas cores. Para mudá-las, toque e segure o widget e escolha Editar Widget.</string>
+    <string name="menu_widgets_empty">Para adicionar, toque e segure um espaço vazio da tela inicial, toque em Editar e depois em Adicionar Widget, e escolha Dahlia.</string>
 </resources>

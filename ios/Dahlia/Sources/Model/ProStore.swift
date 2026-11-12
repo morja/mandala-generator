@@ -282,17 +282,3 @@ struct ProCache: Sendable {
 
     private struct Stored: Codable { let purchased: Bool }
 }
-
-/// The App Group shared with the widget (PLAN-4 section 3.3, approval A2). The one seam for the capability: while the
-/// build carries no App Group entitlement (device builds until the App IDs have the group, IOS-9), `defaults` is nil
-/// and nothing is written.
-enum AppGroup {
-    static let identifier = "group.one.tearoom.mandala"
-    /// Pro is unlocked (purchased, or a debug build's test Pro); the widget's daily turn reads it (F7 a).
-    static let proUnlockedKey = "proUnlocked"
-
-    static var defaults: UserDefaults? {
-        guard FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: identifier) != nil else { return nil }
-        return UserDefaults(suiteName: identifier)
-    }
-}

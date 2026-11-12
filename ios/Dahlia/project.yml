@@ -29,6 +29,8 @@ targets:
     platform: iOS
     sources:
       - path: Sources
+      # Shared with the widget extension: the App Group, the widget index and the configuration intent (WP-10).
+      - path: Shared
       - path: Resources
         excludes:
           - "*.md"
@@ -44,6 +46,8 @@ targets:
       # The Kotlin core, always the release (optimised) framework (SPIKE-3); built by scripts/build-core.
       - framework: ../build/MandalaCore.xcframework
         embed: false
+      # "Mandala of the day" (WP-10), embedded in the app's PlugIns folder.
+      - target: DahliaWidget
     preBuildScripts:
       - name: Build the Kotlin core
         script: '"$SRCROOT/scripts/build-core"'
@@ -64,10 +68,28 @@ targets:
         ASSETCATALOG_COMPILER_APPICON_NAME: $(DAHLIA_APP_ICON)
         ENABLE_USER_SCRIPT_SANDBOXING: NO
         OTHER_LDFLAGS: ["-lc++"]
-        # The App Group (approval A2) for the Pro flag and later the widget. Simulator builds only: a device build needs
-        # the group on the App IDs (one.tearoom.mandala and .debug), which Xcode adds once an account is signed in
-        # (IOS-9). Then this line loses its [sdk=…] condition. Without it `AppGroup.defaults` is nil.
+        # The App Group (approval A2, group.<bundle id> from the xcconfig) for the Pro flag and the widget. Simulator
+        # builds only: a device build needs the group on the App IDs, which Xcode adds once an account is signed in
+        # (IOS-9, IOS-10). Then this line and the widget's lose their [sdk=…] condition. Without it `AppGroup.container` is nil.
         "CODE_SIGN_ENTITLEMENTS[sdk=iphonesimulator*]": Config/Dahlia.entitlements
+  # The home screen widget "Mandala of the day" (WP-10, ADR-0020 amended for the iPhone). Never links MandalaCore: an
+  # extension may use about 30 MB, so it only shows the pictures the app rendered into the App Group.
+  DahliaWidget:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: Widget
+      - path: Shared
+      - path: Sources/Theme/Tokens.swift
+      - path: Resources/Localizable.xcstrings
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: $(DAHLIA_BUNDLE_ID).widget
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_FILE: Config/Widget-Info.plist
+        INFOPLIST_KEY_CFBundleDisplayName: $(DAHLIA_DISPLAY_NAME)
+        SKIP_INSTALL: YES
+        "CODE_SIGN_ENTITLEMENTS[sdk=iphonesimulator*]": Config/Widget.entitlements
   # Parity test (PLAN-4 section 3.11): renders the fixtures through the framework, compared with the JVM.
   # Not hosted in the app, so it runs without launching it; started by ios/scripts/check-full.
   DahliaTests:
@@ -80,6 +102,9 @@ targets:
       # The tour and rating rules are pure and unit-tested.
       - path: Sources/Model/Tour.swift
       - path: Sources/Model/ReviewPolicy.swift
+      # The widget's day and choice rules (WP-10).
+      - path: Shared/AppGroup.swift
+      - path: Shared/WidgetData.swift
     dependencies:
       - framework: ../build/MandalaCore.xcframework
         embed: false
@@ -97,6 +122,7 @@ targets:
       - path: StoreTests
       - path: Sources/Model/ProStore.swift
       - path: Sources/Model/ProPolicy.swift
+      - path: Shared/AppGroup.swift
       - path: Config/Dahlia.storekit
         buildPhase: resources
     dependencies:

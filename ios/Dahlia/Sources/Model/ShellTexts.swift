@@ -57,6 +57,28 @@ extension Texts {
     static let off = shellText("controls_off")
     static let on = shellText("controls_on")
 
+    // The home screen widgets on the Dahlia page and the widget's tap (WP-10, ADR-0020).
+    static let menuWidgets = shellText("menu_widgets")
+    static let menuWidgetsNone = shellText("menu_widgets_none")
+    static let menuWidgetsAbout = shellText("menu_widgets_about") // iOS variant: Edit Widget
+    static let menuWidgetsEmpty = shellText("menu_widgets_empty") // iOS variant: Edit, Add Widget
+    static let widgetEmpty = shellText("widget_empty")
+    static let widgetOffer = shellText("message_widget_offer")
+    static let widgetOpen = shellText("message_widget_open")
+    static let widgetMarkDebug = shellText("ios_debug_widget_mark")
+    static let widgetMarkDebugDetail = shellText("ios_debug_widget_mark_detail")
+
+    static func widgetsCount(_ n: Int) -> String { plural("menu_widgets_count", n) }
+    static func widgetDaily(_ name: String) -> String { shellFormat("menu_widget_daily", name) }
+
+    static func widgetTitle(_ shape: WidgetShape) -> String {
+        switch shape {
+        case .small: shellText("widget_title_small")
+        case .wide: shellText("widget_title_wide")
+        case .large: shellText("widget_title_large")
+        }
+    }
+
     static func newKind(_ kind: NewKind) -> String {
         switch kind {
         case .variation: shellText("menu_die_variation")
