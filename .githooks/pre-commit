@@ -8,7 +8,7 @@ fi
 if printf '%s\n' "$staged" | grep -q '^mac/'; then
     swift build --package-path mac
 fi
-# The iPhone app, and the core it links (the release framework is rebuilt, cached by Gradle).
-if printf '%s\n' "$staged" | grep -qE '^(ios/|android/core/)'; then
+# The iPhone app, and the core and editing rules it links (the release framework is rebuilt, cached by Gradle).
+if printf '%s\n' "$staged" | grep -qE '^(ios/|android/core/|android/editing/)'; then
     ios/scripts/check
 fi
