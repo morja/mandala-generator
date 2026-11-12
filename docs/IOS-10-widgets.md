@@ -46,7 +46,7 @@ What WP-10 of [PLAN-4](PLAN-4-iphone-app.md) built: the widget extension with sm
 
 9. **The debug build has its own App Group now** (`group.one.tearoom.mandala.debug`), so debug and store app never show each other's widget pictures. IOS-9's Xcode steps change accordingly (below).
 
-10. **Two StoreKit tests failed once** in the first `check-full` (the race and the purchase from elsewhere) and passed in two reruns. The app that hosts those tests had started rendering widget pictures beside them; the widget work now stays off while the app hosts tests (`XCTestConfigurationFilePath`).
+10. **The StoreKit tests are flaky on this Mac today, also on `main`.** In three `check-full` runs two or three of the 27 store tests failed (the purchase from elsewhere, the race, once the refund while running: StoreKitTest's purchase or refund did not arrive in time, the whole bundle then takes 11 s instead of 1 s); run alone they passed in some runs and failed in others. The WP-9 build of `main` (2f91000), built separately and run back to back on the same simulator, failed one of them too while the WP-10 build passed. The simulator was busy with the other session (finding 8). The widget work stays off while the app hosts tests (`XCTestConfigurationFilePath`), so it cannot be the cause; the tests themselves are unchanged. Worth a run on a quiet simulator, and a look at whether `SKTestSession` needs a wait after `clearTransactions`.
 
 ### Verified in the simulator (iPhone 17, iOS 27.2, debug build)
 
@@ -64,7 +64,7 @@ What WP-10 of [PLAN-4](PLAN-4-iphone-app.md) built: the widget extension with sm
 
 - Extension memory, finding 3.
 
-- `ios/scripts/check` and `ios/scripts/check-full` green (see the end of this report).
+- `ios/scripts/check` green; in `ios/scripts/check-full` the parity test is unchanged (96 fixtures, 74 identical, worst 82.9 dB; text cases as before), `DahliaTests` 28 of 28 including the new widget rule tests, the unsigned Release build with the extension (`one.tearoom.mandala.widget`, `group.one.tearoom.mandala`) builds; `DahliaStoreTests` flaky as in finding 10.
 
 ### To check on the iPhone over two mornings
 
