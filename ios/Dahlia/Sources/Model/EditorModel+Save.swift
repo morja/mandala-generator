@@ -9,26 +9,38 @@ import UIKit
 extension EditorModel {
     private var pro: Bool { proOwned }
 
-    // ── Pro (ADR-0016); the purchase and its sheet come with WP-9 ──
+    // ── Pro (ADR-0016); the purchase is `ProStore` (WP-9), the sheet `ProSheet` ──
 
-    /// Opens the Pro sheet for `request`. Until WP-9 builds the sheet, the request is kept in `save.proRequest` and
-    /// its note shows as a message; a mandala with Pro features is offered "… without them", as the sheet will.
+    /// Opens the Pro sheet for `request` (Android's `ProRequest`). A request without features lists the Pro features the
+    /// mandala uses, as Android's `showPro` and its video request do, so the sheet can offer to remove them.
     func requestPro(_ request: ProRequest) {
+        var request = request
+        if request.features.isEmpty && !pro { request.features = IosEditingParts.shared.proFeatures(params: params) }
+        proStore.message = nil
         save.proRequest = request
-        if request.features.isEmpty {
-            message = Message(text: request.note ?? Texts.proTitle)
-        } else {
-            let names = request.features.map { Texts.proFeature($0) }.joined(separator: ", ")
-            message = Message(text: "\(Texts.proUsesKeep) \(names)", actionLabel: Texts.proWithout(request.action ?? Texts.actionSave)) { [weak self] in
-                self?.continueWithoutPro()
-            }
-        }
+        Task { await proStore.loadPriceIfMissing() }
+    }
+
+    /// The Pro sheet from the mark on the picture or the menu (Android's `showPro`).
+    func showPro() { requestPro(ProRequest()) }
+
+    func closePro() {
+        save.proRequest = nil
+        proStore.message = nil
+    }
+
+    /// Purchase and restore feedback: inside the Pro sheet while it is open, otherwise as a message. Once Pro is unlocked
+    /// the sheet closes itself, so the thanks (or "active on this device") shows as a message either way (Android's routing).
+    func proMessage(_ shown: ProMessage) {
+        guard save.proRequest == nil || proStore.unlocked else { return }
+        message = Message(text: Texts.proMessage(shown))
+        proStore.message = nil
     }
 
     /// Hides the Pro features (Back brings them back) and takes the step the request was for (Android's `continueWithoutPro`).
     func continueWithoutPro() {
         guard let request = save.proRequest else { return }
-        save.proRequest = nil
+        closePro()
         change(IosSave.shared.withoutPro(params: params))
         request.then?()
     }

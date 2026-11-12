@@ -26,7 +26,8 @@ struct FramePreview {
 
 /// What the Pro sheet (WP-9) is opened for (Android's `ProRequest`): the Pro features the mandala uses and the
 /// step to take again once they are removed, or a plain note (the video, placing by hand, Adjust).
-struct ProRequest {
+struct ProRequest: Identifiable {
+    let id = UUID()
     var features: [ProFeature] = []
     var action: String?
     var note: String?
@@ -58,7 +59,7 @@ final class SaveState {
     /// The large size (2048 px, a 1080 video) chosen in the save button; Pro.
     var large = false
     var open = false
-    /// The last Pro request, for the Pro sheet that comes with WP-9.
+    /// Why the Pro sheet is open; nil while it is closed (Android's `proRequest`).
     var proRequest: ProRequest?
 
     @ObservationIgnored var frameTask: Task<Void, Never>?

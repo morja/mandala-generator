@@ -14,4 +14,13 @@
     <string name="message_video_saved">Видео %1$d × %2$d сохранено в «Фото»</string>
     <string name="ios_export_stopped_background">Сохранение остановлено: Dahlia слишком долго была в фоне.</string>
     <string name="tour_save_body">Стрелка сохраняет изображение в «Фото».</string>
+    <!-- The Pro purchase through the App Store (WP-9). -->
+    <string name="pro_pending">Покупка ожидает одобрения или оплаты. Pro разблокируется, как только она пройдёт.</string>
+    <string name="pro_product_unavailable">Сейчас App Store не предлагает Pro. Попробуйте позже.</string>
+    <string name="pro_play_unavailable">Сейчас нет связи с App Store, поэтому цена пока недоступна. Проверьте подключение и попробуйте снова.</string>
+    <string name="pro_restore_not_found">App Store не нашёл покупку Pro для этого Аккаунта Apple. Если вы купили Pro с другого Аккаунта Apple, войдите в него в «Настройки» → ваше имя → «Медиаматериалы и покупки» и снова нажмите «Восстановить покупку».</string>
+    <string name="pro_restore_unreachable">Не удалось связаться с App Store, поэтому ничего не проверено. Попробуйте позже.</string>
+    <string name="pro_purchase_not_started">App Store не смог открыть покупку. Попробуйте снова.</string>
+    <string name="editor_pro_unavailable">Покупки на этом iPhone отключены. Их можно разрешить в «Настройки» → «Экранное время».</string>
+    <string name="editor_pro_adds_wallpapers">Обои: главный экран и экран блокировки парой и новые каждый день через «Быстрые команды».</string>
 </resources>

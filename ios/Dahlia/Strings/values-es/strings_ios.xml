@@ -14,4 +14,13 @@
     <string name="message_video_saved">Vídeo de %1$d × %2$d guardado en Fotos</string>
     <string name="ios_export_stopped_background">Se detuvo el guardado porque Dahlia estuvo demasiado tiempo en segundo plano.</string>
     <string name="tour_save_body">La flecha guarda tu imagen en Fotos.</string>
+    <!-- The Pro purchase through the App Store (WP-9). -->
+    <string name="pro_pending">La compra está esperando aprobación o pago. Pro se desbloquea cuando se complete.</string>
+    <string name="pro_product_unavailable">El App Store no ofrece Pro en este momento. Vuelve a intentarlo más tarde.</string>
+    <string name="pro_play_unavailable">Ahora mismo no se puede conectar con el App Store, por eso aún no hay precio. Comprueba la conexión y vuelve a intentarlo.</string>
+    <string name="pro_restore_not_found">El App Store no ha encontrado ninguna compra de Pro para esta cuenta de Apple. Si compraste Pro con otra cuenta de Apple, inicia sesión con ella en Ajustes, tu nombre, Contenido y compras, y vuelve a tocar «Restaurar compra».</string>
+    <string name="pro_restore_unreachable">No se pudo conectar con el App Store, así que no se ha comprobado nada. Vuelve a intentarlo más tarde.</string>
+    <string name="pro_purchase_not_started">El App Store no pudo abrir la compra. Vuelve a intentarlo.</string>
+    <string name="editor_pro_unavailable">Las compras están desactivadas en este iPhone. Puedes permitirlas en Ajustes, en Tiempo de uso.</string>
+    <string name="editor_pro_adds_wallpapers">Fondos de pantalla: inicio y bloqueo en pareja, y uno nuevo cada día con Atajos.</string>
 </resources>

@@ -41,6 +41,14 @@ enum ShotSetup {
         if d.integer(forKey: "probeSeconds") > 0 { model.setVideoSeconds(d.integer(forKey: "probeSeconds")) }
     }
 
+    /// `-shotSheet pro` (with `-proOwned NO`): the Pro sheet for the mandala on screen. A launch outside Xcode has no
+    /// StoreKit configuration, so `-shotPrice "3,99 €"` shows a price for layout screenshots (WP-9); buying needs Xcode
+    /// or the sandbox.
+    static func openPro(_ model: EditorModel) {
+        if let price = UserDefaults.standard.string(forKey: "shotPrice") { model.proStore.showPriceForScreenshots(price) }
+        model.showPro()
+    }
+
     static var openSave: Bool { UserDefaults.standard.bool(forKey: "shotSave") }
     static var openAdjust: Bool { UserDefaults.standard.bool(forKey: "shotAdjust") }
 

@@ -66,6 +66,7 @@ struct SaveSheet: View {
             #endif
         }
         .onDisappear { model.setSaveOpen(false) }
+        .proSheet()
     }
 
     /// The preset the frame is on; none once a Pro user has moved or zoomed by hand.

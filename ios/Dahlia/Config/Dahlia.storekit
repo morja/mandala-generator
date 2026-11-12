@@ -1,0 +1,50 @@
+{
+  "identifier" : "4D5A1C7E",
+  "nonRenewingSubscriptions" : [
+
+  ],
+  "products" : [
+    {
+      "displayPrice" : "3.99",
+      "familyShareable" : true,
+      "internalID" : "6833904728",
+      "localizations" : [
+        {
+          "description" : "More layers, emblems, text and 2048 px. Pay once.",
+          "displayName" : "Dahlia Pro",
+          "locale" : "en_US"
+        },
+        {
+          "description" : "Mehr Ebenen, Embleme, Text und 2048 px. Einmal zahlen.",
+          "displayName" : "Dahlia Pro",
+          "locale" : "de"
+        }
+      ],
+      "productID" : "one.tearoom.mandala.pro",
+      "referenceName" : "Dahlia Pro",
+      "type" : "NonConsumable"
+    }
+  ],
+  "settings" : {
+    "_applicationInternalID" : "6833903967",
+    "_askToBuyEnabled" : false,
+    "_billingGracePeriodEnabled" : false,
+    "_billingIssuesEnabled" : false,
+    "_disableDialogs" : false,
+    "_failTransactionsEnabled" : false,
+    "_locale" : "de",
+    "_renewalBillingIssuesEnabled" : false,
+    "_storefront" : "DEU",
+    "_storeKitErrors" : [
+
+    ],
+    "_timeRate" : 0
+  },
+  "subscriptionGroups" : [
+
+  ],
+  "version" : {
+    "major" : 4,
+    "minor" : 0
+  }
+}

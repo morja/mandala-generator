@@ -11,6 +11,11 @@ struct DahliaApp: App {
     @Environment(\.scenePhase) private var scenePhase
     @AppStorage("lightTheme") private var lightTheme = false
 
+    init() {
+        // Before any screen: StoreKit's transaction updates are heard from launch on (an approved Ask to Buy, a refund).
+        ProStore.shared.start()
+    }
+
     var body: some Scene {
         WindowGroup {
             EditorView()
@@ -23,6 +28,8 @@ struct DahliaApp: App {
                     model.memoryWarning()
                 }
                 .onChange(of: scenePhase, initial: true) { _, phase in if phase == .active { ReviewPrompt.opened() } }
+                // Each return to the app asks StoreKit again, as Android asks Play on every resume (ADR-0022).
+                .onChange(of: scenePhase) { _, phase in if phase == .active { Task { await model.proStore.resumed() } } }
                 #if DEBUG
                 .task {
                     DragProbe.openFileIfAsked(model)

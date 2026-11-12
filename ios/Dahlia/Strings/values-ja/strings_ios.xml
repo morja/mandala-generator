@@ -14,4 +14,13 @@
     <string name="message_video_saved">%1$d × %2$d の動画を「写真」に保存しました</string>
     <string name="ios_export_stopped_background">Dahlia がバックグラウンドに長くあったため、保存を中止しました。</string>
     <string name="tour_save_body">矢印で画像を「写真」に保存します。</string>
+    <!-- The Pro purchase through the App Store (WP-9). -->
+    <string name="pro_pending">購入は承認または支払いを待っています。完了するとProのロックが解除されます。</string>
+    <string name="pro_product_unavailable">現在、App StoreではProを提供していません。しばらくしてからもう一度お試しください。</string>
+    <string name="pro_play_unavailable">現在App Storeに接続できないため、価格を表示できません。接続を確認して、もう一度お試しください。</string>
+    <string name="pro_restore_not_found">このApple AccountではProの購入が見つかりませんでした。別のApple AccountでProを購入した場合は、「設定」&gt;ユーザ名&gt;「メディアと購入」でそのアカウントにサインインし、もう一度「購入を復元」をタップしてください。</string>
+    <string name="pro_restore_unreachable">App Storeに接続できなかったため、確認できませんでした。しばらくしてからもう一度お試しください。</string>
+    <string name="pro_purchase_not_started">App Storeで購入画面を開けませんでした。もう一度お試しください。</string>
+    <string name="editor_pro_unavailable">このiPhoneでは購入がオフになっています。「設定」の「スクリーンタイム」で許可できます。</string>
+    <string name="editor_pro_adds_wallpapers">壁紙は、ホームとロックのペアと、ショートカットで毎日新しい壁紙に対応します。</string>
 </resources>
