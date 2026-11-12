@@ -25,12 +25,15 @@ struct SaveProgress: Equatable {
 @MainActor
 @Observable
 final class EditorModel {
-    private(set) var params: MandalaParameters
-    private(set) var selected = 0
-    private(set) var preview: CGImage?
-    private(set) var rendering = true
+    var params: MandalaParameters
+    var selected = 0
+    var preview: CGImage?
+    var rendering = true
     private(set) var previewError: String?
-    private(set) var favorites: [Favorite]
+    /// Saved on every change (the list rules are the shared module's `Favorites`).
+    var favorites: [Favorite] { didSet { saveFavoritesLater() } }
+    /// History, dice, play field and the picture's size (WP-7); its operations are in EditorModel+Shell.swift.
+    let shell = ShellState()
     var message: Message?
     private(set) var saving: SaveProgress?
     /// The user's own palettes in the order made (ADR-0021).
@@ -43,18 +46,19 @@ final class EditorModel {
     /// Whether Pro is owned: the purchase comes in WP-9, so Pro marks show and nothing is unlocked.
     let proOwned = false
 
-    @ObservationIgnored private let engine = Engine()
+    @ObservationIgnored let engine = Engine()
 
     // ── Preview pipeline state ──
     @ObservationIgnored private var previewTask: Task<Void, Never>?
     @ObservationIgnored private var ticket: RenderTicket?
-    @ObservationIgnored private var recent = RecentPictures(capacity: Timing.recentPreviews)
+    @ObservationIgnored var recent = RecentPictures(capacity: Timing.recentPreviews)
     /// What the last finished preview was drawn from, and how long it took per layer it drew.
     @ObservationIgnored private var renderedParams: MandalaParameters?
     @ObservationIgnored private var millisPerLayer: Int64 = 0
     /// When the settings last changed, for the latency log while a slider is dragged.
     @ObservationIgnored private var changedAt = Date()
     @ObservationIgnored private var saveTask: Task<Void, Never>?
+    @ObservationIgnored var favoritesSaveTask: Task<Void, Never>?
     @ObservationIgnored private var plainTask: Task<Void, Never>?
     @ObservationIgnored private var plainTicket: RenderTicket?
     @ObservationIgnored private var plainFor: (params: MandalaParameters, fast: Bool)?
@@ -70,6 +74,7 @@ final class EditorModel {
         fastPreview = UserDefaults.standard.object(forKey: Self.fastPreviewKey) as? Bool ?? true
         chipPreviews = UserDefaults.standard.object(forKey: Self.chipPreviewsKey) as? Bool ?? true
         renderPreview()
+        shellStart()
     }
 
     // ── Editing (the rules are the shared module's, android/editing, through IosEditing) ──
@@ -122,21 +127,22 @@ final class EditorModel {
     /// Same look, a new arrangement of the selected layer.
     func reseedSelected() { change(IosEditing.shared.reseedLayer(params: params, layer: Int32(selected))) }
 
-    private func change(_ next: MandalaParameters) {
+    func change(_ next: MandalaParameters) {
         guard next != params else { return }
         params = next
         settingsChanged()
     }
 
     /// Opens other settings and selects the first layer, as Android's `replace`.
-    private func replace(_ next: MandalaParameters) {
+    func replace(_ next: MandalaParameters) {
         params = next
         selected = 0
         settingsChanged()
     }
 
-    private func settingsChanged() {
+    func settingsChanged() {
         changedAt = Date()
+        shellSettingsChanged()
         dropPlainPreview()
         renderPreview()
         // Saved once the settings rest a moment (Android: 400 ms).
@@ -154,7 +160,7 @@ final class EditorModel {
     /// Every change cancels the running render through its ticket; a state shown recently comes back at
     /// once; anything else is drawn once the settings rest for 150 ms, with a small rough picture first
     /// when it is expected to take more than a second (Android's `collectLatest` pipeline).
-    private func renderPreview() {
+    func renderPreview() {
         ticket?.cancel()
         previewTask?.cancel()
         let p = params
@@ -181,6 +187,7 @@ final class EditorModel {
             rendering = false
             previewError = nil
             recent[p] = image
+            savePreviewLater(p, image)
             renderedParams = p
             millisPerLayer = result.millis / Int64(max(1, redrawn))
             let latency = Int(Date().timeIntervalSince(changedAt) * 1000)
@@ -308,32 +315,6 @@ final class EditorModel {
         }
     }
 
-    // ── Favourites ──
-
-    /// Newest first, as on Android and the Mac; needs a preview for the thumbnail.
-    func addFavorite() {
-        guard let image = preview, !rendering else { return }
-        let favorite = IosBridge.shared.makeFavorite(
-            id: UUID().uuidString.uppercased(), params: params, thumbnailBase64: Pictures.thumbnail(image),
-            nowMillis: Int64(Date().timeIntervalSince1970 * 1000)
-        )
-        favorites.insert(favorite, at: 0)
-        FavoritesStore.save(favorites)
-    }
-
-    var canAddFavorite: Bool { preview != nil && !rendering }
-
-    /// Whether the mandala as it is now is already a favourite (the star then stays filled).
-    var isFavorite: Bool { favorites.contains { $0.parameters == params } }
-
-    func applyFavorite(_ favorite: Favorite) {
-        // Its thumbnail stands in until the preview is drawn.
-        if recent[favorite.parameters] == nil, let thumb = Pictures.decodeThumbnail(favorite.thumbnailData) {
-            preview = thumb
-        }
-        replace(favorite.parameters)
-    }
-
     // ── Saving to Photos ──
 
     /// The square picture at 1024 px, as Android's free export, added to Photos with add-only access.
@@ -377,6 +358,8 @@ final class EditorModel {
 enum Timing {
     static let debounce = Duration.milliseconds(150)
     static let saveDelay = Duration.milliseconds(400)
+    /// How long the settings rest before they go into the history (Android's `HISTORY_DELAY_MS`).
+    static let historyDelay = Duration.milliseconds(700)
     static let recentPreviews = 30
     /// How long the picture is held before it shows without effects (Android's long press).
     static let holdSeconds = 0.4

@@ -13,8 +13,8 @@ enum Texts {
     static let lightAndColour = text("controls_light_and_colour")
     static let favourites = text("editor_favourites")
     static let addCurrent = text("editor_favourites_add")
-    static let favouritesEmpty = text("editor_favourites_empty") // iOS variant: no "Open file"
-    static let favouritesHint = text("editor_favourites_hint") // iOS variant: no selecting yet
+    static let favouritesEmpty = text("editor_favourites_empty")
+    static let favouritesHint = text("editor_favourites_hint")
     static let favouriteAdded = text("message_favourite_added")
     static let saveImage = text("editor_save_image")
     static let saveToPhotos = text("ios_save_to_photos")

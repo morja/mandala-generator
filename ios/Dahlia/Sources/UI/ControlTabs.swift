@@ -11,6 +11,9 @@ struct ControlTabs: View {
         var isBuilt: Bool { self == .layers || self == .scene }
     }
 
+    /// Reports what the open tab is about, shown beside the picture while it is folded small.
+    var onHeader: (ControlHeader) -> Void = { _ in }
+    @Environment(EditorModel.self) private var model
     @State private var tab = Tab.layers
     /// Full opacity: the open tab shows, the other stays alive but unseen.
     private static let shown = 1.0
@@ -46,6 +49,8 @@ struct ControlTabs: View {
                 tabView(.scene) { SceneTab() }
             }
         }
+        .onChange(of: header, initial: true) { _, new in onHeader(new) }
+        .onAppear { onHeader(header) }
     }
 
     private func tabView<Content: View>(_ option: Tab, @ViewBuilder content: () -> Content) -> some View {
@@ -55,6 +60,8 @@ struct ControlTabs: View {
             .allowsHitTesting(tab == option)
             .accessibilityHidden(tab != option)
     }
+
+    private var header: ControlHeader { ControlHeader.of(label(tab), tab: tab, params: model.params, selected: model.selected) }
 
     private func label(_ tab: Tab) -> String {
         switch tab {
