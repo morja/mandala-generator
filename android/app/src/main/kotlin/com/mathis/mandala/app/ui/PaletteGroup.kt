@@ -43,7 +43,7 @@ import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.mathis.mandala.app.Editing
+import com.mathis.mandala.editing.Editing
 import com.mathis.mandala.app.EditorViewModel
 import com.mathis.mandala.app.R
 import com.mathis.mandala.app.ui.theme.LocalTokens

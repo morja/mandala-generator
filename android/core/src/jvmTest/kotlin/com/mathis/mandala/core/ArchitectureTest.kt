@@ -15,6 +15,8 @@ class ArchitectureTest {
     private val root = File(System.getProperty("user.dir")).let { if (File(it, "core").isDirectory) it else it.parentFile }
     private val core = listOf("commonMain", "jvmMain", "iosMain").flatMap { Guardrails.sources(root.resolve("core/src/$it").toPath()) }
     private val common = Guardrails.sources(root.resolve("core/src/commonMain").toPath())
+    private val editing = listOf("commonMain", "iosMain").flatMap { Guardrails.sources(root.resolve("editing/src/$it").toPath()) }
+    private val editingCommon = Guardrails.sources(root.resolve("editing/src/commonMain").toPath())
     private val app = Guardrails.sources(root.resolve("app/src/main/kotlin").toPath())
     private val theme = setOf(Path.of("ui/theme"))
 
@@ -23,6 +25,20 @@ class ArchitectureTest {
         // The renderer core stays plain Kotlin so Android and the JVM tool share it (ADR-0002).
         val forbidden = listOf("android.", "androidx.", "java.awt", "javax.", "kotlinx.coroutines")
         assertNoHits("Platform APIs in core (ADR-0002)", Guardrails.forbiddenImports(core, mapOf("" to forbidden)))
+    }
+
+    @Test
+    fun editingUsesNoPlatformApis() {
+        // The shared editing rules follow core's rules (PLAN-4 WP-3, approval A7): plain Kotlin for Android and iOS.
+        val forbidden = listOf("android.", "androidx.", "java.awt", "javax.", "kotlinx.coroutines")
+        assertNoHits("Platform APIs in editing (A7, ADR-0002)", Guardrails.forbiddenImports(editing, mapOf("" to forbidden)))
+        assertTrue(editingCommon.isNotEmpty(), "editing/src/commonMain not found")
+    }
+
+    @Test
+    fun commonEditingUsesNoJava() {
+        // Shared by the Android and the iPhone app: no java.* in commonMain, like core.
+        assertNoHits("java.* in editing/src/commonMain (A7)", Guardrails.forbiddenImports(editingCommon, mapOf("" to listOf("java."))))
     }
 
     @Test
@@ -66,7 +82,7 @@ class ArchitectureTest {
     @Test
     fun onlyApprovedRootFolders() {
         val approved = setOf(
-            "app", "core", "cli", "fixtures", "scripts", "tools", "gradle",
+            "app", "core", "editing", "cli", "fixtures", "scripts", "tools", "gradle",
             ".git", ".gradle", ".idea", ".kotlin", "build", ".claude",
         )
         val extra = root.listFiles()!!.filter { it.isDirectory && it.name !in approved }.map { it.name }

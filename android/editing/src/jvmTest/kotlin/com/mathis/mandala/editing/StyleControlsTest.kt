@@ -1,12 +1,12 @@
-package com.mathis.mandala.app
+package com.mathis.mandala.editing
 
 import com.mathis.mandala.core.MandalaParameters
 import com.mathis.mandala.core.MandalaRenderer
 import com.mathis.mandala.core.MandalaStyle
 import com.mathis.mandala.core.RenderOptions
 import com.mathis.mandala.core.StyleLayer
-import org.junit.Assert.assertEquals
-import org.junit.Test
+import kotlin.test.assertEquals
+import kotlin.test.Test
 
 /**
  * Density and Ripple are shown only for styles where they change the image (TUNE-1). Renders every

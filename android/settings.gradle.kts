@@ -26,4 +26,4 @@ val tearoomKit = providers.gradleProperty("tearoomKitPath").orNull
 includeBuild(tearoomKit)
 
 rootProject.name = "mandala-app"
-include(":core", ":cli", ":app")
+include(":core", ":editing", ":cli", ":app")

@@ -67,7 +67,7 @@ import com.mathis.mandala.app.ui.theme.LocalTokens
 import com.mathis.mandala.app.ui.theme.Radius
 import com.mathis.mandala.app.ui.theme.Sizes
 import com.mathis.mandala.app.ui.theme.Spacing
-import com.mathis.mandala.app.Editing
+import com.mathis.mandala.editing.Editing
 import com.mathis.mandala.app.R
 import com.mathis.mandala.core.BuiltInPalettes
 import com.mathis.mandala.core.ColorPalette

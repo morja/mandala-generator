@@ -1,5 +1,16 @@
 package com.mathis.mandala.app
 
+import com.mathis.mandala.editing.CentreSnap
+import com.mathis.mandala.editing.DailyTurn
+import com.mathis.mandala.editing.DrawTool
+import com.mathis.mandala.editing.Editing
+import com.mathis.mandala.editing.Favorites
+import com.mathis.mandala.editing.Fit
+import com.mathis.mandala.editing.History
+import com.mathis.mandala.editing.MoveTarget
+import com.mathis.mandala.editing.PlayField
+import com.mathis.mandala.editing.Randomize
+import com.mathis.mandala.editing.SaveChoice
 import android.app.Application
 import androidx.annotation.PluralsRes
 import androidx.annotation.StringRes
@@ -8,35 +19,35 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.mathis.mandala.app.Editing.addLayer
-import com.mathis.mandala.app.Editing.changeOwnPalettes
-import com.mathis.mandala.app.Randomize.randomAll
-import com.mathis.mandala.app.Randomize.randomLayer
-import com.mathis.mandala.app.Randomize.randomVariant
-import com.mathis.mandala.app.Randomize.randomLayers
-import com.mathis.mandala.app.Editing.addStroke
-import com.mathis.mandala.app.Editing.clearStrokes
-import com.mathis.mandala.app.Editing.removeLastStroke
-import com.mathis.mandala.app.Editing.strokeCount
-import com.mathis.mandala.app.Editing.updateDrawing
-import com.mathis.mandala.app.Editing.updateGraffiti
-import com.mathis.mandala.app.Editing.duplicateLayer
-import com.mathis.mandala.app.Editing.moveLayer
-import com.mathis.mandala.app.Editing.movedBy
-import com.mathis.mandala.app.Editing.newVariation
-import com.mathis.mandala.app.Editing.reseedLayer
-import com.mathis.mandala.app.Editing.removeLayer
-import com.mathis.mandala.app.Editing.newLightPattern
-import com.mathis.mandala.app.Editing.newSparklePattern
-import com.mathis.mandala.app.Editing.updateBackground
-import com.mathis.mandala.app.Editing.updateEffects
-import com.mathis.mandala.app.Editing.updateLayer
-import com.mathis.mandala.app.Editing.updateText
-import com.mathis.mandala.app.Editing.updateEmblem
-import com.mathis.mandala.app.Editing.reset
-import com.mathis.mandala.app.Editing.newShape
-import com.mathis.mandala.app.Randomize.randomized
-import com.mathis.mandala.app.Editing.withQuote
+import com.mathis.mandala.editing.Editing.addLayer
+import com.mathis.mandala.editing.Editing.changeOwnPalettes
+import com.mathis.mandala.editing.Randomize.randomAll
+import com.mathis.mandala.editing.Randomize.randomLayer
+import com.mathis.mandala.editing.Randomize.randomVariant
+import com.mathis.mandala.editing.Randomize.randomLayers
+import com.mathis.mandala.editing.Editing.addStroke
+import com.mathis.mandala.editing.Editing.clearStrokes
+import com.mathis.mandala.editing.Editing.removeLastStroke
+import com.mathis.mandala.editing.Editing.strokeCount
+import com.mathis.mandala.editing.Editing.updateDrawing
+import com.mathis.mandala.editing.Editing.updateGraffiti
+import com.mathis.mandala.editing.Editing.duplicateLayer
+import com.mathis.mandala.editing.Editing.moveLayer
+import com.mathis.mandala.editing.Editing.movedBy
+import com.mathis.mandala.editing.Editing.newVariation
+import com.mathis.mandala.editing.Editing.reseedLayer
+import com.mathis.mandala.editing.Editing.removeLayer
+import com.mathis.mandala.editing.Editing.newLightPattern
+import com.mathis.mandala.editing.Editing.newSparklePattern
+import com.mathis.mandala.editing.Editing.updateBackground
+import com.mathis.mandala.editing.Editing.updateEffects
+import com.mathis.mandala.editing.Editing.updateLayer
+import com.mathis.mandala.editing.Editing.updateText
+import com.mathis.mandala.editing.Editing.updateEmblem
+import com.mathis.mandala.editing.Editing.reset
+import com.mathis.mandala.editing.Editing.newShape
+import com.mathis.mandala.editing.Randomize.randomized
+import com.mathis.mandala.editing.Editing.withQuote
 import com.mathis.mandala.core.BaseLayerSettings
 import com.mathis.mandala.core.BaseLayerType
 import com.mathis.mandala.core.BuiltInPalettes
@@ -1397,10 +1408,10 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
     }
 
     /** Switching it on sets the first one right away, so it shows at once; then every morning. */
-    /** Ticks or unticks one favourite for the daily wallpaper (see [DailyWallpaper.toggled]). */
+    /** Ticks or unticks one favourite for the daily wallpaper (see [DailyTurn.toggled]). */
     fun toggleDailyFavourite(id: String) {
         val app = getApplication<Application>()
-        val chosen = DailyWallpaper.toggled(_daily.value.chosen, _favorites.value.map { it.id }, id)
+        val chosen = DailyTurn.toggled(_daily.value.chosen, _favorites.value.map { it.id }, id)
         DailyWallpaper.setChosen(app, chosen)
         _daily.update { it.copy(chosen = chosen) }
         WidgetRedraw.requestChanged(app)

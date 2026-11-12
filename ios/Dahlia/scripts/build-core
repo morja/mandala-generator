@@ -1,6 +1,6 @@
 #!/bin/sh
-# Builds the Kotlin core as the release XCFramework into ios/build/ (PLAN-4 section 3.11). Gradle skips
-# the work when core is unchanged. Runs as Xcode's pre-build phase and from the scripts here.
+# Builds the Kotlin core with the shared editing rules (android/editing, which exports core) as the
+# release XCFramework into ios/build/ (PLAN-4 sections 3.1 and 3.11). Gradle skips the work when nothing changed. Runs as Xcode's pre-build phase and from the scripts here.
 set -eu
 here="$(cd "$(dirname "$0")" && pwd)"
 repo="$(cd "$here/../../.." && pwd)"
@@ -12,8 +12,8 @@ if [ -z "${JAVA_HOME:-}" ]; then
     export JAVA_HOME
 fi
 
-(cd "$repo/android" && ./gradlew --quiet :core:assembleMandalaCoreReleaseXCFramework 2>&1 | grep -v "'expect'/'actual'" | grep -v "^w: " || true)
-built="$repo/android/core/build/XCFrameworks/release/MandalaCore.xcframework"
+(cd "$repo/android" && ./gradlew --quiet :editing:assembleMandalaCoreReleaseXCFramework 2>&1 | grep -v "'expect'/'actual'" | grep -v "^w: " || true)
+built="$repo/android/editing/build/XCFrameworks/release/MandalaCore.xcframework"
 [ -d "$built" ] || { echo "error: MandalaCore.xcframework was not built" >&2; exit 1; }
 mkdir -p "$out"
 # Copy only when it changed, so Xcode does not relink for nothing.

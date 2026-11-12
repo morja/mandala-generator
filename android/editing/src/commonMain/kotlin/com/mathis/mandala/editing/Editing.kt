@@ -1,6 +1,5 @@
-package com.mathis.mandala.app
+package com.mathis.mandala.editing
 
-import androidx.annotation.StringRes
 import com.mathis.mandala.core.BaseLayerSettings
 import com.mathis.mandala.core.BaseLayerType
 import com.mathis.mandala.core.BuiltInPalettes
@@ -22,6 +21,7 @@ import com.mathis.mandala.core.Quote
 import com.mathis.mandala.core.StyleLayer
 import com.mathis.mandala.core.TextLayerSettings
 import kotlin.math.abs
+import kotlin.math.roundToLong
 
 /**
  * Editing rules of the editor, following the macOS app where it has rules. Pure functions, so they
@@ -399,18 +399,21 @@ object Editing {
 
     // ── Saving in a format (ADR-0010) ──
 
-    /** Formats offered when saving. The phone screen follows the device's aspect ratio. */
-    enum class SaveFormat(@StringRes val label: Int, val across: Int = 0, val down: Int = 0) {
-        SQUARE(R.string.format_square, 1, 1),
-        SCREEN(R.string.format_screen),
-        FOUR_FIVE(R.string.format_4_5, 4, 5),
-        THREE_FOUR(R.string.format_3_4, 3, 4),
-        TWO_THREE(R.string.format_2_3, 2, 3),
-        NINE_SIXTEEN(R.string.format_9_16, 9, 16),
-        FIVE_FOUR(R.string.format_5_4, 5, 4),
-        FOUR_THREE(R.string.format_4_3, 4, 3),
-        THREE_TWO(R.string.format_3_2, 3, 2),
-        SIXTEEN_NINE(R.string.format_16_9, 16, 9),
+    /**
+     * Formats offered when saving. The phone screen follows the device's aspect ratio. Each app maps
+     * the entries to its own labels (on Android `SaveFormat.label` in the app).
+     */
+    enum class SaveFormat(val across: Int = 0, val down: Int = 0) {
+        SQUARE(1, 1),
+        SCREEN,
+        FOUR_FIVE(4, 5),
+        THREE_FOUR(3, 4),
+        TWO_THREE(2, 3),
+        NINE_SIXTEEN(9, 16),
+        FIVE_FOUR(5, 4),
+        FOUR_THREE(4, 3),
+        THREE_TWO(3, 2),
+        SIXTEEN_NINE(16, 9),
         ;
 
         /** The fixed ratios offered in the list next to Square and This screen. */
@@ -433,7 +436,7 @@ object Editing {
     /** Width and height of an image of `format` whose shorter side is `side` pixels. */
     fun size(format: SaveFormat, screenAspect: Double, side: Int): Pair<Int, Int> {
         val aspect = aspect(format, screenAspect)
-        return if (aspect >= 1.0) side to Math.round(side * aspect).toInt() else Math.round(side / aspect).toInt() to side
+        return if (aspect >= 1.0) side to (side * aspect).roundToLong().toInt() else (side / aspect).roundToLong().toInt() to side
     }
 
     /** Output size when saving: the shorter side 1024 px, or 2048 px with Pro. */
@@ -454,7 +457,7 @@ object Editing {
     fun videoSize(format: SaveFormat, screenAspect: Double, large: Boolean): Pair<Int, Int> {
         val (w, h) = size(format, screenAspect, if (large) LARGE_VIDEO_SIZE else VIDEO_SIZE)
         val scale = minOf(1.0, MAX_VIDEO_SIDE.toDouble() / maxOf(w, h))
-        fun even(x: Int) = (Math.round(x * scale / 2.0) * 2).toInt()
+        fun even(x: Int) = ((x * scale / 2.0).roundToLong() * 2).toInt()
         return even(w) to even(h)
     }
 
@@ -527,35 +530,8 @@ class CentreSnap {
     }
 }
 
-/** The two hand-drawing tools of the macOS app: glowing lines (drawing layer) and spray paint (graffiti layer). */
-enum class DrawTool(@StringRes val label: Int) { LINES(R.string.draw_tool_lines), SPRAY(R.string.draw_tool_spray) }
-
 /**
- * How large the phone preview stands above the controls, as a fraction of its full side (UX-1 11):
- * full, a middle size that leaves the controls more room while the picture still shows its detail,
- * and small, a thumbnail with what the open tab is about beside it.
+ * The two hand-drawing tools of the macOS app: glowing lines (drawing layer) and spray paint (graffiti
+ * layer). Each app maps the entries to its own labels (on Android `DrawTool.label` in the app).
  */
-/**
- * The phone preview's side as a fraction of the full one (UX-1 11): a tap makes it small or full
- * again, a pull leaves it wherever the finger lets go, except close to an end.
- */
-object PreviewSize {
-    const val FULL = 1f
-    const val SMALL = 0.32f
-
-    /** Let go this close to an end and it takes the end, so a pull does not stop just short of full. */
-    const val SNAP = 0.1f
-
-    /** Above this the status shows on the image; the tab's title beside it is fully in by [HEADER_BELOW]. */
-    const val STATUS_ABOVE = 0.8f
-    const val HEADER_BELOW = 0.6f
-
-    /** Below this the image is too small for the labels (and the Pro mark) on it. */
-    const val LABELS_ABOVE = 0.46f
-
-    fun snapped(fraction: Float): Float = when {
-        fraction >= FULL - SNAP -> FULL
-        fraction <= SMALL + SNAP -> SMALL
-        else -> fraction
-    }
-}
+enum class DrawTool { LINES, SPRAY }

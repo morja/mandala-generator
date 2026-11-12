@@ -1,13 +1,13 @@
-package com.mathis.mandala.app
+package com.mathis.mandala.editing
 
-import com.mathis.mandala.app.PlayField.Mode
-import com.mathis.mandala.app.PlayField.Touch
+import com.mathis.mandala.editing.PlayField.Mode
+import com.mathis.mandala.editing.PlayField.Touch
 import com.mathis.mandala.core.MandalaParameters
 import com.mathis.mandala.core.MandalaStyle
 import com.mathis.mandala.core.StyleLayer
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
-import org.junit.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
+import kotlin.test.Test
 import kotlin.math.hypot
 import kotlin.random.Random
 
@@ -29,8 +29,8 @@ class PlayFieldTest {
         for (mode in Mode.entries) {
             val moved = PlayField.apply(two, mode, land, Touch(0.95, 0.1))
             assertEquals(hidden, moved.layers[0])
-            assertTrue("$mode leaves layer 2", moved.layers[1] != two.layers[1])
-            assertTrue("$mode leaves layer 3", moved.layers[2] != two.layers[2])
+            assertTrue(moved.layers[1] != two.layers[1], "$mode leaves layer 2")
+            assertTrue(moved.layers[2] != two.layers[2], "$mode leaves layer 3")
         }
     }
 
@@ -39,7 +39,7 @@ class PlayFieldTest {
         for (seed in 1..20) {
             val hop = PlayField.hopOutOfTheMiddle(Touch(), Random(seed))
             val distance = hypot(hop.x - 0.5, hop.y - 0.5)
-            assertTrue("seed $seed lands at $distance", distance in 0.15..0.3)
+            assertTrue(distance in 0.15..0.3, "seed $seed lands at $distance")
         }
         val away = Touch(0.8, 0.2)
         assertEquals(away, PlayField.hopOutOfTheMiddle(away, Random(1)))
@@ -55,7 +55,7 @@ class PlayFieldTest {
                 assertTrue(l.symmetry in 1..8 && l.complexity in 0.0..1.0 && l.density in 0.0..1.0 && l.ripple in 0.0..1.0)
                 assertTrue(l.colorOffset in 0.0..1.0 && l.glowIntensity in 0.0..1.0 && l.scale in 0.5..1.15)
             }
-            assertTrue("$mode changes nothing", results.any { it != base })
+            assertTrue(results.any { it != base }, "$mode changes nothing")
         }
     }
 
@@ -63,21 +63,21 @@ class PlayFieldTest {
     fun theCompassLightHasNoStarsAndTheLandscapeHasStarsOnlyInRegions() {
         val lit = PlayField.apply(base, Mode.COMPASS, land, Touch(0.5, 0.0)).effectsLayer
         assertEquals(0.0, lit.stars, 0.0)
-        assertTrue("light brings bloom", lit.bloom > base.effectsLayer.bloom)
+        assertTrue(lit.bloom > base.effectsLayer.bloom, "light brings bloom")
         val deep = PlayField.apply(base, Mode.COMPASS, land, Touch(0.5, 1.0)).effectsLayer
-        assertTrue("depth brings grain", deep.grain > 0 && deep.vignette > base.effectsLayer.vignette)
+        assertTrue(deep.grain > 0 && deep.vignette > base.effectsLayer.vignette, "depth brings grain")
         val points = (0..20).flatMap { i -> (0..20).map { j -> Touch(i / 20.0, j / 20.0) } }
         for (seed in 1..5) {
             val land = PlayField.Landscape(seed = seed.toLong(), base = base, paletteCount = 30)
             val starry = points.count { PlayField.apply(base, Mode.MAP, land, it).effectsLayer.stars > 0 }
-            assertTrue("seed $seed: stars on $starry of ${points.size}", starry < points.size / 2)
+            assertTrue(starry < points.size / 2, "seed $seed: stars on $starry of ${points.size}")
         }
     }
 
     @Test
     fun theLandscapeChangesStylesAndTheCompassKeepsThem() {
         val styles = (0..10).flatMap { i -> (0..10).map { j -> PlayField.apply(base, Mode.MAP, land, Touch(i / 10.0, j / 10.0)).layers[0].style } }.toSet()
-        assertTrue("only $styles", styles.size >= 3)
+        assertTrue(styles.size >= 3, "only $styles")
         assertEquals(MandalaStyle.FLORAL, PlayField.apply(base, Mode.COMPASS, land, Touch(1.0, 0.0)).layers[0].style)
     }
 }

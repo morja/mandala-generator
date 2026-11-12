@@ -1,6 +1,7 @@
 package com.mathis.mandala.app
 
-import com.mathis.mandala.app.Editing.addLayer
+import com.mathis.mandala.editing.Editing
+import com.mathis.mandala.editing.Editing.addLayer
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Rule

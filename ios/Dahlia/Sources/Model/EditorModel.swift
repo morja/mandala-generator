@@ -57,7 +57,7 @@ final class EditorModel {
         renderPreview()
     }
 
-    // ── Editing (the rules are core's or IosEditing's, marked for WP-3) ──
+    // ── Editing (the rules are the shared module's, android/editing, through IosEditing) ──
 
     func select(_ index: Int) {
         selected = max(0, min(index, params.layers.count - 1))
@@ -218,13 +218,13 @@ final class EditorModel {
     }
 }
 
-/// Timings and limits of the preview, as Android's `EditorViewModel` and `Editing`.
+/// Timings and limits of the preview, as Android's `EditorViewModel`; the rough-first limits come from the shared `Editing`.
 enum Timing {
     static let debounce = Duration.milliseconds(150)
     static let saveDelay = Duration.milliseconds(400)
     static let recentPreviews = 30
-    static let quickMinLayers = 2
-    static let quickAfterMs: Int64 = 1000
+    static let quickMinLayers = Int(Editing.shared.QUICK_MIN_LAYERS)
+    static let quickAfterMs: Int64 = Editing.shared.QUICK_AFTER_MS
 }
 
 /// Pictures rendered recently, by the settings they show; the oldest goes first.

@@ -25,6 +25,7 @@ Status: accepted, 12 November 2026 (Mathis, after [SPIKE-3](../SPIKE-3-ios-kotli
 - *(12 November 2026)* The editor renders off the main thread, keeps the last picture until the new one is ready and drops outdated renders; exports show progress and survive a short trip to the background.
 - *(12 November 2026)* The git hook runs a check for `ios/` (simulator build and tests) and compiles core for the iOS simulator when `android/core/` changes; `ios/scripts/check-full` adds a parity test of the iOS renders against the JVM's.
 - *(12 November 2026)* The `gcMutatorsCooperate` condition of SPIKE-3 is dropped: the Kotlin version in use ignores it (SPIKE-4). A fixed collector target was measured on the iPhone 15 in WP-1 (IOS-1): slower than the default there, so the default autotuned collector stays (PLAN-4 approval A5).
+- *(12 November 2026, WP-3, IOS-2)* The shared editing module is built: `android/editing` (JVM and iOS, depends on `core`) produces the XCFramework the iPhone app links, still named `MandalaCore` and exporting core; the iPhone app reaches the rules through the facade `IosEditing` in its `iosMain`. `ArchitectureTest` holds `editing` to core's platform rules. Core's own XCFramework stays for SpikeBench.
 - Apple Developer Program membership (99 € a year) is Mathis'; the account exists (team 6735ZK5WKV).
 
 ## Open

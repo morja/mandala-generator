@@ -1,4 +1,4 @@
-package com.mathis.mandala.app
+package com.mathis.mandala.editing
 
 import com.mathis.mandala.core.EffectsLayerSettings
 import com.mathis.mandala.core.MandalaParameters

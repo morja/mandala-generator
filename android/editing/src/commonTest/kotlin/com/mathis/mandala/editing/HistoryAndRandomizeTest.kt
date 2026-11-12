@@ -1,21 +1,21 @@
-package com.mathis.mandala.app
+package com.mathis.mandala.editing
 
-import com.mathis.mandala.app.Editing.addStroke
-import com.mathis.mandala.app.Randomize.randomAll
-import com.mathis.mandala.app.Randomize.randomLayer
-import com.mathis.mandala.app.Randomize.randomLayers
-import com.mathis.mandala.app.Randomize.randomVariant
-import com.mathis.mandala.app.Randomize.randomized
+import com.mathis.mandala.editing.Editing.addStroke
+import com.mathis.mandala.editing.Randomize.randomAll
+import com.mathis.mandala.editing.Randomize.randomLayer
+import com.mathis.mandala.editing.Randomize.randomLayers
+import com.mathis.mandala.editing.Randomize.randomVariant
+import com.mathis.mandala.editing.Randomize.randomized
 import com.mathis.mandala.core.BaseLayerSettings
 import com.mathis.mandala.core.EffectsLayerSettings
 import com.mathis.mandala.core.EmblemLayerSettings
 import com.mathis.mandala.core.MandalaParameters
 import com.mathis.mandala.core.MandalaStyle
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertNull
-import org.junit.Assert.assertTrue
-import org.junit.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
+import kotlin.test.Test
 import kotlin.random.Random
 
 class HistoryAndRandomizeTest {

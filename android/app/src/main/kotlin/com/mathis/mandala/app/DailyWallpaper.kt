@@ -1,5 +1,7 @@
 package com.mathis.mandala.app
 
+import com.mathis.mandala.editing.DailyTurn
+import com.mathis.mandala.editing.Editing
 import android.app.job.JobInfo
 import android.app.job.JobParameters
 import android.app.job.JobScheduler
@@ -52,27 +54,6 @@ object DailyWallpaper {
         prefs(context).edit().apply { if (ids == null) remove(KEY_CHOSEN) else putStringSet(KEY_CHOSEN, ids) }.apply()
     }
 
-    /**
-     * The favourite whose turn it is and the next turn counter: the chosen ones in their order, or all
-     * when none is chosen or every chosen one has been deleted.
-     */
-    internal fun turn(favorites: List<Favorite>, chosen: Set<String>?, next: Int): Pair<Favorite, Int>? {
-        val pool = chosen?.let { ids -> favorites.filter { it.id in ids } }?.ifEmpty { null } ?: favorites
-        if (pool.isEmpty()) return null
-        val index = next.mod(pool.size)
-        return pool[index] to index + 1
-    }
-
-    /**
-     * The choice after tapping one favourite in the picker. "All" shows every favourite ticked, so the
-     * first tap leaves out the tapped one; leaving out the last one, or ticking every one, means all again.
-     */
-    fun toggled(chosen: Set<String>?, all: List<String>, id: String): Set<String>? {
-        val current = chosen?.intersect(all.toSet()) ?: all.toSet()
-        val next = if (id in current) current - id else current + id
-        return if (next.isEmpty() || next == all.toSet()) null else next
-    }
-
     /** Name of the favourite set last, for the menu. */
     fun lastName(context: Context): String? = prefs(context).getString(KEY_LAST_NAME, null)
 
@@ -105,21 +86,17 @@ object DailyWallpaper {
     fun today(context: Context, favorites: List<Favorite> = FavoritesStore(File(context.filesDir, "favorites.json")).load()): Favorite? {
         val last = prefs(context).getString(KEY_LAST_ID, null)
         if (Pro.isUnlocked(context)) favorites.firstOrNull { it.id == last }?.let { return it }
-        return turn(favorites, chosen(context), 0)?.first
+        return DailyTurn.turn(favorites, chosen(context), 0)?.first
     }
 
     /** Moves the turn on to the next favourite and remembers it; null when there is none. */
     fun advance(context: Context): Favorite? {
         val favorites = FavoritesStore(File(context.filesDir, "favorites.json")).load()
         val prefs = prefs(context)
-        val (favourite, nextTurn) = turn(favorites, chosen(context), prefs.getInt(KEY_NEXT, 0)) ?: return null
-        prefs.edit().putInt(KEY_NEXT, nextTurn).putString(KEY_LAST_NAME, displayName(favourite)).putString(KEY_LAST_ID, favourite.id).apply()
+        val (favourite, nextTurn) = DailyTurn.turn(favorites, chosen(context), prefs.getInt(KEY_NEXT, 0)) ?: return null
+        prefs.edit().putInt(KEY_NEXT, nextTurn).putString(KEY_LAST_NAME, DailyTurn.displayName(favourite)).putString(KEY_LAST_ID, favourite.id).apply()
         return favourite
     }
-
-    /** Unnamed favourites are called by their styles, as the menu calls the mandala. */
-    private fun displayName(favourite: Favorite): String =
-        favourite.name.ifEmpty { favourite.parameters.layers.filter { it.isEnabled }.joinToString(", ") { it.style.displayName } }
 
     /** Plans the next run for tomorrow morning (or this morning, before 4 o'clock). */
     fun schedule(context: Context, now: LocalDateTime = LocalDateTime.now()) {
@@ -157,7 +134,7 @@ object DailyWallpaper {
         if (!Pro.isUnlocked(context)) return null
         val favourite = advance(context) ?: return null
         val params: MandalaParameters = favourite.parameters
-        val name = displayName(favourite)
+        val name = DailyTurn.displayName(favourite)
         if (LiveWallpaper.isActive(context)) {
             // The live wallpaper fades over to the next favourite itself; a still image would replace it.
             LiveWallpaper.setMandala(context, params)
