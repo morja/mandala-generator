@@ -2,7 +2,8 @@
 # Full iOS check (before merging into main): fast check, a Release build of the app, and the parity test:
 # every fixture of android/fixtures/settings (512) and the three SPIKE-3 cases (1024) rendered through the
 # release framework in the simulator, compared with the JVM renders (ParityReference.kt). Identical, or
-# PSNR of at least 90 dB. Prints the PARITY lines and the totals.
+# PSNR of at least 80 dB. The text cases of Dahlia/Tests/TextCases (Core Text against the JVM's Java2D) have
+# their own threshold. Prints the PARITY and TEXTPARITY lines and the totals.
 set -eu
 here="$(cd "$(dirname "$0")/.." && pwd)"
 repo="$(cd "$here/.." && pwd)"
@@ -21,11 +22,16 @@ rm -rf "$ref"
 # The parity test in the simulator (xcodebuild passes TEST_RUNNER_ variables on to the test process).
 xcrun simctl boot "$sim" 2>/dev/null || true
 report="$here/build/parity-report.txt"
-rm -f "$report"
+text_report="$here/build/parity-text-report.txt"
+text_pictures="$here/build/parity-text-pictures"
+rm -f "$report" "$text_report"
+mkdir -p "$text_pictures"
 TEST_RUNNER_PARITY_REFERENCE="$ref" TEST_RUNNER_PARITY_REPORT="$report" \
+TEST_RUNNER_PARITY_TEXT_REPORT="$text_report" TEST_RUNNER_PARITY_TEXT_PICTURES="$text_pictures" \
 xcodebuild -project "$here/Dahlia/Dahlia.xcodeproj" -scheme Dahlia -configuration Debug \
     -destination "platform=iOS Simulator,name=$sim" -derivedDataPath "$here/build/dd" -quiet test-without-building
 grep -E "PARITY (total|.*psnr)" "$report" || true
+cat "$text_report" 2>/dev/null || true
 
 # A Release build of the app for devices (unsigned), as the store build is made.
 xcodebuild -project "$here/Dahlia/Dahlia.xcodeproj" -scheme Dahlia -configuration Release \

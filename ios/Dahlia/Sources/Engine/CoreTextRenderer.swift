@@ -8,8 +8,8 @@ import Foundation
 /// from its render threads, so nothing here is shared but the font cache behind a lock; every `drawLines`
 /// makes its own bitmap context.
 ///
-/// Fonts: the settings name a macOS font (`Quotes.fonts`). iOS has most of them by the same PostScript or
-/// family name; the others map through `FontMap` to the closest installed family. Metrics are rounded the
+/// Fonts: the settings name a macOS font (`Quotes.fonts`); iOS has all of them by the same PostScript name,
+/// and `FontMap` gives a stand-in per family for any other name. Metrics are rounded the
 /// way the JVM's `FontMetrics` rounds them (AWT on the Mac is the iPhone's parity reference), so lines sit
 /// where the JVM puts them and only the glyph masks differ.
 final class CoreTextRenderer: NSObject, TextRenderer, @unchecked Sendable {
@@ -104,24 +104,17 @@ enum FontMap {
     /// A slant of about 12°, for an author line in a family without an italic face.
     static let obliqueSlant: CGFloat = 0.21
 
-    /// The macOS name when iOS has it by that name, else the stand-in of this table, else one per family.
+    /// The macOS name when iOS has it by that name (all fourteen fonts of the text tab are installed on
+    /// iOS 26, checked in the simulator for IOS-5), else one stand-in per family for names from other files.
     static func installedName(for font: TextFont) -> String {
         if isInstalled(font.name) { return font.name }
-        if let mapped = standIns[font.name], isInstalled(mapped) { return mapped }
         switch font.family {
         case .sans: return "HelveticaNeue"
-        case .mono: return "Courier"
+        case .mono: return "CourierNewPSMT"
         case .script: return "SnellRoundhand"
         default: return "Georgia"
         }
     }
-
-    /// Fonts of the macOS list that iOS lacks under their own name (checked in the simulator, IOS-5).
-    static let standIns: [String: String] = [
-        "HoeflerText-Regular": "Georgia",
-        "Palatino-Roman": "Palatino-Roman",
-        "Optima-Regular": "Optima-Regular",
-    ]
 
     /// Whether Core Text finds the font itself, not its fallback (it hands back Helvetica for unknown names).
     static func isInstalled(_ name: String) -> Bool {

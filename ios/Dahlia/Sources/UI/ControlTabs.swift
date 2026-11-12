@@ -9,7 +9,7 @@ struct ControlTabs: View {
         case layers, scene, emblem, text, draw
     }
 
-    @State private var tab = Tab.layers
+    @State private var tab = Self.initialTab
     /// Full opacity: the open tab shows, the others stay alive but unseen.
     private static let shown = 1.0
     @Environment(EditorModel.self) private var model
@@ -37,6 +37,20 @@ struct ControlTabs: View {
             if now != .draw { model.setDrawTool(nil) }
             if let target = model.moveTarget, now != tabFor(target) { model.setMoveTarget(nil) }
         }
+    }
+
+    private static var initialTab: Tab {
+        #if DEBUG
+        switch ShotSetup.startTab {
+        case "scene": return .scene
+        case "emblem": return .emblem
+        case "text": return .text
+        case "draw": return .draw
+        default: return .layers
+        }
+        #else
+        return .layers
+        #endif
     }
 
     private func tabFor(_ target: MoveTarget) -> Tab {

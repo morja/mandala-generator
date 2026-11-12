@@ -20,6 +20,8 @@ struct DahliaApp: App {
                 }
                 #if DEBUG
                 .task { await DragProbe.runIfAsked(model) }
+                .task { FontMap.listIfAsked() }
+                .task { ShotSetup.runIfAsked(model) }
                 #endif
         }
     }
