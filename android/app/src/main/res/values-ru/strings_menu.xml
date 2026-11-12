@@ -54,6 +54,7 @@
     <string name="menu_theme_light">Светлая</string>
     <string name="menu_guide">Руководство</string>
     <string name="menu_about">О приложении</string>
+    <string name="menu_rate">Оценить приложение</string>
     <string name="menu_dahlia_detail">Руководство, О приложении, Pro</string>
     <string name="menu_dahlia_detail_pro">Руководство, О приложении, Pro активен</string>
     <string name="menu_pro_detail">Пять слоёв, эмблемы, текст, обои</string>

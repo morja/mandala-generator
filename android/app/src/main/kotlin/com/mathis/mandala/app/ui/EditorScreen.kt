@@ -16,6 +16,7 @@ import com.mathis.mandala.app.Editing
 import com.mathis.mandala.app.PreviewSize
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.ui.semantics.onClick
+import androidx.activity.ComponentActivity
 import androidx.activity.compose.LocalActivity
 import one.tearoom.unlock.ui.UnlockSheet
 import one.tearoom.unlock.ui.UnlockStyle
@@ -128,6 +129,7 @@ import com.mathis.mandala.core.MandalaParameters
 import com.mathis.mandala.core.VectorExport
 import androidx.compose.ui.res.stringResource
 import com.mathis.mandala.app.R
+import com.mathis.mandala.app.Review
 import com.mathis.mandala.app.WidgetSettingsActivity
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -135,6 +137,8 @@ import com.mathis.mandala.app.WidgetSettingsActivity
 fun EditorScreen(
     vm: EditorViewModel,
     onAbout: () -> Unit = {},
+    /** Something lies over the editor (the About screen): no rating prompt meanwhile. */
+    covered: Boolean = false,
     lightTheme: Boolean = false,
     onLightTheme: (Boolean) -> Unit = {},
 ) {
@@ -250,6 +254,16 @@ fun EditorScreen(
     LaunchedEffect(activity) { activity?.let { vm.setScreen(screenAspect(it), screenSize(it).first) } }
     LaunchedEffect(showSave) { vm.setSaveOpen(showSave) }
     val play by vm.play.collectAsStateWithLifecycle()
+
+    // The rating prompt (kit ADR-0006) only while the editor is calm: the first picture drawn without an
+    // error, no message on screen (a file that could not be read, a failed save), no tour, no sheet, menu,
+    // purchase or export, nothing being drawn or moved. Leaving that state cancels the wait.
+    val calm = !covered && preview.image != null && preview.error == null && snackbar.currentSnackbarData == null &&
+        tour == null && proRequest == null &&
+        !showMenu && !showSave && !showPair && !showLive && !showFavorites && !busy && !makingVideo &&
+        candidate == null && drawTool == null && play == null && moveTarget == null &&
+        !pro.busy && !pro.pending
+    LaunchedEffect(calm) { (activity as? ComponentActivity)?.let { if (calm) Review.askIfDue(it) } }
     play?.let { state ->
         PlaySheet(
             state = state,
@@ -397,6 +411,7 @@ fun EditorScreen(
                 onLightTheme = onLightTheme,
                 onAbout = closing(onAbout),
                 onTour = closing(vm::startTour),
+                onRate = closing { Review.openListing(context) },
                 widgets = widgets,
                 onWidget = { id -> context.startActivity(WidgetSettingsActivity.intent(context, id)) },
                 proActive = pro.unlocked,

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+    <application>
+        <!-- The rating prompt for testing (kit ADR-0006), local builds only:
+             adb shell am broadcast -n one.tearoom.mandala.fast/one.tearoom.review.ReviewDebugReceiver -a one.tearoom.review.FORCE
+             (also .RESET and .STATUS; the status line comes back as the broadcast's data). -->
+        <receiver
+            android:name="one.tearoom.review.ReviewDebugReceiver"
+            android:exported="true"
+            tools:ignore="ExportedReceiver" />
+    </application>
+</manifest>

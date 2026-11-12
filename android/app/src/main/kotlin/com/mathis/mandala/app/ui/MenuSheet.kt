@@ -105,6 +105,8 @@ internal class MenuActions(
     val onAbout: () -> Unit,
     /** Starts the first-start tour again (DM-22). */
     val onTour: () -> Unit,
+    /** Opens Dahlia's Play listing to rate it (kit ADR-0006). */
+    val onRate: () -> Unit,
     /** The home screen widgets (ADR-0020); a tap opens one's settings page. */
     val widgets: List<PlacedWidget>,
     val onWidget: (Int) -> Unit,
@@ -399,6 +401,9 @@ private fun DahliaPage(actions: MenuActions, onBack: () -> Unit, onProPage: () -
         HorizontalDivider(color = t.outline)
         // Beside the guide: the short tour of the editor that a new install starts with (DM-22).
         MenuRow(EditorIcons.Tour, stringResource(R.string.menu_tour), onClick = actions.onTour) { Chevron() }
+        HorizontalDivider(color = t.outline)
+        // The permanent way to rate: Dahlia's Play listing, never an own pre-question.
+        MenuRow(EditorIcons.Rate, stringResource(R.string.menu_rate), onClick = actions.onRate) { Chevron() }
         HorizontalDivider(color = t.outline)
         MenuRow(EditorIcons.Info, stringResource(R.string.menu_about), onClick = actions.onAbout) { Chevron() }
     }
