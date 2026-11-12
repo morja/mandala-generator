@@ -86,6 +86,7 @@
     <string name="play_done">OK</string>
     <string name="play_hint">Glissez avec un doigt.</string>
     <string name="play_new_map">Nouveau paysage</string>
+    <string name="play_effects">Effets</string>
     <string name="play_from_here">Partir d’ici</string>
     <string name="play_keep">Aux favoris</string>
     <string name="play_light">Lumière</string>

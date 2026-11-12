@@ -86,6 +86,7 @@
     <string name="play_done">完了</string>
     <string name="play_hint">指1本でドラッグ。</string>
     <string name="play_new_map">新しい風景</string>
+    <string name="play_effects">エフェクト</string>
     <string name="play_from_here">ここから</string>
     <string name="play_keep">お気に入りに追加</string>
     <string name="play_light">光</string>
