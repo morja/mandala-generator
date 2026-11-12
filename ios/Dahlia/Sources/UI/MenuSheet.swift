@@ -71,6 +71,9 @@ struct MenuSheet: View {
         .proSheet()
         // A purchase closes the menu too, so the thanks shows in the editor (Android, QA-6 finding 15).
         .onChange(of: model.proOwned) { _, owned in if owned && page != .pro { close() } }
+        #if DEBUG
+        .task { await ShotSetup.proOverIfAsked("menu", model) }
+        #endif
         .sheet(isPresented: $showAbout) { AboutView { showAbout = false } }
         .fileImporter(isPresented: $showOpen, allowedContentTypes: [.json, .plainText, .data]) { result in
             if case .success(let url) = result {

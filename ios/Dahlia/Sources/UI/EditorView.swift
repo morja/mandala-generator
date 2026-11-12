@@ -114,7 +114,6 @@ struct EditorView: View {
             case "menu", "more", "dahlia", "about", "propage": showMenu = true
             case "favourites": showFavorites = true
             case "save": showSave = true
-            case "pro": ShotSetup.openPro(model)
             default: break
             }
             #endif

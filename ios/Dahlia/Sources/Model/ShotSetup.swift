@@ -30,6 +30,8 @@ enum ShotSetup {
         case "spray": model.setDrawTool(.spray)
         default: break
         }
+        // After the mandala is set up, so the sheet lists the Pro features it uses.
+        if sheet == "pro" { openPro(model) }
     }
 
     /// The save sheet's state for screenshots and the export probe.
@@ -47,6 +49,13 @@ enum ShotSetup {
     static func openPro(_ model: EditorModel) {
         if let price = UserDefaults.standard.string(forKey: "shotPrice") { model.proStore.showPriceForScreenshots(price) }
         model.showPro()
+    }
+
+    /// `-shotProOver save|menu`: once that sheet is open, the Pro sheet opens on top of it, as a gate there would open it.
+    static func proOverIfAsked(_ sheet: String, _ model: EditorModel) async {
+        guard UserDefaults.standard.string(forKey: "shotProOver") == sheet else { return }
+        try? await Task.sleep(for: .seconds(1))
+        openPro(model)
     }
 
     static var openSave: Bool { UserDefaults.standard.bool(forKey: "shotSave") }
