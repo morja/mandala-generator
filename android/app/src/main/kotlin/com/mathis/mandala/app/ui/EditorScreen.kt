@@ -256,9 +256,10 @@ fun EditorScreen(
     val play by vm.play.collectAsStateWithLifecycle()
 
     // The rating prompt (kit ADR-0006) only while the editor is calm: the first picture drawn without an
-    // error, no tour, no sheet, menu, purchase or export, nothing being drawn or moved. Leaving that
-    // state cancels the wait.
-    val calm = !covered && preview.image != null && preview.error == null && tour == null && proRequest == null &&
+    // error, no message on screen (a file that could not be read, a failed save), no tour, no sheet, menu,
+    // purchase or export, nothing being drawn or moved. Leaving that state cancels the wait.
+    val calm = !covered && preview.image != null && preview.error == null && snackbar.currentSnackbarData == null &&
+        tour == null && proRequest == null &&
         !showMenu && !showSave && !showPair && !showLive && !showFavorites && !busy && !makingVideo &&
         candidate == null && drawTool == null && play == null && moveTarget == null &&
         !pro.busy && !pro.pending
