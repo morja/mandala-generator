@@ -25,6 +25,7 @@ struct DahliaApp: App {
                 }
                 .task { FontMap.listIfAsked() }
                 .task { ShotSetup.runIfAsked(model) }
+                .task { await ShotSetup.exportProbeIfAsked(model) }
                 #endif
         }
     }

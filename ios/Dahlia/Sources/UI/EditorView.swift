@@ -86,6 +86,9 @@ struct EditorView: View {
         .sheet(isPresented: $showFavorites) {
             FavoritesSheet { showFavorites = false }
         }
+        #if DEBUG
+        .task { if ShotSetup.openSave { ShotSetup.saveSetup(model); showSave = true } }
+        #endif
         .sheet(isPresented: $showSave) {
             SaveSheet { showSave = false }
         }

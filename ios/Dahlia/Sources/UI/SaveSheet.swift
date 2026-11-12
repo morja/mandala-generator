@@ -59,7 +59,12 @@ struct SaveSheet: View {
         .presentationBackground(t.background)
         // The sheet stays while an export runs, so its Cancel and progress stay in reach.
         .interactiveDismissDisabled(busy)
-        .onAppear { model.setSaveOpen(true) }
+        .onAppear {
+            model.setSaveOpen(true)
+            #if DEBUG
+            if ShotSetup.openAdjust { adjustOpen = true }
+            #endif
+        }
         .onDisappear { model.setSaveOpen(false) }
     }
 
