@@ -251,7 +251,7 @@ struct SaveSheet: View {
         let pick: (Int) -> Void = { i in
             if i == 0 { save.large = false } else if pro { save.large = true } else { model.requestPro(ProRequest(note: choice.moving ? Texts.saveVideoPro : nil)) }
         }
-        HStack(spacing: Spacing.sm) {
+        WeightedRow(spacing: Spacing.sm) {
             if choice.moving {
                 // A video goes mostly straight to a story or status, so Share stands beside Save.
                 // Cancel only while frames are made; once the file is complete it goes to Photos or the share sheet.
@@ -263,12 +263,39 @@ struct SaveSheet: View {
                 // Without Pro the mark goes into the size line, where it has room.
                 SaveButton(label: Texts.save, sizes: sizes, chosen: large ? 1 : 0, enabled: !busy, markPro: !pro,
                            onSave: { model.saveVideo(large: large, share: false) }, onSize: pick)
-                    .layoutPriority(1)
             } else {
                 SaveButton(label: Texts.save, sizes: sizes, chosen: large ? 1 : 0, enabled: !busy, markPro: false,
                            onSave: { model.saveImage(large: large) }, onSize: pick)
             }
         }
+    }
+}
+
+/// Two buttons side by side, the second (Save with its size line and arrow) wider, as Android's weights 1 : 1.4;
+/// a single child takes the whole width.
+private struct WeightedRow: Layout {
+    var spacing: CGFloat
+    private static var secondWeight: CGFloat { 1.4 }
+
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        let width = proposal.width ?? 0
+        let height = zip(subviews, widths(width, subviews.count)).map { $0.sizeThatFits(ProposedViewSize(width: $1, height: nil)).height }.max() ?? 0
+        return CGSize(width: width, height: height)
+    }
+
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        var x = bounds.minX
+        for (view, w) in zip(subviews, widths(bounds.width, subviews.count)) {
+            view.place(at: CGPoint(x: x, y: bounds.minY), proposal: ProposedViewSize(width: w, height: bounds.height))
+            x += w + spacing
+        }
+    }
+
+    private func widths(_ total: CGFloat, _ count: Int) -> [CGFloat] {
+        guard count > 1 else { return [total] }
+        let room = total - spacing
+        let first = room / (1 + Self.secondWeight)
+        return [first, room - first]
     }
 }
 

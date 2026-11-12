@@ -1,5 +1,6 @@
 import CoreGraphics
 import Foundation
+import UIKit
 @preconcurrency import MandalaCore
 
 /// The save sheet (ADR-0010), sharing, the moving picture and the line drawing, as Android's `EditorViewModel`
@@ -381,6 +382,11 @@ extension EditorModel {
                     let shown = timeLeft(frame: f, of: frames, since: start) ?? save.export?.label ?? label
                     save.export = ExportProgress(label: shown, share: Double(f + 1) / Double(frames))
                     background.progress(f + 1)
+                    #if DEBUG
+                    if (f + 1) % Int(IosSave.shared.fps()) == 0 {
+                        Engine.trace("video frame \(f + 1)/\(frames) at \(Int(Date().timeIntervalSince(start)))s state=\(UIApplication.shared.applicationState.rawValue)")
+                    }
+                    #endif
                 }
                 await engine.close(source)
                 try await writer.finish(frames: frames)
