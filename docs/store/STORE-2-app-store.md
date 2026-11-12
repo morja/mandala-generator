@@ -24,11 +24,13 @@ The product id is `one.tearoom.mandala.pro`, not `pro` as on Play: an Apple prod
 
 Apple allows 55 characters for the description, so the Play text (STORE-1) was shortened.
 
+### Done by Mathis on 12 November 2026
+
+- Trader declaration for the EU, Paid Apps Agreement, bank account and tax form submitted. The agreement shows "Processing" until Apple has checked it.
+
 ### Open, Mathis' own steps
 
-- Legal entity information ("Edit Legal Entity") and the trader declaration for the EU Digital Services Act (Business page). Apple shows the trader's address, phone number and email on the product page in the EU.
-
-- Paid Apps Agreement (status "New" on 12 November 2026), then bank account and tax forms. The product cannot be sold or tested in the sandbox with real prices before the agreement is active.
+- Wait until the Paid Apps Agreement shows "Active" (usually one to three days).
 
 - App Store Small Business Program (15 % instead of 30 %).
 
