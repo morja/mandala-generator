@@ -6,7 +6,7 @@ Session: SPIKE-3 iOS Kotlin/Native speed · 11 November 2026
 
 Question from ADR-0015 ("Open"): does the shared Kotlin `core`, compiled with Kotlin/Native into an XCFramework, render fast enough on an iPhone, or should the iPhone app fall back to the Swift renderer of the macOS app (PLAN-4, path A)?
 
-Short answer: **IPHONE_SUMMARY**
+Short answer: **yes, with conditions. In a release build the iPhone 15 renders the typical favourite's editor preview in 1.3 s, its 1024 px export in 5.2 s and the worst case at 1024 in 16 s, 1.2 to 1.9 times faster than the Galaxy S23 runs the same core on Android today, with a peak of 385 MB and the same picture as the JVM. The conditions are the release framework, the worker-pool `Parallel` and the cooperating collector (finding 8).**
 
 ### Setup
 
@@ -20,7 +20,7 @@ Short answer: **IPHONE_SUMMARY**
 
 - **Sizes:** *preview* is the Android editor's preview (512 px, supersampled, fast glow at 800 px, the default "Fast preview"); *1024* is the free export (supersampled, drawn at 2048 internally); *2048* is the Pro export (not supersampled). Same `RenderOptions` as the Android app uses.
 
-- **Machines:** iPhone 15 (A16, 2 performance + 4 efficiency cores, 6 GB), iOS IPHONE_IOS, release build; the iOS simulator (iPhone 17, iOS 27.2) on a MacBook Pro M3 Pro (12 cores, 36 GB), which runs the same arm64 Kotlin/Native code natively; the JVM tool on the same Mac (OpenJDK 21, HotSpot, 12 threads); the Galaxy S23 (SM-S911B, 8 cores), the core run through `app_process` on ART (JIT, the same runtime the installed fast build gets, without its profile-guided compilation).
+- **Machines:** iPhone 15 (A16, 2 performance + 4 efficiency cores, 6 GB), iOS 26.6.1, release build; the iOS simulator (iPhone 17, iOS 27.2) on a MacBook Pro M3 Pro (12 cores, 36 GB), which runs the same arm64 Kotlin/Native code natively; the JVM tool on the same Mac (OpenJDK 21, HotSpot, 12 threads); the Galaxy S23 (SM-S911B, 8 cores), the core run through `app_process` on ART (JIT, the same runtime the installed fast build gets, without its profile-guided compilation).
 
 ### Findings
 
@@ -28,17 +28,17 @@ Short answer: **IPHONE_SUMMARY**
 
    | Settings | Size | iPhone 15 | Simulator (M3 Pro) | JVM (M3 Pro) | Android S23 |
    |---|---|---:|---:|---:|---:|
-   | light | preview 512 | P_L1 | 54 | 46 | 304 |
-   | light | 1024 | P_L2 | 201 | 117 | 761 |
-   | light | 2048 | P_L3 | 175 | 104 | 779 |
-   | favourite | preview 512 | P_F1 | 494 | 298 | 2 540 |
-   | favourite | 1024 | P_F2 | 1 768 | 1 196 | 6 838 |
-   | favourite | 2048 | P_F3 | 1 979 | 1 160 | 9 246 |
-   | worst | preview 512 | P_W1 | 1 375 | 836 | 6 269 |
-   | worst | 1024 | P_W2 | 5 343 | 3 662 | 24 147 |
-   | worst | 2048 | P_W3 | 5 761 | 4 406 | 22 484 |
+   | light | preview 512 | 197 | 54 | 46 | 304 |
+   | light | 1024 | 633 | 201 | 117 | 761 |
+   | light | 2048 | 511 | 175 | 104 | 779 |
+   | favourite | preview 512 | 1 322 | 494 | 298 | 2 540 |
+   | favourite | 1024 | 5 234 | 1 768 | 1 196 | 6 838 |
+   | favourite | 2048 | 5 392 | 1 979 | 1 160 | 9 246 |
+   | worst | preview 512 | 3 570 | 1 375 | 836 | 6 269 |
+   | worst | 1024 | 16 169 | 5 343 | 3 662 | 24 147 |
+   | worst | 2048 | 17 927 | 5 761 | 4 406 | 22 484 |
 
-   Kotlin/Native against HotSpot on the same Mac: 1.2 to 1.7 times the time (median about 1.6). PHONE_COMPARISON
+   Kotlin/Native against HotSpot on the same Mac: 1.2 to 1.7 times the time (median about 1.6). The iPhone 15 takes about 3 times as long as the simulator on the M3 Pro (2.6 to 3.6) and about 4.4 times as long as the JVM there (4.1 to 5.4); it is 1.2 to 1.9 times faster than the S23 (median about 1.5). The S23 figures come from `app_process` without the installed app's profile-guided compilation, so the shipped Android app is probably somewhat faster than this column; the iPhone is still at least on par with the phone the Android app is used on every day. The three timed runs on the iPhone were within 1–2 % of each other except one slow first run per case (for example 17.8 s against 16.0 s for worst at 1024), so the phone did not throttle noticeably over the roughly three minutes of the whole run.
 
    Runs vary by about ±10 % between repetitions on the Mac (other work on the machine); single slow runs (for example 8.8 s once for worst at 2048 in the simulator) are left out by the median. The S23 runs were not cooled and show the same spread.
 
@@ -49,11 +49,11 @@ Short answer: **IPHONE_SUMMARY**
    | light, simulator | 85 MB | 236 MB | 229 MB |
    | favourite, simulator | 128 MB | 329 MB | 349 MB |
    | worst, simulator | 122 MB | 350 MB | 379 MB |
-   | worst, iPhone 15 | PM_W1 | PM_W2 | PM_W3 |
+   | worst, iPhone 15 | 107 MB | 350 MB | 385 MB |
 
    Peak `phys_footprint` of the whole app, sampled every 2 ms during the four renders, including about 20–100 MB the app holds outside the renders. iOS ends a foreground app at about 3 GB on a 6 GB iPhone and about 2 GB on a 4 GB one (iPhone 13 and 13 mini), so even the worst case fits with room to spare.
 
-3. **Parity: the iPhone draws the same picture as the JVM.** The 1024 px exports from the simulator compared with `mandala render … --size 1024` on the JVM: *light* and *worst* are identical to the byte (PSNR infinite), *favourite* differs by at most 1/255 in a few pixels (96.3 dB, float rounding). PARITY_DEVICE
+3. **Parity: the iPhone draws the same picture as the JVM.** The 1024 px exports from the simulator compared with `mandala render … --size 1024` on the JVM: *light* and *worst* are identical to the byte (PSNR infinite), *favourite* differs by at most 1/255 in a few pixels (96.3 dB, float rounding). The same three exports copied off the iPhone 15 give the same result: *light* and *worst* identical to the byte, *favourite* 96.3 dB. Kotlin/Native on the A16 and in the simulator produce the same pixels.
 
 4. **What brought what (Kotlin/Native levers).**
 
@@ -75,11 +75,23 @@ Short answer: **IPHONE_SUMMARY**
 
    - `scripts/check` and `scripts/check-full` (parity and release build) are green; the Android app's behaviour is untouched.
 
-6. **Estimate for an iPhone 13 (A15) — estimate, not measured.** The A15 has the same core layout as the A16 (2 + 4) and is about 15 % slower per core and about 15–20 % slower with all cores (published benchmarks). Expected times are therefore about 1.2 times the iPhone 15 column: ESTIMATE_13. Its 4 GB (13 and 13 mini) leave about 2 GB for the app, five times the measured worst-case peak.
+6. **Estimate for an iPhone 13 (A15) — estimate, not measured.** The A15 has the same core layout as the A16 (2 + 4) and is about 15 % slower per core and about 15–20 % slower with all cores (published benchmarks). Expected times are therefore about 1.2 times the iPhone 15 column: light about 240 / 760 / 610 ms, favourite about 1.6 / 6.3 / 6.5 s, worst about 4.3 / 19 / 22 s (preview / 1024 / 2048). Its 4 GB (13 and 13 mini) leave about 2 GB for the app, five times the measured worst-case peak.
 
 7. **Widgets need their own plan on iOS.** A widget extension may use only about 30 MB, so it cannot render a mandala itself as the Android widget does (512 px through `core`, ADR-0020); the app (or the Shortcuts action) has to render the pictures ahead and share them through an App Group. This also affects the "Mandala of the day" intent, which runs in the app's process only if it opens the app.
 
-8. **Recommendation: RECOMMENDATION**
+8. **Recommendation: accept ADR-0015 with conditions.** The shared Kotlin core is fast enough on an iPhone: an iPhone 15 is at least as fast as the Galaxy S23 on which the Android app is used and sold today, an iPhone 13 (estimated) is about as fast as the S23, the memory peak is a fifth of what iOS allows on a 4 GB phone, and the pictures are identical. Path A (porting the Swift renderer of the macOS app) is not needed for speed. The conditions, all of which are in place in this branch:
+
+   - Ship only the release (optimised) framework; the debug framework is 5 to 8 times slower and is useful only for debugging.
+
+   - Keep the worker-pool `Parallel` in `iosMain`; do not go back to Grand Central Dispatch, which let the footprint grow to 21 GB (finding 2).
+
+   - Keep `gcMutatorsCooperate=true` in `android/core/build.gradle.kts`.
+
+   - The iPhone editor needs the same handling as the Android editor: the preview of a heavy favourite takes 1–3.5 s, so it must render off the main thread, show the last picture until the new one is ready and drop outdated renders. Exports of heavy settings (up to about 18 s at 2048 on an iPhone 15, about 22 s estimated on an iPhone 13) need a progress indicator and must survive a short trip to the background.
+
+   - Widgets render in the app and share pictures through an App Group (finding 7).
+
+   Worth doing later for both platforms, not a condition: the renderer allocates 4 to 9 GB of short-lived memory per heavy render (finding 2); reusing the per-row buffers in `Filters.resampleRows` and the blur would cut work for both collectors.**
 
 ### PLAN-4 against today's Android app
 
@@ -105,4 +117,16 @@ What PLAN-4 (22 October 2026) does not know yet, as far as noticed during this s
 
 ### Selbst entschieden
 
-- SELF_DECIDED
+- Bundle id `one.tearoom.dahlia.spike3`, signed with the existing wildcard development profile of team 6735ZK5WKV; nothing registered or created in App Store Connect.
+
+- The Xcode project is generated with `xcodegen` from `ios/SpikeBench/project.yml`, and the generated `SpikeBench.xcodeproj` is committed so the app opens without the tool.
+
+- The iOS `Parallel` uses a fixed pool of Kotlin/Native workers instead of Grand Central Dispatch (finding 2); `gcMutatorsCooperate=true` stays in the build.
+
+- The "typical favourite" is starter favourite 16 of the Android app; the preview uses the Android editor's fast-glow default.
+
+- The JVM and Android benchmark is a `main` in the cli test sources (`SpikeBench.kt`), so it ships in no build; Android was measured through `app_process` with the core dexed, not through the installed app.
+
+- `:core:test` is kept as an alias of `jvmTest`, so scripts and the reference renderer did not need to change.
+
+- The iPhone 13 figures are an estimate from the A16 numbers (factor 1.2), not a measurement.
