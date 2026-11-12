@@ -32,7 +32,7 @@ enum ShotSetup {
     static var sheet: String? { UserDefaults.standard.string(forKey: "shotSheet") }
 
     /// A tour step to start at, 1 to 8, whatever the gate says: `-shotTourStep 5`.
-    static var tourStep: Int? { UserDefaults.standard.object(forKey: "shotTourStep") as? Int }
+    static var tourStep: Int? { UserDefaults.standard.string(forKey: "shotTourStep").flatMap(Int.init) }
 
     /// The tab to open at start.
     static var startTab: String? { UserDefaults.standard.string(forKey: "startTab") }

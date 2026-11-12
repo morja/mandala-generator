@@ -44,7 +44,9 @@ struct AboutView: View {
                     paragraph(Texts.aboutFreeSoftware)
                     link(Texts.aboutSourceCode, Self.sourceURL)
                     link(verbatim: "GNU General Public License 3.0", Self.gplURL)
-                    ControlGroup(Texts.aboutAdditionalPermission, summary: Texts.aboutGplSection7) {
+                    // No summary beside the title: "Zusätzliche Erlaubnis" and "GPL Abschnitt 7" do not fit one line at 390 pt.
+                    ControlGroup(Texts.aboutAdditionalPermission) {
+                        Text(Texts.aboutGplSection7).textRole(.heading).foregroundStyle(t.text)
                         Text(verbatim: Self.section7).textRole(.note).foregroundStyle(t.textMuted)
                     }
                 }
