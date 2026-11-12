@@ -388,15 +388,15 @@ Checked on 12 November 2026 from Apple's pages or reports of them: the iOS 27 de
 
 - **Continued processing task for long exports** (new in iOS 26, from memory): check in WP-8 whether a 30 s video export continues with the app in the background; else the export stays in the foreground with Cancel.
 
-- **Photos add-only access cannot create an album** (from memory): check in WP-1.
+- **Photos add-only access cannot create an album** (from memory): checked in WP-1 ([IOS-1](IOS-1-first-build.md) finding 8): creating an album makes iOS ask for full library access, so no album.
 
 - **Mac fonts on iOS** (Zapfino, Didot, Papyrus …, from memory): list the installed families in the simulator in WP-6.
 
 - **Live Photo on the lock screen** (iOS 17 and later plays it on wake, from memory): check in WP-11 if F6 is (b) or (c).
 
-- **Collector target on the device** (SPIKE-4 measured only the simulator): WP-1.
+- **Collector target on the device** (SPIKE-4 measured only the simulator): measured in WP-1 (IOS-1 finding 5): 64 MB is 3–8 % slower on the iPhone 15 with about 40 % less peak memory; the default stays.
 
-- **`gcMutatorsCooperate` ignored** (warning in the SPIKE-4 build): confirm with the Kotlin version in use when removing it in WP-1.
+- **`gcMutatorsCooperate` ignored** (warning in the SPIKE-4 build): confirmed with Kotlin 2.4.20 and removed in WP-1 (IOS-1 finding 7).
 
 - **The container path changes between installs** (from memory): the background picture is resolved by file name anyway (section 3.3).
 

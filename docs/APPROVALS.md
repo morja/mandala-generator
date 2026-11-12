@@ -21,7 +21,7 @@ Format: `- **What** · What for and why · Alternative without approval · Recom
 
 - **A4 Pro product** non-consumable `pro`, 2.99 € (ADR-0016), Family Sharing on (F4 a).
 
-- **A5 Collector setting** a fixed collector target of 64 MB set at app start through the facade, **only if WP-1's measurement on the iPhone 15 confirms** the simulator's gain; otherwise the default autotuned collector. Removing the ignored `gcMutatorsCooperate` from `android/core/build.gradle.kts` is approved either way.
+- **A5 Collector setting** a fixed collector target of 64 MB set at app start through the facade, **only if WP-1's measurement on the iPhone 15 confirms** the simulator's gain; otherwise the default autotuned collector. Removing the ignored `gcMutatorsCooperate` from `android/core/build.gradle.kts` is approved either way. *Measured 12 November 2026 ([IOS-1](IOS-1-first-build.md) finding 5): not confirmed (64 MB 3–8 % slower on the iPhone 15, about 40 % less peak memory), so the app keeps the default collector; `gcMutatorsCooperate` removed.*
 
 - **A6 XcodeGen** for `ios/`, the `.xcodeproj` not committed, the signing team in a local ignored xcconfig.
 
