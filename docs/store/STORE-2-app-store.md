@@ -34,6 +34,14 @@ Apple allows 55 characters for the description, so the Play text (STORE-1) was s
 
 - App Store Small Business Program (15 % instead of 30 %).
 
+### TestFlight
+
+- Test information entered on 12 November 2026: English beta description, feedback and contact email apps@tearoom.one, marketing and privacy policy links (the privacy page still describes the Android app; it must name the iPhone before the store release), review notes on how to reach the Pro sheet.
+
+- First build 1.0 (1) uploaded on 12 November 2026 from `main` at c33adfc (Release archive, automatic signing, App Group on device and widget extension). External group "Freunde" and Apple's beta review follow once Apple has processed the build.
+
+- Upload note: `xcodebuild -exportArchive` fails with "Copy failed" when Homebrew's `rsync` comes first on the PATH; run it with `/usr/bin` first.
+
 ### Open, with the packages
 
 - Review screenshot and review notes for the product, the app's privacy label, age rating, listing texts and screenshots (WP-13); the first in-app purchase is submitted together with the first app version.
