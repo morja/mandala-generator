@@ -12,6 +12,8 @@ struct ControlTabs: View {
     @State private var tab = Self.initialTab
     /// Full opacity: the open tab shows, the others stay alive but unseen.
     private static let shown = 1.0
+    /// How far labels may shrink when even the smaller role does not fit (largest text sizes only).
+    private static let smallestScale = 0.6
     @Environment(EditorModel.self) private var model
     @Environment(\.tokens) private var t
 
@@ -20,6 +22,8 @@ struct ControlTabs: View {
             ViewThatFits(in: .horizontal) {
                 tabRow(.heading)
                 tabRow(.note)
+                // Only at the largest text sizes: the labels shrink rather than run into each other.
+                tabRow(.note, shrinking: true)
             }
             .padding(.horizontal, Spacing.lg)
             Rectangle().fill(t.outline).frame(height: Sizes.swatchRing / 2)
@@ -61,13 +65,15 @@ struct ControlTabs: View {
         }
     }
 
-    private func tabRow(_ role: TextRole) -> some View {
+    private func tabRow(_ role: TextRole, shrinking: Bool = false) -> some View {
         EqualWidthRow {
             ForEach(Tab.allCases, id: \.self) { option in
                 Button {
                     tab = option
                 } label: {
-                    Text(label(option)).textRole(role).lineLimit(1).fixedSize()
+                    Text(label(option)).textRole(role).lineLimit(1)
+                        .fixedSize(horizontal: !shrinking, vertical: false)
+                        .minimumScaleFactor(shrinking ? Self.smallestScale : 1)
                         .foregroundStyle(option == tab ? t.accent : t.textMuted)
                         .padding(.horizontal, Spacing.xs)
                         .padding(.vertical, Spacing.md)

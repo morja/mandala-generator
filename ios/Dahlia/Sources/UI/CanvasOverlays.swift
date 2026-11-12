@@ -82,29 +82,51 @@ private struct TransformCatcher: UIViewRepresentable {
 
     final class Coordinator: NSObject, UIGestureRecognizerDelegate {
         var onStep: (Double, Double, Double, Double) -> Void
+        // Pan, pinch and turn of one touch event are added up and sent as one step on the next run-loop
+        // turn, as Android's `detectTransformGestures` reports them together; otherwise every finger
+        // movement would change the settings up to three times.
+        private var dx = 0.0, dy = 0.0, zoom = 1.0, turn = 0.0
+        private var pending = false
 
         init(onStep: @escaping (Double, Double, Double, Double) -> Void) { self.onStep = onStep }
 
+        /// Changes and the last movement at the end count; a cancelled gesture adds nothing.
+        private func counts(_ g: UIGestureRecognizer) -> Bool { g.state == .changed || g.state == .ended }
+
         @objc func pan(_ g: UIPanGestureRecognizer) {
-            guard g.state == .changed, let view = g.view else { return }
+            guard counts(g), let view = g.view else { return }
             let d = g.translation(in: view)
             g.setTranslation(.zero, in: view)
-            onStep(d.x, d.y, 1, 0)
+            dx += d.x
+            dy += d.y
+            schedule()
         }
 
         @objc func pinch(_ g: UIPinchGestureRecognizer) {
-            guard g.state == .changed else { return }
-            let factor = g.scale
+            guard counts(g) else { return }
+            zoom *= g.scale
             g.scale = 1
-            onStep(0, 0, factor, 0)
+            schedule()
         }
 
         @objc func turn(_ g: UIRotationGestureRecognizer) {
-            guard g.state == .changed else { return }
+            guard counts(g) else { return }
             // UIKit turns clockwise for positive radians on screen, as the shared rule expects.
-            let degrees = g.rotation * 180 / .pi
+            turn += g.rotation * 180 / .pi
             g.rotation = 0
-            onStep(0, 0, 1, degrees)
+            schedule()
+        }
+
+        private func schedule() {
+            guard !pending else { return }
+            pending = true
+            DispatchQueue.main.async { [weak self] in
+                guard let self else { return }
+                pending = false
+                let step = (dx, dy, zoom, turn)
+                (dx, dy, zoom, turn) = (0, 0, 1, 0)
+                if step != (0, 0, 1, 0) { onStep(step.0, step.1, step.2, step.3) }
+            }
         }
 
         func gestureRecognizer(_ g: UIGestureRecognizer, shouldRecognizeSimultaneouslyWith other: UIGestureRecognizer) -> Bool { true }
@@ -122,6 +144,9 @@ struct DrawingOverlay: View {
     @Environment(\.tokens) private var t
     @State private var xs: [Double] = []
     @State private var ys: [Double] = []
+    /// Where the stroke in progress began: a new start means a new stroke, also when the last one was
+    /// cancelled by the system without an end.
+    @State private var startedAt: CGPoint?
 
     var body: some View {
         GeometryReader { geo in
@@ -160,6 +185,11 @@ struct DrawingOverlay: View {
             .contentShape(Rectangle())
             .gesture(DragGesture(minimumDistance: 0)
                 .onChanged { g in
+                    if startedAt != g.startLocation {
+                        startedAt = g.startLocation
+                        xs = []
+                        ys = []
+                    }
                     xs.append(min(max(g.location.x / max(size.width, 1), 0), 1))
                     ys.append(min(max(g.location.y / max(size.height, 1), 0), 1))
                 }
@@ -167,6 +197,7 @@ struct DrawingOverlay: View {
                     onStroke(xs, ys)
                     xs = []
                     ys = []
+                    startedAt = nil
                 })
         }
     }

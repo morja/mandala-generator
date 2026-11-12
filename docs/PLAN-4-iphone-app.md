@@ -396,7 +396,7 @@ Checked on 12 November 2026 from Apple's pages or reports of them: the iOS 27 de
 
 - **Photos add-only access cannot create an album** (from memory): checked in WP-1 ([IOS-1](IOS-1-first-build.md) finding 8): creating an album makes iOS ask for full library access, so no album.
 
-- **Mac fonts on iOS** (Zapfino, Didot, Papyrus …, from memory): list the installed families in the simulator in WP-6.
+- **Mac fonts on iOS** (Zapfino, Didot, Papyrus …, from memory): checked in WP-6 ([IOS-5](IOS-5-emblem-text-draw.md) finding 3): all fourteen fonts of the text tab are installed on iOS 26 under their macOS names; nothing is bundled.
 
 - **Live Photo on the lock screen** (iOS 17 and later plays it on wake, from memory): check in WP-11 if F6 is (b) or (c).
 

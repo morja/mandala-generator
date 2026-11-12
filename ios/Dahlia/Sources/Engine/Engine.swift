@@ -81,6 +81,7 @@ actor Engine {
     /// After a memory warning: the kept layer images go first.
     func dropCache() {
         cache.clear()
+        text.dropFonts()
         bridge.collect()
     }
 }

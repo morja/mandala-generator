@@ -15,6 +15,9 @@ enum AppFiles {
     static let palettes = folder.appendingPathComponent("palettes.json")
     static let myQuotes = folder.appendingPathComponent("my-quotes.json")
 
+    /// The own palettes and quotes are written in order on this queue, never two at once.
+    static let writes = DispatchQueue(label: "one.tearoom.mandala.files", qos: .utility)
+
     /// Writes to a temporary file and moves it over the old one, so a crash never leaves half a file.
     static func write(_ text: String, to url: URL) throws {
         try Data(text.utf8).write(to: url, options: .atomic)

@@ -14,12 +14,21 @@ import Foundation
 /// where the JVM puts them and only the glyph masks differ.
 final class CoreTextRenderer: NSObject, TextRenderer, @unchecked Sendable {
     private let lock = NSLock()
+    /// Fonts kept at most; a render uses a handful (quote and author, preview and export sizes).
+    private static let cachedFonts = 48
     private var fonts: [FontKey: CTFont] = [:]
 
     private struct FontKey: Hashable {
         let name: String
         let size: Float
         let italic: Bool
+    }
+
+    /// After a memory warning.
+    func dropFonts() {
+        lock.lock()
+        fonts.removeAll()
+        lock.unlock()
     }
 
     // ── TextRenderer ──
@@ -69,12 +78,15 @@ final class CoreTextRenderer: NSObject, TextRenderer, @unchecked Sendable {
     // ── Fonts ──
 
     private func line(_ text: String, _ font: TextFont) -> CTLine {
-        var attributes: [NSAttributedString.Key: Any] = [
+        // As Java2D draws by default: no pair kerning and only the required ligatures, so lines are as wide
+        // as on the JVM and break after the same words. The kern value is the tracking (0 without), in pixels
+        // after every letter, as AWT's TRACKING (a share of the size) gives; any kern value turns pair kerning off.
+        let attributes: [NSAttributedString.Key: Any] = [
             NSAttributedString.Key(kCTFontAttributeName as String): ctFont(font),
             NSAttributedString.Key(kCTForegroundColorFromContextAttributeName as String): true,
+            NSAttributedString.Key(kCTKernAttributeName as String): CGFloat(font.trackingPx),
+            NSAttributedString.Key(kCTLigatureAttributeName as String): 1,
         ]
-        // Tracking in pixels after every letter, as AWT's TRACKING (a share of the size) gives.
-        if font.trackingPx != 0 { attributes[NSAttributedString.Key(kCTKernAttributeName as String)] = CGFloat(font.trackingPx) }
         return CTLineCreateWithAttributedString(NSAttributedString(string: text, attributes: attributes))
     }
 
@@ -83,6 +95,8 @@ final class CoreTextRenderer: NSObject, TextRenderer, @unchecked Sendable {
         lock.lock()
         defer { lock.unlock() }
         if let known = fonts[key] { return known }
+        // Sizes follow the sliders, so the cache would only grow; it starts afresh now and then.
+        if fonts.count >= Self.cachedFonts { fonts.removeAll() }
         let base = CTFontCreateWithName(FontMap.installedName(for: font) as CFString, CGFloat(max(font.sizePx, 0.5)), nil)
         var made = base
         if font.italic {

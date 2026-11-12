@@ -241,7 +241,8 @@ final class EditorModel {
 
     private func changeMyQuotes(_ next: [Quote]) {
         myQuotes = next
-        Task.detached(priority: .utility) { MyQuotesStore.save(next) }
+        // One queue for the small files, so a quick keep and let go are written in that order.
+        AppFiles.writes.async { MyQuotesStore.save(next) }
     }
 
     // ── Preview: latest wins (PLAN-4 section 3.2) ──
@@ -372,7 +373,7 @@ final class EditorModel {
 
     private func changeMyPalettes(_ next: [CustomPalette]) {
         myPalettes = next
-        Task.detached(priority: .utility) { PalettesStore.save(next) }
+        AppFiles.writes.async { PalettesStore.save(next) }
     }
 
     /// Saves an own palette, new or changed; layers and the emblem using it take the new version.

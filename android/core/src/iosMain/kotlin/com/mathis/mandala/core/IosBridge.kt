@@ -3,6 +3,8 @@ package com.mathis.mandala.core
 import kotlinx.cinterop.BetaInteropApi
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.addressOf
+import kotlinx.cinterop.get
+import kotlinx.cinterop.reinterpret
 import kotlinx.cinterop.usePinned
 import platform.Foundation.NSData
 import platform.Foundation.create
@@ -166,14 +168,13 @@ object IosBridge {
     @OptIn(ExperimentalForeignApi::class)
     fun coverage(alpha: NSData, width: Int, height: Int, bytesPerRow: Int): FloatArray {
         val out = FloatArray(width * height)
-        val n = bytesPerRow * height
-        if (alpha.length.toInt() < n || n <= 0) return out
-        val src = ByteArray(n)
-        src.usePinned { platform.posix.memcpy(it.addressOf(0), alpha.bytes, n.toULong()) }
+        if (alpha.length.toInt() < bytesPerRow * height || bytesPerRow * height <= 0) return out
+        // Read in place, without a copy of the bytes (a 2048 px export would hold one more 4 MB array).
+        val src = alpha.bytes!!.reinterpret<kotlinx.cinterop.UByteVar>()
         for (y in 0 until height) {
             val row = y * bytesPerRow
             val o = y * width
-            for (x in 0 until width) out[o + x] = (src[row + x].toInt() and 0xFF) / 255f
+            for (x in 0 until width) out[o + x] = src[row + x].toInt() / 255f
         }
         return out
     }
