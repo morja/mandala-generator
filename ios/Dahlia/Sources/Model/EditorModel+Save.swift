@@ -278,7 +278,7 @@ extension EditorModel {
         let peak = Footprint.watch()
         #endif
         let rendered = await engine.framed(p, size: size, framing: framing, textFollows: textFollows, supersample: supersample, finish: finish,
-                                           ticket: ticket) { percent in
+                                           ticket: ticket) { [weak self] percent in
             Task { @MainActor [weak self] in
                 guard let self, self.save.export?.share != nil else { return }
                 self.save.export?.share = Double(percent) / 100

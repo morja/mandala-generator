@@ -38,11 +38,12 @@ final class EditorModel {
     /// Android's fast preview (on by default) and the small pictures beside the styles; kept across starts.
     private(set) var fastPreview: Bool
     private(set) var chipPreviews: Bool
-    /// Whether Pro is owned. The one seam the purchase fills (WP-9): until then nothing is unlocked and the Pro
-    /// marks show. Debug builds can try the Pro side in the simulator: launch with `-proOwned YES`.
+    /// Whether Pro is owned. The one seam the purchase fills (WP-9); until then release builds unlock nothing.
+    /// Debug builds count as Pro, as Android's test builds do (`pro_for_testing`); `-proOwned NO` shows the free app.
     private(set) var proOwned: Bool = {
         #if DEBUG
-        return UserDefaults.standard.bool(forKey: "proOwned")
+        let d = UserDefaults.standard
+        return d.object(forKey: "proOwned") == nil ? true : d.bool(forKey: "proOwned")
         #else
         return false
         #endif
