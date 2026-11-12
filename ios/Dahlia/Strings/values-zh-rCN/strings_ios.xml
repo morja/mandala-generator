@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="editor_favourites_empty">还没有收藏。添加当前曼陀罗。</string>
+    <string name="editor_favourites_hint">轻点即可使用。</string>
+    <string name="export_saving_to_pictures">正在添加到“照片”</string>
+    <string name="message_image_failed">无法生成图片。</string>
+    <string name="message_saved_to_pictures">已将 %1$d × %2$d 保存到“照片”</string>
+    <string name="ios_save_square">正方形 · %1$d × %2$d</string>
+    <string name="ios_save_to_photos">存储到“照片”</string>
+    <string name="ios_photos_denied">Dahlia 无法向“照片”添加图片。你可以在“设置”中允许。</string>
+    <string name="ios_open_settings">设置</string>
+    <string name="ios_favourite_label">收藏：%1$s</string>
+</resources>

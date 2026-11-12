@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="editor_favourites_empty">Nenhum favorito ainda. Adicione a mandala atual.</string>
+    <string name="editor_favourites_hint">Toque para usar.</string>
+    <string name="export_saving_to_pictures">Adicionando a Fotos</string>
+    <string name="message_image_failed">Não foi possível criar a imagem.</string>
+    <string name="message_saved_to_pictures">%1$d × %2$d salvo em Fotos</string>
+    <string name="ios_save_square">Quadrado · %1$d × %2$d</string>
+    <string name="ios_save_to_photos">Salvar em Fotos</string>
+    <string name="ios_photos_denied">O Dahlia não tem permissão para adicionar imagens a Fotos. Você pode permitir em Ajustes.</string>
+    <string name="ios_open_settings">Ajustes</string>
+    <string name="ios_favourite_label">Favorito: %1$s</string>
+</resources>

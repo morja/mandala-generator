@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="editor_favourites_empty">Noch keine Favoriten. Füge das aktuelle Mandala hinzu.</string>
+    <string name="editor_favourites_hint">Tippen zum Verwenden.</string>
+    <string name="export_saving_to_pictures">Wird zu „Fotos“ hinzugefügt</string>
+    <string name="message_image_failed">Bild konnte nicht erstellt werden.</string>
+    <string name="message_saved_to_pictures">%1$d × %2$d in „Fotos“ gespeichert</string>
+    <string name="ios_save_square">Quadrat · %1$d × %2$d</string>
+    <string name="ios_save_to_photos">In „Fotos“ speichern</string>
+    <string name="ios_photos_denied">Dahlia darf keine Bilder zu „Fotos“ hinzufügen. Du kannst das in den Einstellungen erlauben.</string>
+    <string name="ios_open_settings">Einstellungen</string>
+    <string name="ios_favourite_label">Favorit: %1$s</string>
+</resources>

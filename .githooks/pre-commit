@@ -12,3 +12,8 @@ fi
 if printf '%s\n' "$staged" | grep -qE '^(ios/|android/core/|android/editing/)'; then
     ios/scripts/check
 fi
+# Android's texts and tokens feed the iPhone app's generated catalogue and Tokens.swift (cheap staleness check).
+if printf '%s\n' "$staged" | grep -qE '^android/app/src/main/res/values.*/strings|^android/app/src/main/kotlin/.*/ui/theme/Tokens\.kt'; then
+    ios/scripts/gen-strings --check
+    ios/scripts/gen-tokens --check
+fi

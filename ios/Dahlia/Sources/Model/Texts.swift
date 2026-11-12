@@ -2,95 +2,70 @@ import Foundation
 @preconcurrency import MandalaCore
 import UIKit
 
-// English texts of the first build. TEMPORARY (WP-4): taken from Android's strings_*.xml by hand;
-// WP-4 generates the string catalogue for all ten languages from those files under the same keys.
+// Texts of the app. The keys are Android's (strings*.xml) or those of ios/Dahlia/Strings; the catalogue
+// Localizable.xcstrings is generated from both by ios/scripts/gen-strings, and ios/scripts/check-sources
+// fails when a key below is missing from it. No English text belongs in the screens.
 enum Texts {
-    static let layers = "Layers" // controls_tab_layers
-    static let style = "Style" // controls_style
-    static let palette = "Palette" // controls_palette
-    static let shape = "Shape" // controls_shape
-    static let lightAndColour = "Light and colour" // controls_light_and_colour
-    static let favourites = "Favourites" // editor_favourites
-    static let addCurrent = "Add current" // editor_favourites_add
-    static let favouritesEmpty = "No favourites yet. Add the current mandala." // editor_favourites_empty, without "Open file" (WP-7)
-    static let favouritesHint = "Tap to use." // editor_favourites_hint, without selecting (WP-7)
-    static let favouriteAdded = "Added to favourites" // message_favourite_added
-    static let saveImage = "Save image" // editor_save_image
-    static let saveSquare = "Square · 1024 × 1024" // iOS only until the save sheet (WP-8)
-    static let saveToPhotos = "Save to Photos" // iOS variant of action_save
-    static let creatingImage = "Creating the image" // export_creating_image
-    static let addingToPhotos = "Adding to Photos" // iOS variant of export_saving_to_pictures
-    static let saveFailed = "Could not create the image." // message_image_failed without the cause
-    static let photosDenied = "Dahlia may not add pictures to Photos. You can allow it in Settings." // iOS only
-    static let openSettings = "Settings" // iOS only
-    static let preview = "Mandala preview" // editor_preview
-    static let close = "Close"
+    static let layers = text("controls_tab_layers")
+    static let style = text("controls_style")
+    static let palette = text("controls_palette")
+    static let shape = text("controls_shape")
+    static let lightAndColour = text("controls_light_and_colour")
+    static let favourites = text("editor_favourites")
+    static let addCurrent = text("editor_favourites_add")
+    static let favouritesEmpty = text("editor_favourites_empty") // iOS variant: no "Open file"
+    static let favouritesHint = text("editor_favourites_hint") // iOS variant: no selecting yet
+    static let favouriteAdded = text("message_favourite_added")
+    static let saveImage = text("editor_save_image")
+    static let saveToPhotos = text("ios_save_to_photos")
+    static let creatingImage = text("export_creating_image")
+    static let addingToPhotos = text("export_saving_to_pictures") // iOS variant: Photos
+    static let saveFailed = text("message_image_failed") // iOS variant: without the cause
+    static let photosDenied = text("ios_photos_denied")
+    static let openSettings = text("ios_open_settings")
+    static let preview = text("editor_preview")
+    static let close = text("controls_close")
 
-    static func savedToPhotos(_ size: Int) -> String { "Saved \(size) × \(size) to Photos" } // iOS variant of message_saved_to_pictures
-    static func layerHide(_ n: Int) -> String { "Hide layer \(n)" } // controls_layer_hide
-    static func layerShow(_ n: Int) -> String { "Show layer \(n)" } // controls_layer_show
-    static func sliderReset(_ label: String) -> String { "Reset \(label)" } // controls_slider_reset
+    static func saveSquare(_ size: Int) -> String { format("ios_save_square", size, size) }
+    static func savedToPhotos(_ size: Int) -> String { format("message_saved_to_pictures", size, size) } // iOS variant: Photos
+    static func layerHide(_ n: Int) -> String { format("controls_layer_hide", n) }
+    static func layerShow(_ n: Int) -> String { format("controls_layer_show", n) }
+    static func sliderReset(_ label: String) -> String { format("controls_slider_reset", label) }
+    static func favouriteLabel(_ styles: String) -> String { format("ios_favourite_label", styles) }
+    static func percent(_ value: Int) -> String { format("editor_percent", value) }
 
     static func slider(_ s: LayerSlider) -> String {
         switch s {
-        case .symmetry: "Symmetry"
-        case .scale: "Scale"
-        case .complexity: "Complexity"
-        case .spokes: "Spokes"
-        case .density: "Density"
-        case .ripple: "Ripple"
-        case .glow: "Glow"
-        case .colourDrift: "Colour drift"
-        case .painted: "Painted"
-        case .saturation: "Saturation"
-        case .brightness: "Brightness"
+        case .symmetry: text("controls_symmetry")
+        case .scale: text("controls_scale")
+        case .complexity: text("controls_complexity")
+        case .spokes: text("controls_spokes")
+        case .density: text("controls_density")
+        case .ripple: text("controls_ripple")
+        case .glow: text("controls_glow")
+        case .colourDrift: text("controls_colour_drift")
+        case .painted: text("controls_painted")
+        case .saturation: text("controls_saturation")
+        case .brightness: text("controls_brightness")
         default: s.name
         }
     }
 
-    /// Android's short style labels (strings_labels.xml), by the Kotlin enum name.
-    static func style(_ s: MandalaStyle) -> String { styleLabels[s.name] ?? s.displayName }
+    /// Android's short style labels (strings_labels.xml): the key is `style_` plus the Kotlin enum name in lower case.
+    static func style(_ s: MandalaStyle) -> String {
+        let key = "style_" + s.name.lowercased()
+        let label = text(key)
+        return label == key ? s.displayName : label
+    }
 
-    private static let styleLabels: [String: String] = [
-        "SPIROGRAPH": "Spirograph",
-        "ROSE_CURVES": "Rose Curves",
-        "FLORAL": "Floral",
-        "BUTTERFLY": "Butterfly",
-        "EPITROCHOID": "Epitrochoid",
-        "LISSAJOUS": "Lissajous",
-        "HYPOCYCLOID": "Hypocycloid",
-        "PHYLLOTAXIS": "Phyllotaxis",
-        "FRACTAL": "Fractal",
-        "SUPERFORMULA": "Superformula",
-        "WAVE_INTERFERENCE": "Waves",
-        "GEOMETRIC": "Geometric",
-        "SACRED_GEOMETRY": "Sacred",
-        "SUNBURST": "Sunburst",
-        "STAR_BURST": "Starburst",
-        "STRING_ART": "String Art",
-        "SPIDER_WEB": "Spider Web",
-        "WEAVE": "Weave",
-        "RADIAL_MESH": "Radial Mesh",
-        "MOIRE": "Moiré",
-        "FLOW_FIELD": "Flow",
-        "TENDRIL": "Tendril",
-        "VORONOI": "Voronoi",
-        "STRANGE_ATTRACTOR": "Attractor",
-        "CONSTELLATION_WEB": "Constellation",
-        "DEEP_NEBULA": "Nebula",
-        "INTERFERENCE_BLOOM": "Interference",
-        "HYPERBOLOID": "Hyperboloid",
-        "TORUS": "Torus",
-        "NAUTILUS": "Nautilus",
-        "SPHERE_GRID": "Sphere Grid",
-        "TORUS_KNOT": "Torus Knot",
-        "TESSERACT": "Tesseract",
-        "UNIVERSE": "Universe",
-        "SYMBOLS": "Symbols",
-        "MIXED": "Mixed",
-        "PETAL_RINGS": "Petals",
-        "LOOP_RINGS": "Loops",
-    ]
+    private static func text(_ key: String) -> String {
+        String(localized: String.LocalizationValue(key))
+    }
+
+    /// A catalogue text with Android's positional placeholders (`%1$lld`, `%1$@`).
+    private static func format(_ key: String, _ args: CVarArg...) -> String {
+        String(format: text(key), locale: nil, arguments: args)
+    }
 }
 
 enum Links {
