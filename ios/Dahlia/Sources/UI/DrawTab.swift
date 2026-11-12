@@ -27,7 +27,7 @@ struct DrawTab: View {
                 ModeButton(label: active ? Texts.done : Texts.drawOnImage, active: active, wide: true) {
                     model.setDrawTool(active ? nil : tool)
                 }
-                OutlinedIconButton(system: "arrow.uturn.backward", label: Texts.undo, enabled: count > 0) {
+                OutlinedIconButton(system: "arrow.uturn.backward", label: Texts.drawUndo, enabled: count > 0) {
                     model.apply(parts.withoutLastStroke(params: model.params, tool: tool))
                 }
                 OutlinedIconButton(system: "trash", label: Texts.clear, enabled: count > 0) {

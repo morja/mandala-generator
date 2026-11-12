@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="editor_favourites_empty">还没有收藏。添加当前曼陀罗。</string>
-    <string name="editor_favourites_hint">轻点即可使用。</string>
     <string name="export_saving_to_pictures">正在添加到“照片”</string>
     <string name="message_image_failed">无法生成图片。</string>
     <string name="message_saved_to_pictures">已将 %1$d × %2$d 保存到“照片”</string>
@@ -12,4 +10,5 @@
     <string name="ios_favourite_label">收藏：%1$s</string>
     <string name="ios_picture_from_photos">照片</string>
     <string name="ios_picture_from_files">文件</string>
+    <string name="ios_select">选择</string>
 </resources>

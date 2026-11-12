@@ -9,6 +9,8 @@ struct ControlTabs: View {
         case layers, scene, emblem, text, draw
     }
 
+    /// Reports what the open tab is about, shown beside the picture while it is folded small.
+    var onHeader: (ControlHeader) -> Void = { _ in }
     @State private var tab = Self.initialTab
     /// Full opacity: the open tab shows, the others stay alive but unseen.
     private static let shown = 1.0
@@ -36,6 +38,8 @@ struct ControlTabs: View {
                 tabView(.draw) { DrawTab() }
             }
         }
+        .onChange(of: header, initial: true) { _, new in onHeader(new) }
+        .onAppear { onHeader(header) }
         // Drawing on the picture only while the Draw tab is shown; moving only while its tab is (as on Android).
         .onChange(of: tab) { _, now in
             if now != .draw { model.setDrawTool(nil) }
@@ -96,6 +100,8 @@ struct ControlTabs: View {
             .allowsHitTesting(tab == option)
             .accessibilityHidden(tab != option)
     }
+
+    private var header: ControlHeader { ControlHeader.of(label(tab), tab: tab, params: model.params, selected: model.selected) }
 
     private func label(_ tab: Tab) -> String {
         switch tab {

@@ -7,7 +7,7 @@ In the screens (ios/Dahlia/Sources/UI and App) and, for colours, fonts and texts
 - no number literals in layout calls (frame, padding, spacing, cornerRadius, lineWidth, offset, opacity, ...);
   a literal after * or / (a share of a width) and 0 are fine, every other size is a token;
 - no readable English in Text, Button, Label or accessibilityLabel: texts come from Texts (the catalogue);
-- every key in Texts.swift exists in the generated catalogue.
+- every key in Texts.swift and its extensions exists in the generated catalogue.
 A line may carry `// token-exempt: <reason>` for a colour that comes from the mandala itself, not from the UI.
 """
 import json
@@ -67,9 +67,13 @@ def check_file(path, layout):
 
 def check_keys():
     catalogue = json.loads(CATALOGUE.read_text())["strings"]
-    src = (SOURCES / "Model/Texts.swift").read_text()
-    keys = set(re.findall(r'\b(?:text|format)\("([a-z0-9_]+)"', src))
-    return [f"ios/Dahlia/Sources/Model/Texts.swift: key {k} is not in the catalogue" for k in sorted(keys - set(catalogue))]
+    # Texts.swift and its extensions (ShellTexts.swift ...), plus plurals asked for anywhere.
+    keys = set()
+    for f in SOURCES.rglob("*.swift"):
+        src = f.read_text()
+        pattern = r'\b(?:text|format|shellText|shellFormat)\("([a-z0-9_]+)"' if f.name.endswith("Texts.swift") else r'\bTexts\.plural\("([a-z0-9_]+)"'
+        keys |= set(re.findall(pattern, src))
+    return [f"Texts: key {k} is not in the catalogue" for k in sorted(keys - set(catalogue))]
 
 
 problems = []

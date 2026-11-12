@@ -13,8 +13,8 @@ enum Texts {
     static let lightAndColour = text("controls_light_and_colour")
     static let favourites = text("editor_favourites")
     static let addCurrent = text("editor_favourites_add")
-    static let favouritesEmpty = text("editor_favourites_empty") // iOS variant: no "Open file"
-    static let favouritesHint = text("editor_favourites_hint") // iOS variant: no selecting yet
+    static let favouritesEmpty = text("editor_favourites_empty")
+    static let favouritesHint = text("editor_favourites_hint")
     static let favouriteAdded = text("message_favourite_added")
     static let saveImage = text("editor_save_image")
     static let saveToPhotos = text("ios_save_to_photos")
@@ -172,7 +172,7 @@ enum Texts {
     static let drawOnImage = text("controls_draw_on_image")
     static let drawShowLines = text("controls_draw_show_lines")
     static let drawShowSpray = text("controls_draw_show_spray")
-    static let undo = text("controls_undo")
+    static let drawUndo = text("controls_undo")
     static let clear = text("controls_clear")
     static let symmetry = text("controls_symmetry")
     static let lineColour = text("controls_line_colour")
@@ -186,6 +186,10 @@ enum Texts {
     static let moveEmblemHint = text("editor_move_emblem_hint")
     static let moveTextHint = text("editor_move_text_hint")
     static let proMarkDescription = text("editor_pro_mark_description")
+    /// "2 lines · 1 spray": the Draw tab's header beside the folded picture.
+    static func headerStrokes(lines: Int, spray: Int) -> String {
+        format("controls_header_strokes", plural("controls_header_lines", lines), plural("controls_header_spray", spray))
+    }
     static let withoutEffects = text("editor_without_effects")
     /// The Pro mark on the picture: the brand word, the same in every language (as on Android).
     static let proMark = "Pro"
