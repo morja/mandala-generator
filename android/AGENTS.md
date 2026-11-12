@@ -1,4 +1,4 @@
-# Android stack rules (binding, set up 19 October 2026)
+# Android stack rules
 
 Mandala Generator for Android: a port of the macOS app in `../mac`. These rules add to the repository rules in `../AGENTS.md`; paths here are relative to `android/`. Reasons and details are in `../docs/adr/`. Read the affected ADRs before building; do not reinvent decisions already made.
 
@@ -10,5 +10,5 @@ Mandala Generator for Android: a port of the macOS app in `../mac`. These rules 
 - **Port faithfully, then measure:** every ported style or filter gets a fixture in `fixtures/settings/` and a macOS reference image from `tools/reference-renderer/`. Deviations get a PSNR threshold in `ParityTest` and a line in ADR-0004, never a silent change of look.
 - **Styling only through tokens** in `app/.../ui/theme/Tokens.kt`: no colour or dp/sp literals elsewhere (enforced by `ArchitectureTest`); light and dark only via tokens; recurring parts as composables. Design per the skill `design-baseline` and ADR-0006.
 - **No horizontal scrolling** in any app screen; check phone (portrait) and tablet (two panes), light and dark.
-- **Test installs** on an emulator or phone use the `fast` build type (`:app:assembleFast`, package `one.tearoom.mandala.fast`, release speed), not `debug`, unless a debugger is needed. Install with `adb -s <serial> install -r app/build/outputs/apk/fast/app-fast.apk`; Gradle's install tasks install on every connected device.
+- **Test installs** on an emulator or phone use the `fast` build type (`:app:assembleFast`, package `one.tearoom.mandala.fast`, release speed), not `debug`, unless a debugger is needed. Install with `bin/install` from the repository root (builds `fast`, installs on exactly one device, `--emulator` for the emulator); Gradle's install tasks install on every connected device.
 - **Checks:** `scripts/check` (fast, run by the repository's pre-commit hook for changes in `android/`); `scripts/check-full` (adds the parity test and a release build) before merging into `main`. Rule tests: `core/src/jvmTest/.../ArchitectureTest.kt` (covers `core` and `editing`). Language, approvals, agents, docs and commits: see `../AGENTS.md`.
