@@ -5,7 +5,7 @@ import Foundation
 /// Debug only: puts the editor into a state for screenshots in the simulator, where tapping through is
 /// slow (IOS-5). Launch arguments: `-shotFavourite <id prefix>` opens a starter or favourite,
 /// `-shotEmblem YES` switches the emblem on, `-shotMove layer|emblem|text` and `-shotDraw lines|spray`
-/// start moving or drawing; `-startTab layers|scene|emblem|text|draw` (read by `ControlTabs`) opens a tab.
+/// start moving or drawing; `-shotSheet` and `-shotTourStep` open a sheet or the tour; `-startTab layers|scene|emblem|text|draw` (read by `ControlTabs`) opens a tab.
 @MainActor
 enum ShotSetup {
     static func runIfAsked(_ model: EditorModel) {
@@ -27,6 +27,12 @@ enum ShotSetup {
         default: break
         }
     }
+
+    /// A sheet to open at start (WP-12): `-shotSheet menu|more|dahlia|about|favourites|save`.
+    static var sheet: String? { UserDefaults.standard.string(forKey: "shotSheet") }
+
+    /// A tour step to start at, 1 to 8, whatever the gate says: `-shotTourStep 5`.
+    static var tourStep: Int? { UserDefaults.standard.object(forKey: "shotTourStep") as? Int }
 
     /// The tab to open at start.
     static var startTab: String? { UserDefaults.standard.string(forKey: "startTab") }

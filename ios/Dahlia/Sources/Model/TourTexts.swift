@@ -13,7 +13,8 @@ extension Texts {
     static let tourPlaceMenu = tourText("tour_place_menu")
     static let tourPlacePlay = tourText("tour_place_play")
 
-    static let menuDahlia = tourText("menu_dahlia")
+    /// The app's name; not translated (Android's `menu_dahlia` is untranslatable too).
+    static let menuDahlia = "Dahlia"
     static let menuGuide = tourText("menu_guide")
     static let menuTour = tourText("menu_tour")
     static let menuRate = tourText("menu_rate")

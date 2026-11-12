@@ -88,20 +88,31 @@ struct EditorView: View {
             .background(t.background)
         }
         .overlayPreferenceValue(TourBoundsKey.self) { anchors in
-            GeometryReader { geo in
-                if let state = tour.state {
-                    TourOverlay(state: state, bounds: anchors.mapValues { geo[$0] }, size: geo.size, safe: geo.safeAreaInsets)
+            // The insets come from the outer reader: inside the one that ignores the safe area they read zero.
+            GeometryReader { outer in
+                GeometryReader { geo in
+                    if let state = tour.state {
+                        TourOverlay(state: state, bounds: anchors.mapValues { geo[$0] }, size: geo.size, safe: outer.safeAreaInsets)
+                    }
                 }
+                .ignoresSafeArea()
             }
-            .ignoresSafeArea()
         }
         .overlay(alignment: .bottom) {
-            if let message = model.message, !showFavorites, !showSave, !showMenu, model.shell.play == nil {
+            if let message = model.message, !tour.running, !showFavorites, !showSave, !showMenu, model.shell.play == nil {
                 MessageBar(message: message) { model.message = nil }
                     .padding(.bottom, Spacing.lg)
             }
         }
         .onAppear {
+            #if DEBUG
+            switch ShotSetup.sheet {
+            case "menu", "more", "dahlia", "about": showMenu = true
+            case "favourites": showFavorites = true
+            case "save": showSave = true
+            default: break
+            }
+            #endif
             tour.onEnd = { automatic in
                 if automatic { model.message = Message(text: Texts.tourAgain) }
             }

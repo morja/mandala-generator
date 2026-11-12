@@ -11,12 +11,32 @@ struct MenuSheet: View {
     @Environment(TourModel.self) private var tour
     @Environment(\.tokens) private var t
     @AppStorage("lightTheme") private var lightTheme = false
-    @State private var page = Page.main
+    @State private var page = Self.initialPage
     @State private var showOpen = false
     @State private var showExport = false
-    @State private var showAbout = false
+    @State private var showAbout = Self.initialAbout
 
     private enum Page { case main, more, dahlia }
+
+    private static var initialPage: Page {
+        #if DEBUG
+        switch ShotSetup.sheet {
+        case "more": return .more
+        case "dahlia", "about": return .dahlia
+        default: return .main
+        }
+        #else
+        return .main
+        #endif
+    }
+
+    private static var initialAbout: Bool {
+        #if DEBUG
+        return ShotSetup.sheet == "about"
+        #else
+        return false
+        #endif
+    }
 
     var body: some View {
         ScrollView {

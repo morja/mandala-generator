@@ -83,7 +83,9 @@ struct TourOverlay: View {
                 // Rings and the lines from them to the card.
                 let line = Sizes.swatchRing
                 for ring in rings {
-                    ctx.stroke(shape(ring, corner), with: .color(t.accent), lineWidth: line)
+                    // Inside the hole: half the line would otherwise fall on the dimming.
+                    let drawn = Ring(rect: ring.rect.insetBy(dx: line / 2, dy: line / 2), round: ring.round, line: ring.line)
+                    ctx.stroke(shape(drawn, corner), with: .color(t.accent), lineWidth: line)
                     guard ring.line else { continue }
                     let x = ring.rect.midX
                     guard x >= Spacing.md, x <= canvasSize.width - Spacing.md else { continue }
@@ -107,12 +109,19 @@ struct TourOverlay: View {
                 .offset(x: Spacing.md, y: docked)
         }
         .frame(width: size.width, height: size.height)
+        .onChange(of: settled ? docked : nil) { _, y in
+            if let y { lastTop = y }
+        }
         .onChange(of: required(rings: rings, picture: picture, bottom: bottom, settled: settled)) { _, need in
             if need > tour.shrinkBy + 1 { tour.shrinkBy = need }
         }
         .accessibilityElement(children: .contain)
         .accessibilityAddTraits(.isModal)
         .accessibilityLabel(Texts.tourPane)
+        .accessibilityAction(.escape) { tour.end() }
+        .onChange(of: state.step, initial: true) { _, step in
+            AccessibilityNotification.Announcement(Texts.tourTitle(step) + ". " + Texts.tourBody(step, freeLayers: Int(ProFeatures.shared.FREE_LAYERS))).post()
+        }
     }
 
     private func rings(of step: TourStep) -> [Ring] {
@@ -120,7 +129,7 @@ struct TourOverlay: View {
         return step.marks.compactMap { mark in
             guard let b = bounds[mark.target] else { return nil }
             let round = Self.roundTargets.contains(mark.target)
-            let rect = round ? CGRect(x: b.midX - icon, y: b.midY - icon, width: icon * 2, height: icon * 2) : b.insetBy(dx: -Sizes.swatchRing, dy: -Sizes.swatchRing)
+            let rect = round ? CGRect(x: b.midX - icon, y: b.midY - icon, width: icon * 2, height: icon * 2) : b.insetBy(dx: -Spacing.xs, dy: -Spacing.xs)
             return Ring(rect: rect, round: round, line: mark.line)
         }
     }

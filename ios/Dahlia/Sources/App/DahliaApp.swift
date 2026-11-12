@@ -8,6 +8,7 @@ struct DahliaApp: App {
     @State private var model = EditorModel()
     /// Dark by default, light by choice, not following the system (as on Android). The choice comes with
     /// the menu (WP-7); until then a debug launch argument sets it: `-lightTheme YES`.
+    @Environment(\.scenePhase) private var scenePhase
     @AppStorage("lightTheme") private var lightTheme = false
 
     var body: some Scene {
@@ -21,7 +22,7 @@ struct DahliaApp: App {
                 .onReceive(NotificationCenter.default.publisher(for: UIApplication.didReceiveMemoryWarningNotification)) { _ in
                     model.memoryWarning()
                 }
-                .onReceive(NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)) { _ in ReviewPrompt.opened() }
+                .onChange(of: scenePhase, initial: true) { _, phase in if phase == .active { ReviewPrompt.opened() } }
                 #if DEBUG
                 .task {
                     DragProbe.openFileIfAsked(model)

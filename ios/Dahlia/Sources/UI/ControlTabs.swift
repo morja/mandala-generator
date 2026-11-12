@@ -43,9 +43,8 @@ struct ControlTabs: View {
                 tabView(.draw) { DrawTab() }
             }
         }
-        .onChange(of: tour.state?.step) { _, step in
-            Task { await showTourStep(step) }
-        }
+        // A new step cancels the one before, as Android's LaunchedEffect does.
+        .task(id: tour.state?.step) { await showTourStep(tour.state?.step) }
         .onChange(of: header, initial: true) { _, new in onHeader(new) }
         .onAppear { onHeader(header) }
         // Drawing on the picture only while the Draw tab is shown; moving only while its tab is (as on Android).
@@ -135,6 +134,7 @@ struct ControlTabs: View {
         tab = wanted
         // The tab shows first; the scroll waits for it.
         try? await Task.sleep(for: Timing.debounce)
+        guard !Task.isCancelled else { return }
         withAnimation {
             switch step.scrollTo {
             case nil: positions[wanted, default: ScrollPosition()].scrollTo(y: saved.offsets[wanted] ?? 0)
@@ -143,7 +143,8 @@ struct ControlTabs: View {
             }
         }
         try? await Task.sleep(for: Timing.tourSettle)
-        if tour.state?.step == step { tour.settled = step }
+        guard !Task.isCancelled else { return }
+        tour.settled = step
     }
 
     private func tab(of tourTab: TourTab) -> Tab { tourTab == .scene ? .scene : .layers }

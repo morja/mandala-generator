@@ -46,10 +46,13 @@ enum ReviewPrompt {
 
     /// The local calendar day as a number.
     static func today(_ now: Date = Date(), calendar: Calendar = .current) -> Int {
-        let start = calendar.startOfDay(for: now)
-        // Days since 1970 by the calendar on the phone, not by 24-hour spans.
-        let epoch = calendar.startOfDay(for: Date(timeIntervalSince1970: 0))
-        return calendar.dateComponents([.day], from: epoch, to: start).day ?? 0
+        // The local year, month and day, counted as days since 1970 in a fixed UTC calendar, so a change of time zone
+        // never shifts the number (the kit's `LocalDate.toEpochDay`).
+        let local = calendar.dateComponents([.year, .month, .day], from: now)
+        var utc = Calendar(identifier: .gregorian)
+        utc.timeZone = TimeZone(identifier: "UTC") ?? .gmt
+        guard let day = utc.date(from: local) else { return 0 }
+        return Int((day.timeIntervalSince1970 / 86_400).rounded(.down))
     }
 
     private static func build() -> Int { Int(Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "") ?? 0 }

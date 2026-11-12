@@ -31,6 +31,12 @@ final class TourModel {
 
     /// Starts the tour if this is a new install that has not seen it; called once the first picture is drawn.
     func startIfNew() {
+        #if DEBUG
+        if let n = ShotSetup.tourStep, let step = TourStep(rawValue: n - 1) {
+            state = TourState(step: step)
+            return
+        }
+        #endif
         guard pending else { return }
         pending = false
         state = .start(automatic: true)
