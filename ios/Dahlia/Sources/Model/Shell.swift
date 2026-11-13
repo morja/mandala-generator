@@ -36,6 +36,15 @@ enum PreviewSize {
     static let small = 0.32
     /// Below this the picture is too small for the status line (the tab's title stands beside it).
     static let headerBelow = 0.6
+    /// Let go of a pull this close to an end and it takes the end, so a pull does not stop just short of full.
+    static let snap = 0.1
+
+    /// Where a pull that let go at `fraction` stays (Android's `PreviewSize.snapped`).
+    static func snapped(_ fraction: Double) -> Double {
+        if fraction >= full - snap { return full }
+        if fraction <= small + snap { return small }
+        return fraction
+    }
 }
 
 @MainActor
@@ -46,6 +55,10 @@ final class ShellState {
     var play: PlayState?
     var candidate: Candidate?
     var previewFraction: Double
+    /// A finger pulls the open tab down past its top (Android's nested scroll): how far, in points of the tab's
+    /// overscroll, while `pulling`. The picture grows with it and stays where the finger lets go.
+    var pull: Double = 0
+    var pulling = false
 
     @ObservationIgnored let history: IosHistory
     @ObservationIgnored var historyTask: Task<Void, Never>?

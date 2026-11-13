@@ -128,7 +128,23 @@ struct ControlTabs: View {
     private func tabView<Content: View>(_ option: Tab, @ViewBuilder content: () -> Content) -> some View {
         ScrollView { content() }
             .scrollPosition(Binding(get: { positions[option] ?? ScrollPosition() }, set: { positions[option] = $0 }))
-            .onScrollGeometryChange(for: CGFloat.self) { $0.contentOffset.y + $0.contentInsets.top } action: { _, y in offsets[option] = y }
+            .onScrollGeometryChange(for: CGFloat.self) { $0.contentOffset.y + $0.contentInsets.top } action: { _, y in
+                offsets[option] = y
+                // Past the top while the finger is down: the picture grows with the pull (Android's nested scroll).
+                // Only while past the top: letting go springs the list back to 0 before the phase ends, and that
+                // must not undo the pull.
+                if model.shell.pulling && tab == option && y < 0 { model.shell.pull = -y }
+            }
+            // Only a drag pulls, not a fling that reaches the top; letting go ends the pull.
+            .onScrollPhaseChange { old, new in
+                guard tab == option else { return }
+                if new == .interacting {
+                    model.shell.pull = 0
+                    model.shell.pulling = true
+                } else if old == .interacting {
+                    model.shell.pulling = false
+                }
+            }
             .scrollDismissesKeyboard(.immediately)
             .opacity(tab == option ? Self.shown : 0)
             .allowsHitTesting(tab == option)
@@ -216,3 +232,4 @@ struct EqualWidthRow: Layout {
         }
     }
 }
+
