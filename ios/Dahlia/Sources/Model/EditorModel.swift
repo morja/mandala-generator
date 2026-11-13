@@ -34,6 +34,8 @@ final class EditorModel {
     let save = SaveState()
     /// The wallpaper page's preview of the pair (WP-11); its operations are in EditorModel+Wallpaper.swift.
     let wallpaper = WallpaperState()
+    /// The text's two colours and the colour sheet (DM-24 A2), and typing in the Text tab; operations in EditorModel+TextColours.swift.
+    let textColours = TextColourState()
     /// The favourites that take turns as wallpaper and in the widgets, by id; nil for all (ADR-0014, WP-11).
     var dailyChosen: Set<String>? = DailyChoiceStore.load()
     /// The user's own palettes in the order made (ADR-0021).
@@ -195,6 +197,8 @@ final class EditorModel {
         shellSettingsChanged()
         dropPlainPreview()
         renderPreview()
+        // While the text colour sheet is open, a small picture at once, so the colour shows while dragging.
+        renderLive()
         // Saved once the settings rest a moment (Android: 400 ms).
         saveTask?.cancel()
         let snapshot = params
@@ -329,6 +333,7 @@ final class EditorModel {
 
     func memoryWarning() {
         recent.removeAll()
+        textColours.dropSample()
         Task { await engine.dropCache() }
     }
 
@@ -473,6 +478,8 @@ enum Timing {
     static let recentPreviews = 30
     /// How long the picture is held before it shows without effects (Android's long press).
     static let holdSeconds = 0.4
+    /// How long a field waits for the picture to fold before it scrolls into view above the keyboard.
+    static let typingScroll = Duration.milliseconds(300)
     static let quickMinLayers = Int(Editing.shared.QUICK_MIN_LAYERS)
     static let quickAfterMs: Int64 = Editing.shared.QUICK_AFTER_MS
 }

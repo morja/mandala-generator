@@ -42,14 +42,30 @@ struct ControlTabs: View {
                 tabView(.text) { TextTab() }
                 tabView(.draw) { DrawTab() }
             }
+            // The text colour sheet over the tab area only, so the picture stays in full view (DM-24 A2).
+            .overlay {
+                if model.textColours.sheet != nil { TextColourSheetView() }
+            }
         }
         // A new step cancels the one before, as Android's LaunchedEffect does.
         .task(id: tour.state?.step) { await showTourStep(tour.state?.step) }
+        // The field with the keyboard scrolls into view once the picture has folded (QA-10 item 4).
+        .task(id: model.textColours.typing) {
+            guard let field = model.textColours.typing else { return }
+            try? await Task.sleep(for: Timing.typingScroll)
+            guard !Task.isCancelled else { return }
+            withAnimation { positions[.text, default: ScrollPosition()].scrollTo(id: field, anchor: .top) }
+        }
         .onChange(of: header, initial: true) { _, new in onHeader(new) }
         .onAppear { onHeader(header) }
         // Drawing on the picture only while the Draw tab is shown; moving only while its tab is (as on Android).
         .onChange(of: tab) { _, now in
             if now != .draw { model.setDrawTool(nil) }
+            // Another tab closes the colour sheet and keeps the colours, and puts the keyboard away (as on Android).
+            if now != .text {
+                model.closeTextColourSheet(keep: true)
+                model.textColours.typing = nil
+            }
             if let target = model.moveTarget, now != tabFor(target) { model.setMoveTarget(nil) }
         }
     }

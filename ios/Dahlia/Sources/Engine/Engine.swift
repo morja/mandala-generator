@@ -31,6 +31,8 @@ actor Engine {
 
     private let bridge = IosBridge.shared
     private let cache: LayerCache
+    /// The layer images of the text colour sheet's small live picture (DM-24), so a colour drag redraws only the text.
+    private let liveCache = IosBridge.shared.makeLayerCache()
     // Shared with the save sheet's renders (Engine+Save.swift).
     let threads: Int32
     let loader = ImageIOLoader()
@@ -96,9 +98,26 @@ actor Engine {
         return IosShell.shared.renderCandidate(params: params, fast: fast, threads: threads, ticket: ticket, loader: loader)
     }
 
+    /// The text colour sheet's small picture, drawn at once while a colour changes (Android's live preview, QA-12 finding 5).
+    func live(_ params: MandalaParameters, hot: Bool = false, ticket: RenderTicket) -> Rendered? {
+        if ticket.isCancelled() { return nil }
+        return IosTextColours.shared.renderLive(params: params, cache: liveCache, threads: previewThreads(hot: hot), ticket: ticket,
+                                                imageLoader: loader, textRenderer: text)
+    }
+
+    /// The live picture's layers are not needed until the sheet opens again.
+    func dropLiveCache() { liveCache.clear() }
+
+    /// The picture without its text, small, with its colours: for the text swatches and "Stand out".
+    func textSample(_ params: MandalaParameters, ticket: RenderTicket) -> TextPictureSample? {
+        if ticket.isCancelled() { return nil }
+        return IosTextColours.shared.renderSample(params: params, threads: threads, ticket: ticket, imageLoader: loader)
+    }
+
     /// After a memory warning: the kept layer images go first.
     func dropCache() {
         cache.clear()
+        liveCache.clear()
         text.dropFonts()
         bridge.collect()
     }

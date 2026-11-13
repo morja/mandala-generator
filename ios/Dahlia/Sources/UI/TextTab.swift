@@ -43,6 +43,9 @@ private struct Words: View {
     let onChoose: () -> Void
     @Environment(EditorModel.self) private var model
     @Environment(\.tokens) private var t
+    /// The field with the keyboard (QA-10 item 4): the picture folds small while typing, the field scrolls into
+    /// view above the keyboard, and Done on the bar above the keyboard puts it away.
+    @FocusState private var focus: TextTabField?
 
     var body: some View {
         ControlGroup(Texts.words, initiallyOpen: true, trailing: { heading }) {
@@ -50,6 +53,16 @@ private struct Words: View {
             authorField
             SwitchRow(label: Texts.showAuthor, checked: text.showAuthor) {
                 model.apply(IosEditingParts.shared.withShowAuthor(params: model.params, show: $0))
+            }
+        }
+        .onChange(of: focus) { _, field in model.textColours.typing = field }
+        // Another tab, a sheet or the editor leaving: the keyboard goes with the field's focus.
+        .onChange(of: model.textColours.typing) { _, field in if field == nil { focus = nil } }
+        .onDisappear { focus = nil }
+        .toolbar {
+            ToolbarItemGroup(placement: .keyboard) {
+                Spacer()
+                Button(Texts.done) { focus = nil }.tint(t.accent)
             }
         }
     }
@@ -73,6 +86,7 @@ private struct Words: View {
         return FieldBox(label: Texts.textField) {
             HStack(alignment: .top, spacing: Spacing.sm) {
                 TextField(Texts.textField, text: binding, axis: .vertical)
+                    .focused($focus, equals: .words)
                     .lineLimit(1...6)
                     .font(WordsFont.font(text.fontName, italic: false, role: .title3)) // token-exempt: the words in the picture's own font
                     .foregroundStyle(t.text)
@@ -87,17 +101,26 @@ private struct Words: View {
                 .accessibilityLabel(kept ? Texts.kept : Texts.keep)
             }
         }
+        .id(TextTabField.words)
     }
 
     private var authorField: some View {
         let binding = Binding<String>(get: { text.customAuthor }, set: { model.apply(IosEditingParts.shared.withAuthor(params: model.params, author: $0)) })
         return FieldBox(label: Texts.author) {
             TextField(Texts.author, text: binding)
+                .focused($focus, equals: .author)
+                .submitLabel(.done)
                 .font(WordsFont.font(text.fontName, italic: true, role: .body)) // token-exempt: the author in the picture's own font
                 .foregroundStyle(t.text)
                 .frame(minHeight: Sizes.icon * 2)
         }
+        .id(TextTabField.author)
     }
+}
+
+/// The two fields of the Text tab, as focus and as places to scroll to while typing (QA-10 item 4).
+enum TextTabField: Hashable {
+    case words, author
 }
 
 /// A framed field with its label above, like Android's outlined text field.
@@ -168,7 +191,7 @@ private struct TextControls: View {
                     colour(Texts.shadowColour, .shadowHue, .shadowSaturation, .shadowBrightness, inset: true)
                 }
             }
-            colour(Texts.colour, .hue, .saturation, .brightness, inset: false)
+            TextColourGroup()
         }
     }
 
