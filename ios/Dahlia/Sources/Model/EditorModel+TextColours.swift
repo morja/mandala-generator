@@ -28,6 +28,8 @@ extension EditorModel {
     /// Opens the sheet, on one colour when a head dot was tapped.
     func openTextColourSheet(_ target: TextColourTarget? = nil) {
         if let target { textColours.target = target }
+        // The keyboard goes and the picture unfolds, so the sheet and the picture are both in view.
+        textColours.typing = nil
         textColours.open(colours.openSheet(params: params), before: preview)
     }
 
@@ -59,6 +61,8 @@ extension EditorModel {
                 Engine.trace("live render=\(result.millis)ms")
                 // Only while the full preview of the settings shown is not there yet.
                 if textColours.sheet != nil, recent[params] == nil { preview = image }
+                // The newest settings were shown recently: nothing more to draw small.
+                if recent[params] != nil { textColours.liveWanted = false }
             }
         }
     }
@@ -87,7 +91,8 @@ extension EditorModel {
         let key = colours.sampleKey(params: p)
         if let sample = textColours.sample, sample.key == key { return sample }
         guard let sample = await engine.textSample(p, ticket: ticket), !ticket.isCancelled() else { return nil }
-        textColours.keep(sample)
+        // Kept for the swatches only while it is still the picture shown (a later change may have sampled already).
+        if sample.key == colours.sampleKey(params: params) { textColours.keep(sample) }
         return sample
     }
 

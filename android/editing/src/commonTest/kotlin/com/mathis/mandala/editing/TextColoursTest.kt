@@ -238,4 +238,18 @@ class TextColoursTest {
         assertEquals(TextColours.MAX_STAND_OUT_GLOW, TextColours.applyStandOut(TextLayerSettings(glow = 3.0), r).glow)
         assertEquals(0.41, TextColours.applyStandOut(TextLayerSettings(glow = 0.41), r).glow)
     }
+
+    @Test
+    fun changedDotAndFineTuneRules() {
+        val d = TextLayerSettings()
+        assertFalse(TextColours.changed(d))
+        assertTrue(TextColours.changed(d.copy(hue = 0.3)))
+        assertTrue(TextColours.changed(TextColours.sameAsText(d, false)))
+        // The glow's double tap goes back to the letters' colour, the text's to its own default.
+        val s = d.copy(hue = 0.4, saturation = 0.5, brightness = 1.6)
+        assertEquals(Hsb(0.4, 0.5, 1.6), TextColours.fineTuneDefaults(s, TextColourTarget.GLOW))
+        assertEquals(TextColours.text(d), TextColours.fineTuneDefaults(s, TextColourTarget.TEXT))
+        assertEquals(2.0, TextColours.brightnessRange(TextColourTarget.TEXT).endInclusive)
+        assertEquals(1.0, TextColours.brightnessRange(TextColourTarget.GLOW).endInclusive)
+    }
 }

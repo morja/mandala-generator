@@ -187,6 +187,8 @@ final class EditorModel {
 
     /// Opens other settings and selects the first layer, as Android's `replace`.
     func replace(_ next: MandalaParameters) {
+        // Another mandala (a favourite, a file, the comparison): the text colour sheet closes and keeps its colours.
+        closeTextColourSheet(keep: true)
         params = next
         selected = 0
         settingsChanged()
@@ -197,8 +199,9 @@ final class EditorModel {
         shellSettingsChanged()
         dropPlainPreview()
         renderPreview()
-        // While the text colour sheet is open, a small picture at once, so the colour shows while dragging.
-        renderLive()
+        // While the text colour sheet is open, a small picture at once, so the colour shows while dragging; a state
+        // shown recently comes back whole instead.
+        if recent[params] == nil { renderLive() }
         // Saved once the settings rest a moment (Android: 400 ms).
         saveTask?.cancel()
         let snapshot = params

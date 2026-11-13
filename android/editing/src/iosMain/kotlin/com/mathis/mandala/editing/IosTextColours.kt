@@ -50,20 +50,13 @@ object IosTextColours {
     fun matches(a: Hsb, b: Hsb): Boolean = TextColours.matches(a, b)
 
     /** Whether the group's head shows the changed dot: the text colour differs from its default, or the glow has its own. */
-    fun changed(params: MandalaParameters): Boolean {
-        val s = params.textLayer
-        val d = TextLayerSettings()
-        fun differs(a: Double, b: Double) = kotlin.math.abs(a - b) > 1e-6
-        return differs(s.hue, d.hue) || differs(s.saturation, d.saturation) || differs(s.brightness, d.brightness) || !s.glowSameAsText
-    }
+    fun changed(params: MandalaParameters): Boolean = TextColours.changed(params.textLayer)
 
     /** The "Fine tune" defaults for the double tap: the text's own, and for the glow the letters' colour. */
-    fun fineTuneDefaults(params: MandalaParameters, target: TextColourTarget): Hsb =
-        if (target == TextColourTarget.TEXT) TextColours.text(TextLayerSettings()) else TextColours.text(params.textLayer)
+    fun fineTuneDefaults(params: MandalaParameters, target: TextColourTarget): Hsb = TextColours.fineTuneDefaults(params.textLayer, target)
 
     /** The "Fine tune" brightness's upper end: the text keeps its boost (up to 2), the glow goes to 1. */
-    fun brightnessMax(target: TextColourTarget): Double =
-        if (target == TextColourTarget.TEXT) Editing.Ranges.textBrightness.endInclusive else 1.0
+    fun brightnessMax(target: TextColourTarget): Double = TextColours.brightnessRange(target).endInclusive
 
     fun pictureSwatchCount(): Int = TextColours.PICTURE_SWATCHES
 

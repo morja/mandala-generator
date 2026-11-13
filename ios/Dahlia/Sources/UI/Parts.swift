@@ -98,8 +98,9 @@ struct SliderRow: View {
                 // A long word ("Насыщенность") shrinks a little rather than run into the slider.
                 Text(label).textRole(.body).foregroundStyle(t.text).lineLimit(1).minimumScaleFactor(0.8)
                     .frame(width: geo.size.width * 0.34, alignment: .leading)
-                ResettableSlider(value: binding.wrappedValue, range: range, step: step, label: label, accent: t.accent,
-                                 onChange: onChange, onReset: { onChange(defaultValue) })
+                ResettableSlider(value: binding.wrappedValue, range: range, step: step, label: label,
+                                 valueText: display?(value) ?? (step == nil ? String(format: "%.2f", value) : String(Int(value.rounded()))),
+                                 accent: t.accent, onChange: onChange, onReset: { onChange(defaultValue) })
                     .frame(width: geo.size.width * 0.52)
                 Text(display?(value) ?? (step == nil ? String(format: "%.2f", value) : String(Int(value.rounded()))))
                     .textRole(.value).foregroundStyle(t.textMuted).lineLimit(1)
@@ -123,6 +124,8 @@ private struct ResettableSlider: UIViewRepresentable {
     let range: ClosedRange<Double>
     let step: Double?
     let label: String
+    /// What VoiceOver reads as the value: the same text as on the right of the row.
+    let valueText: String
     let accent: Color
     let onChange: (Double) -> Void
     let onReset: () -> Void
@@ -133,6 +136,8 @@ private struct ResettableSlider: UIViewRepresentable {
         let slider = UISlider()
         slider.isContinuous = true
         slider.addTarget(context.coordinator, action: #selector(Coordinator.moved(_:)), for: .valueChanged)
+        // Once the finger lifts, the knob goes to the value kept (a whole step, a value the model limited).
+        slider.addTarget(context.coordinator, action: #selector(Coordinator.released(_:)), for: [.touchUpInside, .touchUpOutside, .touchCancel])
         let tap = UITapGestureRecognizer(target: context.coordinator, action: #selector(Coordinator.doubleTapped))
         tap.numberOfTapsRequired = 2
         tap.cancelsTouchesInView = false
@@ -151,16 +156,35 @@ private struct ResettableSlider: UIViewRepresentable {
         if !slider.isTracking { slider.value = Float(value) }
         slider.minimumTrackTintColor = UIColor(accent) // token-exempt: the accent token handed to UIKit
         slider.accessibilityLabel = label
+        slider.accessibilityValue = valueText
+        // The row's reset, offered on the slider itself, where VoiceOver lands.
+        let reset = onReset
+        slider.accessibilityCustomActions = [UIAccessibilityCustomAction(name: Texts.sliderReset(label)) { _ in
+            reset()
+            return true
+        }]
     }
 
+    @MainActor
     final class Coordinator: NSObject {
         var parent: ResettableSlider?
 
         @objc func moved(_ slider: UISlider) {
             guard let parent else { return }
+            let range = parent.range
             var v = Double(slider.value)
-            if let step = parent.step, step > 0 { v = (v / step).rounded() * step }
-            parent.onChange(v)
+            // Whole steps from the lower end, never past the ends.
+            if let step = parent.step, step > 0 { v = range.lowerBound + ((v - range.lowerBound) / step).rounded() * step }
+            parent.onChange(min(max(v, range.lowerBound), range.upperBound))
+        }
+
+        @objc func released(_ slider: UISlider) {
+            // After SwiftUI has handed over the value from the last move.
+            Task { @MainActor [weak self, weak slider] in
+                await Task.yield()
+                guard let value = self?.parent?.value, let slider, !slider.isTracking else { return }
+                slider.value = Float(value)
+            }
         }
 
         @objc func doubleTapped() { parent?.onReset() }

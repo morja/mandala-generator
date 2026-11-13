@@ -400,7 +400,7 @@ private struct ColourField: View {
         .clipShape(RoundedRectangle(cornerRadius: Radius.sm))
         .accessibilityElement()
         .accessibilityLabel(Texts.colourField)
-        .accessibilityValue("\(Int((colour.saturation * 100).rounded())) %, \(Int((min(colour.brightness, 1) * 100).rounded())) %")
+        .accessibilityValue([colour.saturation, min(colour.brightness, 1)].map { $0.formatted(.percent.precision(.fractionLength(0))) }.joined(separator: ", "))
         .accessibilityAdjustableAction { direction in
             // Brightness up and down, as the field's vertical axis.
             let step = direction == .increment ? 0.05 : -0.05

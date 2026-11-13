@@ -58,7 +58,11 @@ private struct Words: View {
         .onChange(of: focus) { _, field in model.textColours.typing = field }
         // Another tab, a sheet or the editor leaving: the keyboard goes with the field's focus.
         .onChange(of: model.textColours.typing) { _, field in if field == nil { focus = nil } }
-        .onDisappear { focus = nil }
+        // Text switched off while typing: this view goes, and its focus change would never be seen.
+        .onDisappear {
+            focus = nil
+            model.textColours.typing = nil
+        }
         #if DEBUG
         .task {
             // Screenshots of typing (`-shotTyping words|author`): the keyboard on that field once the editor shows.
