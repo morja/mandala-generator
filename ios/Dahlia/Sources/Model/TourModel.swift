@@ -1,5 +1,6 @@
 import Foundation
 import Observation
+import SwiftUI
 
 /// The running tour and what the controls report to it (Android's `EditorViewModel` tour part and `TourTargets`).
 /// The controls open the step's tab and scroll its row into place, then mark the step settled; only then the
@@ -64,6 +65,8 @@ final class TourModel {
 extension Timing {
     /// How often the tour looks whether the first picture is drawn.
     static let tourStartPoll = Duration.milliseconds(100)
-    /// How long a step waits for its tab to show and its row to scroll into place before the rings appear.
-    static let tourSettle = Duration.milliseconds(450)
+    /// The scroll that brings a step's row under the tabs; the rings appear when it ends (QA-10 item 1).
+    static let tourScroll = Animation.easeOut(duration: 0.25)
+    /// The latest a step's rings appear, should the scroll animation's completion not be reported.
+    static let tourSettle = Duration.milliseconds(350)
 }

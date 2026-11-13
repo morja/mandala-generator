@@ -156,18 +156,30 @@ struct ControlTabs: View {
         if saved.offsets[wanted] == nil { saved.offsets[wanted] = offsets[wanted] ?? 0 }
         before = saved
         tab = wanted
-        // The tab shows first; the scroll waits for it.
-        try? await Task.sleep(for: Timing.debounce)
-        guard !Task.isCancelled else { return }
-        withAnimation {
+        // Every tab stays alive in the ZStack, so its scroll view takes the position at once; no wait for the
+        // tab to show (QA-10 item 1). The rings appear as soon as the scroll has ended, as on Android, where
+        // the step is settled when `animateScrollTo` returns; a step with nothing to scroll settles at once.
+        let scroll = { (position: inout ScrollPosition) in
             switch step.scrollTo {
-            case nil: positions[wanted, default: ScrollPosition()].scrollTo(y: saved.offsets[wanted] ?? 0)
-            case .layerRow, .effectsRow: positions[wanted, default: ScrollPosition()].scrollTo(y: 0)
-            case let row?: positions[wanted, default: ScrollPosition()].scrollTo(id: row, anchor: .top)
+            case nil: position.scrollTo(y: saved.offsets[wanted] ?? 0)
+            case .layerRow, .effectsRow: position.scrollTo(y: 0)
+            case let row?: position.scrollTo(id: row, anchor: .top)
             }
         }
+        withAnimation(Timing.tourScroll) {
+            scroll(&positions[wanted, default: ScrollPosition()])
+        } completion: {
+            settle(step)
+        }
+        // Should the animation's completion not come (nothing changed and SwiftUI skipped it), settle anyway.
         try? await Task.sleep(for: Timing.tourSettle)
         guard !Task.isCancelled else { return }
+        settle(step)
+    }
+
+    /// Marks `step` settled so its rings appear, unless the tour has moved on or ended meanwhile.
+    private func settle(_ step: TourStep) {
+        guard tour.state?.step == step, tour.settled != step else { return }
         tour.settled = step
     }
 
