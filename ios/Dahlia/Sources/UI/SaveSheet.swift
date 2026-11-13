@@ -4,13 +4,16 @@ import SwiftUI
 /// Saving in a format (ADR-0010, Android's `SaveSheet`, laid out as DM-18 A3): Picture | Video as tabs with the format
 /// menu beside them in place of a title; the mandala in its frame (placed by hand with Pro) with Whole and Fill beside
 /// or below it; one line on placing by hand; "Adjust" with the finish and whether the quote follows; the length for a
-/// video; the size in the save button. Nothing scrolls: the frame takes the height the other parts leave. The
-/// wallpaper button beside Save comes with WP-11; the line drawing has its own page in the menu, as on Android.
+/// video; the size in the save button. Nothing scrolls: the frame takes the height the other parts leave. Beside Save
+/// a picture has "Wallpaper", which opens the wallpaper page over the sheet; the line drawing has its own page in
+/// the menu, as on Android.
 struct SaveSheet: View {
     let close: @MainActor () -> Void
     @Environment(EditorModel.self) private var model
     @Environment(\.tokens) private var t
     @State private var adjustOpen = false
+    /// The wallpaper page over the sheet (Android's wallpaper button beside Save; iOS saves it to Photos, IOS-11).
+    @State private var wallpaperOpen = false
 
     private var save: SaveState { model.save }
 
@@ -66,7 +69,9 @@ struct SaveSheet: View {
             #endif
         }
         .onDisappear { model.setSaveOpen(false) }
-        .proSheet()
+        // While the wallpaper page is open, it presents the Pro sheet itself.
+        .proSheet(active: !wallpaperOpen)
+        .sheet(isPresented: $wallpaperOpen) { WallpaperSheet { wallpaperOpen = false } }
         #if DEBUG
         .task { await ShotSetup.proOverIfAsked("save", model) }
         #endif
@@ -268,10 +273,39 @@ struct SaveSheet: View {
                 SaveButton(label: Texts.save, sizes: sizes, chosen: large ? 1 : 0, enabled: !busy, markPro: !pro,
                            onSave: { model.saveVideo(large: large, share: false) }, onSize: pick)
             } else {
+                // A wallpaper fills the screen; the page shows it as it will be saved (lock and home with Pro).
+                OutlinedButton(label: Texts.saveWallpaper, enabled: !busy) { wallpaperOpen = true }
                 SaveButton(label: Texts.save, sizes: sizes, chosen: large ? 1 : 0, enabled: !busy, markPro: false,
                            onSave: { model.saveImage(large: large) }, onSize: pick)
             }
         }
+    }
+}
+
+/// The menu's wallpaper page on its own sheet over the save sheet: Back closes it, and so does saving, so the progress
+/// and the message show in the save sheet.
+private struct WallpaperSheet: View {
+    let close: @MainActor () -> Void
+    @Environment(EditorModel.self) private var model
+    @Environment(\.tokens) private var t
+
+    var body: some View {
+        ScrollView {
+            WallpaperPage(page: Binding(get: { .wallpaper }, set: { if $0 != .wallpaper { close() } }), close: close, backLabel: Texts.saveImage)
+                .padding(.horizontal, Spacing.lg)
+                .padding(.top, Spacing.xl)
+                .padding(.bottom, Spacing.xl)
+        }
+        // A purchase from the page's Pro row thanks here, where it is seen.
+        .overlay(alignment: .top) {
+            if let message = model.message {
+                MessageBar(message: message) { model.message = nil }.padding(.top, Spacing.md)
+            }
+        }
+        .background(t.background)
+        .presentationDetents([.large])
+        .presentationBackground(t.background)
+        .proSheet()
     }
 }
 

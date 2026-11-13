@@ -39,6 +39,8 @@ final class ProStore {
     @ObservationIgnored var onMessage: (@MainActor (ProMessage) -> Void)?
     @ObservationIgnored private var product: Product?
     @ObservationIgnored private var listener: Task<Void, Never>?
+    /// The start's sweep of unfinished transactions, the entitlement check and the price (the tests wait for it).
+    @ObservationIgnored private(set) var startup: Task<Void, Never>?
     /// Counts grants from transactions, so a check that started before one cannot take it back (`ProPolicy.mayRemove`).
     @ObservationIgnored private(set) var grants = 0
     @ObservationIgnored private let cache: ProCache
@@ -74,11 +76,18 @@ final class ProStore {
             }
         }
         writeFlag()
-        Task {
+        startup = Task {
             for await result in Transaction.unfinished { await handle(result) }
             await check()
             await loadPrice()
         }
+    }
+
+    /// Stops listening to `Transaction.updates` (the StoreKit tests end each store, so none outlives its test).
+    func stop() {
+        listener?.cancel()
+        listener = nil
+        startup?.cancel()
     }
 
     /// Each return to the app, as Android asks Play on every resume: the entitlement again, and the price if it is missing.
@@ -233,6 +242,16 @@ final class ProStore {
         pending = false
         if !purchased { setPurchased(true) }
     }
+
+    #if DEBUG
+    /// `-shotBuy YES` with `-shotSheet pro`: what a purchase that went through does to the screen (Pro for this run, then
+    /// the thanks), without StoreKit and without writing the cache, to check when the message shows (QA-10 item 5).
+    func simulatePurchaseForScreenshots() {
+        grants += 1
+        purchased = true
+        post(.unlocked)
+    }
+    #endif
 
     private func setPurchased(_ value: Bool) {
         purchased = value

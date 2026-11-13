@@ -15,6 +15,10 @@ struct EditorView: View {
     @Environment(\.scenePhase) private var scenePhase
     /// Moves the folding along with the change of size, but not with every change of the layout.
     private static let foldAnimation = Animation.easeInOut(duration: 0.25)
+    /// How much the picture's side grows per point the controls are pulled past their top. The rubber band moves the
+    /// list only about a fifth as far as the finger (80 points of finger gave 18 in the simulator), so with this
+    /// factor the picture grows about as far as the finger moves, as on Android.
+    private static let pullGain = 4.5
 
     /// Android's top bar in its order: Back and Forward on the left; play field, die, save, favourites and the menu on
     /// the right. Seven buttons do not fit the system navigation bar on the smallest iPhone (it would hide two), so
@@ -65,7 +69,11 @@ struct EditorView: View {
                 let chosen = pinned ? PreviewSize.full : (typing ? PreviewSize.small : model.shell.previewFraction)
                 // The tour folds the picture a little where its card would not fit otherwise; the chosen size comes back after it.
                 let shrunk = tour.running && tour.shrinkBy > 0 && fullSide > 0
-                let fraction = shrunk ? max(PreviewSize.small, min(chosen, (chosen * fullSide - tour.shrinkBy) / fullSide)) : chosen
+                let held = shrunk ? max(PreviewSize.small, min(chosen, (chosen * fullSide - tour.shrinkBy) / fullSide)) : chosen
+                // Pulling the controls down past their top grows the picture with the finger (Android's nested scroll);
+                // not while moving, drawing, typing or during the tour, which set the size themselves.
+                let pullable = !pinned && !typing && !tour.running && fullSide > 0
+                let fraction = pullable && model.shell.pulling ? min(PreviewSize.full, held + model.shell.pull * Self.pullGain / fullSide) : held
                 let folded = fraction < PreviewSize.full
                 VStack(spacing: 0) {
                     // The picture stays in view; only the open tab scrolls, so every change is visible.
@@ -82,10 +90,20 @@ struct EditorView: View {
                     .frame(maxWidth: .infinity, alignment: folded ? .leading : .center)
                     .padding(.horizontal, Spacing.lg)
                     .padding(.bottom, Spacing.xs)
-                    .animation(Self.foldAnimation, value: fraction)
+                    // The pull follows the finger at once; button, tap and letting go move with the animation.
+                    .animation(model.shell.pulling ? nil : Self.foldAnimation, value: fraction)
                     ControlTabs(onHeader: { header = $0 })
                 }
                 .onChange(of: fullSide * chosen, initial: true) { _, side in tour.pictureFull = side }
+                // Let go: the picture stays where the finger left it, or takes an end when it is close (as on Android).
+                .onChange(of: model.shell.pulling) { was, now in
+                    guard was, !now else { return }
+                    let pulled = model.shell.pull
+                    model.shell.pull = 0
+                    guard pullable, pulled > 0 else { return }
+                    let landed = PreviewSize.snapped(min(PreviewSize.full, held + pulled * Self.pullGain / fullSide))
+                    if landed != model.shell.previewFraction { model.shell.setPreviewFraction(landed) }
+                }
             }
             .background(t.background)
         }

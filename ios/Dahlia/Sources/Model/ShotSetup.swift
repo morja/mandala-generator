@@ -32,6 +32,13 @@ enum ShotSetup {
         }
         // After the mandala is set up, so the sheet lists the Pro features it uses.
         if sheet == "pro" { openPro(model) }
+        if sheet == "pro" && d.bool(forKey: "shotBuy") {
+            Task {
+                try? await Task.sleep(for: .seconds(3))
+                Engine.trace("shotBuy purchase")
+                model.proStore.simulatePurchaseForScreenshots()
+            }
+        }
         if let mode = textColour { Task { await textColourSetup(mode, model) } }
     }
 

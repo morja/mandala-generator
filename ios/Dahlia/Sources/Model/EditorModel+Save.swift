@@ -31,10 +31,20 @@ extension EditorModel {
 
     /// Purchase and restore feedback: inside the Pro sheet while it is open, otherwise as a message. Once Pro is unlocked
     /// the sheet closes itself, so the thanks (or "active on this device") shows as a message either way (Android's routing).
+    /// While the Pro sheet is still open (it closes itself once Pro is unlocked) the message waits for it to be gone, so it
+    /// is not shown, and its time does not run, behind the closing sheet (QA-10 item 5).
     func proMessage(_ shown: ProMessage) {
         guard save.proRequest == nil || proStore.unlocked else { return }
-        message = Message(text: Texts.proMessage(shown))
+        let text = Message(text: Texts.proMessage(shown))
+        if save.proRequest != nil { heldProMessage = text } else { message = text }
         proStore.message = nil
+    }
+
+    /// The Pro sheet has gone: a message held for it shows now.
+    func proSheetDismissed() {
+        guard let held = heldProMessage else { return }
+        heldProMessage = nil
+        message = held
     }
 
     /// Hides the Pro features (Back brings them back) and takes the step the request was for (Android's `continueWithoutPro`).
@@ -451,17 +461,37 @@ extension EditorModel {
             }
             let source = await engine.videoFrames(p, size: size, framing: framing, textFollows: follows, finish: finish, seconds: seconds, ticket: ticket)
             let start = Date()
+            #if DEBUG
+            // Where the time per frame goes (IOS-13): the encoder's buffer, core (render, conversion, copy), waiting for the
+            // encoder and appending.
+            var waitTime = 0.0, coreTime = 0.0, appendTime = 0.0
+            #endif
             do {
                 for f in 0..<frames {
+                    #if DEBUG
+                    let t0 = Date()
+                    #endif
                     let buffer = try await writer.nextBuffer()
-                    guard await engine.writeFrame(source, index: f, into: FrameBuffer(buffer: buffer)), !ticket.isCancelled() else {
+                    #if DEBUG
+                    let t1 = Date()
+                    waitTime += t1.timeIntervalSince(t0)
+                    #endif
+                    let drawn = await engine.writeFrame(source, index: f, into: FrameBuffer(buffer: buffer))
+                    #if DEBUG
+                    let t2 = Date()
+                    coreTime += t2.timeIntervalSince(t1)
+                    #endif
+                    guard drawn, !ticket.isCancelled() else {
                         writer.cancel()
                         await engine.close(source)
                         // Not cancelled: core could not draw the frame.
                         if !ticket.isCancelled() { message = Message(text: Texts.videoFailed(Texts.saveFailed)) }
                         return
                     }
-                    try writer.append(buffer, index: f)
+                    try await writer.append(buffer, index: f)
+                    #if DEBUG
+                    appendTime += Date().timeIntervalSince(t2)
+                    #endif
                     let shown = timeLeft(frame: f, of: frames, since: start) ?? save.export?.label ?? label
                     save.export = ExportProgress(label: shown, share: Double(f + 1) / Double(frames))
                     background.progress(f + 1)
@@ -471,8 +501,18 @@ extension EditorModel {
                     }
                     #endif
                 }
+                #if DEBUG
+                let ms = { (seconds: Double) in String(format: "%.1f", seconds * 1000 / Double(frames)) }
+                let kms = { (nanos: Int64) in String(format: "%.1f", Double(nanos) / 1e6 / Double(frames)) }
+                Engine.trace("video timing per frame ms: total=\(ms(Date().timeIntervalSince(start))) wait=\(ms(waitTime)) core=\(ms(coreTime)) "
+                             + "(render=\(kms(source.renderNanos)) convert=\(kms(source.convertNanos)) copy=\(kms(source.copyNanos))) append=\(ms(appendTime))")
+                #endif
                 await engine.close(source)
+                let finishing = Date()
                 try await writer.finish(frames: frames)
+                #if DEBUG
+                Engine.trace("video finishWriting took \(String(format: "%.2f", Date().timeIntervalSince(finishing)))s")
+                #endif
             } catch {
                 writer.cancel()
                 await engine.close(source)

@@ -138,7 +138,8 @@ private struct ProSheetHost: ViewModifier {
 
     func body(content: Content) -> some View {
         content.sheet(item: Binding(get: { active ? model.save.proRequest : nil },
-                                    set: { if $0 == nil && active { model.closePro() } })) { request in
+                                    set: { if $0 == nil && active { model.closePro() } }),
+                      onDismiss: { model.proSheetDismissed() }) { request in
             ProSheet(request: request)
         }
     }

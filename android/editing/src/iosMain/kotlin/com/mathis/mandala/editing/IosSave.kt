@@ -31,6 +31,7 @@ import kotlinx.cinterop.reinterpret
 import kotlinx.cinterop.set
 import kotlinx.cinterop.usePinned
 import platform.posix.memcpy
+import kotlin.time.TimeSource
 
 /** Width and height in pixels, for Swift. */
 class PixelSize(val width: Int, val height: Int)
@@ -366,9 +367,25 @@ class VideoFrameSource internal constructor(
         false
     }
 
+    /**
+     * Where the time of the frames written so far went, in nanoseconds: core's render, the conversion to Y′CbCr
+     * and the copy into the encoder's planes (IOS-13, read by the debug build's trace).
+     */
+    var renderNanos = 0L
+        private set
+    var convertNanos = 0L
+        private set
+    var copyNanos = 0L
+        private set
+
     private fun writeFrame(index: Int, yPlane: COpaquePointer, yStride: Int, uvPlane: COpaquePointer, uvStride: Int) {
+        val started = TimeSource.Monotonic.markNow()
         val image = MandalaRenderer.render(LayerAnimation.frame(params, index, frameCount), options).image
+        val rendered = TimeSource.Monotonic.markNow()
+        renderNanos += (rendered - started).inWholeNanoseconds
         VideoFrames.toI420(image, y, u, v, par)
+        val converted = TimeSource.Monotonic.markNow()
+        convertNanos += (converted - rendered).inWholeNanoseconds
         y.usePinned { pinned ->
             for (r in 0 until height) memcpy(yPlane.reinterpret<ByteVar>() + r.toLong() * yStride, pinned.addressOf(r * width), width.toULong())
         }
@@ -385,6 +402,7 @@ class VideoFrameSource internal constructor(
                 }
             }
         }
+        copyNanos += converted.elapsedNow().inWholeNanoseconds
     }
 
     /** Ends the worker pool's use and lets the kept layer images go. */

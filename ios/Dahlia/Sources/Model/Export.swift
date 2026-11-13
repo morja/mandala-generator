@@ -62,13 +62,10 @@ final class VideoWriter: @unchecked Sendable {
 
     enum Failure: Error { case setup, buffer }
 
-    /// A buffer from the writer's pool for the next frame, tagged with the colours core wrote into it.
+    /// A buffer from the writer's pool for the next frame, tagged with the colours core wrote into it. It does not wait
+    /// for the encoder: the next frame is drawn while the encoder still works on the last ones (IOS-13).
     func nextBuffer() async throws -> CVPixelBuffer {
-        // The encoder's input fills up until it has encoded what it has; wait a moment and look again.
-        while !input.isReadyForMoreMediaData {
-            if writer.status == .failed { throw writer.error ?? Failure.buffer }
-            try await Task.sleep(for: .milliseconds(5))
-        }
+        if writer.status == .failed { throw writer.error ?? Failure.buffer }
         guard let pool = adaptor.pixelBufferPool else { throw writer.error ?? Failure.buffer }
         var buffer: CVPixelBuffer?
         guard CVPixelBufferPoolCreatePixelBuffer(nil, pool, &buffer) == kCVReturnSuccess, let buffer else { throw Failure.buffer }
@@ -78,8 +75,13 @@ final class VideoWriter: @unchecked Sendable {
         return buffer
     }
 
-    /// Appends frame `index` (presentation time index / fps).
-    func append(_ buffer: CVPixelBuffer, index: Int) throws {
+    /// Appends frame `index` (presentation time index / fps), once the encoder's input takes more.
+    func append(_ buffer: CVPixelBuffer, index: Int) async throws {
+        // The encoder's input fills up until it has encoded what it has; wait a moment and look again.
+        while !input.isReadyForMoreMediaData {
+            if writer.status == .failed { throw writer.error ?? Failure.buffer }
+            try await Task.sleep(for: .milliseconds(5))
+        }
         guard adaptor.append(buffer, withPresentationTime: CMTime(value: CMTimeValue(index), timescale: fps)) else {
             throw writer.error ?? Failure.buffer
         }

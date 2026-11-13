@@ -186,6 +186,7 @@ enum Texts {
     static let cloudColour = text("controls_cloud_colour")
     static let shadow = text("controls_shadow")
     static let shadowColour = text("controls_shadow_colour")
+    static let shadowDistance = text("controls_shadow_distance")
     static let moveOnImage = text("controls_move_on_image")
     static let done = text("controls_done")
     static let drawOnImage = text("controls_draw_on_image")

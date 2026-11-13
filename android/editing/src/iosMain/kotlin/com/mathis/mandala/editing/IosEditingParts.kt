@@ -140,6 +140,30 @@ object IosEditingParts {
     fun textWithValue(params: MandalaParameters, slider: TextSlider, value: Double): MandalaParameters =
         params.updateText { slider.set(it, value) }
 
+    // ── The text shadow's angle, distance and softness (QA-13, rules in [TextShadow]) ──
+
+    fun shadowDirectionRange(): List<Double> = listOf(TextShadow.directionRange.start, TextShadow.directionRange.endInclusive)
+
+    fun shadowDistanceRange(): List<Double> = listOf(TextShadow.distanceRange.start, TextShadow.distanceRange.endInclusive)
+
+    fun shadowSoftnessRange(): List<Double> = listOf(TextShadow.softnessRange.start, TextShadow.softnessRange.endInclusive)
+
+    fun shadowDefaultDirection(): Double = TextShadow.DEFAULT_DIRECTION
+
+    /** The direction as a fraction of a turn, or null (as a Swift optional) while the shadow sits under the letters. */
+    fun shadowDirection(text: TextLayerSettings): Double? = TextShadow.direction(text)
+
+    fun shadowDistance(text: TextLayerSettings): Double = TextShadow.distance(text)
+
+    fun withShadowDirection(params: MandalaParameters, direction: Double): MandalaParameters =
+        params.updateText { TextShadow.withDirection(it, direction) }
+
+    fun withShadowDistance(params: MandalaParameters, distance: Double, fallbackDirection: Double): MandalaParameters =
+        params.updateText { TextShadow.withDistance(it, distance, fallbackDirection) }
+
+    fun withShadowSoftness(params: MandalaParameters, softness: Double): MandalaParameters =
+        params.updateText { TextShadow.withSoftness(it, softness) }
+
     // ── Quotes (ADR-0019) ──
 
     fun quoteCollections(): List<QuoteCollection> = Quotes.collections

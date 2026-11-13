@@ -30,6 +30,8 @@ final class EditorModel {
     /// History, dice, play field and the picture's size (WP-7); its operations are in EditorModel+Shell.swift.
     let shell = ShellState()
     var message: Message?
+    /// A purchase or restore message that waits for the closing Pro sheet to be gone (QA-10 item 5).
+    @ObservationIgnored var heldProMessage: Message?
     /// The save sheet, its frame and a running export (WP-8); its operations are in EditorModel+Save.swift.
     let save = SaveState()
     /// The wallpaper page's preview of the pair (WP-11); its operations are in EditorModel+Wallpaper.swift.
