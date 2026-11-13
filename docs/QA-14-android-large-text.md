@@ -30,11 +30,11 @@ Bilder: `/Users/mathis/Work/Projects/apps/mandala-generator/docs/qa/shots/androi
 
 2. **Aktionszeile: der Würfel bleibt am Ende, die Beschriftungen werden zuerst kleiner.** „Hinzufügen“, „Duplizieren“ und „Löschen“ behalten ihre natürliche Breite und stehen links, der Würfel rechts. Passen die drei nicht neben den Würfel, nehmen sie zusammen die nächstkleinere Rolle (`labelLarge` → `labelMedium`) und werden bei sehr großer Schrift gemeinsam kleiner, nach derselben Regel wie die Tab-Leiste. Bei 360 dp und Schrift 1,3 steht „Löschen“ einzeilig, der Würfel ist da (`after-360dp-de-font13-*.png`); bei Schrift 2,0 auf Russisch ebenso (`after-360dp-ru-font20-*.png`). Bei Schrift 1,0 und genügend Platz sieht die Zeile aus wie vorher.
 
-3. **Ebenenzeile: Name gekürzt, Prozent ganz.** Die erste Zeile endet jetzt mit Auslassungspunkten („1 · Hyperbol…“). In der zweiten bleibt der Prozentwert ganz, nur der Name des Mischmodus wird gekürzt („Negativ multip… · 100 %“), im Format der jeweiligen Sprache (wie auf dem iPhone, IOS-5 Befund 8). Bei 360 dp und Schrift 2,0 bleibt vom Namen nur ein Buchstabe („N… · 100 %“), weil die drei Symbole der Zeile den Platz brauchen; siehe F1.
+3. **Ebenenzeile: Name gekürzt, Prozent ganz.** Die erste Zeile endet jetzt mit Auslassungspunkten („1 · Hyperbol…“). In der zweiten bleibt der Prozentwert ganz, nur der Name des Mischmodus wird gekürzt („Negativ multip… · 100 %“), im Format der jeweiligen Sprache (wie auf dem iPhone, IOS-5 Befund 8). Bei 360 dp und Schrift 2,0 bleibt vom Namen nur ein Buchstabe („N… · 100 %“), auf Japanisch und Koreanisch nur „…“, weil die drei Symbole der Zeile den Platz brauchen; siehe F1.
 
-4. **Weitere Sprachen.** Französisch, Spanisch, Portugiesisch, Italienisch, Japanisch, Koreanisch und Chinesisch bei 360 dp, Schrift 1,3 und 2,0: Tab-Leiste und Aktionszeile passen (`after-360dp-fr-…` bis `after-360dp-zh-CN-…`).
+4. **Weitere Sprachen.** Französisch, Spanisch, Portugiesisch, Italienisch, Japanisch, Koreanisch und Chinesisch bei 360 dp, Schrift 1,3 und 2,0, hell: Tab-Leiste und Aktionszeile passen ganz (`after-360dp-fr-…` bis `after-360dp-zh-CN-…`). Japanisch hat mit „エンブレム“ und „テキスト“ die breitesten Beschriftungen; seine Tabs stehen schon bei Schrift 1,3 an der Untergrenze (11 sp) und wirken deutlich kleiner als in den anderen Sprachen (`after-360dp-ja-font13-light.png`), sind aber ganz und lesbar.
 
-5. **Hell und dunkel** sehen gleich aus; es wurden keine Farben geändert.
+5. **Hell und dunkel** verhalten sich gleich; es wurden keine Farben geändert. Deutsch, Russisch und Englisch sind in beiden Themen bei 360 und 411 dp mit Schrift 1,0, 1,3 und 2,0 aufgenommen.
 
 ### Umsetzung
 
@@ -46,7 +46,9 @@ Bilder: `/Users/mathis/Work/Projects/apps/mandala-generator/docs/qa/shots/androi
 
 ### Prüfungen
 
-- `android/scripts/check` und `android/scripts/check-full`: grün (siehe Commit).
+- `android/scripts/check` (Pre-commit-Hook) und `android/scripts/check-full` (mit Paritätstest und Release-Build): grün.
+
+- Der geteilte Emulator ist wieder ausgeschaltet; Dichte, Schriftgröße, Dunkelmodus und App-Sprache sind zurückgesetzt. Das Thema der App selbst steht dort noch auf „Hell“.
 
 ### Selbst entschieden
 
@@ -62,4 +64,4 @@ Bilder: `/Users/mathis/Work/Projects/apps/mandala-generator/docs/qa/shots/androi
 
 ### Offene Fragen
 
-F1. In der Ebenenzeile bleibt bei 360 dp und Schrift 2,0 vom Mischmodus nur ein Buchstabe („N… · 100 %“). Vorschläge: a) so lassen, die Gruppe „Mischmodus“ darunter zeigt den vollen Namen (Empfehlung); b) bei sehr großer Schrift den Prozentwert weglassen und den Namen zeigen; c) die Zeile bei sehr großer Schrift zweizeilig erlauben.
+F1. In der Ebenenzeile bleibt bei 360 dp und Schrift 2,0 vom Mischmodus nur ein Buchstabe („N… · 100 %“), auf Japanisch und Koreanisch nur „… · 100 %“. Vorschläge: a) so lassen, die Gruppe „Mischmodus“ darunter zeigt den vollen Namen (Empfehlung); b) bei sehr großer Schrift den Prozentwert weglassen und den Namen zeigen; c) die Zeile bei sehr großer Schrift zweizeilig erlauben.
