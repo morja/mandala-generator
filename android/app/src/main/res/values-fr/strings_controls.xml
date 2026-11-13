@@ -229,7 +229,7 @@
     <string name="controls_text_colour_glow">Lueur</string>
     <string name="controls_text_colour_open_text">Couleur du texte, ouvre le panneau de couleur</string>
     <string name="controls_text_colour_open_glow">Couleur de la lueur, ouvre le panneau de couleur</string>
-    <string name="controls_text_colour_from_picture">De l’image, pour %1$s</string>
+    <string name="controls_text_colour_from_picture">De l’image</string>
     <string name="controls_text_colour_stand_out">Faire ressortir</string>
     <string name="controls_text_colour_stand_out_description">Faire ressortir : lueur dans la couleur opposée à l’image derrière le texte, lettres presque blanches</string>
     <string name="controls_text_colour_more">Plus de couleurs</string>

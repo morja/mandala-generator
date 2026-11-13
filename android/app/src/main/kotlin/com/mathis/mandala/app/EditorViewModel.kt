@@ -545,6 +545,12 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
 
     /** The layer images of the last rendered preview, so a change to one layer redraws only that one. */
     private val previewCache = LayerCache()
+    // Declared before init: the preview collector there reads it at once.
+    private val _textColourSheet = MutableStateFlow<TextColourSheet?>(null)
+
+    /** The colour sheet while it is open, with the colours from when it opened. */
+    val textColourSheet: StateFlow<TextColourSheet?> = _textColourSheet.asStateFlow()
+
     /**
      * The layer images of the colour sheet's small live picture (DM-24): a colour drag then redraws
      * only the text. Its renders run one after another (collectLatest waits for the cancelled one).
@@ -698,11 +704,6 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
     fun pickTextColour(c: Hsb) = updateText { TextColours.withPickedColour(it, _textColourTarget.value, c) }
 
     fun setGlowSameAsText(on: Boolean) = updateText { TextColours.sameAsText(it, on) }
-
-    private val _textColourSheet = MutableStateFlow<TextColourSheet?>(null)
-
-    /** The colour sheet while it is open, with the colours from when it opened. */
-    val textColourSheet: StateFlow<TextColourSheet?> = _textColourSheet.asStateFlow()
 
     /** The preview as it was when the sheet opened: the "Before" half of the sheet's comparison. */
     private val _textColourBefore = MutableStateFlow<ImageBitmap?>(null)

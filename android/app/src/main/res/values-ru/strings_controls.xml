@@ -231,7 +231,7 @@
     <string name="controls_text_colour_glow">Свечение</string>
     <string name="controls_text_colour_open_text">Цвет текста, открывает панель цвета</string>
     <string name="controls_text_colour_open_glow">Цвет свечения, открывает панель цвета</string>
-    <string name="controls_text_colour_from_picture">Из картинки, для: %1$s</string>
+    <string name="controls_text_colour_from_picture">Из картинки</string>
     <string name="controls_text_colour_stand_out">Выделить</string>
     <string name="controls_text_colour_stand_out_description">Выделить: свечение в цвете, противоположном картинке за текстом, буквы почти белые</string>
     <string name="controls_text_colour_more">Другие цвета</string>

@@ -225,7 +225,7 @@
     <string name="controls_text_colour_glow">グロー</string>
     <string name="controls_text_colour_open_text">文字の色、カラーシートを開く</string>
     <string name="controls_text_colour_open_glow">グローの色、カラーシートを開く</string>
-    <string name="controls_text_colour_from_picture">画像から（%1$s）</string>
+    <string name="controls_text_colour_from_picture">画像から</string>
     <string name="controls_text_colour_stand_out">際立たせる</string>
     <string name="controls_text_colour_stand_out_description">際立たせる：文字の背後の画像の反対色でグロー、文字はほぼ白</string>
     <string name="controls_text_colour_more">その他の色</string>

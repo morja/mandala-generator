@@ -227,7 +227,7 @@
     <string name="controls_text_colour_glow">Glow</string>
     <string name="controls_text_colour_open_text">Text colour, opens the colour sheet</string>
     <string name="controls_text_colour_open_glow">Glow colour, opens the colour sheet</string>
-    <string name="controls_text_colour_from_picture">From the picture, for %1$s</string>
+    <string name="controls_text_colour_from_picture">From the picture</string>
     <string name="controls_text_colour_stand_out">Stand out</string>
     <string name="controls_text_colour_stand_out_description">Stand out: glow in the colour opposite the picture behind the text, letters near white</string>
     <string name="controls_text_colour_more">More colours</string>

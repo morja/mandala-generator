@@ -229,7 +229,7 @@
     <string name="controls_text_colour_glow">Bagliore</string>
     <string name="controls_text_colour_open_text">Colore del testo, apre il pannello colore</string>
     <string name="controls_text_colour_open_glow">Colore del bagliore, apre il pannello colore</string>
-    <string name="controls_text_colour_from_picture">Dall’immagine, per %1$s</string>
+    <string name="controls_text_colour_from_picture">Dall’immagine</string>
     <string name="controls_text_colour_stand_out">Risalta</string>
     <string name="controls_text_colour_stand_out_description">Risalta: bagliore nel colore opposto all’immagine dietro il testo, lettere quasi bianche</string>
     <string name="controls_text_colour_more">Altri colori</string>

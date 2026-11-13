@@ -13023,61 +13023,61 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Bildfarben für: %1$@"
+            "value" : "Aus dem Bild"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "From the picture, for %1$@"
+            "value" : "From the picture"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "De la imagen, para %1$@"
+            "value" : "De la imagen"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "De l’image, pour %1$@"
+            "value" : "De l’image"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Dall’immagine, per %1$@"
+            "value" : "Dall’immagine"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "画像から（%1$@）"
+            "value" : "画像から"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "그림에서, %1$@용"
+            "value" : "그림에서"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Da imagem, para %1$@"
+            "value" : "Da imagem"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Из картинки, для: %1$@"
+            "value" : "Из картинки"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "取自画面，用于%1$@"
+            "value" : "取自画面"
           }
         }
       }

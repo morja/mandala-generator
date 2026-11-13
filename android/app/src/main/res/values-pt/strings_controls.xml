@@ -229,7 +229,7 @@
     <string name="controls_text_colour_glow">Brilho</string>
     <string name="controls_text_colour_open_text">Cor do texto, abre o painel de cor</string>
     <string name="controls_text_colour_open_glow">Cor do brilho, abre o painel de cor</string>
-    <string name="controls_text_colour_from_picture">Da imagem, para %1$s</string>
+    <string name="controls_text_colour_from_picture">Da imagem</string>
     <string name="controls_text_colour_stand_out">Destacar</string>
     <string name="controls_text_colour_stand_out_description">Destacar: brilho na cor oposta à imagem atrás do texto, letras quase brancas</string>
     <string name="controls_text_colour_more">Mais cores</string>

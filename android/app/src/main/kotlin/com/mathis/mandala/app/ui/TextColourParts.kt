@@ -126,10 +126,12 @@ internal fun TextColourGroup(text: TextLayerSettings, vm: EditorViewModel) {
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.fillMaxWidth().padding(top = Spacing.xs, bottom = Spacing.sm).heightIn(min = Sizes.icon + Spacing.sm),
         ) {
-            val side = stringResource(if (target == TextColourTarget.TEXT) R.string.controls_text_colour_text else R.string.controls_text_colour_glow)
+            // The switch above says which colour the swatches set; the label stays one short line.
             Text(
-                stringResource(R.string.controls_text_colour_from_picture, side),
+                stringResource(R.string.controls_text_colour_from_picture),
                 style = MaterialTheme.typography.bodySmall, color = t.textMuted,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.weight(1f).padding(end = Spacing.sm),
             )
             val standOutDescription = stringResource(R.string.controls_text_colour_stand_out_description)

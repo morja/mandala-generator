@@ -225,7 +225,7 @@
     <string name="controls_text_colour_glow">글로우</string>
     <string name="controls_text_colour_open_text">글자 색, 색상 시트 열기</string>
     <string name="controls_text_colour_open_glow">글로우 색, 색상 시트 열기</string>
-    <string name="controls_text_colour_from_picture">그림에서, %1$s용</string>
+    <string name="controls_text_colour_from_picture">그림에서</string>
     <string name="controls_text_colour_stand_out">돋보이게</string>
     <string name="controls_text_colour_stand_out_description">돋보이게: 글자 뒤 그림의 반대색으로 글로우, 글자는 거의 흰색</string>
     <string name="controls_text_colour_more">더 많은 색</string>
