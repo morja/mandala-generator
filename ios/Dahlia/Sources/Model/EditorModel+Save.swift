@@ -31,10 +31,20 @@ extension EditorModel {
 
     /// Purchase and restore feedback: inside the Pro sheet while it is open, otherwise as a message. Once Pro is unlocked
     /// the sheet closes itself, so the thanks (or "active on this device") shows as a message either way (Android's routing).
+    /// While the Pro sheet is still open (it closes itself once Pro is unlocked) the message waits for it to be gone, so it
+    /// is not shown, and its time does not run, behind the closing sheet (QA-10 item 5).
     func proMessage(_ shown: ProMessage) {
         guard save.proRequest == nil || proStore.unlocked else { return }
-        message = Message(text: Texts.proMessage(shown))
+        let text = Message(text: Texts.proMessage(shown))
+        if save.proRequest != nil { heldProMessage = text } else { message = text }
         proStore.message = nil
+    }
+
+    /// The Pro sheet has gone: a message held for it shows now.
+    func proSheetDismissed() {
+        guard let held = heldProMessage else { return }
+        heldProMessage = nil
+        message = held
     }
 
     /// Hides the Pro features (Back brings them back) and takes the step the request was for (Android's `continueWithoutPro`).

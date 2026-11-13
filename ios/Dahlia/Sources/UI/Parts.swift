@@ -319,6 +319,7 @@ struct MessageBar: View {
     let message: Message
     let dismiss: () -> Void
     @Environment(\.tokens) private var t
+    @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
         HStack(spacing: Spacing.md) {
@@ -337,10 +338,19 @@ struct MessageBar: View {
         .padding(.vertical, Spacing.md)
         .background(t.text, in: RoundedRectangle(cornerRadius: Radius.sm))
         .padding(.horizontal, Spacing.lg)
-        .task(id: message.id) {
+        // The time runs only while the app is active: during Apple's purchase sheet, or with the app in the
+        // background, it starts again once Dahlia is back (QA-10 item 5).
+        .task(id: Countdown(message: message.id, active: scenePhase == .active)) {
+            guard scenePhase == .active else { return }
             try? await Task.sleep(for: .seconds(message.action == nil ? 4 : 6))
+            guard !Task.isCancelled else { return }
             dismiss()
         }
+    }
+
+    private struct Countdown: Hashable {
+        let message: UUID
+        let active: Bool
     }
 }
 
