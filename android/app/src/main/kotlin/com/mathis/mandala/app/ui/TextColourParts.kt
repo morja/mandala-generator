@@ -29,6 +29,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -307,7 +308,12 @@ internal fun TextColourSheetOverlay(text: TextLayerSettings, vm: EditorViewModel
                         modifier = Modifier.weight(1f).semantics { heading() },
                     )
                     TextButton(onClick = cancel) { Text(stringResource(R.string.controls_cancel), maxLines = 1) }
-                    Button(onClick = { vm.closeTextColourSheet(keep = true) }, modifier = Modifier.padding(start = Spacing.xs)) {
+                    // The text button's narrower padding leaves the title its word in German at font scale 1.3 on 360 dp.
+                    Button(
+                        onClick = { vm.closeTextColourSheet(keep = true) },
+                        contentPadding = ButtonDefaults.TextButtonContentPadding,
+                        modifier = Modifier.padding(start = Spacing.xs),
+                    ) {
                         Text(stringResource(R.string.controls_done), maxLines = 1)
                     }
                 }
