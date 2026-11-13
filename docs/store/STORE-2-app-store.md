@@ -38,7 +38,9 @@ Apple allows 55 characters for the description, so the Play text (STORE-1) was s
 
 - Test information entered on 12 November 2026: English beta description, feedback and contact email apps@tearoom.one, marketing and privacy policy links (the privacy page still describes the Android app; it must name the iPhone before the store release), review notes on how to reach the Pro sheet.
 
-- First build 1.0 (1) uploaded on 12 November 2026 from `main` at c33adfc (Release archive, automatic signing, App Group on device and widget extension). Internal group "Team" (Mathis, automatic distribution) and external group "Freunde" created the same day; build 1.0 (1) submitted to Beta App Review for "Freunde" ("Waiting for Review"), without sign-in, with English "What to Test" notes. The External Testing section only appeared after the first internal group existed.
+- First build 1.0 (1) uploaded on 12 November 2026 from `main` at c33adfc (Release archive, automatic signing, App Group on device and widget extension). Internal group "Team" (Mathis, automatic distribution) and external group "Freunde" created the same day; build 1.0 (1) submitted to Beta App Review for "Freunde" ("Waiting for Review"), without sign-in, with English "What to Test" notes. The External Testing section only appeared after the first internal group existed. Build 1.0 (1) passed Beta App Review by 13 November 2026 ("Approved", one invite, eleven sessions); a public link with a limit of 20 testers exists for "Freunde".
+
+- Build 1.0 (2) uploaded on 13 November 2026 from `main` at 6c7bfa4 (text and glow colours, shadow sliders, cleanup IOS-13); the internal group "Team" gets it automatically, the external group "Freunde" once it is added there after processing.
 
 - Upload note: `xcodebuild -exportArchive` fails with "Copy failed" when Homebrew's `rsync` comes first on the PATH; run it with `/usr/bin` first.
 
