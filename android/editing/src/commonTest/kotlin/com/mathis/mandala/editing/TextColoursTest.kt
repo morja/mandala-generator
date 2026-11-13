@@ -231,4 +231,11 @@ class TextColoursTest {
         val h = 60
         return Triple(IntArray(w * h) { pixel(it % w, it / w) }, w, h)
     }
+
+    @Test
+    fun standOutLowersAStrongGlowAndKeepsAWeakOne() {
+        val r = TextColours.StandOut(text = Hsb(0.05, 0.12, 1.0), glow = Hsb(0.05, 0.77, 1.0), dominantHue = 0.52, clarity = 0.33, contrast = 6.9)
+        assertEquals(TextColours.MAX_STAND_OUT_GLOW, TextColours.applyStandOut(TextLayerSettings(glow = 3.0), r).glow)
+        assertEquals(0.41, TextColours.applyStandOut(TextLayerSettings(glow = 0.41), r).glow)
+    }
 }

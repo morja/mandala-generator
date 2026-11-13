@@ -44,6 +44,9 @@ object TextColours {
     /** The glow's saturation at least, so it shows beside near-white letters. */
     const val MIN_GLOW_SATURATION = 0.6
 
+    /** "Stand out" lowers a stronger glow to this, so the letters stay readable inside their own glow. */
+    const val MAX_STAND_OUT_GLOW = 1.2
+
     /** Saturation of the complement when no picture colour is near it. */
     const val COMPLEMENT_SATURATION = 0.75
 
@@ -244,11 +247,13 @@ object TextColours {
     }
 
     /**
-     * Applies a "Stand out" result: both colours, "Same as text" off; glow strength, cloud, shadow and
-     * a text brightness boost above 1 stay.
+     * Applies a "Stand out" result: both colours, "Same as text" off; cloud, shadow and a text
+     * brightness boost above 1 stay. A glow stronger than [MAX_STAND_OUT_GLOW] is lowered to it, because
+     * a bright glow in a light colour swallows the near-white letters (QA-12, Mathis 13 November 2026).
      */
     fun applyStandOut(s: TextLayerSettings, result: StandOut): TextLayerSettings =
         withColour(withPickedColour(s, TextColourTarget.TEXT, result.text), TextColourTarget.GLOW, result.glow)
+            .let { if (it.glow > MAX_STAND_OUT_GLOW) it.copy(glow = MAX_STAND_OUT_GLOW) else it }
 
     /** Relative luminance of an sRGB colour (0–1 channels). */
     fun luminance(r: Double, g: Double, b: Double): Double {
