@@ -193,7 +193,9 @@ private struct TextControls: View {
                     MoveButton(target: .text, enabled: text.isEnabled)
                 }
             }
-            ControlGroup(Texts.light, changed: differs((text.glow, d.glow), (text.cloudOpacity, d.cloudOpacity), (text.cloudScale, d.cloudScale), (text.shadowOpacity, d.shadowOpacity))) {
+            ControlGroup(Texts.light, changed: differs((text.glow, d.glow), (text.cloudOpacity, d.cloudOpacity), (text.cloudScale, d.cloudScale), (text.shadowOpacity, d.shadowOpacity)) ||
+                         // The shadow's shape only counts while there is a shadow (the die changes its softness either way).
+                         (text.shadowOpacity > 0 && differs((text.shadowOffsetX, d.shadowOffsetX), (text.shadowOffsetY, d.shadowOffsetY), (text.shadowBlur, d.shadowBlur)))) {
                 slider(.glow)
                 slider(.cloud)
                 slider(.cloudSize)
@@ -203,6 +205,7 @@ private struct TextControls: View {
                 }
                 slider(.shadow)
                 if text.shadowOpacity > 0 {
+                    ShadowShape(text: text)
                     colour(Texts.shadowColour, .shadowHue, .shadowSaturation, .shadowBrightness, inset: true)
                 }
             }
@@ -227,6 +230,35 @@ private struct TextControls: View {
             model.apply(parts.textWithValue(params: two, slider: b, value: bv))
         }
     }
+}
+
+/// The shadow's angle, distance and softness (QA-13 on Android), on the Mac's offset and blur fields through
+/// the shared rules in `TextShadow`. A file keeps its exact offsets until one of these sliders moves.
+private struct ShadowShape: View {
+    let text: TextLayerSettings
+    @Environment(EditorModel.self) private var model
+    /// While the shadow sits under the letters it has no direction of its own: the slider keeps the last one.
+    @State private var lastDirection = IosEditingParts.shared.shadowDefaultDirection()
+
+    var body: some View {
+        let parts = IosEditingParts.shared
+        let d = parts.defaultText()
+        let direction = parts.shadowDirection(text: text)?.doubleValue ?? lastDirection
+        let defaultDirection = parts.shadowDirection(text: d)?.doubleValue ?? parts.shadowDefaultDirection()
+        SliderRow(label: Texts.angle, value: direction, range: range(parts.shadowDirectionRange()), defaultValue: defaultDirection) { v in
+            lastDirection = v
+            model.apply(parts.withShadowDirection(params: model.params, direction: v))
+        }
+        SliderRow(label: Texts.shadowDistance, value: parts.shadowDistance(text: text), range: range(parts.shadowDistanceRange()),
+                  defaultValue: parts.shadowDistance(text: d)) { v in
+            model.apply(parts.withShadowDistance(params: model.params, distance: v, fallbackDirection: direction))
+        }
+        SliderRow(label: Texts.softness, value: text.shadowBlur, range: range(parts.shadowSoftnessRange()), defaultValue: d.shadowBlur) { v in
+            model.apply(parts.withShadowSoftness(params: model.params, softness: v))
+        }
+    }
+
+    private func range(_ bounds: [KotlinDouble]) -> ClosedRange<Double> { bounds[0].doubleValue...bounds[1].doubleValue }
 }
 
 /// The quote list (Android's `QuoteDialog`, ADR-0019): language chips when there is more than one collection,
