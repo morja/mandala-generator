@@ -10,6 +10,8 @@ kotlin {
 dependencies {
     implementation(project(":core"))
     testImplementation(kotlin("test"))
+    // TextGlowShots applies the editing rules (Stand out) before rendering.
+    testImplementation(project(":editing"))
 }
 
 application {
