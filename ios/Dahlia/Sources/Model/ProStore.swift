@@ -234,6 +234,16 @@ final class ProStore {
         if !purchased { setPurchased(true) }
     }
 
+    #if DEBUG
+    /// `-shotBuy YES` with `-shotSheet pro`: what a purchase that went through does to the screen (Pro for this run, then
+    /// the thanks), without StoreKit and without writing the cache, to check when the message shows (QA-10 item 5).
+    func simulatePurchaseForScreenshots() {
+        grants += 1
+        purchased = true
+        post(.unlocked)
+    }
+    #endif
+
     private func setPurchased(_ value: Bool) {
         purchased = value
         cache.save(value)
