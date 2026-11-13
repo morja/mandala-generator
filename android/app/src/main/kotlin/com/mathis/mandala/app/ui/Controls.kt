@@ -58,6 +58,10 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.PrimaryTabRow
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
@@ -154,6 +158,15 @@ private fun header(tab: ControlTab, params: MandalaParameters, selected: Int): C
 private fun blendSummary(mode: LayerBlendMode, opacity: Double): String =
     stringResource(R.string.controls_blend_summary, stringResource(mode.labelRes), (opacity * 100).roundToInt())
 
+/** [blendSummary] split after the mode's name, so a narrow row can shorten the name and keep the percentage. */
+@Composable
+private fun blendSummaryParts(mode: LayerBlendMode, opacity: Double): Pair<String, String> {
+    val marker = "\u0000"
+    val parts = stringResource(R.string.controls_blend_summary, marker, (opacity * 100).roundToInt()).split(marker)
+    val name = stringResource(mode.labelRes)
+    return if (parts.size == 2) (parts[0] + name) to parts[1] else blendSummary(mode, opacity) to ""
+}
+
 /** A label with the Pro mark, for controls that need Pro to keep. */
 @Composable
 private fun withPro(label: String): String = stringResource(R.string.controls_with_pro, label)
@@ -222,22 +235,43 @@ internal fun ControlTabs(
     }
 
     Column(modifier) {
-        PrimaryTabRow(selectedTabIndex = tab.ordinal) {
-            for (option in ControlTab.entries) {
-                // Content without the text tab's side padding, so five labels fit on a narrow phone.
-                Tab(
-                    selected = tab == option,
-                    onClick = { tab = option },
-                    modifier = when (option) {
-                        ControlTab.LAYERS -> Modifier.tourTarget(TourTarget.LAYERS_TAB)
-                        ControlTab.SCENE -> Modifier.tourTarget(TourTarget.SCENE_TAB)
-                        else -> Modifier
-                    },
-                ) {
-                    Text(stringResource(option.label), style = MaterialTheme.typography.titleSmall, maxLines = 1, modifier = Modifier.padding(vertical = Spacing.md))
+        // Five equal tabs, no sideways scrolling; the column already has the controls' side inset.
+        // When one label does not fit its fifth, all five take the next smaller role together, and at
+        // the largest text sizes they shrink together (IOS-5 finding 8, QA-14).
+        BoxWithConstraints(Modifier.fillMaxWidth()) {
+            val labels = ControlTab.entries.map { stringResource(it.label) }
+            val density = LocalDensity.current
+            val cell = with(density) { (maxWidth / ControlTab.entries.size).toPx() }
+            val gap = with(density) { (Spacing.xs * 2).toPx() }
+            val roles = listOf(MaterialTheme.typography.titleSmall, MaterialTheme.typography.labelMedium)
+            // A label fits when it stays within its fifth and keeps a small gap to each centred neighbour.
+            val style = fittingStyle(labels, roles, cell) { widths, space ->
+                widths.all { it <= space } && widths.zipWithNext().all { (a, b) -> space - (a + b) / 2 >= gap }
+            }
+            PrimaryTabRow(selectedTabIndex = tab.ordinal, modifier = Modifier.fillMaxWidth(), divider = {}) {
+                for (option in ControlTab.entries) {
+                    // Content without the text tab's side padding, so five labels fit on a narrow phone.
+                    Tab(
+                        selected = tab == option,
+                        onClick = { tab = option },
+                        modifier = when (option) {
+                            ControlTab.LAYERS -> Modifier.tourTarget(TourTarget.LAYERS_TAB)
+                            ControlTab.SCENE -> Modifier.tourTarget(TourTarget.SCENE_TAB)
+                            else -> Modifier
+                        },
+                    ) {
+                        Text(
+                            labels[option.ordinal],
+                            style = style,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.padding(vertical = Spacing.md),
+                        )
+                    }
                 }
             }
         }
+        HorizontalDivider()
         val colourSheet by vm.textColourSheet.collectAsStateWithLifecycle()
         // Another tab closes the text colour sheet and keeps its colours.
         LaunchedEffect(tab) { if (tab != ControlTab.TEXT) vm.closeTextColourSheet(keep = true) }
@@ -306,17 +340,32 @@ private fun LayersTab(params: MandalaParameters, selected: Int, vm: EditorViewMo
     if (!position.proOwned && shown > ProFeatures.FREE_LAYERS) {
         ProNote(stringResource(R.string.controls_pro_note_layers), position.showPro)
     }
-    // Actions on the selected (highlighted) layer; its settings follow below.
-    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-        TextButton(onClick = vm::addLayer, enabled = layers.size < Editing.MAX_LAYERS, modifier = Modifier.tourTarget(TourTarget.ADD_LAYER)) {
-            Text(stringResource(R.string.controls_layers_add))
+    // Actions on the selected (highlighted) layer; its settings follow below. The die stays at the end;
+    // when the three labels do not fit beside it, they take a smaller role together, as the tab row.
+    BoxWithConstraints(Modifier.fillMaxWidth()) {
+        val actions = listOf(R.string.controls_layers_add, R.string.controls_layers_duplicate, R.string.controls_delete).map { stringResource(it) }
+        val density = LocalDensity.current
+        val buttonPadding = with(density) { (ButtonDefaults.TextButtonContentPadding.calculateLeftPadding(LayoutDirection.Ltr) * 2).toPx() }
+        val buttonMin = with(density) { ButtonDefaults.MinWidth.toPx() }
+        val actionSpace = with(density) { (maxWidth - Sizes.icon * 2).toPx() }
+        val actionStyle = fittingStyle(actions, listOf(MaterialTheme.typography.labelLarge, MaterialTheme.typography.labelMedium), actionSpace) { widths, space ->
+            widths.sumOf { (it + buttonPadding).coerceAtLeast(buttonMin).toDouble() } <= space
         }
-        TextButton(onClick = vm::duplicateSelected, enabled = layers.size < Editing.MAX_LAYERS) { Text(stringResource(R.string.controls_layers_duplicate)) }
-        TextButton(onClick = vm::removeSelected, enabled = layers.size > 1) { Text(stringResource(R.string.controls_delete)) }
-        Box(Modifier.weight(1f))
-        IconButton(onClick = vm::randomizeSelected) {
-            Icon(EditorIcons.DieOne, contentDescription = stringResource(R.string.controls_layers_randomize, selected + 1), tint = LocalTokens.current.accent,
-                modifier = Modifier.tourTarget(TourTarget.LAYER_DIE))
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+            TextButton(onClick = vm::addLayer, enabled = layers.size < Editing.MAX_LAYERS, modifier = Modifier.tourTarget(TourTarget.ADD_LAYER)) {
+                Text(actions[0], style = actionStyle, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            }
+            TextButton(onClick = vm::duplicateSelected, enabled = layers.size < Editing.MAX_LAYERS) {
+                Text(actions[1], style = actionStyle, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            }
+            TextButton(onClick = vm::removeSelected, enabled = layers.size > 1) {
+                Text(actions[2], style = actionStyle, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            }
+            Box(Modifier.weight(1f))
+            IconButton(onClick = vm::randomizeSelected) {
+                Icon(EditorIcons.DieOne, contentDescription = stringResource(R.string.controls_layers_randomize, selected + 1), tint = LocalTokens.current.accent,
+                    modifier = Modifier.tourTarget(TourTarget.LAYER_DIE))
+            }
         }
     }
     LayerControls(layers[selected], selected, vm, vm::updateSelected, position, onVary = vm::varySelected, onReseed = vm::reseedSelected)
@@ -408,9 +457,14 @@ private fun LayerRow(
         Box(Modifier.size(Sizes.swatchSmall).clip(CircleShape).background(paletteBrush(palette)))
         Column(Modifier.weight(1f).padding(horizontal = Spacing.md, vertical = Spacing.xs)) {
             Text("$number · ${stringResource(layer.style.labelRes)}", style = MaterialTheme.typography.bodyMedium,
-                color = if (layer.isEnabled) t.text else t.textMuted, maxLines = 1)
-            Text(blendSummary(layer.blendMode, layer.opacity),
-                style = MaterialTheme.typography.bodySmall, color = t.textMuted, maxLines = 1)
+                color = if (layer.isEnabled) t.text else t.textMuted, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            // The percentage stays whole; only the mode's name is shortened, in each language's own format.
+            val (modePart, opacityPart) = blendSummaryParts(layer.blendMode, layer.opacity)
+            Row {
+                Text(modePart, style = MaterialTheme.typography.bodySmall, color = t.textMuted, maxLines = 1, overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f, fill = false))
+                Text(opacityPart, style = MaterialTheme.typography.bodySmall, color = t.textMuted, maxLines = 1, softWrap = false)
+            }
         }
         IconButton(onClick = onToggle) {
             Icon(
