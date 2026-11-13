@@ -77,7 +77,8 @@ extension ControlGroup where Trailing == EmptyView {
 func differs(_ values: (Double, Double)...) -> Bool { values.contains { abs($0.0 - $0.1) > 1e-6 } }
 
 /// Label on the left, slider in the middle, value on the right: one line per setting. A double tap on
-/// the line puts the setting back to its default, also offered as an accessibility action.
+/// the line, the slider itself included (QA-10 item 7), puts the setting back to its default, also offered
+/// as an accessibility action.
 struct SliderRow: View {
     let label: String
     let value: Double
@@ -97,11 +98,10 @@ struct SliderRow: View {
                 // A long word ("Насыщенность") shrinks a little rather than run into the slider.
                 Text(label).textRole(.body).foregroundStyle(t.text).lineLimit(1).minimumScaleFactor(0.8)
                     .frame(width: geo.size.width * 0.34, alignment: .leading)
-                Group {
-                    if let step { Slider(value: binding, in: range, step: step) } else { Slider(value: binding, in: range) }
-                }
-                .tint(t.accent)
-                .frame(width: geo.size.width * 0.52)
+                ResettableSlider(value: binding.wrappedValue, range: range, step: step, label: label,
+                                 valueText: display?(value) ?? (step == nil ? String(format: "%.2f", value) : String(Int(value.rounded()))),
+                                 accent: t.accent, onChange: onChange, onReset: { onChange(defaultValue) })
+                    .frame(width: geo.size.width * 0.52)
                 Text(display?(value) ?? (step == nil ? String(format: "%.2f", value) : String(Int(value.rounded()))))
                     .textRole(.value).foregroundStyle(t.textMuted).lineLimit(1)
                     .frame(width: geo.size.width * 0.14, alignment: .trailing)
@@ -112,6 +112,82 @@ struct SliderRow: View {
         .contentShape(Rectangle())
         .simultaneousGesture(TapGesture(count: 2).onEnded { onChange(defaultValue) })
         .accessibilityAction(named: Text(Texts.sliderReset(label))) { onChange(defaultValue) }
+    }
+}
+
+/// The system slider (UISlider) with a double tap of its own: SwiftUI's `Slider` keeps every touch on its track
+/// and knob, so a double tap on the row never reached the slider line (QA-10 item 7). The tap recogniser lets the
+/// slider see all touches at once (no delay on a drag) and gives up as soon as a finger moves; scrolling past
+/// the slider stays the scroll view's, as with the system slider.
+private struct ResettableSlider: UIViewRepresentable {
+    let value: Double
+    let range: ClosedRange<Double>
+    let step: Double?
+    let label: String
+    /// What VoiceOver reads as the value: the same text as on the right of the row.
+    let valueText: String
+    let accent: Color
+    let onChange: (Double) -> Void
+    let onReset: () -> Void
+
+    func makeCoordinator() -> Coordinator { Coordinator() }
+
+    func makeUIView(context: Context) -> UISlider {
+        let slider = UISlider()
+        slider.isContinuous = true
+        slider.addTarget(context.coordinator, action: #selector(Coordinator.moved(_:)), for: .valueChanged)
+        // Once the finger lifts, the knob goes to the value kept (a whole step, a value the model limited).
+        slider.addTarget(context.coordinator, action: #selector(Coordinator.released(_:)), for: [.touchUpInside, .touchUpOutside, .touchCancel])
+        let tap = UITapGestureRecognizer(target: context.coordinator, action: #selector(Coordinator.doubleTapped))
+        tap.numberOfTapsRequired = 2
+        tap.cancelsTouchesInView = false
+        tap.delaysTouchesEnded = false
+        slider.addGestureRecognizer(tap)
+        slider.setContentHuggingPriority(.defaultLow, for: .horizontal)
+        slider.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+        return slider
+    }
+
+    func updateUIView(_ slider: UISlider, context: Context) {
+        context.coordinator.parent = self
+        slider.minimumValue = Float(range.lowerBound)
+        slider.maximumValue = Float(range.upperBound)
+        // Not while a finger moves the knob: the value coming back would only shake it.
+        if !slider.isTracking { slider.value = Float(value) }
+        slider.minimumTrackTintColor = UIColor(accent) // token-exempt: the accent token handed to UIKit
+        slider.accessibilityLabel = label
+        slider.accessibilityValue = valueText
+        // The row's reset, offered on the slider itself, where VoiceOver lands.
+        let reset = onReset
+        slider.accessibilityCustomActions = [UIAccessibilityCustomAction(name: Texts.sliderReset(label)) { _ in
+            reset()
+            return true
+        }]
+    }
+
+    @MainActor
+    final class Coordinator: NSObject {
+        var parent: ResettableSlider?
+
+        @objc func moved(_ slider: UISlider) {
+            guard let parent else { return }
+            let range = parent.range
+            var v = Double(slider.value)
+            // Whole steps from the lower end, never past the ends.
+            if let step = parent.step, step > 0 { v = range.lowerBound + ((v - range.lowerBound) / step).rounded() * step }
+            parent.onChange(min(max(v, range.lowerBound), range.upperBound))
+        }
+
+        @objc func released(_ slider: UISlider) {
+            // After SwiftUI has handed over the value from the last move.
+            Task { @MainActor [weak self, weak slider] in
+                await Task.yield()
+                guard let value = self?.parent?.value, let slider, !slider.isTracking else { return }
+                slider.value = Float(value)
+            }
+        }
+
+        @objc func doubleTapped() { parent?.onReset() }
     }
 }
 

@@ -60,7 +60,9 @@ struct EditorView: View {
                 let fullSide = min(geo.size.width - Spacing.lg * 2, geo.size.height * 0.5)
                 // Moving and drawing keep the picture large (Android's `pinned`).
                 let pinned = model.moveTarget != nil || model.drawTool != nil
-                let chosen = pinned ? PreviewSize.full : model.shell.previewFraction
+                // Typing in the Text tab folds the picture small; the chosen size comes back with the keyboard gone (QA-10 item 4).
+                let typing = model.textColours.typing != nil
+                let chosen = pinned ? PreviewSize.full : (typing ? PreviewSize.small : model.shell.previewFraction)
                 // The tour folds the picture a little where its card would not fit otherwise; the chosen size comes back after it.
                 let shrunk = tour.running && tour.shrinkBy > 0 && fullSide > 0
                 let fraction = shrunk ? max(PreviewSize.small, min(chosen, (chosen * fullSide - tour.shrinkBy) / fullSide)) : chosen

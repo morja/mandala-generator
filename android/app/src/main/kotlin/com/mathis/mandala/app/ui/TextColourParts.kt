@@ -74,7 +74,6 @@ import com.mathis.mandala.app.ui.theme.Radius
 import com.mathis.mandala.app.ui.theme.Sizes
 import com.mathis.mandala.app.ui.theme.Spacing
 import com.mathis.mandala.core.TextLayerSettings
-import com.mathis.mandala.editing.Editing
 import com.mathis.mandala.editing.Hsb
 import com.mathis.mandala.editing.TextColourTarget
 import com.mathis.mandala.editing.TextColours
@@ -115,7 +114,7 @@ internal fun TextColourGroup(text: TextLayerSettings, vm: EditorViewModel) {
                 }
             }
         },
-        changed = differs(text.hue to td.hue, text.saturation to td.saturation, text.brightness to td.brightness) || !text.glowSameAsText,
+        changed = TextColours.changed(text),
     ) {
         // The picture's colours are looked at only while the group is open, once the picture rests.
         val pictureKey = params.copy(textLayer = td)
@@ -252,10 +251,9 @@ private fun FineTune(text: TextLayerSettings, target: TextColourTarget, edited: 
         Icon(if (open) EditorIcons.Less else EditorIcons.Expand, contentDescription = null, tint = t.textMuted)
     }
     if (!open) return
-    // The text keeps its boosted range (up to 2, as saved files may have it); the glow goes to 1.
-    val brightnessRange = if (target == TextColourTarget.TEXT) Editing.Ranges.textBrightness.floats() else 0f..1f
-    // The glow's defaults are the text colour: a double tap brings it back to the letters' colour.
-    val defaults = if (target == TextColourTarget.TEXT) TextColours.text(TextLayerSettings()) else TextColours.text(text)
+    // The text keeps its boosted range (up to 2); the glow goes to 1, and a double tap brings it back to the letters' colour.
+    val brightnessRange = TextColours.brightnessRange(target).floats()
+    val defaults = TextColours.fineTuneDefaults(text, target)
     ValueSlider(stringResource(R.string.controls_hue), edited.hue, default = defaults.hue) { v -> vm.setTextColour { it.copy(hue = v) } }
     ValueSlider(stringResource(R.string.controls_saturation), edited.saturation, default = defaults.saturation) { v -> vm.setTextColour { it.copy(saturation = v) } }
     ValueSlider(stringResource(R.string.controls_brightness), edited.brightness, brightnessRange, default = defaults.brightness) { v -> vm.setTextColour { it.copy(brightness = v) } }

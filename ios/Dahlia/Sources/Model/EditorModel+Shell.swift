@@ -50,6 +50,8 @@ extension EditorModel {
     func goForward() { navigate { shell.history.forward() } }
 
     private func navigate(_ step: () -> MandalaParameters?) {
+        // Another mandala: the text colour sheet closes and keeps its colours, so Cancel never paints old ones on it.
+        closeTextColourSheet(keep: true)
         shell.historyTask?.cancel()
         recordHistory(params) // a change younger than the history delay is kept too
         guard let target = step() else { return }
@@ -73,6 +75,7 @@ extension EditorModel {
 
     /// The top bar's die: new layers and background (Android's `surprise`).
     func surprise() {
+        closeTextColourSheet(keep: true)
         change(IosShell.shared.surprise(current: params, pro: proOwned))
         selected = 0
     }

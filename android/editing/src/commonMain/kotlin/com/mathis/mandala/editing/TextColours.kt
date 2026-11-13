@@ -113,6 +113,21 @@ object TextColours {
         abs(a.saturation - b.saturation) < 0.01 && abs(a.brightness - b.brightness) < 0.01 &&
             (a.saturation < 0.01 || hueDistance(a.hue, b.hue) < 0.004)
 
+    /** Whether the Colour group shows its changed dot: the text colour differs from its default, or the glow has its own. */
+    fun changed(s: TextLayerSettings): Boolean {
+        val d = TextLayerSettings()
+        fun differs(a: Double, b: Double) = abs(a - b) > 1e-6
+        return differs(s.hue, d.hue) || differs(s.saturation, d.saturation) || differs(s.brightness, d.brightness) || !s.glowSameAsText
+    }
+
+    /** "Fine tune" defaults for the double tap: the text's own; for the glow the letters' colour, so it goes back to them. */
+    fun fineTuneDefaults(s: TextLayerSettings, target: TextColourTarget): Hsb =
+        if (target == TextColourTarget.TEXT) text(TextLayerSettings()) else text(s)
+
+    /** "Fine tune" brightness: the text keeps its boosted range (up to 2, as saved files may have it), the glow goes to 1. */
+    fun brightnessRange(target: TextColourTarget): ClosedFloatingPointRange<Double> =
+        if (target == TextColourTarget.TEXT) Editing.Ranges.textBrightness else 0.0..1.0
+
     fun hueDistance(a: Double, b: Double): Double {
         val d = abs(a - b) % 1.0
         return min(d, 1 - d)
