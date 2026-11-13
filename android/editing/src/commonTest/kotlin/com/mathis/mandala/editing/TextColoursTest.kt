@@ -48,6 +48,10 @@ class TextColoursTest {
     fun aBoostedTextBrightnessStaysButTheGlowIsCappedAtOne() {
         val bright = kabirText.copy(brightness = 1.6)
         assertEquals(1.6, TextColours.text(bright).brightness)
+        assertEquals(1.0, TextColours.glow(bright).brightness)
+        // A swatch at full brightness keeps the boost; the field sets the brightness as given.
+        assertEquals(1.6, TextColours.withPickedColour(bright, TextColourTarget.TEXT, Hsb.WHITE).brightness)
+        assertEquals(0.7, TextColours.withPickedColour(bright, TextColourTarget.TEXT, Hsb(0.1, 0.5, 0.7)).brightness)
         assertEquals(1.0, TextColours.sameAsText(bright, false).glowBrightness)
         assertEquals(1.0, TextColours.withColour(bright, TextColourTarget.GLOW, Hsb(0.0, 1.0, 1.4)).glowBrightness)
     }
@@ -57,12 +61,12 @@ class TextColoursTest {
         assertEquals(Hsb(0.5, 0.25, 0.75), TextColours.withFieldPoint(Hsb(0.5, 1.0, 1.0), 0.25, 0.25))
         assertEquals(Hsb(0.7, 0.8, 1.0), TextColours.withHueFromStrip(Hsb.WHITE, 0.7))
         assertEquals(Hsb(0.7, 0.5, 1.0), TextColours.withHueFromStrip(Hsb(0.1, 0.5, 1.0), 0.7))
-        assertEquals(0.0, TextColours.withHueFromStrip(Hsb(0.1, 0.5, 1.0), 1.0).hue)
+        assertEquals(TextColours.MAX_HUE, TextColours.withHueFromStrip(Hsb(0.1, 0.5, 1.0), 1.0).hue)
     }
 
     @Test
     fun cancelPutsBackBothColoursOnly() {
-        val sheet = TextColourSheet.open(kabirText, TextColourTarget.GLOW)
+        val sheet = TextColourSheet.open(kabirText)
         val dragged = TextColours.withColour(TextColours.withColour(kabirText, TextColourTarget.GLOW, Hsb(0.1, 1.0, 1.0)), TextColourTarget.TEXT, Hsb.WHITE)
             .copy(glow = 2.0)
         assertTrue(sheet.changed(dragged))
@@ -150,12 +154,36 @@ class TextColoursTest {
 
     @Test
     fun standOutTakesTheFarthestPictureColourWhenTheBackgroundHasNoClearHue() {
-        // Red, green and blue in equal parts: no hue wins.
-        val (px, w, h) = picture { x, _ -> listOf(argb(0.9, 0.0, 0.0), argb(0.0, 0.9, 0.0), argb(0.0, 0.0, 0.9))[x % 3] }
-        val r = TextColours.standOut(px, w, h, doubleArrayOf(0.0, 0.0, 0.99, 1.0), listOf(Hsb(0.1, 0.9, 1.0), Hsb(0.4, 0.9, 1.0), Hsb.WHITE))!!
+        // Red, yellow-green, cyan and blue: spread wide, leaning slightly to red (hue 0), clarity low.
+        val hues = listOf(0.0, 0.0, 0.25, 0.5, 0.75)
+        val (px, w, h) = picture { x, _ -> hsbArgb(hues[x % hues.size], 1.0, 1.0) }
+        val r = TextColours.standOut(px, w, h, doubleArrayOf(0.0, 0.0, 1.0, 1.0), listOf(Hsb(0.05, 0.9, 1.0), Hsb(0.45, 0.9, 1.0), Hsb.WHITE))!!
         assertTrue(r.clarity < TextColours.CLEAR_HUE)
-        val expected = listOf(Hsb(0.1, 0.9, 1.0), Hsb(0.4, 0.9, 1.0)).maxBy { TextColours.hueDistance(it.hue, r.dominantHue) }
-        assertEquals(expected, r.glow)
+        assertTrue(TextColours.hueDistance(r.dominantHue, 0.0) < 0.02)
+        assertEquals(Hsb(0.45, 0.9, 1.0), r.glow)
+    }
+
+    @Test
+    fun standOutFindsAPictureColourAcrossTheWrapOfTheHueCircle() {
+        // Behind: hue 0.45, so the complement is 0.95; a swatch at 0.05 lies 0.1 from it.
+        val (px, w, h) = picture { _, _ -> hsbArgb(0.45, 0.9, 0.6) }
+        val r = TextColours.standOut(px, w, h, TextColours.textArea(kabirText), listOf(Hsb(0.05, 0.9, 1.0), Hsb(0.5, 0.9, 1.0), Hsb.WHITE))!!
+        assertEquals(Hsb(0.05, 0.9, 1.0), r.glow)
+    }
+
+    @Test
+    fun standOutUsesTheComplementWhenThePictureHasOnlyWhite() {
+        val (px, w, h) = picture { _, _ -> hsbArgb(0.6, 0.9, 0.5) }
+        val r = TextColours.standOut(px, w, h, TextColours.textArea(kabirText), listOf(Hsb.WHITE))!!
+        assertTrue(TextColours.hueDistance(r.glow.hue, 0.1) < 0.01)
+        assertEquals(TextColours.COMPLEMENT_SATURATION, r.glow.saturation)
+    }
+
+    @Test
+    fun standOutKeepsATextBoost() {
+        val (px, w, h) = picture { _, _ -> hsbArgb(0.6, 0.9, 0.5) }
+        val r = TextColours.standOut(px, w, h, TextColours.textArea(kabirText), listOf(Hsb.WHITE))!!
+        assertEquals(2.0, TextColours.applyStandOut(kabirText.copy(brightness = 2.0), r).brightness)
     }
 
     @Test

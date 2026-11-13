@@ -82,6 +82,39 @@ class TextLayerTest {
         assertTrue(shares.zipWithNext().all { (a, b) -> b > a }, "Render progress went backwards: $shares")
     }
 
+    /** Text on black with a strong glow (above 1, so the light passes run too) and a boost. */
+    private fun glowing(text: TextLayerSettings) = MandalaParameters(
+        layers = emptyList(),
+        textLayer = text.copy(isEnabled = true, text = "Glow", showAuthor = false, fontSize = 0.2, glow = 2.0,
+            hue = 0.6, saturation = 0.8, brightness = 1.3),
+    )
+
+    @Test
+    fun theGlowColourFieldsChangeNothingWhileTheGlowIsTheSameAsTheText() {
+        val options = RenderOptions(outputSize = 128, threads = 2, textRenderer = BoxRenderer())
+        val plain = MandalaRenderer.render(glowing(TextLayerSettings()), options).image
+        val stray = MandalaRenderer.render(glowing(TextLayerSettings(glowHue = 0.1, glowSaturation = 1.0, glowBrightness = 0.3)), options).image
+        assertTrue(plain.data.contentEquals(stray.data))
+        // Off, with the glow colour equal to the drawn text colour (its brightness capped at 1): the same pixels.
+        val same = MandalaRenderer.render(glowing(TextLayerSettings(glowSameAsText = false, glowHue = 0.6, glowSaturation = 0.8, glowBrightness = 1.0)), options).image
+        assertTrue(plain.data.contentEquals(same.data))
+    }
+
+    @Test
+    fun anOwnGlowColourTintsOnlyWhereTheGlowReaches() {
+        val options = RenderOptions(outputSize = 128, threads = 2, textRenderer = BoxRenderer())
+        val plain = MandalaRenderer.render(glowing(TextLayerSettings()), options).image
+        val red = MandalaRenderer.render(glowing(TextLayerSettings(glowSameAsText = false, glowHue = 0.0, glowSaturation = 1.0, glowBrightness = 1.0)), options).image
+        assertTrue(!plain.data.contentEquals(red.data))
+        // The corners lie beyond the glow: black in both.
+        for (i in 0 until 3) assertEquals(plain.data[i], red.data[i])
+        // Red rises where the blue glow was: more red in total.
+        var redPlain = 0L
+        var redOwn = 0L
+        for (p in 0 until plain.width * plain.height) { redPlain += plain.get(p * 3); redOwn += red.get(p * 3) }
+        assertTrue(redOwn > redPlain)
+    }
+
     @Test
     fun warnsWithoutATextRenderer() {
         val result = MandalaRenderer.render(params, RenderOptions(outputSize = 128, threads = 1))

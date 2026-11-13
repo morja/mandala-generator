@@ -56,16 +56,31 @@ object TextColours {
     /** Saturation the hue strip gives a colour that had almost none, so a new hue shows. */
     const val HUE_STRIP_SATURATION = 0.8
 
+    /** The hue strip's right end, short of 1 so the marker stays there instead of jumping to red at the left. */
+    const val MAX_HUE = 0.999
+
     // ---------- Reading and writing the two colours ----------
 
     fun text(s: TextLayerSettings) = Hsb(s.hue, s.saturation, s.brightness)
 
-    /** The glow colour in effect: the text colour while "Same as text" is on. */
-    fun glow(s: TextLayerSettings) = if (s.glowSameAsText) text(s) else Hsb(s.glowHue, s.glowSaturation, s.glowBrightness)
+    /**
+     * The glow colour in effect: the text colour while "Same as text" is on, its brightness at most 1
+     * (the renderer draws the colour so; a boost above 1 scales the whole text, see [withColour]).
+     */
+    fun glow(s: TextLayerSettings) =
+        if (s.glowSameAsText) Hsb(s.hue, s.saturation, min(1.0, s.brightness)) else Hsb(s.glowHue, s.glowSaturation, s.glowBrightness)
 
     fun of(s: TextLayerSettings, target: TextColourTarget) = if (target == TextColourTarget.TEXT) text(s) else glow(s)
 
-    /** Sets one colour; setting the glow switches "Same as text" off. */
+    /**
+     * Sets one colour; setting the glow switches "Same as text" off. A text brightness above 1 (a
+     * boost from the Mac or the slider, which also brightens the glow) is kept when the new colour
+     * comes at full brightness (a swatch, "Stand out"); the field and the slider set it as given.
+     */
+    fun withPickedColour(s: TextLayerSettings, target: TextColourTarget, c: Hsb): TextLayerSettings =
+        withColour(s, target, if (target == TextColourTarget.TEXT && c.brightness >= 1.0) c.copy(brightness = max(1.0, s.brightness)) else c)
+
+    /** Sets one colour as given; setting the glow switches "Same as text" off. */
     fun withColour(s: TextLayerSettings, target: TextColourTarget, c: Hsb): TextLayerSettings = when (target) {
         TextColourTarget.TEXT -> s.copy(hue = c.hue, saturation = c.saturation, brightness = c.brightness)
         TextColourTarget.GLOW -> s.copy(glowSameAsText = false, glowHue = c.hue, glowSaturation = c.saturation, glowBrightness = c.brightness.coerceIn(0.0, 1.0))
@@ -85,7 +100,7 @@ object TextColours {
 
     /** A hue from the hue strip; a colour with almost no saturation gets some, so the new hue shows. */
     fun withHueFromStrip(c: Hsb, hue: Double): Hsb =
-        c.copy(hue = hue.coerceIn(0.0, 1.0) % 1.0, saturation = if (c.saturation < 0.05) HUE_STRIP_SATURATION else c.saturation)
+        c.copy(hue = hue.coerceIn(0.0, MAX_HUE), saturation = if (c.saturation < 0.05) HUE_STRIP_SATURATION else c.saturation)
 
     /** Saturation and brightness from a point of the field (x to the right, y down, both 0–1). */
     fun withFieldPoint(c: Hsb, x: Double, y: Double): Hsb = c.copy(saturation = x.coerceIn(0.0, 1.0), brightness = (1 - y).coerceIn(0.0, 1.0))
@@ -228,9 +243,12 @@ object TextColours {
         return StandOut(text, glow, dominant, clarity, contrast(text))
     }
 
-    /** Applies a "Stand out" result: both colours, "Same as text" off; glow strength, cloud and shadow stay. */
+    /**
+     * Applies a "Stand out" result: both colours, "Same as text" off; glow strength, cloud, shadow and
+     * a text brightness boost above 1 stay.
+     */
     fun applyStandOut(s: TextLayerSettings, result: StandOut): TextLayerSettings =
-        withColour(withColour(s, TextColourTarget.TEXT, result.text), TextColourTarget.GLOW, result.glow)
+        withColour(withPickedColour(s, TextColourTarget.TEXT, result.text), TextColourTarget.GLOW, result.glow)
 
     /** Relative luminance of an sRGB colour (0–1 channels). */
     fun luminance(r: Double, g: Double, b: Double): Double {
@@ -240,11 +258,10 @@ object TextColours {
 }
 
 /**
- * The colour sheet (DM-24 A2): which colour it edits and both colours as they were when it opened,
- * for Cancel. Dragging changes the settings at once; Cancel puts back [before]'s colours only, so a
+ * The colour sheet (DM-24 A2): both colours as they were when it opened, for Cancel. Dragging changes the settings at once; Cancel puts back [before]'s colours only, so a
  * change made elsewhere meanwhile (none, while the sheet is open) would stay.
  */
-data class TextColourSheet(val target: TextColourTarget, val before: TextLayerSettings) {
+data class TextColourSheet(val before: TextLayerSettings) {
     /** The settings with the colours from when the sheet opened, everything else as now. */
     fun cancelled(now: TextLayerSettings): TextLayerSettings = now.copy(
         hue = before.hue, saturation = before.saturation, brightness = before.brightness,
@@ -256,6 +273,6 @@ data class TextColourSheet(val target: TextColourTarget, val before: TextLayerSe
     fun changed(now: TextLayerSettings): Boolean = cancelled(now) != now
 
     companion object {
-        fun open(s: TextLayerSettings, target: TextColourTarget) = TextColourSheet(target, s)
+        fun open(s: TextLayerSettings) = TextColourSheet(s)
     }
 }

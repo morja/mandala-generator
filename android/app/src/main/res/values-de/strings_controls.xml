@@ -227,7 +227,7 @@
     <string name="controls_text_colour_glow">Leuchten</string>
     <string name="controls_text_colour_open_text">Textfarbe, öffnet das Farbblatt</string>
     <string name="controls_text_colour_open_glow">Leuchtfarbe, öffnet das Farbblatt</string>
-    <string name="controls_text_colour_from_picture">Aus dem Bild, für %1$s</string>
+    <string name="controls_text_colour_from_picture">Bildfarben für: %1$s</string>
     <string name="controls_text_colour_stand_out">Hervorheben</string>
     <string name="controls_text_colour_stand_out_description">Hervorheben: Leuchten in der Gegenfarbe des Bildes hinter dem Text, Buchstaben fast weiß</string>
     <string name="controls_text_colour_more">Weitere Farben</string>

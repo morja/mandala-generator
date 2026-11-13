@@ -545,6 +545,12 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
 
     /** The layer images of the last rendered preview, so a change to one layer redraws only that one. */
     private val previewCache = LayerCache()
+    /**
+     * The layer images of the colour sheet's small live picture (DM-24): a colour drag then redraws
+     * only the text. Its renders run one after another (collectLatest waits for the cancelled one).
+     */
+    private val liveCache = LayerCache()
+
     /** The preview and the one without effects share [previewCache], so they never draw at once. */
     private val previewLock = Mutex()
 
@@ -581,7 +587,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
                     return@collectLatest
                 }
                 // While the colour sheet is open, a small picture at once, so the colour shows while dragging.
-                if (_textColourSheet.value != null) renderQuickPreview(p, Editing.LIVE_SIZE, Editing.LIVE_GLOW_REFERENCE, supersample = false)
+                if (_textColourSheet.value != null) renderQuickPreview(p, Editing.LIVE_SIZE, Editing.LIVE_GLOW_REFERENCE, supersample = false, cache = liveCache)
                 delay(DEBOUNCE_MS)
                 val redrawn = if (renderedFast == fast) redrawnLayers(p) else p.layers.count { it.isEnabled }
                 if (redrawn >= Editing.QUICK_MIN_LAYERS && millisPerLayer * redrawn > Editing.QUICK_AFTER_MS) renderQuickPreview(p)
@@ -688,6 +694,9 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
     /** Sets the colour the switch shows (a swatch, the field, the hue strip or a "Fine tune" slider). */
     fun setTextColour(change: (Hsb) -> Hsb) = updateText { TextColours.withColour(it, _textColourTarget.value, change) }
 
+    /** A swatch: keeps a text brightness boost above 1 (see [TextColours.withPickedColour]). */
+    fun pickTextColour(c: Hsb) = updateText { TextColours.withPickedColour(it, _textColourTarget.value, c) }
+
     fun setGlowSameAsText(on: Boolean) = updateText { TextColours.sameAsText(it, on) }
 
     private val _textColourSheet = MutableStateFlow<TextColourSheet?>(null)
@@ -702,7 +711,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
     fun openTextColourSheet(target: TextColourTarget? = null) {
         if (target != null) _textColourTarget.value = target
         _textColourBefore.value = _preview.value.image
-        _textColourSheet.value = TextColourSheet.open(_params.value.textLayer, _textColourTarget.value)
+        _textColourSheet.value = TextColourSheet.open(_params.value.textLayer)
     }
 
     /** Done keeps the colours; Cancel puts back both as they were when the sheet opened. */
@@ -711,6 +720,8 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         if (!keep) updateText { sheet.cancelled(it) }
         _textColourSheet.value = null
         _textColourBefore.value = null
+        // The live picture's layers are not needed until the sheet opens again.
+        liveCache.clear()
     }
 
     /** The picture without its text, small, with its colours: for the swatches and "Stand out". */
@@ -753,15 +764,26 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         sampleJob?.cancel()
         sampleJob = viewModelScope.launch {
             delay(SAMPLE_DELAY_MS)
-            try { samplePicture(_params.value) } catch (e: OutOfMemoryError) { /* The swatches stay as they were. */ }
+            // On failure the swatches stay as they were.
+            try { samplePicture(_params.value) } catch (e: OutOfMemoryError) { } catch (e: Exception) { if (e is kotlinx.coroutines.CancellationException) throw e }
         }
     }
 
-    /** Glow in the complement of the picture behind the text, letters near white (DM-24). */
+    private var standOutJob: Job? = null
+
+    /** Glow in the complement of the picture behind the text, letters near white (DM-24); taps while it works are ignored. */
     fun standOut() {
-        viewModelScope.launch {
+        if (standOutJob?.isActive == true) return
+        standOutJob = viewModelScope.launch {
             val p = _params.value
-            val sample = try { samplePicture(p) } catch (e: OutOfMemoryError) { return@launch }
+            val sample = try {
+                samplePicture(p)
+            } catch (e: OutOfMemoryError) {
+                return@launch
+            } catch (e: Exception) {
+                if (e is kotlinx.coroutines.CancellationException) throw e
+                return@launch
+            }
             val result = TextColours.standOut(sample.argb, sample.size, sample.size, TextColours.textArea(p.textLayer), sample.swatches) ?: return@launch
             updateText { TextColours.applyStandOut(it, result) }
         }
@@ -1792,6 +1814,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         size: Int = Editing.QUICK_SIZE,
         glowReference: Int = Editing.QUICK_GLOW_REFERENCE,
         supersample: Boolean = true,
+        cache: LayerCache? = null,
     ) {
         try {
             val result = withContext(Dispatchers.Default) {
@@ -1799,7 +1822,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
                 MandalaRenderer.render(
                     params,
                     RenderOptions(
-                        outputSize = size, glowReferenceWidth = glowReference, threads = threads, supersample = supersample,
+                        outputSize = size, glowReferenceWidth = glowReference, threads = threads, supersample = supersample, layerCache = cache,
                         textRenderer = textRenderer, imageLoader = imageLoader, isCancelled = { !job.isActive },
                     ),
                 )

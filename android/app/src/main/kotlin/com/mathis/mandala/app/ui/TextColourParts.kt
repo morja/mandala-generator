@@ -7,6 +7,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.drag
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -142,7 +143,7 @@ internal fun TextColourGroup(text: TextLayerSettings, vm: EditorViewModel) {
                 Text(stringResource(R.string.controls_text_colour_stand_out), maxLines = 1, modifier = Modifier.padding(start = Spacing.sm))
             }
         }
-        SwatchRow(swatches, edited) { c -> vm.setTextColour { c } }
+        SwatchRow(swatches, edited, vm::pickTextColour)
         Row(Modifier.fillMaxWidth().padding(top = Spacing.xs), horizontalArrangement = Arrangement.End) {
             TextButton(onClick = { vm.openTextColourSheet() }) { Text(stringResource(R.string.controls_text_colour_more)) }
         }
@@ -278,16 +279,17 @@ internal fun TextColourSheetOverlay(text: TextLayerSettings, vm: EditorViewModel
 
     Box(Modifier.fillMaxSize()) {
         // The scrim cancels, like the back gesture.
+        val cancelLabel = stringResource(R.string.controls_cancel)
         Box(
             Modifier.fillMaxSize().background(BottomSheetDefaults.ScrimColor)
-                .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null, onClick = cancel),
+                .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null, onClickLabel = cancelLabel, onClick = cancel),
         )
         Column(
             Modifier.align(Alignment.BottomCenter).fillMaxWidth()
                 .clip(RoundedCornerShape(topStart = Radius.md, topEnd = Radius.md))
                 .background(t.surfaceRaised)
-                // Taps on the sheet itself do not reach the scrim.
-                .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) {}
+                // Taps on the sheet itself do not reach the scrim (and TalkBack does not offer the sheet as a button).
+                .pointerInput(Unit) { detectTapGestures { } }
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = Spacing.lg)
                 .padding(bottom = Spacing.lg),

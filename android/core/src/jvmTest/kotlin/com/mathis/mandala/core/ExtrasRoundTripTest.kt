@@ -63,4 +63,16 @@ class ExtrasRoundTripTest {
         val out = Json.parseToJsonElement(SettingsJson.encodeFavorites(favourites)).jsonArray[0].jsonObject
         assertEquals(0.5, out.getValue("parameters").jsonObject.getValue("futureKnob").jsonPrimitive.double)
     }
+
+    @Test
+    fun aMacTextLayerWithoutAGlowColourGetsTheDefaultsAndTheNewFieldsAreTyped() {
+        val mac = SettingsJson.decode("""{"textLayer":{"isEnabled":true,"text":"Dance","hue":0.61,"glow":0.4}}""")
+        assertEquals(TextLayerSettings().glowSameAsText, mac.textLayer.glowSameAsText)
+        assertEquals(1.0, mac.textLayer.glowBrightness)
+        val own = mac.copy(textLayer = mac.textLayer.copy(glowSameAsText = false, glowHue = 0.05, glowSaturation = 0.9))
+        val back = SettingsJson.decode(SettingsJson.encode(own))
+        assertEquals(own.textLayer, back.textLayer)
+        // Typed fields, not kept as unknown ones.
+        assertTrue(back.extras["textLayer"]?.jsonObject?.containsKey("glowHue") != true)
+    }
 }
