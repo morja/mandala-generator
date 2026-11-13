@@ -42,6 +42,7 @@ extension Texts {
     static let quoteFollows = shellText("save_quote_follows")
     static let save = shellText("save_save")
     static let saveCancel = shellText("save_cancel")
+    static let saveWallpaper = shellText("save_wallpaper")
     static let length = shellText("save_length")
     static let chooseSize = shellText("save_choose_size")
     static func saveSize(_ w: Int, _ h: Int) -> String { shellFormat("save_size", w, h) }
