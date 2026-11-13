@@ -1,0 +1,1 @@
+New: text and glow get their own colours, with colours from the picture and a button that makes the text stand out. The shadow can be turned. Widget quotes fit their size. Two new starter mandalas.

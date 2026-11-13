@@ -1,0 +1,1 @@
+Neu: Schrift und Leuchten bekommen eigene Farben, mit Farben aus dem Bild und einem Knopf, der den Text hervorhebt. Der Schatten lässt sich drehen. Zitate im Widget passen sich der Größe an. Zwei neue Start-Mandalas.
