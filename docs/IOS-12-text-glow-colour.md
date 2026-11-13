@@ -26,9 +26,22 @@ Bilder: `/Users/mathis/Work/Projects/apps/mandala-generator/docs/qa/shots/ios-te
 
 8. **QA-10 Punkt 7, Doppeltipp auf Reglern.** `SliderRow` nutzt jetzt den System-Regler (UISlider) mit eigenem Doppeltipp-Erkenner, der dem Regler alle Berührungen lässt. Im Simulator mit Fingergesten: Doppeltipp auf die Reglerlinie setzt zurück (Farbton 0,73 auf 0, `10-…before-double-tap.png`, `11-…after-double-tap.png`), Ziehen am Knopf geht weiter, ein senkrechter Wisch, der auf einem Regler beginnt, scrollt die Liste und lässt den Wert. Gilt für alle Regler der App. QA-10 ist nachgetragen.
 
-9. **Review durch einen Opus-Subagenten.** REVIEW
+9. **Review durch einen Opus-Subagenten.** Zehn Punkte, keiner blockierend; umgesetzt:
+   - Wurde der Text ausgeschaltet, während die Tastatur offen war, blieb das Bild klein; ebenso, wenn man beim Tippen das Farbblatt öffnete (die Tastatur blieb über dem Blatt). Beides behoben.
+   - Würfel, Zurück, Vor, ein Favorit oder eine Datei bei offenem Blatt: „Abbrechen“ hätte danach die alten Textfarben auf das neue Mandala gesetzt. Jetzt schließt jeder Wechsel des ganzen Mandalas das Blatt und behält die Farben. Android hat dieselbe Lücke (die obere Leiste bleibt dort ebenfalls bedienbar), siehe F2.
+   - Stufen-Regler (Symmetrie, ganze Zahlen) blieben nach dem Loslassen zwischen zwei Stufen stehen; jetzt rasten sie ein, die Stufen zählen ab dem unteren Ende und bleiben im Bereich (`14-se-dark-en-step-slider-snaps.png`). VoiceOver liest den Wert wie rechts in der Zeile und bietet das Zurücksetzen am Regler selbst an (mit VoiceOver nicht geprüft).
+   - Kein Live-Bild für einen Zustand, der gerade schon gezeigt wurde; ein verspätetes Bild ohne Text überschreibt nicht mehr die Bildfarben eines neueren Bildes.
+   - Änderungspunkt der Gruppe, Standardwerte und Helligkeitsbereich der Feinregler waren in Android und in der neuen Fassade je einmal geschrieben; sie sind jetzt geteilte Regeln in `TextColours` (mit Test), Android nutzt sie auch.
+   - Die Prozentwerte, die VoiceOver am Farbfeld liest, kommen aus dem Formatter der Sprache.
+   Nicht umgesetzt: Ein Doppeltipp auf den Regler kann das Zurücksetzen zweimal auslösen (Regler und Zeile); das ändert nichts, weil der zweite Aufruf denselben Wert setzt. Die beiden Deckkraft-Werte für Schleier (0,32) und Bildunterschrift (0,6) sind feste Konstanten wie auf Android, kein Token, siehe F1.
 
-10. **Prüfungen.** CHECKS
+10. **Prüfungen.** `ios/scripts/check` und `android/scripts/check` (Hook) grün bei jedem Commit. `android/scripts/check-full` grün (Parität gegen die macOS-Referenzen, Release-Build). `ios/scripts/check-full`: Parität unverändert (96 Fixtures, 74 identisch, schlechtester Wert 82,9 dB; Textfälle wie bisher), `DahliaTests` 28 von 28, unsignierter Release-Build gebaut. Die Kauf-Tests `DahliaStoreTests` schlugen in vier Läufen wechselnd fehl (je ein bis zwei von 27, mal Rückerstattung, mal Kauf von anderswo, mal das Rennen); das ist das bekannte Wackeln aus IOS-10 Befund 10, auch auf `main`, diese Arbeit berührt `ProStore` nicht. Debug-Build auf dem iPhone 15 installiert; gestartet hat er nicht, weil das Telefon gesperrt war.
+
+### Offene Fragen
+
+F1. Der Schleier über dem Tab-Bereich (32 % Schwarz) und das Feld hinter den Bildunterschriften (60 %) sind feste Werte im Code, wie auf Android, wo sie aus Material kommen. Sollen sie neue Design-Tokens werden (braucht deine Freigabe), oder bleiben sie so? Empfehlung: a) so lassen, weil es Androids Standardwerte sind; b) zwei Tokens `scrim` und `captionShade` für beide Apps.
+
+F2. Android hat dieselbe Lücke wie in Befund 9 (Würfel, Zurück oder ein Favorit bei offenem Farbblatt, danach „Abbrechen“) und die Knopfzeile unten, die bei 411 dp unter dem Rand liegt. Soll Android beides vom iPhone übernehmen (Blatt schließt bei neuem Mandala, „Abbrechen“ und „Fertig“ im Kopf)? Empfehlung: a) ja, als kleines Folgepaket; b) nein, Android bleibt wie es ist.
 
 ### Selbst entschieden
 
@@ -42,10 +55,18 @@ Bilder: `/Users/mathis/Work/Projects/apps/mandala-generator/docs/qa/shots/ios-te
 
 - Doppeltipp über einen UISlider mit eigenem Erkenner statt eines selbstgezeichneten Reglers: Bedienung, Scrollen und VoiceOver bleiben die des Systems.
 
-- Bildfarben-Symbol für „Hervorheben“: das SF-Symbol `circle.righthalf.filled`, das Androids halb gefülltem Kreis entspricht.
+- Symbol für „Hervorheben“: das SF-Symbol `circle.righthalf.filled`, das Androids halb gefülltem Kreis entspricht.
+
+- Änderungspunkt, Standardwerte und Helligkeitsbereich der Feinregler als geteilte Regeln in `TextColours`; Androids Farbgruppe nutzt sie jetzt auch (gleiches Verhalten, Android-Prüfungen grün).
 
 - Debug-Startargumente `-shotTextColour group|glow|fineTune|standOut|sheet|drag|cancel` und `-shotTyping words|author` für Bildschirmfotos ohne Tippen; eine Zeitmesszeile `live render=…ms` im Protokoll.
 
 ### Für Mathis auf dem iPhone 15
 
-IPHONE
+Die Debug-App (Symbol mit Marke) ist installiert.
+
+- Text-Tab, Gruppe „Farbe“ öffnen, „Hervorheben“ tippen, dann „Weitere Farben“: im Feld ziehen und darauf achten, ob das Bild beim Ziehen flüssig mitgeht; danach „Abbrechen“ und prüfen, dass die alten Farben zurück sind.
+
+- In ein Textfeld tippen: Das Bild wird klein, das Feld steht oben, „Fertig“ über der Tastatur schließt sie und das Bild wird wieder groß.
+
+- Doppeltipp direkt auf einen Regler (Linie oder Knopf) setzt ihn zurück; senkrecht über Regler wischen scrollt, ohne Werte zu ändern.
