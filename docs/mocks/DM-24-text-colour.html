@@ -82,7 +82,7 @@
   .ghead .sp { flex: 1; }
   .chev { width: 20px; height: 20px; color: var(--textMuted); flex: none; }
   .gbody { padding: 0 var(--sm) var(--sm); }
-  .dot { width: var(--swatch-s); height: var(--swatch-s); border-radius: 50%; border: none; padding: 0; cursor: pointer; box-shadow: inset 0 0 0 1px rgba(255,255,255,.12); }
+  .dot { width: var(--swatch-s); height: var(--swatch-s); border-radius: 50%; border: none; padding: 0; cursor: pointer; box-shadow: inset 0 0 0 1px var(--outline); }
 
   .srow { display: flex; align-items: center; height: 40px; font-size: var(--body-m); }
   .srow .l { flex: 0 0 34%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -130,44 +130,66 @@
   .half .aa { font-family: var(--quote); font-size: 28px; line-height: 1; }
   .half .cap { position: absolute; left: 6px; bottom: 4px; font-size: 11px; color: #E6E1DB; background: rgba(0,0,0,.55); padding: 1px 6px; border-radius: 4px; }
 
-  .field { position: relative; height: 134px; border-radius: var(--r-sm); overflow: hidden; touch-action: none; cursor: crosshair; }
-  .field canvas, .wheel canvas { width: 100%; height: 100%; display: block; }
+  .field { position: relative; height: 120px; border-radius: var(--r-sm); overflow: hidden; touch-action: none; cursor: crosshair; }
+  .field canvas { width: 100%; height: 100%; display: block; }
   .huestrip { position: relative; height: 24px; border-radius: 12px; margin-top: var(--md); touch-action: none; cursor: pointer;
     background: linear-gradient(to right, #f00, #ff0 16.7%, #0f0 33.3%, #0ff 50%, #00f 66.7%, #f0f 83.3%, #f00); }
   .marker { position: absolute; width: 18px; height: 18px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 0 0 1px rgba(0,0,0,.6); transform: translate(-50%, -50%); pointer-events: none; }
   .huestrip .marker { top: 50%; width: 20px; height: 20px; }
-  .wheelrow { display: flex; gap: var(--md); align-items: center; }
-  .wheel { position: relative; width: 168px; height: 168px; flex: none; touch-action: none; cursor: crosshair; border-radius: 50%; }
-  .wheelrow .compare { flex: 1; }
+
+  /* Two colour dots in the group header: Text and Glow, each opens the sheet on its side. */
+  .hdots { display: flex; gap: var(--md); align-items: center; }
+  .hdot { display: inline-flex; align-items: center; gap: var(--xs); background: none; border: none; padding: 0; color: var(--textMuted); font: inherit; font-size: var(--body-s); cursor: pointer; }
+  .hdot .dot { cursor: inherit; }
+
+  /* Segmented switch Text | Glow, the same building block in the group and in the sheet. */
+  .seg { display: grid; grid-template-columns: 1fr 1fr; height: 40px; border: 1px solid var(--outline); border-radius: 20px; overflow: hidden; }
+  .seg button { font: inherit; font-size: var(--body-m); font-weight: 500; background: none; border: none; color: var(--text); display: inline-flex; align-items: center; justify-content: center; gap: var(--sm); cursor: pointer; white-space: nowrap; }
+  .seg button + button { border-left: 1px solid var(--outline); }
+  .seg button[aria-pressed="true"] { background: var(--accentSoft); }
+  .seg .mini { width: 16px; height: 16px; border-radius: 50%; box-shadow: inset 0 0 0 1px var(--outline); flex: none; }
+
+  /* Row below the switch in the sheet: fixed height on both sides, so the sheet does not jump. */
+  .siderow { display: flex; align-items: center; height: 44px; font-size: var(--body-m); }
+  .siderow .muted { color: var(--textMuted); font-size: var(--body-s); }
+  .siderow .sp { flex: 1; }
+  .switch { position: relative; width: 52px; height: 32px; border-radius: 16px; border: 2px solid var(--outline); background: var(--surface); cursor: pointer; padding: 0; flex: none; }
+  .switch::after { content: ""; position: absolute; top: 50%; left: 6px; width: 16px; height: 16px; border-radius: 50%; background: var(--textMuted); transform: translateY(-50%); }
+  .switch[aria-checked="true"] { background: var(--accent); border-color: var(--accent); }
+  .switch[aria-checked="true"]::after { left: auto; right: 4px; width: 24px; height: 24px; background: var(--onAccent); }
+
+  /* "Fine tune" row: folded by default, opens in place. */
+  .fold { display: flex; align-items: center; min-height: 48px; width: 100%; background: none; border: none; border-top: 1px solid var(--outline); margin-top: var(--sm); color: var(--text); font: inherit; font-size: var(--body-m); cursor: pointer; padding: 0; text-align: left; }
+  .fold .sp { flex: 1; }
+  .fold .muted { color: var(--textMuted); font-size: var(--body-s); margin-right: var(--xs); }
 </style>
 </head>
 <body>
 <main>
 <h1>Dahlia – Mandala Maker</h1>
-<p class="session">Session: DM-24 text colour · 13 November 2026</p>
-<h2>DM-24: Textfarbe sehen, bevor man sie wählt</h2>
-<p>Heute stellt man die Textfarbe mit drei Reglern (Farbton, Sättigung, Helligkeit) ein, sucht die richtige Stelle und sieht das Ergebnis erst nach dem Rendern. Der Mock zeigt drei Wege, die Farbe direkt zu sehen: Beim Ziehen im Farbfeld, im Farbrad oder beim Tippen auf ein Farbfeld ändert sich der Text auf dem Bild sofort. In der App wäre das eine schnelle, günstige Vorschau des Textes über dem fertigen Bild; das volle Rendern folgt erst nach „Done“ oder nach dem Loslassen.</p>
-<p>In jeder Kombination neu: der Regler <strong>White core</strong> (Leuchtkern) in der Gruppe „Light“. Bei 0 sieht alles aus wie heute, gespeicherte Favoriten bleiben unverändert. Höher zieht den Kern der Buchstaben zu Weiß, das Leuchten drumherum behält die Farbe.</p>
-<p>Ebenfalls in jeder Kombination: Farben <strong>aus dem Bild</strong> (sieben aus den Linien des Bildes gezogene Farbtöne plus Weiß) und der Knopf <strong>Stand out</strong> (Hebt sich ab). Die Achse 1 oder 2 entscheidet, wo beides sitzt.</p>
+<p class="session">Session: DM-24 text colour, revised · 13 November 2026</p>
+<h2>DM-24: Textfarbe und Leuchtfarbe</h2>
+<p>Überarbeitet nach der Wahl A2 vom 13. November 2026. Die Gruppe „Colour“ im Text-Tab zeigt jetzt die Bildfarben und den Knopf „Stand out“ direkt; das Blatt mit Farbfeld, Farbton-Streifen und Vorher-Nachher öffnet sich über einen der beiden Farbpunkte oder über „More colours“. Ziehen im Feld oder an den Reglern färbt den Text auf dem Bild sofort.</p>
+<p><strong>Neu: zwei Farben statt einer.</strong> „Text“ ist die Farbe der Buchstaben, „Glow“ die Farbe des Leuchtens drumherum. Der Schalter „Text | Glow“ (in der Gruppe und oben im Blatt) bestimmt, welche der beiden Farben die Bildfarben, das Feld und die Feinregler gerade ändern. Der Leuchtton der Neon-Optik entsteht aus einem fast weißen Text mit farbigem Glow. Der Regler „White core“ aus der ersten Fassung entfällt.</p>
+<p><strong>Gespeicherte Favoriten bleiben, wie sie sind.</strong> Die Glow-Farbe steht anfangs auf „Same as text“ (wie der Text); so sieht jeder bisherige Favorit genauso aus wie heute. Erst wer die Glow-Farbe selbst wählt oder „Stand out“ tippt, schaltet das ab.</p>
+<p><strong>Mac-App:</strong> Solange sie nicht nachgezogen ist, kennt sie keine eigene Glow-Farbe und zeigt solche Mandalas mit einem Leuchten in der Textfarbe, also ohne den farbigen Schein.</p>
+<p>Die drei Regler Farbton, Sättigung und Helligkeit bleiben in der Gruppe „Colour“, zusammengeklappt unter der Zeile „Fine tune“ (öffnet sich an Ort und Stelle). Sie stellen immer die Farbe ein, die der Schalter gerade zeigt.</p>
 <h3>Regel hinter „Stand out“</h3>
 <ul>
   <li>Das Bild wird hinter dem Textblock abgetastet (der Bereich, den der Text samt Leuchten bedeckt).</li>
   <li>Daraus der vorherrschende Farbton der Linien: helle, satte Bildpunkte zählen stark, dunkle Lücken kaum.</li>
-  <li>Gesucht wird der Gegenton (gegenüber auf dem Farbkreis). Liegt eine der Bildfarben höchstens 0,15 Farbkreis davon entfernt, nimmt der Knopf diese Bildfarbe, damit der Text zum Bild passt. Sonst nimmt er den Gegenton selbst mit Sättigung 0,75.</li>
-  <li>Hat der Hintergrund keinen klaren Farbton (viele Farben durcheinander), nimmt er die Bildfarbe, die vom Hintergrund im Mittel am weitesten entfernt ist.</li>
-  <li>Kontrast: Erreicht der Kern der Buchstaben gegen die mittlere Helligkeit des Hintergrunds nicht 3 : 1, hebt der Knopf „White core“ in Schritten von 0,1 an (höchstens bis 0,6). Den Regler kann man danach wieder zurückstellen; Farbe und Kern bleiben frei verstellbar.</li>
+  <li><strong>Glow:</strong> der Gegenton dazu (gegenüber auf dem Farbkreis). Liegt eine der Bildfarben höchstens 0,15 Farbkreis davon entfernt, nimmt der Knopf diese Bildfarbe, damit das Leuchten zum Bild passt; sonst den Gegenton selbst mit Sättigung 0,75. Hat der Hintergrund keinen klaren Farbton (viele Farben durcheinander), nimmt er die Bildfarbe, die vom Hintergrund am weitesten entfernt ist. Ist die gewählte Farbe blasser als Sättigung 0,6, hebt er sie bei gleichem Farbton auf 0,6 an, sonst verschwindet das Leuchten neben den fast weißen Buchstaben. „Same as text“ geht dabei aus.</li>
+  <li><strong>Text:</strong> fast Weiß, leicht zum Glow hin getönt (Farbton des Glow, Sättigung 0,12, volle Helligkeit).</li>
+  <li><strong>Kontrast:</strong> Erreichen die Buchstaben gegen die mittlere Helligkeit des Hintergrunds nicht 4,5 : 1, nimmt der Knopf die Tönung zurück (0,06, dann reines Weiß).</li>
+  <li>Glow-Stärke, Wolke und Schatten bleiben unverändert. Beide Farben lassen sich danach frei verstellen; die gewählten Werte stehen nach jedem Tipp in der Notiz neben dem Telefon.</li>
 </ul>
 
 <div class="controls" role="group" aria-label="Variante">
-  <div class="axis" data-axis="pick"><span class="label">Farbwahl</span>
-    <button data-v="A">A Farbfeld</button><button data-v="B">B Farbrad</button><button data-v="C">C Farbfelder</button></div>
-  <div class="axis" data-axis="place"><span class="label">Bildfarben und Stand out</span>
-    <button data-v="1">1 im Blatt</button><button data-v="2">2 in der Gruppe</button></div>
   <div class="axis" data-axis="bg"><span class="label">Bild</span>
     <button data-v="a">a Kabir</button><button data-v="b">b Whitman</button></div>
   <div class="axis" data-axis="theme"><span class="label">Ansicht</span>
     <button data-v="dark">Dunkel</button><button data-v="light">Hell</button></div>
-  <div class="code" id="code">A1a</div>
+  <div class="code" id="code">a</div>
 </div>
 
 <div class="stage">
@@ -202,19 +224,18 @@ const SCENES = {
        colour: { h: 0.727, s: 1, v: 1 } },
 };
 
-// Curated swatches for C: eight hues in three strengths.
-const CURATED = [];
-for (const s of [0.95, 0.55, 0.22]) for (const h of [0, 0.06, 0.13, 0.3, 0.48, 0.6, 0.75, 0.87]) CURATED.push({ h, s, v: 1 });
-
 const ICON_STANDOUT = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5v17" /><path d="M12 3.5a8.5 8.5 0 0 1 0 17z" fill="currentColor"/></svg>';
-const ICON_CHEV = '<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>';
 const ICON_UP = '<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M6 15l6-6 6 6"/></svg>';
+const ICON_DOWN = '<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>';
 
 // ---------- State ----------
-const view = { pick: "A", place: "1", bg: "a", theme: "dark" };
-const looks = {};   // per picture: colour, core, glow
-for (const k in SCENES) looks[k] = { ...SCENES[k].colour, core: 0, glow: SCENES[k].light.glow };
-let sheet = null;   // { before: {h,s,v} } while the colour sheet is open
+// Per picture: text colour, glow colour, "same as text", glow strength. A saved favourite starts with the glow the same as the text.
+const view = { bg: "a", theme: "dark" };
+const looks = {};
+for (const k in SCENES) looks[k] = { text: { ...SCENES[k].colour }, glowColour: { ...SCENES[k].colour }, sameAsText: true, glow: SCENES[k].light.glow };
+let target = "text";      // which colour the switch edits: "text" or "glow"
+let fineOpen = false;     // "Fine tune" folded by default
+let sheet = null;         // { before } while the colour sheet is open
 let lastStandOut = null;
 
 // ---------- Colour helpers ----------
@@ -232,7 +253,6 @@ function rgb2hsv(r, g, b) {
   return [((h / 6) + 1) % 1, max ? d / max : 0, max];
 }
 const css = (rgb, a = 1) => `rgba(${rgb.map(Math.round).join(",")},${a})`;
-const mixWhite = (rgb, k) => rgb.map(c => c + (255 - c) * k);
 function lum(rgb) {
   const l = rgb.map(c => { c /= 255; return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); });
   return 0.2126 * l[0] + 0.7152 * l[1] + 0.0722 * l[2];
@@ -242,16 +262,27 @@ const same = (a, b) => Math.abs(a.s - b.s) < 0.01 && Math.abs(a.v - b.v) < 0.01 
 const swatchColour = c => css(hsv2rgb(c.h, c.s, c.v));
 const fmt = x => x.toFixed(2);
 const de = (x, n = 2) => x.toFixed(n).replace(".", ",");
+const copy = c => ({ h: c.h, s: c.s, v: c.v });
 
-// Text look: core colour pulled to white by "White core", glow in the chosen colour; px scale for the glow radius.
-function textStyle(c, core, glow, scale) {
-  const rgb = hsv2rgb(c.h, c.s, c.v);
-  const g = glow / 3;
+// The glow colour in effect: the text colour while "Same as text" is on.
+const glowOf = look => look.sameAsText ? look.text : look.glowColour;
+// The colour the switch currently edits.
+const edited = look => target === "text" ? look.text : glowOf(look);
+
+// Text look: letters in the text colour, glow (text-shadow) in the glow colour; px scale for the glow radius.
+function textStyle(text, glowC, glow, scale) {
+  const g = glow / 3, rgb = hsv2rgb(glowC.h, glowC.s, glowC.v);
   const r1 = (1.5 + 3 * g) * scale, r2 = (5 + 10 * g) * scale, r3 = (12 + 22 * g) * scale;
   return {
-    color: css(mixWhite(rgb, core)),
+    color: swatchColour(text),
     textShadow: `0 0 ${r1}px ${css(rgb, 0.95)}, 0 0 ${r2}px ${css(rgb, 0.75)}, 0 0 ${r3}px ${css(rgb, 0.45)}, 0 ${2 * scale}px ${5 * scale}px rgba(0,0,0,.35)`,
   };
+}
+
+// Sets the edited colour; editing the glow switches "Same as text" off.
+function setEdited(look, c) {
+  if (target === "text") Object.assign(look.text, c);
+  else { if (look.sameAsText) { look.glowColour = copy(look.text); look.sameAsText = false; } Object.assign(look.glowColour, c); }
 }
 
 // ---------- Picture analysis for "Stand out" ----------
@@ -286,57 +317,57 @@ async function standOut() {
   const mean = [mr / n, mg / n, mb / n];
   const domHue = ((Math.atan2(sy, sx) / (2 * Math.PI)) + 1) % 1;
   const clarity = sw ? Math.hypot(sx, sy) / sw : 0;   // 1 = one hue, 0 = all hues
-  const target = (domHue + 0.5) % 1;
+  const opposite = (domHue + 0.5) % 1;
   const swatches = pictureList().filter(c => c.s > 0);
 
-  let pick, how;
+  // Glow: complement of the dominant hue, preferring a picture colour within 0.15 of it.
+  let glowC, how;
   if (clarity < 0.2) {
-    pick = swatches.reduce((a, b) => hueDist(b.h, domHue) > hueDist(a.h, domHue) ? b : a);
+    glowC = swatches.reduce((a, b) => hueDist(b.h, domHue) > hueDist(a.h, domHue) ? b : a);
     how = "kein klarer Farbton dahinter, darum die Bildfarbe mit dem größten Abstand";
   } else {
-    const near = swatches.reduce((a, b) => hueDist(b.h, target) < hueDist(a.h, target) ? b : a);
-    if (hueDist(near.h, target) <= 0.15) { pick = near; how = "nächste Bildfarbe zum Gegenton"; }
-    else { pick = { h: target, s: 0.75, v: 1 }; how = "keine Bildfarbe nah genug, darum der Gegenton selbst"; }
+    const near = swatches.reduce((a, b) => hueDist(b.h, opposite) < hueDist(a.h, opposite) ? b : a);
+    if (hueDist(near.h, opposite) <= 0.15) { glowC = near; how = "nächste Bildfarbe zum Gegenton"; }
+    else { glowC = { h: opposite, s: 0.75, v: 1 }; how = "keine Bildfarbe nah genug, darum der Gegenton selbst"; }
   }
+  // A pale glow disappears behind near-white letters: at least saturation 0.6, hue unchanged.
+  if (glowC.s < 0.6) { glowC = { h: glowC.h, s: 0.6, v: 1 }; how += ", Sättigung auf 0,60 angehoben"; }
 
-  // Contrast of the letter core against the mean of what is behind it; lift White core if needed.
-  let core = look.core;
-  const ratio = k => { const a = lum(mixWhite(hsv2rgb(pick.h, pick.s, pick.v), k)), b = lum(mean); return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05); };
-  while (ratio(core) < 3 && core < 0.6) core = Math.min(0.6, +(core + 0.1).toFixed(2));
-  Object.assign(look, { h: pick.h, s: pick.s, v: pick.v, core });
-  lastStandOut = { key, domHue, clarity, target, pick, how, ratio: ratio(core), core };
+  // Text: near white, tinted toward the glow; less tint while the letters miss 4.5 : 1 against the mean behind them.
+  const ratio = c => { const a = lum(hsv2rgb(c.h, c.s, c.v)), b = lum(mean); return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05); };
+  let text = { h: glowC.h, s: 0.12, v: 1 };
+  for (const s of [0.06, 0]) if (ratio(text) < 4.5) text = { h: glowC.h, s, v: 1 };
+
+  look.text = copy(text); look.glowColour = copy(glowC); look.sameAsText = false;
+  lastStandOut = { key, domHue, clarity, opposite, glowC, text, how, ratio: ratio(text) };
   render();
 }
 
 // ---------- Rendering ----------
 function sliderRow(label, value, min, max, opts = {}) {
   const p = ((value - min) / (max - min)) * 100;
-  return `<div class="srow"><span class="l">${label}${opts.isNew ? '<span class="new" aria-label="new"></span>' : ""}</span>
+  return `<div class="srow"><span class="l">${label}</span>
     <span class="k"><input type="range" min="${min}" max="${max}" step="0.01" value="${value}" style="--p:${p}%" ${opts.id ? `id="${opts.id}"` : "disabled"} aria-label="${label}"></span>
     <span class="v" ${opts.id ? `id="${opts.id}-v"` : ""}>${fmt(value)}</span></div>`;
 }
-function swatchButtons(list, cur, cls = "") {
-  return list.map((c, i) => `<button class="sw ${cls}" data-sw='${JSON.stringify(c)}' aria-pressed="${same(c, cur)}" aria-label="Colour ${i + 1}" style="background:${swatchColour(c)}"></button>`).join("");
+function swatchButtons(list, cur) {
+  return list.map((c, i) => `<button class="sw" data-sw='${JSON.stringify(c)}' aria-pressed="${same(c, cur)}" aria-label="Colour ${i + 1}" style="background:${swatchColour(c)}"></button>`).join("");
 }
+// Seven picture colours plus white.
 const pictureList = () => [...PICTURE_SWATCHES[view.bg].map(c => ({ ...c, v: 1 })), { h: 0, s: 0, v: 1 }];
 
-function pictureBlock(cur) {
-  return `<div class="sublabel"><span>From the picture</span><span class="sp"></span>
-      <button class="btn outlined small" data-act="standout">${ICON_STANDOUT}Stand out</button></div>
-    <div class="swatches">${swatchButtons(pictureList(), cur)}</div>`;
+function segHtml(look) {
+  return `<div class="seg" role="group" aria-label="Colour to edit">
+    <button data-target="text" aria-pressed="${target === "text"}"><span class="mini" data-mini="text" style="background:${swatchColour(look.text)}"></span>Text</button>
+    <button data-target="glow" aria-pressed="${target === "glow"}"><span class="mini" data-mini="glow" style="background:${swatchColour(glowOf(look))}"></span>Glow</button></div>`;
 }
 
 function renderTab() {
-  const sc = SCENES[view.bg], look = looks[view.bg];
-  const cur = { h: look.h, s: look.s, v: look.v };
-  let colourBody;
-  if (view.place === "2") {
-    colourBody = pictureBlock(cur) + `<div class="actions"><span style="flex:1"></span>
-      <button class="btn text" data-act="open">${view.pick === "C" ? "More swatches" : "More colours"}</button></div>`;
-  } else {
-    colourBody = `<button class="pickrow" data-act="open"><span class="sw" style="background:${swatchColour(cur)}"></span>
-      <span>${view.pick === "C" ? "Choose a swatch" : "Choose a colour"}</span><span class="sp"></span>${ICON_CHEV}</button>`;
-  }
+  const sc = SCENES[view.bg], look = looks[view.bg], cur = edited(look);
+  const fine = fineOpen ? `
+        ${sliderRow("Hue", cur.h, 0, 1, { id: "fh" })}
+        ${sliderRow("Saturation", cur.s, 0, 1, { id: "fs" })}
+        ${sliderRow("Brightness", cur.v, 0, 1, { id: "fv" })}` : "";
   document.getElementById("scroll").innerHTML = `
     <div class="group"><div class="ghead"><span class="t">Light</span><span class="sp"></span>${ICON_UP}</div>
       <div class="gbody">
@@ -344,13 +375,27 @@ function renderTab() {
         ${sliderRow("Cloud", sc.light.cloud, 0, 1)}
         ${sliderRow("Cloud size", sc.light.cloudSize, 0, 1)}
         ${sliderRow("Shadow", sc.light.shadow, 0, 1)}
-        ${sliderRow("White core", look.core, 0, 1, { id: "core", isNew: true })}
       </div></div>
     <div class="group"><div class="ghead"><span class="t">Colour</span><span class="sp"></span>
-        <button class="dot" data-act="open" aria-label="Open colour" style="background:${swatchColour(cur)}"></button>${ICON_UP}</div>
-      <div class="gbody">${colourBody}</div></div>`;
-  bindSlider("glow", v => { look.glow = v; renderPicture(); renderCompare(); });
-  bindSlider("core", v => { look.core = v; renderPicture(); renderCompare(); });
+        <span class="hdots">
+          <button class="hdot" data-act="open" data-target="text" aria-label="Open text colour">Text<span class="dot" data-dot="text" style="background:${swatchColour(look.text)}"></span></button>
+          <button class="hdot" data-act="open" data-target="glow" aria-label="Open glow colour">Glow<span class="dot" data-dot="glow" style="background:${swatchColour(glowOf(look))}"></span></button>
+        </span>${ICON_UP}</div>
+      <div class="gbody">
+        ${segHtml(look)}
+        <div class="sublabel"><span id="forlabel">From the picture, for ${target === "text" ? "Text" : "Glow"}</span><span class="sp"></span>
+          <button class="btn outlined small" data-act="standout">${ICON_STANDOUT}Stand out</button></div>
+        <div class="swatches">${swatchButtons(pictureList(), cur)}</div>
+        <div class="actions"><span style="flex:1"></span><button class="btn text" data-act="open">More colours</button></div>
+        <button class="fold" data-act="fine" aria-expanded="${fineOpen}"><span>Fine tune</span><span class="sp"></span>${fineOpen ? ICON_UP : ICON_DOWN}</button>
+        ${fine}
+      </div></div>`;
+  bindSlider("glow", v => { look.glow = v; liveUpdate(); });
+  if (fineOpen) {
+    bindSlider("fh", v => { setEdited(look, { h: v % 1 }); liveUpdate(); });
+    bindSlider("fs", v => { setEdited(look, { s: v }); liveUpdate(); });
+    bindSlider("fv", v => { setEdited(look, { v }); liveUpdate(); });
+  }
 }
 function bindSlider(id, fn) {
   const el = document.getElementById(id);
@@ -358,6 +403,10 @@ function bindSlider(id, fn) {
     const v = +el.value; el.style.setProperty("--p", ((v - el.min) / (el.max - el.min)) * 100 + "%");
     document.getElementById(id + "-v").textContent = fmt(v); fn(v);
   });
+}
+function setSlider(id, v) {
+  const el = document.getElementById(id); if (!el || document.activeElement === el) return;
+  el.value = v; el.style.setProperty("--p", v * 100 + "%"); document.getElementById(id + "-v").textContent = fmt(v);
 }
 
 function renderPicture() {
@@ -372,24 +421,19 @@ function renderPicture() {
   document.getElementById("lines").textContent = sc.text;
   document.getElementById("author").textContent = sc.author;
   const scale = pic.clientWidth / 390;
-  Object.assign(q.style, textStyle(look, look.core, look.glow, scale));
+  Object.assign(q.style, textStyle(look.text, glowOf(look), look.glow, scale));
 }
 
-// Before and after: the same crop of the picture behind the text, with "Aa" in the old and the new colour.
-function compareHtml(stack) {
-  return `<div class="compare ${stack ? "stack" : ""}">
-    <div class="half" id="before"><span class="aa">Aa</span><span class="cap">Before</span></div>
-    <div class="half" id="after"><span class="aa">Aa</span><span class="cap">After</span></div></div>`;
-}
+// Before and after: the same crop of the picture behind the text, with "Aa" in the old and the new look.
 function renderCompare() {
   if (!sheet) return;
   const sc = SCENES[view.bg], look = looks[view.bg];
-  for (const [id, c] of [["before", sheet.before], ["after", look]]) {
+  for (const [id, l] of [["before", sheet.before], ["after", look]]) {
     const el = document.getElementById(id); if (!el) continue;
     el.style.backgroundImage = `url(${IMG[view.bg]})`;
     el.style.backgroundSize = "260%";
     el.style.backgroundPosition = `50% ${sc.centre * 100}%`;
-    Object.assign(el.querySelector(".aa").style, textStyle(c, look.core, look.glow, 0.8));
+    Object.assign(el.querySelector(".aa").style, textStyle(l.text, glowOf(l), look.glow, 0.8));
   }
 }
 
@@ -397,28 +441,23 @@ function renderSheet() {
   const wrap = document.getElementById("sheetwrap");
   wrap.hidden = !sheet;
   if (!sheet) return;
-  const look = looks[view.bg], cur = { h: look.h, s: look.s, v: look.v };
-  const top = view.place === "1" ? `<div class="sec">${pictureBlock(cur)}</div>` : "";
-  let body;
-  if (view.pick === "A") {
-    body = `<div class="sec">${compareHtml(false)}</div>
-      <div class="sec"><div class="field" id="field"><canvas id="fieldc"></canvas><div class="marker" id="fieldm"></div></div>
-      <div class="huestrip" id="hue"><div class="marker" id="huem"></div></div></div>`;
-  } else if (view.pick === "B") {
-    body = `<div class="sec wheelrow"><div class="wheel" id="wheel"><canvas id="wheelc"></canvas><div class="marker" id="wheelm"></div></div>${compareHtml(true)}</div>
-      <div class="sec">${sliderRow("Brightness", look.v, 0, 1, { id: "bri" })}</div>`;
-  } else {
-    body = `<div class="sec">${compareHtml(false)}</div>
-      <div class="sec"><div class="sublabel"><span>Swatches</span></div><div class="grid">${swatchButtons(CURATED, cur)}</div></div>`;
-  }
-  document.getElementById("sheet").innerHTML = `<div class="handle"></div><h4>Text colour</h4>${top}${body}
+  const look = looks[view.bg];
+  const side = target === "glow"
+    ? `<span>Same as text</span><span class="sp"></span><button class="switch" role="switch" data-act="same" aria-checked="${look.sameAsText}" aria-label="Same as text"></button>`
+    : `<span class="muted">The letters of the quote</span>`;
+  document.getElementById("sheet").innerHTML = `<div class="handle"></div><h4>Text colour</h4>
+    ${segHtml(look)}
+    <div class="siderow" id="siderow">${side}</div>
+    <div class="compare"><div class="half" id="before"><span class="aa">Aa</span><span class="cap">Before</span></div>
+      <div class="half" id="after"><span class="aa">Aa</span><span class="cap">After</span></div></div>
+    <div class="sec"><div class="field" id="field"><canvas id="fieldc"></canvas><div class="marker" id="fieldm"></div></div>
+      <div class="huestrip" id="hue"><div class="marker" id="huem"></div></div></div>
     <div class="actions"><span style="flex:1"></span><button class="btn text" data-act="cancel">Cancel</button><button class="btn filled" data-act="done">Done</button></div>`;
-  if (view.pick === "A") { drawField(); placeFieldMarkers(); bindField(); }
-  if (view.pick === "B") { drawWheel(); placeWheelMarker(); bindWheel(); bindSlider("bri", v => { look.v = v; drawWheel(); afterColourChange(false); }); }
+  drawField(); placeFieldMarkers(); bindField();
   renderCompare();
 }
 
-// ---------- A: saturation-brightness field plus hue strip ----------
+// ---------- Saturation-brightness field plus hue strip ----------
 function sizeCanvas(c) {
   const r = c.getBoundingClientRect(), d = window.devicePixelRatio || 1;
   c.width = Math.max(1, Math.round(r.width * d)); c.height = Math.max(1, Math.round(r.height * d));
@@ -426,18 +465,18 @@ function sizeCanvas(c) {
 }
 function drawField() {
   const c = document.getElementById("fieldc"); if (!c) return;
-  const x = sizeCanvas(c), look = looks[view.bg];
-  x.fillStyle = css(hsv2rgb(look.h, 1, 1)); x.fillRect(0, 0, c.width, c.height);
+  const x = sizeCanvas(c), cur = edited(looks[view.bg]);
+  x.fillStyle = css(hsv2rgb(cur.h, 1, 1)); x.fillRect(0, 0, c.width, c.height);
   let g = x.createLinearGradient(0, 0, c.width, 0); g.addColorStop(0, "#fff"); g.addColorStop(1, "rgba(255,255,255,0)");
   x.fillStyle = g; x.fillRect(0, 0, c.width, c.height);
   g = x.createLinearGradient(0, 0, 0, c.height); g.addColorStop(0, "rgba(0,0,0,0)"); g.addColorStop(1, "#000");
   x.fillStyle = g; x.fillRect(0, 0, c.width, c.height);
 }
 function placeFieldMarkers() {
-  const look = looks[view.bg];
+  const cur = edited(looks[view.bg]);
   const fm = document.getElementById("fieldm"), hm = document.getElementById("huem");
-  if (fm) { fm.style.left = look.s * 100 + "%"; fm.style.top = (1 - look.v) * 100 + "%"; fm.style.background = swatchColour(look); }
-  if (hm) { hm.style.left = `calc(10px + ${look.h} * (100% - 20px))`; hm.style.background = css(hsv2rgb(look.h, 1, 1)); }
+  if (fm) { fm.style.left = cur.s * 100 + "%"; fm.style.top = (1 - cur.v) * 100 + "%"; fm.style.background = swatchColour(cur); }
+  if (hm) { hm.style.left = `calc(10px + ${cur.h} * (100% - 20px))`; hm.style.background = css(hsv2rgb(cur.h, 1, 1)); }
 }
 function drag(el, fn) {
   const at = e => { const r = el.getBoundingClientRect(); fn((e.clientX - r.left) / r.width, (e.clientY - r.top) / r.height); };
@@ -447,73 +486,44 @@ function drag(el, fn) {
 const clamp = v => Math.max(0, Math.min(1, v));
 function bindField() {
   const look = looks[view.bg];
-  drag(document.getElementById("field"), (fx, fy) => { look.s = clamp(fx); look.v = clamp(1 - fy); afterColourChange(false); });
-  drag(document.getElementById("hue"), fx => { look.h = clamp(fx) % 1; if (look.s < 0.05) look.s = 0.8; drawField(); afterColourChange(false); });
-}
-
-// ---------- B: colour wheel plus brightness ----------
-function drawWheel() {
-  const c = document.getElementById("wheelc"); if (!c) return;
-  const x = sizeCanvas(c), w = c.width, R = w / 2, look = looks[view.bg];
-  const img = x.createImageData(w, w);
-  for (let y = 0; y < w; y++) for (let i = 0; i < w; i++) {
-    const dx = i - R + 0.5, dy = y - R + 0.5, r = Math.hypot(dx, dy) / R;
-    if (r > 1) continue;
-    const h = ((Math.atan2(dy, dx) / (2 * Math.PI)) + 1) % 1;
-    const [cr, cg, cb] = hsv2rgb(h, r, look.v), o = (y * w + i) * 4;
-    img.data[o] = cr; img.data[o + 1] = cg; img.data[o + 2] = cb; img.data[o + 3] = r > 0.985 ? 255 * (1 - r) / 0.015 : 255;
-  }
-  x.putImageData(img, 0, 0);
-}
-function placeWheelMarker() {
-  const m = document.getElementById("wheelm"); if (!m) return;
-  const look = looks[view.bg], a = look.h * 2 * Math.PI;
-  m.style.left = 50 + Math.cos(a) * look.s * 50 + "%"; m.style.top = 50 + Math.sin(a) * look.s * 50 + "%";
-  m.style.background = swatchColour(look);
-}
-function bindWheel() {
-  const look = looks[view.bg];
-  drag(document.getElementById("wheel"), (fx, fy) => {
-    const dx = fx - 0.5, dy = fy - 0.5;
-    look.h = ((Math.atan2(dy, dx) / (2 * Math.PI)) + 1) % 1; look.s = clamp(Math.hypot(dx, dy) * 2);
-    afterColourChange(false);
+  drag(document.getElementById("field"), (fx, fy) => { setEdited(look, { s: clamp(fx), v: clamp(1 - fy) }); liveUpdate(); });
+  drag(document.getElementById("hue"), fx => {
+    const c = { h: clamp(fx) % 1 }; if (edited(look).s < 0.05) c.s = 0.8;
+    setEdited(look, c); drawField(); liveUpdate();
   });
 }
 
 // A colour change from dragging updates only what depends on it (no full re-render, so the drag keeps going).
-function afterColourChange(full) {
-  if (full) return render();
-  renderPicture(); renderCompare(); placeFieldMarkers(); placeWheelMarker();
-  const look = looks[view.bg];
-  document.querySelectorAll(".dot, .pickrow .sw").forEach(d => d.style.background = swatchColour(look));
-  document.querySelectorAll("[data-sw]").forEach(b => b.setAttribute("aria-pressed", same(JSON.parse(b.dataset.sw), look)));
+function liveUpdate() {
+  const look = looks[view.bg], cur = edited(look);
+  renderPicture(); renderCompare(); placeFieldMarkers();
+  document.querySelectorAll('[data-dot="text"], [data-mini="text"]').forEach(d => d.style.background = swatchColour(look.text));
+  document.querySelectorAll('[data-dot="glow"], [data-mini="glow"]').forEach(d => d.style.background = swatchColour(glowOf(look)));
+  document.querySelectorAll("[data-sw]").forEach(b => b.setAttribute("aria-pressed", same(JSON.parse(b.dataset.sw), cur)));
+  const sw = document.querySelector('[data-act="same"]'); if (sw) sw.setAttribute("aria-checked", look.sameAsText);
+  setSlider("fh", cur.h); setSlider("fs", cur.s); setSlider("fv", cur.v);
   renderNote();
 }
 
 // ---------- Note beside the phone ----------
-const TEXT_PICK = {
-  A: "A Farbfeld: Ein Blatt öffnet sich vom Farbpunkt der Gruppe „Colour“. Oben Vorher und Nachher auf einem Ausschnitt des Bildes hinter dem Text, darunter ein Feld für Sättigung (nach rechts) und Helligkeit (nach oben) und ein Farbton-Streifen. Ziehen färbt den Text auf dem Bild sofort; „Cancel“ stellt die alte Farbe wieder her.",
-  B: "B Farbrad: Farbton rundherum, Sättigung nach innen weniger, daneben Vorher und Nachher übereinander, darunter ein Helligkeitsregler. Ziehen färbt den Text sofort; „Cancel“ stellt die alte Farbe wieder her.",
-  C: "C Farbfelder: 24 ausgesuchte Farben (acht Farbtöne in drei Stärken) plus die Bildfarben, keine freie Wahl. Tippen färbt den Text sofort, „Done“ übernimmt.",
-};
-const TEXT_PLACE = {
-  "1": "1 im Blatt: Die Gruppe „Colour“ zeigt nur eine Zeile mit der aktuellen Farbe; Bildfarben und „Stand out“ stehen oben im Blatt. Ein Tipp mehr, dafür bleibt der Text-Tab ruhig.",
-  "2": "2 in der Gruppe: Bildfarben und „Stand out“ stehen direkt in der Gruppe „Colour“ und wirken ohne Blatt. Das Blatt öffnet sich nur für „More colours“ (bei C „More swatches“) oder über den Farbpunkt, zum Feinstellen.",
-};
 const TEXT_BG = {
-  a: "a Kabir auf Constellation Web: der schwierige Fall, blauer Text auf türkisen und blauen Ringen.",
-  b: "b Walt Whitman, Start-Favorit 2: violettes Netz mit heller Wolke hinter dem Text (die Wolke ist im Mock nachgebildet).",
+  a: "a Kabir auf Constellation Web: der schwierige Fall, blauer Text auf türkisen und blauen Ringen, schwaches Leuchten (Glow 0,41).",
+  b: "b Walt Whitman, Start-Favorit 2: violettes Netz mit heller Wolke hinter dem Text (die Wolke ist im Mock nachgebildet), starkes Leuchten (Glow 3,0).",
 };
+const hsvDe = c => `Farbton ${de(c.h)}, Sättigung ${de(c.s)}, Helligkeit ${de(c.v)}`;
 function renderNote() {
-  const code = view.pick + view.place + view.bg;
-  document.getElementById("code").textContent = code;
+  const look = looks[view.bg];
+  document.getElementById("code").textContent = view.bg;
   let so = "";
   if (lastStandOut && lastStandOut.key === view.bg) {
     const s = lastStandOut;
-    so = `<p class="standout">Letztes „Stand out“: Farbton hinter dem Text ${de(s.domHue)} (Klarheit ${de(s.clarity)}), Gegenton ${de(s.target)}, gewählt Farbton ${de(s.pick.h)} / Sättigung ${de(s.pick.s)} (${s.how}). Kontrast des Kerns ${de(s.ratio, 1)} : 1, White core ${de(s.core)}.</p>`;
+    so = `<p class="standout">Letztes „Stand out“: Farbton hinter dem Text ${de(s.domHue)} (Klarheit ${de(s.clarity)}), Gegenton ${de(s.opposite)}. Glow: ${hsvDe(s.glowC)} (${s.how}). Text: ${hsvDe(s.text)}, Kontrast der Buchstaben ${de(s.ratio, 1)} : 1.</p>`;
   }
-  document.getElementById("note").innerHTML = `<p class="combo">${code}</p><p>${TEXT_PICK[view.pick]}</p><p>${TEXT_PLACE[view.place]}</p><p>${TEXT_BG[view.bg]}</p>
-    <p>„White core“ steht in jeder Kombination in der Gruppe „Light“ (Punkt neben dem Namen markiert den neuen Regler nur im Mock). Glow und White core lassen sich im Mock ziehen, Cloud und Shadow sind nur zur Orientierung da.</p>${so}`;
+  const glowState = look.sameAsText ? "„Same as text“" : hsvDe(look.glowColour);
+  document.getElementById("note").innerHTML = `<p class="combo">${view.bg}</p><p>${TEXT_BG[view.bg]}</p>
+    <p>Variante A2: Der Schalter „Text | Glow“ steht gerade auf <strong>${target === "text" ? "Text" : "Glow"}</strong>; die Bildfarben (sieben aus dem Bild plus Weiß), das Feld im Blatt und „Fine tune“ ändern diese Farbe. Ändert man die Glow-Farbe, geht „Same as text“ aus.</p>
+    <p>Jetzt: Text ${hsvDe(look.text)}; Glow ${glowState}.</p>
+    <p>Das Blatt öffnet sich über die Punkte „Text“ oder „Glow“ im Kopf der Gruppe (dann gleich auf dieser Seite) oder über „More colours“. „Cancel“ stellt beide Farben wieder her. Glow und „Fine tune“ lassen sich im Mock ziehen, Cloud und Shadow sind nur zur Orientierung da.</p>${so}`;
 }
 
 function render() {
@@ -524,27 +534,36 @@ function render() {
 }
 
 // ---------- Events ----------
+const snapshot = look => ({ text: copy(look.text), glowColour: copy(look.glowColour), sameAsText: look.sameAsText });
 document.querySelectorAll(".axis").forEach(ax => ax.addEventListener("click", e => {
   const b = e.target.closest("button"); if (!b) return;
   const before = view[ax.dataset.axis];
   view[ax.dataset.axis] = b.dataset.v;
-  // A different picture or picker closes an open sheet and keeps its colour.
+  // A different picture closes an open sheet and keeps its colours.
   if (ax.dataset.axis === "bg" && before !== b.dataset.v) sheet = null;
   render();
 }));
 document.getElementById("phone").addEventListener("click", e => {
-  const sw = e.target.closest("[data-sw]");
   const look = looks[view.bg];
-  if (sw) { Object.assign(look, JSON.parse(sw.dataset.sw)); return afterColourChange(true); }
+  const sw = e.target.closest("[data-sw]");
+  if (sw) { setEdited(look, JSON.parse(sw.dataset.sw)); return render(); }
+  const seg = e.target.closest(".seg [data-target]");
+  if (seg) { target = seg.dataset.target; return render(); }
   const a = e.target.closest("[data-act]"); if (!a) return;
   const act = a.dataset.act;
-  if (act === "open") { sheet = { before: { h: look.h, s: look.s, v: look.v } }; render(); }
+  if (act === "open") { if (a.dataset.target) target = a.dataset.target; sheet = { before: snapshot(look) }; render(); }
   if (act === "cancel") { Object.assign(look, sheet.before); sheet = null; render(); }
   if (act === "done") { sheet = null; render(); }
+  if (act === "fine") { fineOpen = !fineOpen; render(); }
+  if (act === "same") {
+    // Turning it off starts the glow from the text colour; turning it on follows the text again.
+    if (look.sameAsText) { look.glowColour = copy(look.text); look.sameAsText = false; } else look.sameAsText = true;
+    render();
+  }
   if (act === "standout") standOut();
 });
 document.getElementById("scrim").addEventListener("click", () => { const look = looks[view.bg]; Object.assign(look, sheet.before); sheet = null; render(); });
-window.addEventListener("resize", () => { renderPicture(); if (sheet) { drawField(); drawWheel(); } });
+window.addEventListener("resize", () => { renderPicture(); if (sheet) { drawField(); placeFieldMarkers(); } });
 render();
 </script>
 </body>
