@@ -59,6 +59,17 @@ private struct Words: View {
         // Another tab, a sheet or the editor leaving: the keyboard goes with the field's focus.
         .onChange(of: model.textColours.typing) { _, field in if field == nil { focus = nil } }
         .onDisappear { focus = nil }
+        #if DEBUG
+        .task {
+            // Screenshots of typing (`-shotTyping words|author`): the keyboard on that field once the editor shows.
+            try? await Task.sleep(for: .seconds(2))
+            switch ShotSetup.typing {
+            case "words": focus = .words
+            case "author": focus = .author
+            default: break
+            }
+        }
+        #endif
         .toolbar {
             ToolbarItemGroup(placement: .keyboard) {
                 Spacer()

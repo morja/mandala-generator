@@ -49,6 +49,14 @@ struct ControlTabs: View {
         }
         // A new step cancels the one before, as Android's LaunchedEffect does.
         .task(id: tour.state?.step) { await showTourStep(tour.state?.step) }
+        #if DEBUG
+        .task {
+            // Colour screenshots (`-shotTextColour`): the Colour group under the tabs once the tab shows.
+            guard ShotSetup.textColour != nil else { return }
+            try? await Task.sleep(for: .seconds(1))
+            positions[.text, default: ScrollPosition()].scrollTo(id: TextColourGroup.scrollID, anchor: .top)
+        }
+        #endif
         // The field with the keyboard scrolls into view once the picture has folded (QA-10 item 4).
         .task(id: model.textColours.typing) {
             guard let field = model.textColours.typing else { return }

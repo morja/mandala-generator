@@ -32,6 +32,41 @@ enum ShotSetup {
         }
         // After the mandala is set up, so the sheet lists the Pro features it uses.
         if sheet == "pro" { openPro(model) }
+        if let mode = textColour { Task { await textColourSetup(mode, model) } }
+    }
+
+    /// The text colours (IOS-12): `-shotTextColour group|glow|fineTune|standOut|sheet|drag|cancel` opens the Text tab's
+    /// Colour group scrolled into view, then: the Glow side, "Fine tune" open, "Stand out" pressed, the sheet open, the
+    /// sheet with a slow drag across the field (the live picture), or a drag then Cancel. `-shotTyping words|author`
+    /// puts the keyboard on a field (read by `TextTab`).
+    static var textColour: String? { UserDefaults.standard.string(forKey: "shotTextColour") }
+    static var typing: String? { UserDefaults.standard.string(forKey: "shotTyping") }
+
+    private static func textColourSetup(_ mode: String, _ model: EditorModel) async {
+        // Once the picture is drawn (also after `-openFile`), so "Before" and the swatches have a picture.
+        try? await Task.sleep(for: .seconds(1.5))
+        while model.preview == nil || model.rendering { try? await Task.sleep(for: .milliseconds(100)) }
+        try? await Task.sleep(for: .seconds(1))
+        switch mode {
+        case "glow": model.textColours.target = .glow
+        case "standOut": model.standOut()
+        case "sheet": model.openTextColourSheet()
+        case "drag", "cancel":
+            model.openTextColourSheet()
+            try? await Task.sleep(for: .milliseconds(500))
+            // A slow finger across the field: from bright and saturated to a darker, paler colour.
+            let steps = mode == "drag" ? 400 : 40
+            for i in 0...steps {
+                let f = Double(i) / Double(steps)
+                model.setTextColourField(x: 0.9 - 0.6 * f, y: 0.05 + 0.5 * f)
+                try? await Task.sleep(for: .milliseconds(40))
+            }
+            if mode == "cancel" {
+                try? await Task.sleep(for: .seconds(2))
+                model.closeTextColourSheet(keep: false)
+            }
+        default: break
+        }
     }
 
     /// The save sheet's state for screenshots and the export probe.

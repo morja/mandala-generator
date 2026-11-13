@@ -56,6 +56,7 @@ extension EditorModel {
                 let ticket = RenderTicket()
                 textColours.liveTicket = ticket
                 guard let result = await engine.live(p, hot: hot, ticket: ticket), !ticket.isCancelled(), let image = result.cgImage else { continue }
+                Engine.trace("live render=\(result.millis)ms")
                 // Only while the full preview of the settings shown is not there yet.
                 if textColours.sheet != nil, recent[params] == nil { preview = image }
             }

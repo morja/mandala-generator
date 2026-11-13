@@ -23,11 +23,13 @@ struct TextColourGroup: View {
         let text = colours.text(params: p)
         let glow = colours.glow(params: p)
         let edited = colours.of(params: p, target: state.target)
-        ControlGroup(Texts.colour, changed: colours.changed(params: p), trailing: {
+        ControlGroup(Texts.colour, initiallyOpen: Self.shotOpen, changed: colours.changed(params: p), trailing: {
             HStack(spacing: Spacing.md) {
                 HeadDot(label: Texts.textColourText, description: Texts.textColourOpenText, colour: text.shown) { model.openTextColourSheet(.text) }
                 HeadDot(label: Texts.textColourGlow, description: Texts.textColourOpenGlow, colour: glow.shown) { model.openTextColourSheet(.glow) }
             }
+            // The two labels keep their words; the empty summary beside the title gives way.
+            .fixedSize()
         }) {
             TargetSwitch(target: state.target, text: text, glow: glow) { state.target = $0 }
                 // The picture's colours are looked at only while the group is open, once the picture rests.
@@ -61,6 +63,21 @@ struct TextColourGroup: View {
             }
             FineTune(target: state.target, edited: edited)
         }
+        .id(Self.scrollID)
+    }
+}
+
+extension TextColourGroup {
+    /// Where the Text tab scrolls for the colour screenshots.
+    static let scrollID = "textColourGroup"
+
+    /// Debug screenshots (`-shotTextColour`) open the group; the app opens it folded.
+    static var shotOpen: Bool {
+        #if DEBUG
+        ShotSetup.textColour != nil
+        #else
+        false
+        #endif
     }
 }
 
@@ -103,6 +120,8 @@ private struct TargetSwitch: View {
             side(.glow, Texts.textColourGlow, glow)
         }
         .frame(minHeight: Sizes.icon * 2)
+        // Its own height only: in the sheet the room left over must not stretch it.
+        .fixedSize(horizontal: false, vertical: true)
         .clipShape(Capsule())
         .overlay(Capsule().strokeBorder(t.outline, lineWidth: Sizes.swatchRing / 2))
     }
@@ -167,7 +186,16 @@ private struct FineTune: View {
     let edited: Hsb
     @Environment(EditorModel.self) private var model
     @Environment(\.tokens) private var t
-    @State private var open = false
+    @State private var open = Self.shotOpen
+
+    /// Debug screenshots (`-shotTextColour fineTune`) open it; the app opens it folded.
+    private static var shotOpen: Bool {
+        #if DEBUG
+        ShotSetup.textColour == "fineTune"
+        #else
+        false
+        #endif
+    }
 
     var body: some View {
         let colours = IosTextColours.shared
@@ -265,20 +293,9 @@ struct TextColourSheetView: View {
                 .padding(.top, Spacing.md)
             HueStrip(hue: edited.hue) { model.setTextColourHue($0) }
                 .padding(.top, Spacing.md)
-            HStack(spacing: Spacing.sm) {
-                Spacer(minLength: 0)
-                Button { model.closeTextColourSheet(keep: false) } label: {
-                    Text(Texts.cancel).textRole(.heading).foregroundStyle(t.accent)
-                        .padding(.horizontal, Spacing.md).frame(minHeight: Sizes.icon * 2)
-                }
-                .buttonStyle(.plain)
-                ModeButton(label: Texts.done, active: false) { model.closeTextColourSheet(keep: true) }
-            }
-            .padding(.top, Spacing.md)
         }
         .padding(.horizontal, Spacing.lg)
         .padding(.bottom, Spacing.lg)
-
     }
 
     /// The handle and the title; a swipe down here cancels, like a sheet pulled away.
@@ -287,15 +304,26 @@ struct TextColourSheetView: View {
             Capsule().fill(t.outline).frame(width: Spacing.xl + Spacing.sm, height: Spacing.xs)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, Spacing.sm)
-            Text(Texts.textColourSheetTitle).textRole(.title).foregroundStyle(t.text)
-                .padding(.bottom, Spacing.sm)
+            // Cancel and Done in the head, so they stay in view when the rest of the sheet scrolls under a large picture.
+            HStack(spacing: Spacing.sm) {
+                Text(Texts.textColourSheetTitle).textRole(.title).foregroundStyle(t.text).lineLimit(1).minimumScaleFactor(0.8)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .accessibilityAddTraits(.isHeader)
+                Button { model.closeTextColourSheet(keep: false) } label: {
+                    Text(Texts.cancel).textRole(.heading).foregroundStyle(t.accent).lineLimit(1)
+                        .padding(.horizontal, Spacing.sm).frame(minHeight: Sizes.icon * 2)
+                }
+                .buttonStyle(.plain)
+                ModeButton(label: Texts.done, active: false) { model.closeTextColourSheet(keep: true) }
+                    .fixedSize()
+            }
+            .padding(.bottom, Spacing.sm)
         }
         .padding(.horizontal, Spacing.lg)
         .contentShape(Rectangle())
         .gesture(DragGesture().onEnded { value in
             if value.translation.height > Self.pullToCancel { model.closeTextColourSheet(keep: false) }
         })
-        .accessibilityAddTraits(.isHeader)
     }
 }
 
