@@ -176,6 +176,7 @@
     <string name="controls_cloud_colour">雲の色</string>
     <string name="controls_shadow">影</string>
     <string name="controls_shadow_colour">影の色</string>
+    <string name="controls_shadow_distance">距離</string>
     <string name="controls_hue">色相</string>
     <string name="controls_close">閉じる</string>
     <string name="controls_quotes">引用</string>

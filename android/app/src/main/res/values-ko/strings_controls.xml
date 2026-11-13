@@ -176,6 +176,7 @@
     <string name="controls_cloud_colour">구름 색상</string>
     <string name="controls_shadow">그림자</string>
     <string name="controls_shadow_colour">그림자 색상</string>
+    <string name="controls_shadow_distance">거리</string>
     <string name="controls_hue">색조</string>
     <string name="controls_close">닫기</string>
     <string name="controls_quotes">명언</string>

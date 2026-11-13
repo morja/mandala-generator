@@ -178,6 +178,7 @@
     <string name="controls_cloud_colour">Wolkenfarbe</string>
     <string name="controls_shadow">Schatten</string>
     <string name="controls_shadow_colour">Schattenfarbe</string>
+    <string name="controls_shadow_distance">Abstand</string>
     <string name="controls_hue">Farbton</string>
     <string name="controls_close">Schließen</string>
     <string name="controls_quotes">Zitate</string>

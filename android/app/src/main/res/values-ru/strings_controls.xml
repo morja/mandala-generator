@@ -182,6 +182,7 @@
     <string name="controls_cloud_colour">Цвет облака</string>
     <string name="controls_shadow">Тень</string>
     <string name="controls_shadow_colour">Цвет тени</string>
+    <string name="controls_shadow_distance">Отступ</string>
     <string name="controls_hue">Оттенок</string>
     <string name="controls_close">Закрыть</string>
     <string name="controls_quotes">Цитаты</string>

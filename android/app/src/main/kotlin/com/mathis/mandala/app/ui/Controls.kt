@@ -84,6 +84,7 @@ import androidx.compose.ui.semantics.selected
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mathis.mandala.editing.DrawTool
 import com.mathis.mandala.editing.MoveTarget
+import com.mathis.mandala.editing.TextShadow
 import com.mathis.mandala.editing.Editing
 import com.mathis.mandala.editing.Editing.strokeCount
 import com.mathis.mandala.editing.Editing.switched
@@ -859,7 +860,9 @@ private fun TextTab(text: TextLayerSettings, vm: EditorViewModel, position: Posi
         }
     }
     Group(stringResource(R.string.controls_light), changed = differs(text.glow to td.glow, text.cloudOpacity to td.cloudOpacity,
-        text.cloudScale to td.cloudScale, text.shadowOpacity to td.shadowOpacity)) {
+        text.cloudScale to td.cloudScale, text.shadowOpacity to td.shadowOpacity) ||
+        // The shadow's shape only counts while there is a shadow (the die changes its softness either way).
+        (text.shadowOpacity > 0 && differs(text.shadowOffsetX to td.shadowOffsetX, text.shadowOffsetY to td.shadowOffsetY, text.shadowBlur to td.shadowBlur))) {
         ValueSlider(stringResource(R.string.controls_glow), text.glow, Editing.Ranges.textGlow.floats(), default = TextLayerSettings().glow) { v -> update { it.copy(glow = v) } }
         ValueSlider(stringResource(R.string.controls_cloud), text.cloudOpacity, default = TextLayerSettings().cloudOpacity) { v -> update { it.copy(cloudOpacity = v) } }
         ValueSlider(stringResource(R.string.controls_cloud_size), text.cloudScale, Editing.Ranges.textCloudSize.floats(), default = TextLayerSettings().cloudScale) { v -> update { it.copy(cloudScale = v) } }
@@ -871,12 +874,35 @@ private fun TextTab(text: TextLayerSettings, vm: EditorViewModel, position: Posi
         }
         ValueSlider(stringResource(R.string.controls_shadow), text.shadowOpacity, default = TextLayerSettings().shadowOpacity) { v -> update { it.copy(shadowOpacity = v) } }
         if (text.shadowOpacity > 0) {
+            ShadowShape(text, update)
             ColourGroup(stringResource(R.string.controls_shadow_colour), text.shadowHue, text.shadowSaturation, text.shadowBrightness,
                 defaults = Triple(TextLayerSettings().shadowHue, TextLayerSettings().shadowSaturation, TextLayerSettings().shadowBrightness), inset = true,
             ) { h, sa, b -> update { it.copy(shadowHue = h, shadowSaturation = sa, shadowBrightness = b) } }
         }
     }
     TextColourGroup(text, vm)
+}
+
+/**
+ * The shadow's angle, distance and softness, on the Mac's offset and blur fields (QA-13, rules in
+ * [TextShadow]). A file keeps its exact offsets until one of these sliders moves.
+ */
+@Composable
+private fun ShadowShape(text: TextLayerSettings, update: ((TextLayerSettings) -> TextLayerSettings) -> Unit) {
+    val td = TextLayerSettings()
+    // While the shadow sits under the letters it has no direction of its own: the slider keeps the last one.
+    var lastDirection by rememberSaveable { mutableStateOf(TextShadow.DEFAULT_DIRECTION) }
+    val direction = TextShadow.direction(text) ?: lastDirection
+    ValueSlider(stringResource(R.string.controls_angle), direction, TextShadow.directionRange.floats(), default = TextShadow.direction(td) ?: TextShadow.DEFAULT_DIRECTION) { v ->
+        lastDirection = v
+        update { TextShadow.withDirection(it, v) }
+    }
+    ValueSlider(stringResource(R.string.controls_shadow_distance), TextShadow.distance(text), TextShadow.distanceRange.floats(), default = TextShadow.distance(td)) { v ->
+        update { TextShadow.withDistance(it, v, direction) }
+    }
+    ValueSlider(stringResource(R.string.controls_softness), text.shadowBlur, TextShadow.softnessRange.floats(), default = td.shadowBlur) { v ->
+        update { TextShadow.withSoftness(it, v) }
+    }
 }
 
 /**

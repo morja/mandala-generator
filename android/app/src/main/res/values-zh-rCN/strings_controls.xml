@@ -176,6 +176,7 @@
     <string name="controls_cloud_colour">云雾颜色</string>
     <string name="controls_shadow">阴影</string>
     <string name="controls_shadow_colour">阴影颜色</string>
+    <string name="controls_shadow_distance">距离</string>
     <string name="controls_hue">色相</string>
     <string name="controls_close">关闭</string>
     <string name="controls_quotes">名言</string>

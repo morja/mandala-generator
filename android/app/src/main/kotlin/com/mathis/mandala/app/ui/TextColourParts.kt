@@ -59,6 +59,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.style.TextOverflow
@@ -289,38 +290,51 @@ internal fun TextColourSheetOverlay(text: TextLayerSettings, vm: EditorViewModel
                 .clip(RoundedCornerShape(topStart = Radius.md, topEnd = Radius.md))
                 .background(t.surfaceRaised)
                 // Taps on the sheet itself do not reach the scrim (and TalkBack does not offer the sheet as a button).
-                .pointerInput(Unit) { detectTapGestures { } }
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = Spacing.lg)
-                .padding(bottom = Spacing.lg),
+                .pointerInput(Unit) { detectTapGestures { } },
         ) {
-            Box(
-                Modifier.align(Alignment.CenterHorizontally).padding(vertical = Spacing.sm)
-                    .size(width = Spacing.xl + Spacing.sm, height = Spacing.xs).clip(CircleShape).background(t.outline),
-            )
-            Text(stringResource(R.string.controls_text_colour_sheet_title), style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(bottom = Spacing.sm))
-            TargetSwitch(target, TextColours.text(text), TextColours.glow(text), vm::setTextColourTarget)
-            // One height on both sides, so the sheet does not jump when the switch changes.
-            Row(Modifier.fillMaxWidth().heightIn(min = Sizes.icon * 2), verticalAlignment = Alignment.CenterVertically) {
-                if (target == TextColourTarget.GLOW) {
-                    SwitchRow(stringResource(R.string.controls_text_colour_same_as_text), text.glowSameAsText, vm::setGlowSameAsText)
-                } else {
-                    Text(stringResource(R.string.controls_text_colour_letters), style = MaterialTheme.typography.bodySmall, color = t.textMuted)
+            // The head with Cancel and Done stays in view while the rest scrolls under a large picture (IOS-12 5).
+            Column(Modifier.fillMaxWidth().padding(horizontal = Spacing.lg)) {
+                Box(
+                    Modifier.align(Alignment.CenterHorizontally).padding(vertical = Spacing.sm)
+                        .size(width = Spacing.xl + Spacing.sm, height = Spacing.xs).clip(CircleShape).background(t.outline),
+                )
+                Row(Modifier.fillMaxWidth().padding(bottom = Spacing.sm), verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        stringResource(R.string.controls_text_colour_sheet_title),
+                        style = MaterialTheme.typography.titleMedium,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f).semantics { heading() },
+                    )
+                    TextButton(onClick = cancel) { Text(stringResource(R.string.controls_cancel), maxLines = 1) }
+                    Button(onClick = { vm.closeTextColourSheet(keep = true) }, modifier = Modifier.padding(start = Spacing.xs)) {
+                        Text(stringResource(R.string.controls_done), maxLines = 1)
+                    }
                 }
             }
-            val area = TextColours.textArea(text)
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.xs)) {
-                CompareHalf(before, area, stringResource(R.string.controls_text_colour_before), Modifier.weight(1f))
-                CompareHalf(preview.image, area, stringResource(R.string.controls_text_colour_after), Modifier.weight(1f))
-            }
-            val edited = TextColours.of(text, target)
-            ColourField(edited, Modifier.padding(top = Spacing.md)) { x, y -> vm.setTextColour { TextColours.withFieldPoint(it, x, y) } }
-            HueStrip(edited.hue, Modifier.padding(top = Spacing.md)) { h -> vm.setTextColour { TextColours.withHueFromStrip(it, h) } }
-            Row(Modifier.fillMaxWidth().padding(top = Spacing.md), horizontalArrangement = Arrangement.End, verticalAlignment = Alignment.CenterVertically) {
-                TextButton(onClick = cancel) { Text(stringResource(R.string.controls_cancel)) }
-                Button(onClick = { vm.closeTextColourSheet(keep = true) }, modifier = Modifier.padding(start = Spacing.sm)) {
-                    Text(stringResource(R.string.controls_done))
+            Column(
+                Modifier.weight(1f, fill = false).fillMaxWidth()
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = Spacing.lg)
+                    .padding(bottom = Spacing.lg),
+            ) {
+                TargetSwitch(target, TextColours.text(text), TextColours.glow(text), vm::setTextColourTarget)
+                // One height on both sides, so the sheet does not jump when the switch changes.
+                Row(Modifier.fillMaxWidth().heightIn(min = Sizes.icon * 2), verticalAlignment = Alignment.CenterVertically) {
+                    if (target == TextColourTarget.GLOW) {
+                        SwitchRow(stringResource(R.string.controls_text_colour_same_as_text), text.glowSameAsText, vm::setGlowSameAsText)
+                    } else {
+                        Text(stringResource(R.string.controls_text_colour_letters), style = MaterialTheme.typography.bodySmall, color = t.textMuted)
+                    }
                 }
+                val area = TextColours.textArea(text)
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.xs)) {
+                    CompareHalf(before, area, stringResource(R.string.controls_text_colour_before), Modifier.weight(1f))
+                    CompareHalf(preview.image, area, stringResource(R.string.controls_text_colour_after), Modifier.weight(1f))
+                }
+                val edited = TextColours.of(text, target)
+                ColourField(edited, Modifier.padding(top = Spacing.md)) { x, y -> vm.setTextColour { TextColours.withFieldPoint(it, x, y) } }
+                HueStrip(edited.hue, Modifier.padding(top = Spacing.md)) { h -> vm.setTextColour { TextColours.withHueFromStrip(it, h) } }
             }
         }
     }
