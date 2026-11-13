@@ -222,4 +222,23 @@
     <string name="controls_palette_colour">Colour %1$d</string>
     <string name="controls_cancel">Cancel</string>
     <string name="controls_palette_save">Save</string>
+    <!-- Text and glow colour (DM-24) -->
+    <string name="controls_text_colour_text">Text</string>
+    <string name="controls_text_colour_glow">Glow</string>
+    <string name="controls_text_colour_open_text">Text colour, opens the colour sheet</string>
+    <string name="controls_text_colour_open_glow">Glow colour, opens the colour sheet</string>
+    <string name="controls_text_colour_from_picture">From the picture, for %1$s</string>
+    <string name="controls_text_colour_stand_out">Stand out</string>
+    <string name="controls_text_colour_stand_out_description">Stand out: glow in the colour opposite the picture behind the text, letters near white</string>
+    <string name="controls_text_colour_more">More colours</string>
+    <string name="controls_text_colour_fine_tune">Fine tune</string>
+    <string name="controls_text_colour_swatch">Picture colour %1$d</string>
+    <string name="controls_text_colour_white">White</string>
+    <string name="controls_text_colour_chosen">Chosen</string>
+    <string name="controls_text_colour_sheet_title">Text colour</string>
+    <string name="controls_text_colour_same_as_text">Same as text</string>
+    <string name="controls_text_colour_letters">The letters of the quote</string>
+    <string name="controls_text_colour_before">Before</string>
+    <string name="controls_text_colour_after">After</string>
+    <string name="controls_text_colour_field">Saturation and brightness</string>
 </resources>

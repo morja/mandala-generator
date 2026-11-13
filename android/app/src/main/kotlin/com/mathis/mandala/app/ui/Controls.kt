@@ -31,6 +31,7 @@ import androidx.compose.foundation.selection.toggleable
 import androidx.compose.ui.semantics.Role
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -236,6 +237,10 @@ internal fun ControlTabs(
                 }
             }
         }
+        val colourSheet by vm.textColourSheet.collectAsStateWithLifecycle()
+        // Another tab closes the text colour sheet and keeps its colours.
+        LaunchedEffect(tab) { if (tab != ControlTab.TEXT) vm.closeTextColourSheet(keep = true) }
+        Box(Modifier.weight(1f)) {
         tabs.SaveableStateProvider(tab) {
             val shown = tab
             val scroll = rememberScrollState()
@@ -245,7 +250,7 @@ internal fun ControlTabs(
             }
             Column(
                 Modifier
-                    .weight(1f)
+                    .fillMaxSize()
                     .onGloballyPositioned { viewportTop = it.positionInRoot().y }
                     .verticalScroll(scroll)
                     .padding(top = Spacing.xs, bottom = Spacing.lg),
@@ -258,6 +263,9 @@ internal fun ControlTabs(
                     ControlTab.DRAW -> DrawTab(params, vm)
                 }
             }
+        }
+        // The colour sheet covers the tab area only, so the picture stays in view (DM-24).
+        if (colourSheet != null && tab == ControlTab.TEXT) TextColourSheetOverlay(params.textLayer, vm)
         }
     }
 }
@@ -868,12 +876,7 @@ private fun TextTab(text: TextLayerSettings, vm: EditorViewModel, position: Posi
             ) { h, sa, b -> update { it.copy(shadowHue = h, shadowSaturation = sa, shadowBrightness = b) } }
         }
     }
-    Group(stringResource(R.string.controls_colour), trailing = { ColourDot(hsbColour(text.hue, text.saturation, text.brightness.coerceAtMost(1.0))) },
-        changed = differs(text.hue to td.hue, text.saturation to td.saturation, text.brightness to td.brightness)) {
-        ValueSlider(stringResource(R.string.controls_hue), text.hue, default = TextLayerSettings().hue) { v -> update { it.copy(hue = v) } }
-        ValueSlider(stringResource(R.string.controls_saturation), text.saturation, default = TextLayerSettings().saturation) { v -> update { it.copy(saturation = v) } }
-        ValueSlider(stringResource(R.string.controls_brightness), text.brightness, Editing.Ranges.textBrightness.floats(), default = TextLayerSettings().brightness) { v -> update { it.copy(brightness = v) } }
-    }
+    TextColourGroup(text, vm)
 }
 
 /**

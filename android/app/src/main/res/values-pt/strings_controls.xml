@@ -224,4 +224,23 @@
     <string name="controls_palette_colour">Cor %1$d</string>
     <string name="controls_cancel">Cancelar</string>
     <string name="controls_palette_save">Salvar</string>
+    <!-- Text and glow colour (DM-24) -->
+    <string name="controls_text_colour_text">Texto</string>
+    <string name="controls_text_colour_glow">Brilho</string>
+    <string name="controls_text_colour_open_text">Cor do texto, abre o painel de cor</string>
+    <string name="controls_text_colour_open_glow">Cor do brilho, abre o painel de cor</string>
+    <string name="controls_text_colour_from_picture">Da imagem, para %1$s</string>
+    <string name="controls_text_colour_stand_out">Destacar</string>
+    <string name="controls_text_colour_stand_out_description">Destacar: brilho na cor oposta à imagem atrás do texto, letras quase brancas</string>
+    <string name="controls_text_colour_more">Mais cores</string>
+    <string name="controls_text_colour_fine_tune">Ajuste fino</string>
+    <string name="controls_text_colour_swatch">Cor da imagem %1$d</string>
+    <string name="controls_text_colour_white">Branco</string>
+    <string name="controls_text_colour_chosen">Escolhida</string>
+    <string name="controls_text_colour_sheet_title">Cor do texto</string>
+    <string name="controls_text_colour_same_as_text">Igual ao texto</string>
+    <string name="controls_text_colour_letters">As letras da citação</string>
+    <string name="controls_text_colour_before">Antes</string>
+    <string name="controls_text_colour_after">Depois</string>
+    <string name="controls_text_colour_field">Saturação e brilho</string>
 </resources>

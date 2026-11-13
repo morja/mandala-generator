@@ -11,6 +11,8 @@ Format: `- **What** · What for and why · Alternative without approval · Recom
 
 ## Approved
 
+13 November 2026 (Mathis, "passt, bauen" to the revised mock `docs/mocks/DM-24-text-colour.html`, variant A2): the text's two colours in the Text tab (Text and Glow dots, Text|Glow switch, picture swatches plus white, Stand out, More colours sheet with field, hue strip and before/after, folded Fine tune) and the new settings fields `textLayer.glowSameAsText`, `glowHue`, `glowSaturation`, `glowBrightness` (ADR-0003). No new design tokens: the sheet's scrim is Material's `BottomSheetDefaults.ScrimColor`, the caption over the before/after crops uses `canvas` and the dark `text` token. Built Android first (QA-12); the Mac follows later and meanwhile draws the glow in the text colour.
+
 12 November 2026 (Mathis, "Alles wie empfohlen" to PLAN-4's questions and approvals; ADR-0015 accepted after SPIKE-3 and SPIKE-4): the iPhone app's approvals A1–A11 as PLAN-4 section 5 words them, with these values:
 
 - **A1 Bundle id** `one.tearoom.mandala`, the same as the Android package (F1 a); debug build `one.tearoom.mandala.debug` with its own name and marked icon.

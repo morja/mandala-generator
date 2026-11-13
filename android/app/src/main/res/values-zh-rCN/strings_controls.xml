@@ -220,4 +220,23 @@
     <string name="controls_palette_colour">颜色 %1$d</string>
     <string name="controls_cancel">取消</string>
     <string name="controls_palette_save">保存</string>
+    <!-- Text and glow colour (DM-24) -->
+    <string name="controls_text_colour_text">文字</string>
+    <string name="controls_text_colour_glow">光晕</string>
+    <string name="controls_text_colour_open_text">文字颜色，打开颜色面板</string>
+    <string name="controls_text_colour_open_glow">光晕颜色，打开颜色面板</string>
+    <string name="controls_text_colour_from_picture">取自画面，用于%1$s</string>
+    <string name="controls_text_colour_stand_out">突出</string>
+    <string name="controls_text_colour_stand_out_description">突出：光晕使用文字后方画面的对比色，文字接近白色</string>
+    <string name="controls_text_colour_more">更多颜色</string>
+    <string name="controls_text_colour_fine_tune">微调</string>
+    <string name="controls_text_colour_swatch">画面颜色 %1$d</string>
+    <string name="controls_text_colour_white">白色</string>
+    <string name="controls_text_colour_chosen">已选</string>
+    <string name="controls_text_colour_sheet_title">文字颜色</string>
+    <string name="controls_text_colour_same_as_text">与文字相同</string>
+    <string name="controls_text_colour_letters">引文的文字</string>
+    <string name="controls_text_colour_before">之前</string>
+    <string name="controls_text_colour_after">之后</string>
+    <string name="controls_text_colour_field">饱和度和亮度</string>
 </resources>

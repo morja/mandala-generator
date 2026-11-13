@@ -224,4 +224,23 @@
     <string name="controls_palette_colour">Color %1$d</string>
     <string name="controls_cancel">Cancelar</string>
     <string name="controls_palette_save">Guardar</string>
+    <!-- Text and glow colour (DM-24) -->
+    <string name="controls_text_colour_text">Texto</string>
+    <string name="controls_text_colour_glow">Brillo</string>
+    <string name="controls_text_colour_open_text">Color del texto, abre la hoja de color</string>
+    <string name="controls_text_colour_open_glow">Color del brillo, abre la hoja de color</string>
+    <string name="controls_text_colour_from_picture">De la imagen, para %1$s</string>
+    <string name="controls_text_colour_stand_out">Resaltar</string>
+    <string name="controls_text_colour_stand_out_description">Resaltar: brillo en el color opuesto a la imagen tras el texto, letras casi blancas</string>
+    <string name="controls_text_colour_more">Más colores</string>
+    <string name="controls_text_colour_fine_tune">Ajuste fino</string>
+    <string name="controls_text_colour_swatch">Color de la imagen %1$d</string>
+    <string name="controls_text_colour_white">Blanco</string>
+    <string name="controls_text_colour_chosen">Elegido</string>
+    <string name="controls_text_colour_sheet_title">Color del texto</string>
+    <string name="controls_text_colour_same_as_text">Igual que el texto</string>
+    <string name="controls_text_colour_letters">Las letras de la cita</string>
+    <string name="controls_text_colour_before">Antes</string>
+    <string name="controls_text_colour_after">Después</string>
+    <string name="controls_text_colour_field">Saturación y luminosidad</string>
 </resources>

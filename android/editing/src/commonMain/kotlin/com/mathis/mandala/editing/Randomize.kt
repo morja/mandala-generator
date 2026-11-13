@@ -131,7 +131,7 @@ object Randomize {
     /**
      * A new look for the text (the die of the Mac's text card, same ranges): font, size, tracking, colour,
      * glow, shadow, blur and opacity. The words, the author and the position stay; the blend mode goes
-     * back to normal.
+     * back to normal and the glow colour back to "same as text".
      */
     fun TextLayerSettings.randomized(random: Random): TextLayerSettings = copy(
         fontName = Quotes.fonts.random(random).first,
@@ -147,6 +147,8 @@ object Randomize {
         opacity = random.nextDouble(0.6, 1.0),
         blendMode = LayerBlendMode.NORMAL,
         isEnabled = true,
+        // The glow follows the new colour again, as the Mac's die draws it (DM-24).
+        glowSameAsText = true,
     )
 
     fun EmblemLayerSettings.randomized(random: Random): EmblemLayerSettings = copy(

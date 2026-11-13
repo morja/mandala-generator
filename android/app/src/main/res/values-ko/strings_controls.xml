@@ -220,4 +220,23 @@
     <string name="controls_palette_colour">색 %1$d</string>
     <string name="controls_cancel">취소</string>
     <string name="controls_palette_save">저장</string>
+    <!-- Text and glow colour (DM-24) -->
+    <string name="controls_text_colour_text">글자</string>
+    <string name="controls_text_colour_glow">글로우</string>
+    <string name="controls_text_colour_open_text">글자 색, 색상 시트 열기</string>
+    <string name="controls_text_colour_open_glow">글로우 색, 색상 시트 열기</string>
+    <string name="controls_text_colour_from_picture">그림에서, %1$s용</string>
+    <string name="controls_text_colour_stand_out">돋보이게</string>
+    <string name="controls_text_colour_stand_out_description">돋보이게: 글자 뒤 그림의 반대색으로 글로우, 글자는 거의 흰색</string>
+    <string name="controls_text_colour_more">더 많은 색</string>
+    <string name="controls_text_colour_fine_tune">세부 조정</string>
+    <string name="controls_text_colour_swatch">그림 색 %1$d</string>
+    <string name="controls_text_colour_white">흰색</string>
+    <string name="controls_text_colour_chosen">선택됨</string>
+    <string name="controls_text_colour_sheet_title">글자 색</string>
+    <string name="controls_text_colour_same_as_text">글자와 같게</string>
+    <string name="controls_text_colour_letters">인용문의 글자</string>
+    <string name="controls_text_colour_before">이전</string>
+    <string name="controls_text_colour_after">이후</string>
+    <string name="controls_text_colour_field">채도와 밝기</string>
 </resources>

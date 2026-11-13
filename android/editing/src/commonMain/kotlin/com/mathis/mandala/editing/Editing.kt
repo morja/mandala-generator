@@ -192,6 +192,17 @@ object Editing {
     const val QUICK_SIZE = 160
     const val QUICK_GLOW_REFERENCE = 320
 
+    /**
+     * The picture while a colour is dragged in the text colour sheet (DM-24): drawn at once at this
+     * size without supersampling (a quarter of the preview's pixels per side), the full preview once
+     * the finger rests.
+     */
+    const val LIVE_SIZE = 256
+    const val LIVE_GLOW_REFERENCE = 256
+
+    /** The picture without text that the text colour swatches and "Stand out" look at. */
+    const val SAMPLE_SIZE = 160
+
     const val EXPORT_SIZE = 1024
 
     /** Pro export (ADR-0007). */

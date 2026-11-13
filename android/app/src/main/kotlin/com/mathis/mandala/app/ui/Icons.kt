@@ -10,6 +10,11 @@ import com.mathis.mandala.app.ui.theme.Sizes
 
 /** The few icons the editor needs, drawn on a 24 x 24 grid (no icon library needed). */
 object EditorIcons {
+    /** "Stand out" in the text colours: a circle half filled, light against dark (DM-24). */
+    val StandOut = line(
+        stroke = "M3.5,12a8.5,8.5 0 1,0 17,0a8.5,8.5 0 1,0 -17,0zM12,3.5L12,20.5",
+        dots = "M12,3.5a8.5,8.5 0 0,1 0,17z",
+    )
     val MoveUp = icon("M12,4 L4,12 L5.4,13.4 L11,7.8 L11,20 L13,20 L13,7.8 L18.6,13.4 L20,12 Z")
     val MoveDown = icon("M12,20 L20,12 L18.6,10.6 L13,16.2 L13,4 L11,4 L11,16.2 L5.4,10.6 L4,12 Z")
     val Star = icon("M12,17.27 L18.18,21 L16.54,13.97 L22,9.24 L14.81,8.63 L12,2 L9.19,8.63 L2,9.24 L7.46,13.97 L5.82,21 Z")

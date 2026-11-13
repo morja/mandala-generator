@@ -224,4 +224,23 @@
     <string name="controls_palette_colour">Colore %1$d</string>
     <string name="controls_cancel">Annulla</string>
     <string name="controls_palette_save">Salva</string>
+    <!-- Text and glow colour (DM-24) -->
+    <string name="controls_text_colour_text">Testo</string>
+    <string name="controls_text_colour_glow">Bagliore</string>
+    <string name="controls_text_colour_open_text">Colore del testo, apre il pannello colore</string>
+    <string name="controls_text_colour_open_glow">Colore del bagliore, apre il pannello colore</string>
+    <string name="controls_text_colour_from_picture">Dall’immagine, per %1$s</string>
+    <string name="controls_text_colour_stand_out">Risalta</string>
+    <string name="controls_text_colour_stand_out_description">Risalta: bagliore nel colore opposto all’immagine dietro il testo, lettere quasi bianche</string>
+    <string name="controls_text_colour_more">Altri colori</string>
+    <string name="controls_text_colour_fine_tune">Regolazione fine</string>
+    <string name="controls_text_colour_swatch">Colore dell’immagine %1$d</string>
+    <string name="controls_text_colour_white">Bianco</string>
+    <string name="controls_text_colour_chosen">Scelto</string>
+    <string name="controls_text_colour_sheet_title">Colore del testo</string>
+    <string name="controls_text_colour_same_as_text">Come il testo</string>
+    <string name="controls_text_colour_letters">Le lettere della citazione</string>
+    <string name="controls_text_colour_before">Prima</string>
+    <string name="controls_text_colour_after">Dopo</string>
+    <string name="controls_text_colour_field">Saturazione e luminosità</string>
 </resources>
