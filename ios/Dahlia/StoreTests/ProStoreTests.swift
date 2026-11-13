@@ -24,7 +24,11 @@ final class ProStoreTests: XCTestCase {
     }
 
     override func tearDown() async throws {
-        for store in stores { store.stop() }
+        for store in stores {
+            store.stop()
+            // Its start may still be finishing transactions; it must not reach into the next test.
+            await store.startup?.value
+        }
         stores = []
         try await session.setSimulatedError(nil, forAPI: .loadProducts)
         try await session.setSimulatedError(nil, forAPI: .purchase)
@@ -277,16 +281,11 @@ final class ProStoreTests: XCTestCase {
     func testACheckThatStartedBeforeAGrantCannotTakeItBack() async throws {
         let store = makeStore()
         let before = store.grants
-        // The purchase's update is what the app would hear; waiting for it (instead of asking `latest` right away,
-        // which raced StoreKitTest and sometimes found nothing yet) gives the transaction once it exists.
-        let arrived = Task { @MainActor () -> VerificationResult<Transaction>? in
-            for await result in Transaction.updates where result.unsafePayloadValue.productID == ProStore.productID { return result }
-            return nil
-        }
-        _ = try? await session.buyProduct(identifier: ProStore.productID)
-        // The grant arrives (as from Transaction.updates) while an older check is still running.
-        let update = await arrived.value
-        let transaction = try XCTUnwrap(update)
+        // A verified transaction of the product, straight from the purchase's result: no wait for an update (which
+        // could go out before a listener started) or for `latest` (which raced StoreKitTest and found nothing yet).
+        let products = try await Product.products(for: [ProStore.productID])
+        let product = try XCTUnwrap(products.first)
+        guard case .success(let transaction) = try await product.purchase() else { return XCTFail("the purchase did not go through") }
         await store.handle(transaction)
         XCTAssertTrue(store.purchased)
         store.apply(false, checkStartedAt: before)

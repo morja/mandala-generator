@@ -286,14 +286,21 @@ struct SaveSheet: View {
 /// and the message show in the save sheet.
 private struct WallpaperSheet: View {
     let close: @MainActor () -> Void
+    @Environment(EditorModel.self) private var model
     @Environment(\.tokens) private var t
 
     var body: some View {
         ScrollView {
-            WallpaperPage(page: Binding(get: { .wallpaper }, set: { if $0 != .wallpaper { close() } }), close: close)
+            WallpaperPage(page: Binding(get: { .wallpaper }, set: { if $0 != .wallpaper { close() } }), close: close, backLabel: Texts.saveImage)
                 .padding(.horizontal, Spacing.lg)
                 .padding(.top, Spacing.xl)
                 .padding(.bottom, Spacing.xl)
+        }
+        // A purchase from the page's Pro row thanks here, where it is seen.
+        .overlay(alignment: .top) {
+            if let message = model.message {
+                MessageBar(message: message) { model.message = nil }.padding(.top, Spacing.md)
+            }
         }
         .background(t.background)
         .presentationDetents([.large])

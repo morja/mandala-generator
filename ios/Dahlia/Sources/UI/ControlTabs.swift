@@ -20,7 +20,8 @@ struct ControlTabs: View {
     @Environment(TourModel.self) private var tour
     /// The tour opens a step's tab and scrolls its row up under the tabs, and puts both back when it ends.
     @State private var positions: [Tab: ScrollPosition] = [:]
-    @State private var offsets: [Tab: CGFloat] = [:]
+    /// Scroll offsets and phases, written on every scroll frame; not observed, so a frame does not redraw the tabs.
+    @State private var book = ScrollBook()
     @State private var before: TourRestore?
     @Environment(\.tokens) private var t
 
@@ -68,6 +69,7 @@ struct ControlTabs: View {
         .onAppear { onHeader(header) }
         // Drawing on the picture only while the Draw tab is shown; moving only while its tab is (as on Android).
         .onChange(of: tab) { _, now in
+            model.shell.pulling = false
             if now != .draw { model.setDrawTool(nil) }
             // Another tab closes the colour sheet and keeps the colours, and puts the keyboard away (as on Android).
             if now != .text {
@@ -129,20 +131,26 @@ struct ControlTabs: View {
         ScrollView { content() }
             .scrollPosition(Binding(get: { positions[option] ?? ScrollPosition() }, set: { positions[option] = $0 }))
             .onScrollGeometryChange(for: CGFloat.self) { $0.contentOffset.y + $0.contentInsets.top } action: { _, y in
-                offsets[option] = y
+                book.offsets[option] = y
                 // Past the top while the finger is down: the picture grows with the pull (Android's nested scroll).
                 // Only while past the top: letting go springs the list back to 0 before the phase ends, and that
                 // must not undo the pull.
                 if model.shell.pulling && tab == option && y < 0 { model.shell.pull = -y }
             }
-            // Only a drag pulls, not a fling that reaches the top; letting go ends the pull.
             .onScrollPhaseChange { old, new in
-                guard tab == option else { return }
-                if new == .interacting {
+                book.phases[option] = new
+                // Only a drag on the open tab starts a pull, not a fling that reaches the top. Letting go ends it, on
+                // whichever tab, so a tab change during the drag cannot leave it on.
+                if new == .interacting && tab == option {
                     model.shell.pull = 0
                     model.shell.pulling = true
                 } else if old == .interacting {
                     model.shell.pulling = false
+                }
+                // A tour step whose scroll was still moving when its animation reported done settles once it rests.
+                if new == .idle, let pending = book.settleWhenIdle, pending.0 == option {
+                    book.settleWhenIdle = nil
+                    settle(pending.1)
                 }
             }
             .scrollDismissesKeyboard(.immediately)
@@ -169,7 +177,7 @@ struct ControlTabs: View {
         }
         var saved = before ?? TourRestore(tab: tab)
         let wanted = step.tab.map(tab(of:)) ?? saved.tab
-        if saved.offsets[wanted] == nil { saved.offsets[wanted] = offsets[wanted] ?? 0 }
+        if saved.offsets[wanted] == nil { saved.offsets[wanted] = book.offsets[wanted] ?? 0 }
         before = saved
         tab = wanted
         // Every tab stays alive in the ZStack, so its scroll view takes the position at once; no wait for the
@@ -185,12 +193,26 @@ struct ControlTabs: View {
         withAnimation(Timing.tourScroll) {
             scroll(&positions[wanted, default: ScrollPosition()])
         } completion: {
-            settle(step)
+            // The scroll view may still be moving (a target it had to find first); the rings wait until it rests,
+            // so the picture's fold for the card never resizes a scroll view in motion.
+            if let phase = book.phases[wanted], phase != .idle {
+                book.settleWhenIdle = (wanted, step)
+            } else {
+                settle(step)
+            }
         }
         // Should the animation's completion not come (nothing changed and SwiftUI skipped it), settle anyway.
         try? await Task.sleep(for: Timing.tourSettle)
         guard !Task.isCancelled else { return }
         settle(step)
+    }
+
+    /// Where each tab's list stands and whether it moves, kept outside SwiftUI's observation.
+    private final class ScrollBook {
+        var offsets: [Tab: CGFloat] = [:]
+        var phases: [Tab: ScrollPhase] = [:]
+        /// The tour step waiting for that tab's list to rest.
+        var settleWhenIdle: (Tab, TourStep)?
     }
 
     /// Marks `step` settled so its rings appear, unless the tour has moved on or ended meanwhile.

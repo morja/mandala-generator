@@ -87,6 +87,7 @@ final class ProStore {
     func stop() {
         listener?.cancel()
         listener = nil
+        startup?.cancel()
     }
 
     /// Each return to the app, as Android asks Play on every resume: the entitlement again, and the price if it is missing.

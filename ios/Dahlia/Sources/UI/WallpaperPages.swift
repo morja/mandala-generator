@@ -15,13 +15,15 @@ enum ReadyShortcut {
 struct WallpaperPage: View {
     @Binding var page: MenuSheet.Page
     let close: @MainActor () -> Void
+    /// Where Back leads: the menu, or the save sheet when the page opened from its Wallpaper button.
+    var backLabel = Texts.menuBack
     @Environment(EditorModel.self) private var model
     @Environment(\.tokens) private var t
 
     var body: some View {
         let pro = model.proOwned
         VStack(alignment: .leading, spacing: 0) {
-            BackRow(label: Texts.menuBack) { page = .main }
+            BackRow(label: backLabel) { page = .main }
             Text(Texts.menuWallpaper).textRole(.title).foregroundStyle(t.text).padding(.top, Spacing.sm)
             Text(Texts.wallpaperAbout).textRole(.body).foregroundStyle(t.textMuted).padding(.top, Spacing.xs)
                 .fixedSize(horizontal: false, vertical: true)
