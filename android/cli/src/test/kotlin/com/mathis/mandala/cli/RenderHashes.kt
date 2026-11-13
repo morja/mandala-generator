@@ -22,20 +22,30 @@ import java.security.MessageDigest
  * the Pro export (2048, not supersampled), a portrait canvas with framing, a finish, a run with three
  * threads, and three frames of the moving picture (turning layers through a layer cache) with their
  * video planes.
+ *
+ * Arguments: an optional name filter (`.` for all), then optional extra folders of settings files
+ * (for example the starter favourites written out as single files), hashed with the prefix `extra-`.
  */
 object RenderHashes {
     @JvmStatic
     fun main(args: Array<String>) {
         val root = File(".")
         val filter = args.getOrNull(0)?.let { Regex(it) }
+        val extras = args.drop(1).flatMap { dir -> File(dir).listFiles { f -> f.extension == "json" }!!.toList() }
         val files = (File(root, "fixtures/settings").listFiles { f -> f.extension == "json" }!!.toList() +
-            File(root, "../ios/SpikeBench/Bench").listFiles { f -> f.extension == "json" }!!.map { it })
+            File(root, "../ios/SpikeBench/Bench").listFiles { f -> f.extension == "json" }!!.map { it } +
+            extras)
             .sortedBy { it.path }
             .filter { filter == null || filter.containsMatchIn(it.nameWithoutExtension) }
 
         val base = RenderOptions(textRenderer = AwtTextRenderer(), imageLoader = FileImageLoader(root))
         for (file in files) {
-            val name = (if (file.path.contains("SpikeBench")) "bench-" else "") + file.nameWithoutExtension
+            val prefix = when {
+                file.path.contains("SpikeBench") -> "bench-"
+                file in extras -> "extra-"
+                else -> ""
+            }
+            val name = prefix + file.nameWithoutExtension
             val params = SettingsJson.decode(file.readText())
 
             fun line(variant: String, image: Image8) = println("$name $variant ${sha(image.data)}")

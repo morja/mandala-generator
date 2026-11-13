@@ -261,6 +261,15 @@ data class TextLayerSettings(
     val customAuthor: String = "",
     val authorScale: Double = 0.667,
     val authorItalic: Boolean = true,
+    /**
+     * Glow colour (Android first, DM-24): with [glowSameAsText] on (the default, and every file
+     * written before), the glow and its light passes take the text colour as always; off, they take
+     * this colour. The macOS app does not know these fields yet and draws the glow in the text colour.
+     */
+    val glowSameAsText: Boolean = true,
+    val glowHue: Double = 0.0,
+    val glowSaturation: Double = 0.0,
+    val glowBrightness: Double = 1.0,
 )
 
 /** One motif drawn large and upright in the centre (not repeated by symmetry), as in the macOS EmblemMotif. */

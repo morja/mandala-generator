@@ -14,6 +14,10 @@ import com.mathis.mandala.editing.QuoteChoice
 import com.mathis.mandala.editing.PlayField
 import com.mathis.mandala.editing.Randomize
 import com.mathis.mandala.editing.SaveChoice
+import com.mathis.mandala.editing.Hsb
+import com.mathis.mandala.editing.TextColourSheet
+import com.mathis.mandala.editing.TextColourTarget
+import com.mathis.mandala.editing.TextColours
 import android.app.Application
 import androidx.annotation.PluralsRes
 import androidx.annotation.StringRes
@@ -541,6 +545,18 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
 
     /** The layer images of the last rendered preview, so a change to one layer redraws only that one. */
     private val previewCache = LayerCache()
+    // Declared before init: the preview collector there reads it at once.
+    private val _textColourSheet = MutableStateFlow<TextColourSheet?>(null)
+
+    /** The colour sheet while it is open, with the colours from when it opened. */
+    val textColourSheet: StateFlow<TextColourSheet?> = _textColourSheet.asStateFlow()
+
+    /**
+     * The layer images of the colour sheet's small live picture (DM-24): a colour drag then redraws
+     * only the text. Its renders run one after another (collectLatest waits for the cancelled one).
+     */
+    private val liveCache = LayerCache()
+
     /** The preview and the one without effects share [previewCache], so they never draw at once. */
     private val previewLock = Mutex()
 
@@ -576,6 +592,8 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
                     _preview.value = known
                     return@collectLatest
                 }
+                // While the colour sheet is open, a small picture at once, so the colour shows while dragging.
+                if (_textColourSheet.value != null) renderQuickPreview(p, Editing.LIVE_SIZE, Editing.LIVE_GLOW_REFERENCE, supersample = false, cache = liveCache)
                 delay(DEBOUNCE_MS)
                 val redrawn = if (renderedFast == fast) redrawnLayers(p) else p.layers.count { it.isEnabled }
                 if (redrawn >= Editing.QUICK_MIN_LAYERS && millisPerLayer * redrawn > Editing.QUICK_AFTER_MS) renderQuickPreview(p)
@@ -667,6 +685,110 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
     }
 
     fun resetText() = updateText { it.reset() }
+
+    // ── Text colours (DM-24 A2) ──
+
+    private val _textColourTarget = MutableStateFlow(TextColourTarget.TEXT)
+
+    /** Which of the two text colours the swatches, the sheet and "Fine tune" change. */
+    val textColourTarget: StateFlow<TextColourTarget> = _textColourTarget.asStateFlow()
+
+    fun setTextColourTarget(target: TextColourTarget) {
+        _textColourTarget.value = target
+    }
+
+    /** Sets the colour the switch shows (a swatch, the field, the hue strip or a "Fine tune" slider). */
+    fun setTextColour(change: (Hsb) -> Hsb) = updateText { TextColours.withColour(it, _textColourTarget.value, change) }
+
+    /** A swatch: keeps a text brightness boost above 1 (see [TextColours.withPickedColour]). */
+    fun pickTextColour(c: Hsb) = updateText { TextColours.withPickedColour(it, _textColourTarget.value, c) }
+
+    fun setGlowSameAsText(on: Boolean) = updateText { TextColours.sameAsText(it, on) }
+
+    /** The preview as it was when the sheet opened: the "Before" half of the sheet's comparison. */
+    private val _textColourBefore = MutableStateFlow<ImageBitmap?>(null)
+    val textColourBefore: StateFlow<ImageBitmap?> = _textColourBefore.asStateFlow()
+
+    fun openTextColourSheet(target: TextColourTarget? = null) {
+        if (target != null) _textColourTarget.value = target
+        _textColourBefore.value = _preview.value.image
+        _textColourSheet.value = TextColourSheet.open(_params.value.textLayer)
+    }
+
+    /** Done keeps the colours; Cancel puts back both as they were when the sheet opened. */
+    fun closeTextColourSheet(keep: Boolean) {
+        val sheet = _textColourSheet.value ?: return
+        if (!keep) updateText { sheet.cancelled(it) }
+        _textColourSheet.value = null
+        _textColourBefore.value = null
+        // The live picture's layers are not needed until the sheet opens again.
+        liveCache.clear()
+    }
+
+    /** The picture without its text, small, with its colours: for the swatches and "Stand out". */
+    private class PictureSample(val key: MandalaParameters, val argb: IntArray, val size: Int, val swatches: List<Hsb>)
+
+    private val _pictureSample = MutableStateFlow<PictureSample?>(null)
+
+    /** The current picture's colours plus white; just white until the picture was looked at. */
+    val textSwatches: StateFlow<List<Hsb>> = _pictureSample.map { it?.swatches ?: listOf(Hsb.WHITE) }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, listOf(Hsb.WHITE))
+
+    /** Everything but the text, which is what the swatches and "Stand out" look at. */
+    private fun withoutText(p: MandalaParameters) = p.copy(textLayer = TextLayerSettings())
+
+    private suspend fun samplePicture(p: MandalaParameters): PictureSample {
+        val key = withoutText(p)
+        _pictureSample.value?.takeIf { it.key == key }?.let { return it }
+        val image = withContext(Dispatchers.Default) {
+            MandalaRenderer.render(
+                key,
+                RenderOptions(
+                    outputSize = Editing.SAMPLE_SIZE, supersample = false, glowReferenceWidth = Editing.QUICK_GLOW_REFERENCE,
+                    threads = threads, imageLoader = imageLoader,
+                ),
+            ).image
+        }
+        val argb = image.toArgbPixels()
+        return PictureSample(key, argb, image.width, TextColours.pictureSwatches(argb)).also { _pictureSample.value = it }
+    }
+
+    private var sampleJob: Job? = null
+
+    /**
+     * Looks at the picture for the swatches while the text colours are shown, once the picture rests;
+     * a change to the text alone keeps the colours found.
+     */
+    fun prepareTextSwatches() {
+        val key = withoutText(_params.value)
+        if (_pictureSample.value?.key == key) return
+        sampleJob?.cancel()
+        sampleJob = viewModelScope.launch {
+            delay(SAMPLE_DELAY_MS)
+            // On failure the swatches stay as they were.
+            try { samplePicture(_params.value) } catch (e: OutOfMemoryError) { } catch (e: Exception) { if (e is kotlinx.coroutines.CancellationException) throw e }
+        }
+    }
+
+    private var standOutJob: Job? = null
+
+    /** Glow in the complement of the picture behind the text, letters near white (DM-24); taps while it works are ignored. */
+    fun standOut() {
+        if (standOutJob?.isActive == true) return
+        standOutJob = viewModelScope.launch {
+            val p = _params.value
+            val sample = try {
+                samplePicture(p)
+            } catch (e: OutOfMemoryError) {
+                return@launch
+            } catch (e: Exception) {
+                if (e is kotlinx.coroutines.CancellationException) throw e
+                return@launch
+            }
+            val result = TextColours.standOut(sample.argb, sample.size, sample.size, TextColours.textArea(p.textLayer), sample.swatches) ?: return@launch
+            updateText { TextColours.applyStandOut(it, result) }
+        }
+    }
 
     fun updateEmblem(change: (EmblemLayerSettings) -> EmblemLayerSettings) = _params.update { it.updateEmblem(change) }
 
@@ -1688,14 +1810,20 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
     }
 
     /** A small, rough image while a slow change is drawn; not kept as the preview's result. */
-    private suspend fun renderQuickPreview(params: MandalaParameters) {
+    private suspend fun renderQuickPreview(
+        params: MandalaParameters,
+        size: Int = Editing.QUICK_SIZE,
+        glowReference: Int = Editing.QUICK_GLOW_REFERENCE,
+        supersample: Boolean = true,
+        cache: LayerCache? = null,
+    ) {
         try {
             val result = withContext(Dispatchers.Default) {
                 val job = coroutineContext.job
                 MandalaRenderer.render(
                     params,
                     RenderOptions(
-                        outputSize = Editing.QUICK_SIZE, glowReferenceWidth = Editing.QUICK_GLOW_REFERENCE, threads = threads,
+                        outputSize = size, glowReferenceWidth = glowReference, threads = threads, supersample = supersample, layerCache = cache,
                         textRenderer = textRenderer, imageLoader = imageLoader, isCancelled = { !job.isActive },
                     ),
                 )
@@ -1748,6 +1876,8 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         const val SAVE_DELAY_MS = 400L
         const val HISTORY_DELAY_MS = 700L
         const val FRAME_DEBOUNCE_MS = 60L
+        /** The swatches look at the picture once it rests this long. */
+        const val SAMPLE_DELAY_MS = 600L
         /** How often the moving frame looks whether the video is done. */
         const val MOVING_PAUSE_MS = 300L
         /** Frames made before the video's progress says how many minutes are left. */

@@ -123,9 +123,12 @@ internal class TextLayer(private val par: Parallel, private val renderer: TextRe
             g
         }
         val colour = hsbColour(s.hue, s.saturation, min(1.0, s.brightness))
+        // The glow's own colour (DM-24); with "same as text" it is the very same array, so the pixels
+        // are those of every earlier version.
+        val glowColour = if (s.glowSameAsText) colour else hsbColour(s.glowHue, s.glowSaturation, min(1.0, s.glowBrightness))
         val boost = if (s.brightness > 1.005) s.brightness.toFloat() else 1f
         val opacity = if (s.opacity < 0.999) s.opacity.toFloat() else 1f
-        val blended = blendText(out, text, glow, colour, boost * opacity, s.blendMode)
+        val blended = blendText(out, text, glow, colour, glowColour, boost * opacity, s.blendMode)
         if (s.glow <= 1.0 || s.blendMode == LayerBlendMode.MULTIPLY) return blended
         // Glow above 1: the two wide passes of the glow at 1 as light, growing from nothing at 1
         // (macOS textGlowLightPasses). The macOS light source is the boosted text with its glow at 1
@@ -143,7 +146,7 @@ internal class TextLayer(private val par: Parallel, private val renderer: TextRe
             }
             light
         }
-        val lightColour = FloatArray(3) { min(1f, colour[it] * boost) }
+        val lightColour = FloatArray(3) { min(1f, glowColour[it] * boost) }
         return mapPixels(blended) { p, c ->
             for (ch in 0..2) {
                 val g = lightColour[ch] * light[p]
@@ -222,15 +225,26 @@ internal class TextLayer(private val par: Parallel, private val renderer: TextRe
     private fun sourceOver(image: Image8, mask: FloatArray, colour: FloatArray): Image8 =
         mapPixels(image) { p, c -> val a = mask[p].coerceIn(0f, 1f); for (k in 0..2) c[k] = colour[k] * a + c[k] * (1 - a) }
 
-    /** Text plus glow (screened together), scaled by brightness boost and opacity, then blended. */
-    private fun blendText(image: Image8, text: FloatArray, glow: FloatArray?, colour: FloatArray, scale: Float, mode: LayerBlendMode): Image8 =
+    /**
+     * Text plus glow (screened together, each in its own colour), scaled by brightness boost and
+     * opacity, then blended.
+     */
+    private fun blendText(
+        image: Image8,
+        text: FloatArray,
+        glow: FloatArray?,
+        colour: FloatArray,
+        glowColour: FloatArray,
+        scale: Float,
+        mode: LayerBlendMode,
+    ): Image8 =
         mapPixels(image) { p, c ->
             val ta = text[p].coerceIn(0f, 1f)
             val ga = glow?.get(p) ?: 0f
             val alpha = (ta + ga - ta * ga).coerceIn(0f, 1f)
             for (k in 0..2) {
                 val t = colour[k] * ta
-                val g = colour[k] * ga
+                val g = glowColour[k] * ga
                 val premult = (t + g - t * g) * scale
                 c[k] = when (mode) {
                     LayerBlendMode.SCREEN -> c[k] + premult - c[k] * premult

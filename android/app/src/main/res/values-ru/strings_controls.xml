@@ -226,4 +226,23 @@
     <string name="controls_palette_colour">Цвет %1$d</string>
     <string name="controls_cancel">Отмена</string>
     <string name="controls_palette_save">Сохранить</string>
+    <!-- Text and glow colour (DM-24) -->
+    <string name="controls_text_colour_text">Текст</string>
+    <string name="controls_text_colour_glow">Свечение</string>
+    <string name="controls_text_colour_open_text">Цвет текста, открывает панель цвета</string>
+    <string name="controls_text_colour_open_glow">Цвет свечения, открывает панель цвета</string>
+    <string name="controls_text_colour_from_picture">Из картинки</string>
+    <string name="controls_text_colour_stand_out">Выделить</string>
+    <string name="controls_text_colour_stand_out_description">Выделить: свечение в цвете, противоположном картинке за текстом, буквы почти белые</string>
+    <string name="controls_text_colour_more">Другие цвета</string>
+    <string name="controls_text_colour_fine_tune">Точная настройка</string>
+    <string name="controls_text_colour_swatch">Цвет картинки %1$d</string>
+    <string name="controls_text_colour_white">Белый</string>
+    <string name="controls_text_colour_chosen">Выбран</string>
+    <string name="controls_text_colour_sheet_title">Цвет текста</string>
+    <string name="controls_text_colour_same_as_text">Как у текста</string>
+    <string name="controls_text_colour_letters">Буквы цитаты</string>
+    <string name="controls_text_colour_before">До</string>
+    <string name="controls_text_colour_after">После</string>
+    <string name="controls_text_colour_field">Насыщенность и яркость</string>
 </resources>

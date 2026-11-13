@@ -224,4 +224,23 @@
     <string name="controls_palette_colour">Couleur %1$d</string>
     <string name="controls_cancel">Annuler</string>
     <string name="controls_palette_save">Enregistrer</string>
+    <!-- Text and glow colour (DM-24) -->
+    <string name="controls_text_colour_text">Texte</string>
+    <string name="controls_text_colour_glow">Lueur</string>
+    <string name="controls_text_colour_open_text">Couleur du texte, ouvre le panneau de couleur</string>
+    <string name="controls_text_colour_open_glow">Couleur de la lueur, ouvre le panneau de couleur</string>
+    <string name="controls_text_colour_from_picture">De l’image</string>
+    <string name="controls_text_colour_stand_out">Faire ressortir</string>
+    <string name="controls_text_colour_stand_out_description">Faire ressortir : lueur dans la couleur opposée à l’image derrière le texte, lettres presque blanches</string>
+    <string name="controls_text_colour_more">Plus de couleurs</string>
+    <string name="controls_text_colour_fine_tune">Réglage fin</string>
+    <string name="controls_text_colour_swatch">Couleur de l’image %1$d</string>
+    <string name="controls_text_colour_white">Blanc</string>
+    <string name="controls_text_colour_chosen">Choisie</string>
+    <string name="controls_text_colour_sheet_title">Couleur du texte</string>
+    <string name="controls_text_colour_same_as_text">Comme le texte</string>
+    <string name="controls_text_colour_letters">Les lettres de la citation</string>
+    <string name="controls_text_colour_before">Avant</string>
+    <string name="controls_text_colour_after">Après</string>
+    <string name="controls_text_colour_field">Saturation et luminosité</string>
 </resources>

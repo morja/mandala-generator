@@ -220,4 +220,23 @@
     <string name="controls_palette_colour">色 %1$d</string>
     <string name="controls_cancel">キャンセル</string>
     <string name="controls_palette_save">保存</string>
+    <!-- Text and glow colour (DM-24) -->
+    <string name="controls_text_colour_text">文字</string>
+    <string name="controls_text_colour_glow">グロー</string>
+    <string name="controls_text_colour_open_text">文字の色、カラーシートを開く</string>
+    <string name="controls_text_colour_open_glow">グローの色、カラーシートを開く</string>
+    <string name="controls_text_colour_from_picture">画像から</string>
+    <string name="controls_text_colour_stand_out">際立たせる</string>
+    <string name="controls_text_colour_stand_out_description">際立たせる：文字の背後の画像の反対色でグロー、文字はほぼ白</string>
+    <string name="controls_text_colour_more">その他の色</string>
+    <string name="controls_text_colour_fine_tune">微調整</string>
+    <string name="controls_text_colour_swatch">画像の色 %1$d</string>
+    <string name="controls_text_colour_white">白</string>
+    <string name="controls_text_colour_chosen">選択中</string>
+    <string name="controls_text_colour_sheet_title">文字の色</string>
+    <string name="controls_text_colour_same_as_text">文字と同じ</string>
+    <string name="controls_text_colour_letters">引用の文字</string>
+    <string name="controls_text_colour_before">前</string>
+    <string name="controls_text_colour_after">後</string>
+    <string name="controls_text_colour_field">彩度と明るさ</string>
 </resources>
