@@ -40,7 +40,7 @@ Apple allows 55 characters for the description, so the Play text (STORE-1) was s
 
 - First build 1.0 (1) uploaded on 12 November 2026 from `main` at c33adfc (Release archive, automatic signing, App Group on device and widget extension). Internal group "Team" (Mathis, automatic distribution) and external group "Freunde" created the same day; build 1.0 (1) submitted to Beta App Review for "Freunde" ("Waiting for Review"), without sign-in, with English "What to Test" notes. The External Testing section only appeared after the first internal group existed. Build 1.0 (1) passed Beta App Review by 13 November 2026 ("Approved", one invite, eleven sessions); a public link with a limit of 20 testers exists for "Freunde".
 
-- Build 1.0 (2) uploaded on 13 November 2026 from `main` at 6c7bfa4 (text and glow colours, shadow sliders, cleanup IOS-13); the internal group "Team" gets it automatically, the external group "Freunde" once it is added there after processing.
+- Build 1.0 (2) uploaded on 13 November 2026 from `main` at 6c7bfa4 (text and glow colours, shadow sliders, cleanup IOS-13); the internal group "Team" gets it automatically, added to the external group "Freunde" the same evening and approved at once (no second review for the same version).
 
 - Upload note: `xcodebuild -exportArchive` fails with "Copy failed" when Homebrew's `rsync` comes first on the PATH; run it with `/usr/bin` first.
 
