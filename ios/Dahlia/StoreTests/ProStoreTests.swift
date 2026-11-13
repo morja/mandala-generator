@@ -10,6 +10,8 @@ import XCTest
 final class ProStoreTests: XCTestCase {
     private var session: SKTestSession!
     private var cacheURL: URL!
+    /// The stores a test made; each stops listening at the end, so no listener of an earlier test takes an update.
+    private var stores: [ProStore] = []
 
     override func setUp() async throws {
         let url = try XCTUnwrap(Bundle(for: ProStoreTests.self).url(forResource: "Dahlia", withExtension: "storekit"))
@@ -22,23 +24,56 @@ final class ProStoreTests: XCTestCase {
     }
 
     override func tearDown() async throws {
+        for store in stores { store.stop() }
+        stores = []
         try await session.setSimulatedError(nil, forAPI: .loadProducts)
         try await session.setSimulatedError(nil, forAPI: .purchase)
         try await session.setSimulatedError(nil, forAPI: .appStoreSync)
         try await session.setSimulatedError(nil, forAPI: .verification)
+        // What the store left unfinished (the unverified transaction of the bad signature) is finished, so no test
+        // starts with a transaction waiting; a fresh install has none.
+        for await result in Transaction.unfinished { await result.unsafePayloadValue.finish() }
         session.clearTransactions()
         try? FileManager.default.removeItem(at: cacheURL)
     }
 
     private func makeStore(flag: UserDefaults? = nil) -> ProStore {
-        ProStore(cache: ProCache(url: cacheURL), flag: flag, testUnlocked: false)
+        let store = ProStore(cache: ProCache(url: cacheURL), flag: flag, testUnlocked: false)
+        stores.append(store)
+        return store
     }
 
-    /// Waits until `condition` holds (StoreKit's updates arrive asynchronously), at most `seconds`.
-    private func eventually(_ seconds: Double = 10, _ condition: () -> Bool) async -> Bool {
-        let end = Date().addingTimeInterval(seconds)
-        while !condition() && Date() < end { try? await Task.sleep(for: .milliseconds(100)) }
-        return condition()
+    /// Waits until `condition` holds. StoreKit's updates arrive asynchronously; the store is observable, so the wait
+    /// wakes on each change of what `condition` reads instead of polling at fixed intervals. `timeout` only bounds a
+    /// failure, it is never waited out when the update comes.
+    private func eventually(_ timeout: TimeInterval = 30, _ condition: @escaping @MainActor () -> Bool) async -> Bool {
+        let deadline = ContinuousClock.now + .seconds(timeout)
+        while !condition() {
+            guard ContinuousClock.now < deadline else { return false }
+            await nextChange(of: condition, before: deadline)
+        }
+        return true
+    }
+
+    /// Returns once anything `condition` reads has changed, or at the deadline.
+    private func nextChange(of condition: @escaping @MainActor () -> Bool, before deadline: ContinuousClock.Instant) async {
+        let once = ResumeOnce()
+        let sleeper = Task { @MainActor in
+            try? await Task.sleep(until: deadline)
+            once.resume()
+        }
+        await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+            once.wait(with: continuation)
+            withObservationTracking { _ = condition() } onChange: { Task { @MainActor in once.resume() } }
+        }
+        sleeper.cancel()
+    }
+
+    /// One round trip through StoreKit's own connection, so StoreKitTest has taken in what the store did (a purchase
+    /// and its finish) before the test acts on the session's separate connection. Without it a refund right after a
+    /// purchase was sometimes lost: no revoked transaction, no update, the test waited out its time (IOS-13).
+    private func storeKitCaughtUp() async {
+        _ = await Transaction.latest(for: ProStore.productID)
     }
 
     private func proTransaction() -> SKTestTransaction? {
@@ -101,9 +136,12 @@ final class ProStoreTests: XCTestCase {
     func testAPurchaseFromElsewhereArrivesThroughTheUpdates() async throws {
         let store = makeStore()
         store.start()
+        // The start's own check first, so the purchase can only come through the update (a check would unlock silently).
+        await store.startup?.value
         // StoreKitTest records the purchase but may answer the call itself with an error; the update is what counts.
         _ = try? await session.buyProduct(identifier: ProStore.productID)
-        let unlocked = await eventually { store.purchased }
+        // The thanks comes after the store has finished the transaction, a moment after Pro is on.
+        let unlocked = await eventually { store.purchased && store.message == .unlocked }
         XCTAssertTrue(unlocked)
         XCTAssertEqual(store.message, .unlocked)
     }
@@ -124,6 +162,7 @@ final class ProStoreTests: XCTestCase {
         session.askToBuyEnabled = true
         let store = makeStore()
         store.start()
+        await store.startup?.value
         await store.loadPrice()
         await store.buy()
         XCTAssertTrue(store.pending)
@@ -131,10 +170,11 @@ final class ProStoreTests: XCTestCase {
         XCTAssertEqual(store.message, .pending)
         XCTAssertFalse(store.canBuy, "a second purchase is blocked while one is pending")
 
+        await storeKitCaughtUp()
         let waiting = try XCTUnwrap(proTransaction())
         XCTAssertTrue(waiting.pendingAskToBuyConfirmation)
         try session.approveAskToBuyTransaction(identifier: waiting.identifier)
-        let unlocked = await eventually { store.purchased }
+        let unlocked = await eventually { store.purchased && store.message == .unlocked }
         XCTAssertTrue(unlocked)
         XCTAssertFalse(store.pending)
         XCTAssertEqual(store.message, .unlocked)
@@ -157,10 +197,13 @@ final class ProStoreTests: XCTestCase {
     func testARefundRemovesProWhileTheAppRuns() async throws {
         let store = makeStore()
         store.start()
+        await store.startup?.value
         await store.loadPrice()
         await store.buy()
         XCTAssertTrue(store.purchased)
+        await storeKitCaughtUp()
         try session.refundTransaction(identifier: try XCTUnwrap(proTransaction()).identifier)
+        // StoreKitTest applies the refund a moment later and then sends the update; the store hears it while running.
         let removed = await eventually { !store.purchased }
         XCTAssertTrue(removed)
         XCTAssertFalse(ProCache(url: cacheURL).load())
@@ -171,17 +214,17 @@ final class ProStoreTests: XCTestCase {
         let first = makeStore()
         await first.loadPrice()
         await first.buy()
+        await storeKitCaughtUp()
         try session.refundTransaction(identifier: try XCTUnwrap(proTransaction()).identifier)
 
         let next = makeStore()
         XCTAssertTrue(next.purchased, "cached")
-        // StoreKitTest applies the refund a moment later; until StoreKit knows, the cache stays.
-        let end = Date().addingTimeInterval(10)
-        while next.purchased && Date() < end {
-            await next.check()
-            try await Task.sleep(for: .milliseconds(200))
-        }
-        XCTAssertFalse(next.purchased)
+        // The next start: StoreKit reports the refund through the updates (or already in the entitlement check), and the
+        // cached Pro goes then. Until StoreKit knows, the cache stays.
+        next.start()
+        let removed = await eventually { !next.purchased }
+        XCTAssertTrue(removed)
+        XCTAssertFalse(ProCache(url: cacheURL).load())
     }
 
     // ── Offline ──
@@ -234,10 +277,16 @@ final class ProStoreTests: XCTestCase {
     func testACheckThatStartedBeforeAGrantCannotTakeItBack() async throws {
         let store = makeStore()
         let before = store.grants
+        // The purchase's update is what the app would hear; waiting for it (instead of asking `latest` right away,
+        // which raced StoreKitTest and sometimes found nothing yet) gives the transaction once it exists.
+        let arrived = Task { @MainActor () -> VerificationResult<Transaction>? in
+            for await result in Transaction.updates where result.unsafePayloadValue.productID == ProStore.productID { return result }
+            return nil
+        }
         _ = try? await session.buyProduct(identifier: ProStore.productID)
         // The grant arrives (as from Transaction.updates) while an older check is still running.
-        let latest = await Transaction.latest(for: ProStore.productID)
-        let transaction = try XCTUnwrap(latest)
+        let update = await arrived.value
+        let transaction = try XCTUnwrap(update)
         await store.handle(transaction)
         XCTAssertTrue(store.purchased)
         store.apply(false, checkStartedAt: before)
@@ -250,5 +299,22 @@ final class ProStoreTests: XCTestCase {
         let store = ProStore(cache: ProCache(url: cacheURL), flag: nil, testUnlocked: true)
         XCTAssertTrue(store.unlocked)
         XCTAssertFalse(store.purchased)
+    }
+}
+
+/// A continuation resumed by whichever comes first, the change or the deadline; a resume before the wait began counts.
+@MainActor
+private final class ResumeOnce {
+    private var continuation: CheckedContinuation<Void, Never>?
+    private var resumed = false
+
+    func wait(with continuation: CheckedContinuation<Void, Never>) {
+        if resumed { continuation.resume() } else { self.continuation = continuation }
+    }
+
+    func resume() {
+        resumed = true
+        continuation?.resume()
+        continuation = nil
     }
 }

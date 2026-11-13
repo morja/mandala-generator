@@ -13,8 +13,13 @@ struct DahliaApp: App {
 
     init() {
         // Before any screen: StoreKit's transaction updates are heard from launch on (an approved Ask to Buy, a refund).
-        ProStore.shared.start()
+        // Not while the app only hosts the StoreKit tests: its listener would take and finish the transactions the
+        // tests' own stores wait for, so refunds and purchases from elsewhere reached them only now and then (IOS-13).
+        if !Self.hostingTests { ProStore.shared.start() }
     }
+
+    /// The app runs as the host of a test bundle.
+    static var hostingTests: Bool { ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil }
 
     var body: some Scene {
         WindowGroup {
@@ -29,7 +34,7 @@ struct DahliaApp: App {
                 }
                 .onChange(of: scenePhase, initial: true) { _, phase in if phase == .active { ReviewPrompt.opened() } }
                 // Each return to the app asks StoreKit again, as Android asks Play on every resume (ADR-0022).
-                .onChange(of: scenePhase) { _, phase in if phase == .active { Task { await model.proStore.resumed() } } }
+                .onChange(of: scenePhase) { _, phase in if phase == .active && !Self.hostingTests { Task { await model.proStore.resumed() } } }
                 // The widgets (WP-10): a return may be a new day; the theme and Pro change what they show.
                 // A launch by the Shortcuts action in the background left the preview and widgets for now (WP-11).
                 .onChange(of: scenePhase, initial: true) { _, phase in if phase == .active { model.startIfDeferred() } }
