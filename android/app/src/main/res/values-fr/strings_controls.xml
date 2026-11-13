@@ -180,6 +180,7 @@
     <string name="controls_cloud_colour">Couleur du nuage</string>
     <string name="controls_shadow">Ombre</string>
     <string name="controls_shadow_colour">Couleur de l\'ombre</string>
+    <string name="controls_shadow_distance">Distance</string>
     <string name="controls_hue">Teinte</string>
     <string name="controls_close">Fermer</string>
     <string name="controls_quotes">Citations</string>

@@ -178,6 +178,7 @@
     <string name="controls_cloud_colour">Cloud colour</string>
     <string name="controls_shadow">Shadow</string>
     <string name="controls_shadow_colour">Shadow colour</string>
+    <string name="controls_shadow_distance">Distance</string>
     <string name="controls_hue">Hue</string>
     <string name="controls_close">Close</string>
     <string name="controls_quotes">Quotes</string>

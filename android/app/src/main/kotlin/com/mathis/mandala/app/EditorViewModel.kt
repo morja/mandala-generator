@@ -725,6 +725,12 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         liveCache.clear()
     }
 
+    /**
+     * Another mandala arrives (the die, Back or Forward, a favourite, a file, the menu's new one): the
+     * colour sheet closes and keeps its colours, so Cancel never puts the old ones on the new mandala (IOS-12 9).
+     */
+    private fun anotherMandala() = closeTextColourSheet(keep = true)
+
     /** The picture without its text, small, with its colours: for the swatches and "Stand out". */
     private class PictureSample(val key: MandalaParameters, val argb: IntArray, val size: Int, val swatches: List<Hsb>)
 
@@ -919,6 +925,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
     fun goForward() = navigate { history.forward() }
 
     private fun navigate(step: () -> MandalaParameters?) {
+        anotherMandala()
         record(_params.value) // a change younger than the history delay is kept too
         val target = step() ?: return
         _params.value = target
@@ -928,6 +935,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
 
     /** New layers and background, like "Randomize All" on the Mac. */
     fun surprise() {
+        anotherMandala()
         _params.update { it.randomAll(Random, surpriseLayers()) }
         _selected.value = 0
     }
@@ -980,6 +988,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
     fun useCandidate() {
         val c = _candidate.value ?: return
         closeCandidate()
+        anotherMandala()
         c.image?.let { image -> if (recentPreviews[c.params] == null) _preview.update { it.copy(image = image, rendering = true) } }
         _params.value = c.params
         _selected.value = 0
@@ -992,6 +1001,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
 
     /** New layers, like "Randomize Layers" on the Mac. */
     fun randomLayers() {
+        anotherMandala()
         _params.update { it.randomLayers(Random, surpriseLayers()) }
         _selected.value = 0
     }
@@ -1061,6 +1071,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
 
     /** Replaces all settings (favourite or file); Back in the history brings the previous ones back. */
     private fun replace(params: MandalaParameters) {
+        anotherMandala()
         _params.value = params
         _selected.value = 0
     }
@@ -1201,6 +1212,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
     private var playLand: PlayField.Landscape? = null
 
     fun openPlay() {
+        anotherMandala()
         playBase = _params.value
         _play.value = PlayState()
         newPlayLandscape()
