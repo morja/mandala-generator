@@ -167,7 +167,7 @@ Review screenshot plan (taken with the store screenshots, not now):
 
 ## Privacy page for tearoom.one: proposal
 
-Proposal only, not in the website repository; Mathis decides. It extends the current page (`content/7_apps/7_privacy/5_dahlia/app-document.{en,de}.txt` in the tearoom.one repo, updated 20 October 2026) to the iPhone app. Sections not listed stay as they are (Controller, Legal bases, Your rights, Support, Changes).
+Approved by Mathis on 26 November 2026 and written into the tearoom.one repository the same day (dated 26 November 2026); goes online with the site's content deploy. It extends the current page (`content/7_apps/7_privacy/5_dahlia/app-document.{en,de}.txt` in the tearoom.one repo, updated 20 October 2026) to the iPhone app. Sections not listed stay as they are (Controller, Legal bases, Your rights, Support, Changes).
 
 ### English
 
