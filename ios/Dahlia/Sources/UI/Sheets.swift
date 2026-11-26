@@ -65,9 +65,8 @@ struct FavoritesSheet: View {
             }
         }
         .padding(.horizontal, Spacing.lg)
-        .background(t.background)
         .presentationDetents([.medium, .large])
-        .presentationBackground(t.background)
+        .sheetSurface()
     }
 }
 
@@ -109,5 +108,38 @@ struct FavoriteTile: View {
         .accessibilityLabel(Texts.favouriteLabel(favorite.parameters.layers.map { Texts.style($0.style) }.joined(separator: ", ")))
         .accessibilityAddTraits(selected ? [.isButton, .isSelected] : .isButton)
         .accessibilityAction(named: Texts.select) { toggle() }
+    }
+}
+
+/// The look of every sheet, as Android's ModalBottomSheet: the surface colour, a shade lighter than the editor, and a
+/// visible grabber (IOS-14).
+private struct SheetSurface: ViewModifier {
+    @Environment(\.tokens) private var t
+
+    func body(content: Content) -> some View {
+        content
+            .background(t.surface)
+            .presentationBackground(t.surface)
+            .presentationDragIndicator(.visible)
+    }
+}
+
+extension View {
+    func sheetSurface() -> some View { modifier(SheetSurface()) }
+}
+
+/// A sheet as tall as its content, so the picture stays visible above it (Android's menu and Pro sheets); it scrolls
+/// when the content is taller than the screen. The content brings its own insets.
+struct FittedSheet<Content: View>: View {
+    @ViewBuilder var content: Content
+    @State private var height: CGFloat = 0
+
+    var body: some View {
+        ScrollView {
+            content.onGeometryChange(for: CGFloat.self) { $0.size.height } action: { height = $0 }
+        }
+        .scrollBounceBehavior(.basedOnSize)
+        .presentationDetents(height > 0 ? [.height(height)] : [.medium])
+        .sheetSurface()
     }
 }

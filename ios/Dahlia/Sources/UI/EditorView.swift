@@ -29,19 +29,32 @@ struct EditorView: View {
             barButton("arrow.uturn.forward", Texts.forward, tint: t.text, enabled: model.shell.canGoForward) { model.goForward() }
             Spacer(minLength: 0)
             barButton("safari", Texts.playTitle, tint: t.text, target: .play) { model.openPlay() }
-            barButton("die.face.5", Texts.newKind(.everything), tint: t.accent, target: .topDie) { model.surprise() }
-            barButton("square.and.arrow.down", Texts.saveImage, tint: t.accent, target: .save) { showSave = true }
-            barButton(model.isFavorite ? "star.fill" : "star", Texts.favourites, tint: t.text, target: .favourites) { showFavorites = true }
+            barButton(Texts.newKind(.everything), target: .topDie, action: { model.surprise() }) { DieSymbol(name: "die.face.5") }
+            // Android's filled download arrow; the star is filled as on Android (IOS-14).
+            barButton("arrow.down.to.line", Texts.saveImage, tint: t.accent, target: .save) { showSave = true }
+            barButton("star.fill", Texts.favourites, tint: t.text, target: .favourites) { showFavorites = true }
             barButton("ellipsis", Texts.more, tint: t.text, target: .more) { showMenu = true }
         }
         .padding(.horizontal, Spacing.sm)
-        .padding(.vertical, Spacing.xs)
+        // 64 points high, as Android's TopAppBar.
+        .padding(.vertical, Spacing.sm)
     }
 
     private func barButton(_ symbol: String, _ label: String, tint: Color, enabled: Bool = true, target: TourTarget? = nil, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
+        barButton(label, enabled: enabled, target: target, action: action) {
             Image(systemName: symbol).foregroundStyle(enabled ? tint : t.textMuted)
-                .frame(width: Sizes.swatch + Spacing.xs, height: Sizes.swatch + Spacing.xs)
+        }
+    }
+
+    /// A 48-point button with a 24-point icon, as Android's IconButton; the heading role gives the symbols Android's
+    /// heavier line.
+    private func barButton<Icon: View>(_ label: String, enabled: Bool = true, target: TourTarget? = nil, action: @escaping () -> Void,
+                                       @ViewBuilder icon: () -> Icon) -> some View {
+        Button(action: action) {
+            icon()
+                .textRole(.heading)
+                .imageScale(.large)
+                .frame(width: Sizes.icon * 2, height: Sizes.icon * 2)
                 .contentShape(Rectangle())
                 .tourAnchor(target)
         }

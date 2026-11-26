@@ -53,7 +53,8 @@ struct MenuSheet: View {
     @State private var lineDrawing: SvgDocument?
 
     var body: some View {
-        ScrollView {
+        // As tall as the page, so the picture stays visible above the menu (Android's ModalBottomSheet, IOS-14).
+        FittedSheet {
             VStack(alignment: .leading, spacing: 0) {
                 if let candidate = model.shell.candidate {
                     Compare(candidate: candidate, close: close)
@@ -81,9 +82,6 @@ struct MenuSheet: View {
             .padding(.top, Spacing.xl)
             .padding(.bottom, Spacing.xl)
         }
-        .background(t.background)
-        .presentationDetents([.large])
-        .presentationBackground(t.background)
         // The comparison belongs to the open menu only.
         .onDisappear { model.closeCandidate() }
         // A Pro request from here (the line drawing, Share, "Dahlia Pro") shows on top of the menu.
@@ -303,7 +301,7 @@ struct MenuSheet: View {
             ForEach([("slider.horizontal.3", Texts.proAddsMaking), ("square.and.arrow.down", Texts.proAddsSaving),
                      ("photo", Texts.proAddsWallpapers)], id: \.0) { icon, text in
                 HStack(alignment: .top, spacing: Spacing.md) {
-                    Image(systemName: icon).foregroundStyle(t.textMuted).frame(width: Sizes.icon)
+                    Image(systemName: icon).foregroundStyle(t.textMuted).menuIcon()
                     Text(text).textRole(.body).foregroundStyle(t.text).fixedSize(horizontal: false, vertical: true)
                     Spacer(minLength: 0)
                 }
@@ -318,7 +316,7 @@ struct MenuSheet: View {
 
     var divider: some View { Rectangle().fill(t.outline).frame(height: Sizes.swatchRing / 2) }
 
-    var chevron: some View { Image(systemName: "chevron.right").foregroundStyle(t.textMuted) }
+    var chevron: some View { Image(systemName: "chevron.right").foregroundStyle(t.textMuted).textRole(.heading) }
 
     /// Dark or light, as two halves of one rounded control (not following the system, as on Android).
     private var themeChoice: some View {
@@ -359,7 +357,7 @@ private struct DieTile: View {
     var body: some View {
         Button(action: action) {
             VStack(spacing: Spacing.xs) {
-                Image(systemName: die.icon).foregroundStyle(t.accent)
+                DieSymbol(name: die.icon).menuIcon()
                 Text(Texts.newKind(die.kind)).textRole(.heading).foregroundStyle(t.text).lineLimit(1).minimumScaleFactor(0.7)
                 Text(Texts.newKindDetail(die.kind)).textRole(.note).foregroundStyle(t.textMuted).lineLimit(1).minimumScaleFactor(0.7)
                 HStack(spacing: Spacing.xs) {
@@ -380,6 +378,14 @@ private struct DieTile: View {
     }
 }
 
+extension View {
+    /// A menu icon in Android's 24-point box: the symbol one scale above the body text, in the heading weight, so it has
+    /// the size and line of Android's icons (IOS-14).
+    func menuIcon() -> some View {
+        textRole(.heading).imageScale(.large).frame(minWidth: Sizes.icon, minHeight: Sizes.icon)
+    }
+}
+
 /// A raised tile with an icon above its label (Android's menu pills).
 struct Pill: View {
     let icon: String
@@ -391,8 +397,9 @@ struct Pill: View {
     var body: some View {
         Button(action: action) {
             VStack(spacing: Spacing.xs) {
-                Image(systemName: icon).foregroundStyle(enabled ? t.accent : t.textMuted)
-                Text(label).textRole(.note).foregroundStyle(enabled ? t.text : t.textMuted)
+                Image(systemName: icon).foregroundStyle(enabled ? t.accent : t.textMuted).menuIcon()
+                // The card title role, like the dice below (Android's cards have semibold labels).
+                Text(label).textRole(.heading).foregroundStyle(enabled ? t.text : t.textMuted).lineLimit(1).minimumScaleFactor(0.7)
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, Spacing.md)
@@ -413,7 +420,7 @@ struct MenuRow<Trailing: View>: View {
 
     var body: some View {
         let row = HStack(spacing: Spacing.md) {
-            Image(systemName: icon).foregroundStyle(t.textMuted).frame(width: Sizes.icon)
+            Image(systemName: icon).foregroundStyle(t.textMuted).menuIcon()
             VStack(alignment: .leading, spacing: 0) {
                 Text(label).textRole(.body).foregroundStyle(t.text)
                 if let detail { Text(detail).textRole(.note).foregroundStyle(t.textMuted).multilineTextAlignment(.leading) }
@@ -442,7 +449,7 @@ struct SwitchMenuRow: View {
 
     var body: some View {
         HStack(spacing: Spacing.md) {
-            Image(systemName: icon).foregroundStyle(t.textMuted).frame(width: Sizes.icon)
+            Image(systemName: icon).foregroundStyle(t.textMuted).menuIcon()
             VStack(alignment: .leading, spacing: 0) {
                 Text(label).textRole(.body).foregroundStyle(t.text)
                 Text(detail).textRole(.note).foregroundStyle(t.textMuted).multilineTextAlignment(.leading)

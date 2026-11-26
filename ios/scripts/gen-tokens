@@ -87,7 +87,8 @@ def build():
     out.append("}\n")
     out.append("""/// Text roles on Dynamic Type (approval A9): six roles on the system text styles (SF Pro), so large system
 /// text works. Sizes at the default setting; the roles of one size differ by weight or digits, neighbouring
-/// sizes by at least 1.2 (28, 20, 15, 12). The mapping from Android's type scale is in docs/IOS-3-strings-and-tokens.md.
+/// sizes by at least 1.2 (28, 22, 17, 13). One step above Android's nominal sizes, so the iPhone reads as roomy as
+/// the Android app on a phone (IOS-14). The mapping from Android's type scale is in docs/IOS-3-strings-and-tokens.md.
 enum TextRole {
     /// Large screen titles; no screen uses it yet.
     case display
@@ -95,7 +96,7 @@ enum TextRole {
     case title
     /// Group headings, tabs and buttons (Android titleSmall): the body size, heavier.
     case heading
-    /// Labels and rows (Android bodyMedium).
+    /// Labels and rows (Android bodyLarge in menus, bodyMedium in the controls).
     case body
     /// Summaries and hints, shown muted (Android bodySmall).
     case note
@@ -105,11 +106,11 @@ enum TextRole {
     var font: Font {
         switch self {
         case .display: .title
-        case .title: .title3.weight(.semibold)
-        case .heading: .subheadline.weight(.semibold)
-        case .body: .subheadline
-        case .note: .caption
-        case .value: .caption.monospacedDigit()
+        case .title: .title2.weight(.semibold)
+        case .heading: .headline
+        case .body: .body
+        case .note: .footnote
+        case .value: .footnote.monospacedDigit()
         }
     }
 }

@@ -629,3 +629,18 @@ struct MoveButton: View {
         }
     }
 }
+
+/// A die as Android draws its dice: the accent outline on a soft fill of the accent (Android's `line(DIE, soft = DIE)`).
+/// The filled symbol in the soft colour lies under the outline one, whose dots cover the filled one's cut-outs.
+struct DieSymbol: View {
+    let name: String
+    @Environment(\.tokens) private var t
+
+    var body: some View {
+        ZStack {
+            Image(systemName: name + ".fill").foregroundStyle(t.accentSoft)
+            Image(systemName: name).foregroundStyle(t.accent)
+        }
+        .accessibilityHidden(true)
+    }
+}
