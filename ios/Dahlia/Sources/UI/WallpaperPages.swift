@@ -14,8 +14,16 @@ struct WallpaperPage: View {
     var backLabel = Texts.menuBack
     @Environment(EditorModel.self) private var model
     @Environment(\.tokens) private var t
-    /// The Shortcuts tip, folded at first.
-    @State private var tipOpen = false
+    /// The Shortcuts tip, folded at first (debug builds: `-shotTipOpen YES` opens it for screenshots).
+    @State private var tipOpen = Self.tipOpenAtStart
+
+    private static var tipOpenAtStart: Bool {
+        #if DEBUG
+        return UserDefaults.standard.bool(forKey: "shotTipOpen")
+        #else
+        return false
+        #endif
+    }
 
     var body: some View {
         let pro = model.proOwned
