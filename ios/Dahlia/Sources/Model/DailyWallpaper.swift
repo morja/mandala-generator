@@ -21,11 +21,6 @@ enum DailyWallpaper {
 
     /// The Shortcuts action ran at least once on this phone (an automation is set up), so pictures are rendered ahead.
     static var actionUsed: Bool { AppGroup.defaults?.object(forKey: usedKey) != nil }
-
-    #if DEBUG
-    /// Debug builds: the last run of the action ("2.4 s, drawn now"), shown on the daily page for the device check.
-    static let lastRunKey = "debugWallpaperIntentLastRun"
-    #endif
 }
 
 /// One wallpaper as drawn: the mandala, the save sheet's finish, the home screen's brightness and the screen's pixels.

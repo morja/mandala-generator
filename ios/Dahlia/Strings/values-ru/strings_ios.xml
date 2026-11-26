@@ -22,11 +22,11 @@
     <string name="pro_restore_unreachable">Не удалось связаться с App Store, поэтому ничего не проверено. Попробуйте позже.</string>
     <string name="pro_purchase_not_started">App Store не смог открыть покупку. Попробуйте снова.</string>
     <string name="editor_pro_unavailable">Покупки на этом iPhone отключены. Их можно разрешить в «Настройки» → «Экранное время».</string>
-    <string name="editor_pro_adds_wallpapers">Обои: главный экран и экран блокировки парой и новые каждый день через «Быстрые команды».</string>
+    <string name="editor_pro_adds_wallpapers">Обои: главный экран и экран блокировки парой.</string>
     <!-- The widget list on the Dahlia page (WP-10): iOS changes a widget through Edit Widget. -->
     <string name="menu_widgets_about">У каждого виджета своя мандала и свои цвета. Чтобы изменить их, нажмите и удерживайте виджет и выберите «Изменить виджет».</string>
     <string name="menu_widgets_empty">Чтобы добавить, нажмите и удерживайте пустое место на экране «Домой», коснитесь «Править», затем «Добавить виджет» и выберите Dahlia.</string>
-    <!-- The wallpaper page, the daily page and the Shortcuts action (WP-11): iOS lets no app set the wallpaper. -->
+    <!-- The wallpaper page, its tip and the Shortcuts action (WP-11, the daily page removed 26 November 2026): iOS lets no app set the wallpaper. -->
     <string name="ios_wallpaper_about">Эта мандала на весь экран этого iPhone. iOS не позволяет приложениям самим ставить обои, поэтому Dahlia сохраняет её в «Фото», а вы устанавливаете её там.</string>
     <string name="ios_wallpaper_save_both">Сохранить обе в «Фото»</string>
     <string name="ios_wallpaper_set_title">Установка в iOS</string>
@@ -34,15 +34,6 @@
     <string name="ios_wallpaper_set_pair">Откройте картинку для экрана блокировки в «Фото», коснитесь «Поделиться», затем «Использовать как обои» и коснитесь «Добавить». Выберите «Настроить экран «Домой»», коснитесь «Фото» и выберите картинку для экрана «Домой».</string>
     <string name="ios_wallpaper_saved">Сохранено в «Фото». Откройте её там и коснитесь «Поделиться», затем «Использовать как обои».</string>
     <string name="ios_wallpapers_saved">Обе сохранены в «Фото»: для экрана блокировки и для экрана «Домой».</string>
-    <string name="ios_daily_today">Сегодня: %1$s</string>
-    <string name="menu_daily_about">По одному из ваших избранных, каждое утро в 4 часа следующий. На iPhone его ставит автоматизация в «Командах»; настроить её нужно один раз.</string>
-    <string name="menu_daily_widget_note">Виджет «Мандала дня» на экране «Домой» показывает то же избранное, если у него нет своего; с Pro он меняется каждое утро.</string>
-    <string name="ios_daily_automation_title">Настройка автоматизации</string>
-    <string name="ios_daily_automation_steps">1. В «Командах» создайте новую команду и добавьте «Мандала дня» из Dahlia, указав «Экран»: «Экран блокировки».\n2. После неё добавьте «Установить фото обоев», выберите экран блокировки и выключите «Показать предпросмотр».\n3. Для экрана «Домой» ещё раз добавьте «Мандала дня» с «Экран «Домой»» и второе «Установить фото обоев» для экрана «Домой».\n4. Чтобы она выполнялась каждый день, добавьте автоматизацию «Время суток» с временем, например 7:00, «Ежедневно» и «Выполнять сразу».</string>
-    <string name="ios_daily_open_shortcuts">Открыть «Команды»</string>
-    <string name="ios_daily_ready_shortcut">Добавить готовую команду</string>
-    <string name="ios_daily_ready_note">Готовая команда уже содержит шаги 1–3. Добавьте её и выполните для неё шаг 4.</string>
-    <string name="ios_daily_needs_pro">Действие «Команд» «Мандала дня» входит в Pro; виджет показывает первое отмеченное избранное.</string>
     <string name="ios_intent_title">Мандала дня</string>
     <string name="ios_intent_description">Сегодняшняя мандала из ваших избранных на весь экран, готовая для «Установить фото обоев».</string>
     <string name="ios_intent_screen">Экран</string>
@@ -51,4 +42,8 @@
     <string name="shortcut_phrase_1">${applicationName} мандала дня</string>
     <string name="shortcut_phrase_2">Мандала дня из ${applicationName}</string>
     <string name="pair_home_screen">Главный экран</string>
+    <string name="ios_wallpaper_tip_title">Совет: новые обои каждый день</string>
+    <string name="ios_wallpaper_tip_steps">Приложение «Команды» может каждое утро ставить на обои одну из ваших избранных мандал. Его действие «Мандала дня» входит в Pro и берёт избранное, которое сменяется в виджетах (Dahlia, Виджеты).\n1. В «Командах» создайте новую команду и добавьте «Мандала дня» из Dahlia, указав «Экран»: «Экран блокировки». После неё добавьте «Установить фото обоев», выберите экран блокировки и выключите «Показать предпросмотр».\n2. Ещё раз добавьте «Мандала дня» с «Экран «Домой»» и второе «Установить фото обоев» для экрана «Домой».\n3. Чтобы она выполнялась каждый день, добавьте автоматизацию «Время суток» с временем, например 7:00, «Ежедневно» и «Выполнять сразу».</string>
+    <string name="ios_widgets_daily_favourites">Избранное для смены каждый день</string>
+    <string name="message_daily_needs_favourite">«Мандала дня» берёт мандалы из избранного по очереди; сначала добавьте одну.</string>
 </resources>

@@ -94,9 +94,4 @@ extension EditorModel {
         let left = chosen.intersection(favorites.map(\.id))
         return left.isEmpty ? nil : left
     }
-
-    /// Today's favourite of the daily turn (with Pro; the first one without), for the daily page.
-    var dailyToday: Favorite? {
-        DailyWallpaper.favourite(favorites, chosen: dailyChosen, pro: proOwned, day: WidgetDay.number(of: Date()))
-    }
 }

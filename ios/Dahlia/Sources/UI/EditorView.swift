@@ -131,7 +131,7 @@ struct EditorView: View {
         .onAppear {
             #if DEBUG
             switch ShotSetup.sheet {
-            case "menu", "more", "dahlia", "about", "propage", "widgets", "wallpaper", "daily", "dailyFavourites": showMenu = true
+            case "menu", "more", "dahlia", "about", "propage", "widgets", "wallpaper", "dailyFavourites": showMenu = true
             case "favourites": showFavorites = true
             case "save": showSave = true
             default: break

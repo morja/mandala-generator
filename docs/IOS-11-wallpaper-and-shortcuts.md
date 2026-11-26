@@ -4,6 +4,8 @@ Session: iOS WP-11 wallpaper and Shortcuts · 12 November 2026
 
 ## IOS-11: Wallpaper page, the favourites that take turns, and the Shortcuts action "Mandala of the day" (PLAN-4 WP-11)
 
+**Changed on 26 November 2026: the iPhone no longer offers a daily wallpaper.** Mathis decided: if the iPhone cannot change the wallpaper by itself, the feature does not exist there; at most a tip with a text guide. So the main menu's "Daily wallpaper" row and its page (with "Open Shortcuts", the ready-shortcut button and `ReadyShortcut.link`) are gone, and so is the debug line with the action's last run, which lived only on that page. The favourites picker of the daily turn moved to Menu → Dahlia → Widgets ("Favourites in the daily turn"), because the widgets' daily turn follows that choice; its behaviour is unchanged. The wallpaper page ends with a folded tip "Tip: a new wallpaper every day" that gives the Shortcuts steps as plain text and says the action needs Pro. The Shortcuts action "Mandala of the day" (App Intent, Pro only, rendered ahead) is unchanged. The iOS Pro line now reads "Wallpapers: home and lock screen as a pair." (no "new one every day"), and the action's "no favourite" error no longer names a daily wallpaper. Android is unchanged. The device steps and the ready shortcut below are therefore obsolete; the parts about the action itself still hold.
+
 What WP-11 of [PLAN-4](PLAN-4-iphone-app.md) built, following Mathis' decisions F5 a (Photos with a guide, the Pro Shortcuts action, a ready shortcut) and F6 c (no Live Photo now). Android reference: `DailyWallpaper.kt`, the pair sheet and the daily page (ADR-0014, UX-1 13). Screenshots: `docs/qa/shots/ios-wp11-2026-11-12/` in the main checkout (ignored by Git).
 
 ### What was built
