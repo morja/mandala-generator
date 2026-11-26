@@ -1,6 +1,6 @@
 import Foundation
 
-// Texts of the wallpaper page, the daily page and the Shortcuts action (WP-11). Keys are Android's (strings*.xml) or
+// Texts of the wallpaper page with its Shortcuts tip, and of the favourites of the daily turn (WP-11). Keys are Android's (strings*.xml) or
 // those of ios/Dahlia/Strings; ios/scripts/check-sources fails when one is missing from the catalogue.
 extension Texts {
     static let menuWallpaper = shellText("menu_wallpaper")
@@ -19,23 +19,15 @@ extension Texts {
     static let wallpaperSaved = shellText("ios_wallpaper_saved")
     static let wallpapersSaved = shellText("ios_wallpapers_saved")
 
-    static let dailyWallpaper = shellText("menu_daily_wallpaper")
-    static let dailyPro = shellText("editor_daily_pro")
-    static func dailyToday(_ name: String) -> String { shellFormat("ios_daily_today", name) }
-    static let dailyAbout = shellText("menu_daily_about")
+    static let tipTitle = shellText("ios_wallpaper_tip_title")
+    static let tipSteps = shellText("ios_wallpaper_tip_steps")
+
     static let dailyFavourites = shellText("menu_daily_favourites")
+    static let widgetsDailyFavourites = shellText("ios_widgets_daily_favourites")
     static let dailyAll = shellText("menu_daily_all")
     static func dailySome(_ count: Int, _ total: Int) -> String { shellFormat("menu_daily_some", count, total) }
     static let dailyPickAbout = shellText("menu_daily_pick_about")
     static let dailyChooseAll = shellText("menu_daily_choose_all")
-    static let dailyWidgetNote = shellText("menu_daily_widget_note")
-    static let dailyAutomationTitle = shellText("ios_daily_automation_title")
-    static let dailyAutomationSteps = shellText("ios_daily_automation_steps")
-    static let dailyOpenShortcuts = shellText("ios_daily_open_shortcuts")
-    static let dailyReadyShortcut = shellText("ios_daily_ready_shortcut")
-    static let dailyReadyNote = shellText("ios_daily_ready_note")
-    static let dailyNeedsPro = shellText("ios_daily_needs_pro")
-    static func dailyLastRunDebug(_ run: String) -> String { shellFormat("ios_debug_wallpaper_last_run", run) }
 
     private static func shellText(_ key: String) -> String { String(localized: String.LocalizationValue(key)) }
 

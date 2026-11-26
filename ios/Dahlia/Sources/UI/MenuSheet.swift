@@ -4,8 +4,8 @@ import UniformTypeIdentifiers
 
 /// The menu as a sheet from below (Android's `MenuSheet`, DM-7 B): the mandala on screen with what keeps it, three dice
 /// for a new one shown beside the current mandala, the theme and "More" (the line drawing, files, the two switches);
-/// the Dahlia page with Pro (WP-9) and the home screen widgets (WP-10); the wallpaper and daily pages (WP-11) are in
-/// WallpaperPages.swift.
+/// the Dahlia page with Pro (WP-9) and the home screen widgets (WP-10) with the favourites of their daily turn; the
+/// wallpaper page and that picker (WP-11) are in WallpaperPages.swift.
 struct MenuSheet: View {
     let close: @MainActor () -> Void
     @Environment(EditorModel.self) private var model
@@ -20,7 +20,7 @@ struct MenuSheet: View {
     @State private var showExport = false
     @State private var showAbout = Self.initialAbout
 
-    enum Page { case main, more, dahlia, lineDrawing, pro, widgets, wallpaper, daily, dailyFavourites }
+    enum Page { case main, more, dahlia, lineDrawing, pro, widgets, wallpaper, dailyFavourites }
 
     /// The placed home screen widgets, read from WidgetKit whenever the Dahlia page or the widget list opens.
     @State private var widgetRows: [WidgetRow] = []
@@ -33,7 +33,6 @@ struct MenuSheet: View {
         case "propage": return .pro
         case "widgets": return .widgets
         case "wallpaper": return .wallpaper
-        case "daily": return .daily
         case "dailyFavourites": return .dailyFavourites
         default: return .main
         }
@@ -70,8 +69,6 @@ struct MenuSheet: View {
                     widgetsPage
                 } else if page == .wallpaper {
                     WallpaperPage(page: $page, close: close)
-                } else if page == .daily {
-                    DailyPage(page: $page)
                 } else if page == .dailyFavourites {
                     DailyFavouritesPage(page: $page)
                 } else {
@@ -142,11 +139,6 @@ struct MenuSheet: View {
                 ForEach(Self.dice, id: \.kind) { die in DieTile(die: die) { model.tryNew(die.kind) } }
             }
             divider.padding(.top, Spacing.xl)
-            // A setting that keeps running, so a row of its own with its state (Android's main page).
-            MenuRow(icon: "calendar", label: Texts.dailyWallpaper,
-                    detail: model.proOwned ? model.dailyToday.map { Texts.dailyToday(WidgetSync.name($0)) } : Texts.dailyPro,
-                    action: { page = .daily }) { chevron }
-            divider
             MenuRow(icon: "moon", label: Texts.menuTheme, detail: nil, action: nil) { themeChoice }
             divider
             MenuRow(icon: "slider.horizontal.3", label: Texts.menuMore, detail: nil, action: { page = .more }) { chevron }
@@ -287,6 +279,16 @@ struct MenuSheet: View {
             if widgetRows.isEmpty {
                 Text(Texts.menuWidgetsEmpty).textRole(.note).foregroundStyle(t.textMuted).padding(.top, Spacing.md)
             }
+
+            // Which favourites the daily turn takes (and the Shortcuts action "Mandala of the day"); the iPhone has no
+            // daily wallpaper page, so the choice lives with the widgets (26 November 2026).
+            let chosen = model.dailyShown
+            let count = model.favorites.filter { chosen?.contains($0.id) ?? true }.count
+            divider.padding(.top, Spacing.lg)
+            MenuRow(icon: "star", label: Texts.widgetsDailyFavourites,
+                    detail: chosen == nil ? Texts.dailyAll : Texts.dailySome(count, model.favorites.count),
+                    action: model.favorites.isEmpty ? nil : { page = .dailyFavourites }) { chevron }
+            divider
         }
     }
 
