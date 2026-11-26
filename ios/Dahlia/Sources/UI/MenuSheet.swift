@@ -129,7 +129,7 @@ struct MenuSheet: View {
                     .disabled(model.save.busy)
                 // The square picture through the share sheet, drawn after the menu closed (Android's KeepRow).
                 Pill(icon: "square.and.arrow.up", label: Texts.share) {
-                    // With Pro features but without Pro the Pro sheet opens on top of the menu; "Share without them" goes on.
+                    // With Pro features but without Pro the Pro sheet opens on top of the menu; "Share without Pro parts" goes on.
                     let share: @MainActor () -> Void = {
                         close()
                         model.shareImage()

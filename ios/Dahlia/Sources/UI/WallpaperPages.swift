@@ -52,7 +52,7 @@ struct WallpaperPage: View {
             }
 
             Button {
-                // With Pro features but without Pro the Pro sheet opens on top of the menu; "Save without them" goes on.
+                // With Pro features but without Pro the Pro sheet opens on top of the menu; "Save without Pro parts" goes on.
                 let go: @MainActor () -> Void = {
                     close()
                     model.saveWallpaper()

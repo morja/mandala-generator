@@ -17248,31 +17248,31 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Entfernen"
+            "value" : "Pro-Teile entfernen"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Remove them"
+            "value" : "Remove Pro parts"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Quitarlas"
+            "value" : "Quitar las partes Pro"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Les retirer"
+            "value" : "Retirer les éléments Pro"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Rimuovile"
+            "value" : "Rimuovi le parti Pro"
           }
         },
         "ja" : {
@@ -17290,19 +17290,19 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Remover"
+            "value" : "Remover as partes Pro"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Убрать их"
+            "value" : "Убрать Pro-элементы"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "移除这些功能"
+            "value" : "移除 Pro 功能"
           }
         }
       }
@@ -17833,31 +17833,31 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$@ ohne diese Funktionen"
+            "value" : "%1$@ ohne Pro-Teile"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$@ without them"
+            "value" : "%1$@ without Pro parts"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$@ sin ellas"
+            "value" : "%1$@ sin las partes Pro"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$@ sans elles"
+            "value" : "%1$@ sans les éléments Pro"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$@ senza queste funzioni"
+            "value" : "%1$@ senza le parti Pro"
           }
         },
         "ja" : {
@@ -17875,19 +17875,19 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$@ sem eles"
+            "value" : "%1$@ sem as partes Pro"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$@ без них"
+            "value" : "%1$@ без Pro-элементов"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$@（不含这些功能）"
+            "value" : "%1$@（不含 Pro 功能）"
           }
         }
       }

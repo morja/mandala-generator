@@ -46,8 +46,8 @@
     <string name="editor_pro_summary">%1$s %2$s %3$s %4$s %5$s</string>
     <string name="editor_pro_buy_for">Buy for %1$s</string>
     <string name="editor_pro_buy">Buy Pro</string>
-    <string name="editor_pro_without">%1$s without them</string>
-    <string name="editor_pro_remove">Remove them</string>
+    <string name="editor_pro_without">%1$s without Pro parts</string>
+    <string name="editor_pro_remove">Remove Pro parts</string>
     <string name="editor_pro_unavailable">Pro is sold through Google Play and is not available in this installation right now.</string>
     <string name="editor_pro_retry">Try again</string>
     <string name="editor_pro_restore">Restore purchase</string>

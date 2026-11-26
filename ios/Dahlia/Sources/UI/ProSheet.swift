@@ -3,7 +3,7 @@ import SwiftUI
 
 /// The Pro sheet (ADR-0016, WP-9), laid out as Android's: the kit's `UnlockSheet` with Dahlia's `ProIntro`. The title, why
 /// it opened (the Pro features the mandala uses, a note) and what Pro adds; then the buy button with the App Store's
-/// price, "… without them", the App Store's feedback (pending, why there is no price, the last purchase or restore), and
+/// price, "… without Pro parts", the App Store's feedback (pending, why there is no price, the last purchase or restore), and
 /// "Try again" and "Restore purchase" one per line, so long translations fit. It is as tall as its content and scrolls
 /// when that is taller than the screen.
 struct ProSheet: View {
@@ -81,7 +81,7 @@ struct ProSheet: View {
             .disabled(!store.canBuy)
             if !request.features.isEmpty {
                 Button { model.continueWithoutPro() } label: {
-                    Text(request.action.map(Texts.proWithout) ?? Texts.proRemove).textRole(.heading).lineLimit(1)
+                    Text(request.action.map(Texts.proWithout) ?? Texts.proRemove).textRole(.heading).lineLimit(2).multilineTextAlignment(.center)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, Spacing.xs)
                 }
