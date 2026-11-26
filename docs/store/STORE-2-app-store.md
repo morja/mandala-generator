@@ -58,7 +58,7 @@ Prepared for PLAN-4 WP-13, text part only. Nothing of this is entered in App Sto
 
 In `store/ios/<locale>/`, one folder per app language (PLAN-4 F10 a), named with App Store Connect's locale codes: `en-US` (primary), `de-DE`, `es-ES`, `es-MX`, `fr-FR`, `it`, `pt-BR`, `ru`, `ja`, `ko`, `zh-Hans`. `es-MX` is a copy of `es-ES` (checked for Spain-only words: none), so Mexico and Latin America get Spanish as on Play's es-419. Files in fastlane deliver's layout: `name.txt`, `subtitle.txt`, `promotional_text.txt`, `description.txt`, `keywords.txt`, `release_notes.txt`. `store/ios/check-limits` checks every file against Apple's limits (name and subtitle 30, promotional text 170, keywords 100, description and What's New 4000 characters; keywords also in UTF-8 bytes, as a warning).
 
-- Based on the Play texts in `store/android/<locale>/`, changed to what the iPhone app does: no live wallpaper and no "set as wallpaper" (iOS lets no app set it; pictures go to Photos), the daily wallpaper through a Shortcuts automation set up once (Pro), the home screen widget "Mandala of the day" in three sizes (free, changing every morning with Pro), Family Sharing named in the Pro paragraph, 21 example favourites (the number in `starter-favorites.json`; the Play texts still say 23).
+- Based on the Play texts in `store/android/<locale>/`, changed to what the iPhone app does: no live wallpaper and no "set as wallpaper" (iOS lets no app set it; pictures go to Photos), no daily wallpaper (Mathis, 26 November 2026: on the iPhone it is only a tip in the app, the Shortcuts action stays Pro but is not advertised), Pro wallpapers are home and lock screen as a matching pair, the home screen widget "Mandala of the day" in three sizes (free, changing every morning with Pro), Family Sharing named in the Pro paragraph, 21 example favourites (the number in `starter-favorites.json`; the Play texts still say 23).
 
 - No mention of Android or Google Play anywhere: App Review guideline 2.3.10 rejects metadata that names other mobile platforms. The favourites sentence names only the iPhone and the Mac version. The app's own texts were checked for the same (`Localizable.xcstrings`: none).
 
@@ -78,7 +78,7 @@ In `store/ios/<locale>/`, one folder per app language (PLAN-4 F10 a), named with
 
 - **French subtitle** "Géométrie sacrée et fonds" (30 characters; "fonds d'écran" would be 33): accepted.
 
-- **Ready shortcut through an iCloud link:** not decided yet; until then the review notes describe building the shortcut by hand.
+- **Ready shortcut through an iCloud link:** dropped. Mathis decided later the same day that the iPhone app does not offer the daily wallpaper as a feature: it becomes a text tip in the app, the Shortcuts action "Mandala of the day" stays (Pro) but is not advertised. The listing texts in all locales were changed accordingly (no new wallpaper every morning, no Shortcuts automation); the review notes mention the action only as optional.
 
 ### Other fields of the version page
 
@@ -139,15 +139,10 @@ The symbols (Om, Dharma wheel, Sri Yantra …) and the spiritual quotes are not 
 > Pro (in-app purchase "Dahlia Pro", one.tearoom.mandala.pro, non-consumable, Family Sharing on)
 > - Purchase sheet: tap the ⋯ button in the navigation bar, then Dahlia › Dahlia Pro. It shows what Pro adds, "Buy for …" and "Restore purchase".
 > - The sheet also opens from every Pro feature: a free user can try more layers, emblems and text in the editor, and the "Pro" mark on the picture opens the sheet; saving or sharing such a mandala offers Pro or saving without those features.
-> - Pro features after buying in the sandbox: up to five layers (Layers tab, +), the Emblem and Text tabs, saving at 2048 px and as a video (the save arrow in the navigation bar, then Picture or Video), the SVG line drawing (⋯ › More › Line drawing), the wallpaper pair (⋯ › Wallpaper › Save both to Photos) and the daily wallpaper (⋯ › Daily wallpaper).
+> - Pro features after buying in the sandbox: up to five layers (Layers tab, +), the Emblem and Text tabs, saving at 2048 px and as a video (the save arrow in the navigation bar, then Picture or Video), the SVG line drawing (⋯ › More › Line drawing) and the wallpaper pair (⋯ › Wallpaper › Save both to Photos).
 >
-> Daily wallpaper through Shortcuts (Pro)
-> iOS lets no app set the wallpaper, so Dahlia offers the App Intent "Mandala of the day" (parameter Screen: Lock screen or Home screen). It returns today's picture from the user's ticked favourites; it is listed in the Shortcuts app under Dahlia without any setup.
-> 1. In Shortcuts, create a new shortcut and add "Mandala of the day" from Dahlia, Screen = Lock screen.
-> 2. Add "Set Wallpaper Photo", choose the lock screen and turn off Show Preview.
-> 3. Optionally add "Mandala of the day" with Screen = Home screen and a second "Set Wallpaper Photo" for the home screen.
-> 4. Run the shortcut with the play button to see it work at once. For every day, add a Time of Day automation (Daily, Run Immediately) that runs this shortcut.
-> The same steps are in the app under ⋯ › Daily wallpaper, with a button that opens Shortcuts. Without Pro the action answers "Mandala of the day comes with Dahlia Pro".
+> Optional: Shortcuts action (Pro)
+> The app provides the App Intent "Mandala of the day" (parameter Screen: Lock screen or Home screen). It appears in the Shortcuts app under Dahlia without setup and returns today's picture from the user's favourites, for example for "Set Wallpaper Photo". It needs no setup to review the app; without Pro it answers "Mandala of the day comes with Dahlia Pro".
 >
 > Widget
 > Long-press the home screen › Edit › Add Widget › Dahlia › "Mandala of the day" (small, medium, large). The widget is free and shows a favourite; with Pro it changes every morning at 4:00.
@@ -160,7 +155,7 @@ The contact name, phone and email under "App Review Information" are Mathis' to 
 
 Review notes for the product "Dahlia Pro" (English):
 
-> Unlocks up to five layers, emblems, text and quotes, moving layers, saving at 2048 px, as a video and as an SVG line drawing, the wallpaper pair and the Shortcuts action "Mandala of the day". The purchase sheet opens from ⋯ › Dahlia › Dahlia Pro or from any Pro feature; "Restore purchase" is in the same sheet.
+> Unlocks up to five layers, emblems, text and quotes, moving layers, saving at 2048 px, as a video and as an SVG line drawing, and the wallpaper pair (home and lock screen). The purchase sheet opens from ⋯ › Dahlia › Dahlia Pro or from any Pro feature; "Restore purchase" is in the same sheet.
 
 Review screenshot plan (taken with the store screenshots, not now):
 
