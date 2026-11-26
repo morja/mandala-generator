@@ -86,8 +86,6 @@ struct MandalaOfTheDayIntent: AppIntent {
         peak.cancel()
         let megabytes = await peak.value
         Engine.trace("wallpaper intent peakFootprint=\(megabytes)MB")
-        AppGroup.defaults?.set("\(side.rawValue) \(String(format: "%.1f", Double(millis) / 1000)) s, \(drawn ? "drawn now" : "rendered ahead"), " +
-                               "peak \(megabytes) MB · " + Date().formatted(date: .abbreviated, time: .shortened), forKey: DailyWallpaper.lastRunKey)
         #endif
         return WallpaperFiles.url(job, side)
     }
