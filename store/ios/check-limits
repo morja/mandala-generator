@@ -1,0 +1,88 @@
+#!/usr/bin/env python3
+"""Check the App Store listing texts in store/ios/<locale>/ against App Store Connect's limits.
+
+Usage: store/ios/check-limits            (all locales)
+       store/ios/check-limits de-DE ja   (some locales)
+
+Lengths are counted in characters (Unicode code points), as App Store Connect does. Keywords are also
+checked in UTF-8 bytes, because reports differ on whether Apple counts their 100 in bytes for CJK text;
+a byte overrun is a warning, not a failure. Exit code 1 if any limit is broken or a file is missing.
+"""
+
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent
+
+# File name (fastlane deliver's layout) -> (limit in characters, required)
+LIMITS = {
+    "name.txt": (30, True),
+    "subtitle.txt": (30, True),
+    "promotional_text.txt": (170, True),
+    "description.txt": (4000, True),
+    "keywords.txt": (100, True),
+    "release_notes.txt": (4000, True),
+}
+
+
+def read(path: Path) -> str:
+    # Files end with one newline; App Store Connect gets the text without it.
+    return path.read_text(encoding="utf-8").rstrip("\n")
+
+
+def check_locale(folder: Path) -> list[str]:
+    problems = []
+    rows = []
+
+    for name, (limit, required) in LIMITS.items():
+        path = folder / name
+        if not path.exists():
+            if required:
+                problems.append(f"{folder.name}/{name}: missing")
+            continue
+
+        text = read(path)
+        length = len(text)
+        mark = "ok" if 0 < length <= limit else "TOO LONG" if length > limit else "EMPTY"
+        rows.append(f"  {name:<22} {length:>5} / {limit:<5} {mark}")
+        if mark != "ok":
+            problems.append(f"{folder.name}/{name}: {length} of {limit} characters ({mark.lower()})")
+
+        if "\n" in text and name in ("name.txt", "subtitle.txt", "keywords.txt"):
+            problems.append(f"{folder.name}/{name}: must be one line")
+
+        if name == "keywords.txt":
+            words = [w for w in text.split(",")]
+            if any(w != w.strip() or not w for w in words):
+                problems.append(f"{folder.name}/keywords.txt: spaces around commas or an empty keyword")
+            size = len(text.encode("utf-8"))
+            if size > 100:
+                rows.append(f"  {'':<22} {size:>5} bytes   warning: over 100 in UTF-8 bytes")
+
+    print(folder.name)
+    print("\n".join(rows))
+    return problems
+
+
+def main() -> int:
+    wanted = sys.argv[1:]
+    folders = sorted(p for p in ROOT.iterdir() if p.is_dir() and (not wanted or p.name in wanted))
+    if not folders:
+        print("no locale folders found")
+        return 1
+
+    problems = []
+    for folder in folders:
+        problems += check_locale(folder)
+
+    print()
+    if problems:
+        print("Problems:")
+        print("\n".join(f"- {p}" for p in problems))
+        return 1
+    print(f"All {len(folders)} locales within App Store Connect's limits.")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

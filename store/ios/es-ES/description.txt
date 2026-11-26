@@ -1,0 +1,19 @@
+Dahlia es una aplicación para crear mandalas: dibuja mandalas luminosos a partir de curvas matemáticas, luz y símbolos sagrados, para imágenes, fondos de pantalla y tu pantalla de inicio.
+
+Crea cada mandala con hasta cinco capas. Cada capa tiene su propio estilo (espirógrafos, curvas de rosa, geometría sagrada, campos de flujo, formas 3D y más, 36 en total), con su propia simetría, paleta y brillo. Tira los dados para generar nuevas combinaciones; las flechas de historial te permiten retroceder. En el campo de juego, el mandala cambia mientras arrastras el dedo sobre él.
+
+Coloca un símbolo grande en el centro: Om, el Árbol de la Vida, la Flor de la Vida, un loto, yin y yang, la rueda del Dharma, un unalome, la triple luna o el Sri Yantra. Dibújalo como línea, contorno, relleno o en cuentas, enmárcalo con un anillo, un anillo de loto, puertas cuadradas o un ensō, y dale un toque más orgánico, como dibujado a mano.
+
+Elige un degradado, un efecto de rayos de sol, una textura granulada o una de tus propias fotos como fondo, y crea tus propias paletas, también a partir de una imagen. Añade efectos de floración, estrellas o una viñeta, una cita con un brillo suave, o dibuja a mano con simetría rotada.
+
+Guarda tus mandalas en Fotos en formato cuadrado, con la forma de tu pantalla o en proporciones como 4:5, 2:3 y 16:9, mostrando el mandala completo o rellenando la imagen, o compártelos. Empieza con 21 favoritos de ejemplo, guarda los tuyos y muévelos como archivo entre tu iPhone y la versión para Mac.
+
+Pon un mandala en tu pantalla de inicio: el widget «Mandala del día» muestra uno de tus favoritos, en tres tamaños.
+
+La app es gratuita: todos los estilos y paletas, todos los efectos, tres capas, tantos favoritos como quieras, el widget, y guardar y compartir al tamaño de la pantalla sin marca de agua. Pro es una compra única opcional, sin suscripción, y Compartir en familia está activado: hasta cinco capas, emblemas, texto y citas, y mover capas y el emblema. Guarda a 2048 px para impresiones y fondos de pantalla, con el mandala colocado a mano y brillo, contraste y saturación ajustados con precisión, como vídeo giratorio y como dibujo lineal en SVG. Pro también incluye fondos de pantalla: pantalla de inicio y de bloqueo como pareja a juego, y un fondo nuevo de tus favoritos cada mañana mediante una automatización de Atajos que configuras una sola vez. Entonces el widget también cambia cada mañana. Prueba más capas, emblemas y citas en el editor antes de comprar.
+
+Sin cuenta, sin anuncios, sin seguimiento. Tus mandalas permanecen en tu iPhone.
+
+Guía y preguntas frecuentes (en inglés): https://www.tearoom.one/en/apps/dahlia/help
+
+Dahlia es de código abierto bajo la licencia GNU GPL 3.0: https://github.com/morja/mandala-generator

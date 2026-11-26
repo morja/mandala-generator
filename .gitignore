@@ -5,9 +5,10 @@
 # Python bytecode from the store tools
 __pycache__/
 media/
-# store/ holds private files (promo codes); store/android (Play listing texts and images) is tracked
+# store/ holds private files (promo codes); store/android (Play) and store/ios (App Store) listing texts are tracked
 store/*
 !store/android/
+!store/ios/
 
 # ui-check screenshots (keep only the ones a QA report references, in docs/qa/QA-n/)
 docs/qa/shots/
