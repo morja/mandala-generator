@@ -56,7 +56,7 @@ Prepared for PLAN-4 WP-13, text part only. Nothing of this is entered in App Sto
 
 ### Listing texts
 
-In `store/ios/<locale>/`, one folder per app language (PLAN-4 F10 a), named with App Store Connect's locale codes: `en-US` (primary), `de-DE`, `es-ES`, `fr-FR`, `it`, `pt-BR`, `ru`, `ja`, `ko`, `zh-Hans`. Files in fastlane deliver's layout: `name.txt`, `subtitle.txt`, `promotional_text.txt`, `description.txt`, `keywords.txt`, `release_notes.txt`. `store/ios/check-limits` checks every file against Apple's limits (name and subtitle 30, promotional text 170, keywords 100, description and What's New 4000 characters; keywords also in UTF-8 bytes, as a warning).
+In `store/ios/<locale>/`, one folder per app language (PLAN-4 F10 a), named with App Store Connect's locale codes: `en-US` (primary), `de-DE`, `es-ES`, `es-MX`, `fr-FR`, `it`, `pt-BR`, `ru`, `ja`, `ko`, `zh-Hans`. `es-MX` is a copy of `es-ES` (checked for Spain-only words: none), so Mexico and Latin America get Spanish as on Play's es-419. Files in fastlane deliver's layout: `name.txt`, `subtitle.txt`, `promotional_text.txt`, `description.txt`, `keywords.txt`, `release_notes.txt`. `store/ios/check-limits` checks every file against Apple's limits (name and subtitle 30, promotional text 170, keywords 100, description and What's New 4000 characters; keywords also in UTF-8 bytes, as a warning).
 
 - Based on the Play texts in `store/android/<locale>/`, changed to what the iPhone app does: no live wallpaper and no "set as wallpaper" (iOS lets no app set it; pictures go to Photos), the daily wallpaper through a Shortcuts automation set up once (Pro), the home screen widget "Mandala of the day" in three sizes (free, changing every morning with Pro), Family Sharing named in the Pro paragraph, 21 example favourites (the number in `starter-favorites.json`; the Play texts still say 23).
 
@@ -69,6 +69,16 @@ In `store/ios/<locale>/`, one folder per app language (PLAN-4 F10 a), named with
 - **What's New** (`release_notes.txt`): App Store Connect shows no "What's New" field for an app's first version. The text is there for TestFlight's "What to Test" and as the start of 1.0.1's notes.
 
 - Promotional text can be changed at any time without a new version; the rest only with a version.
+
+### Decided on 26 November 2026 (Mathis, relayed by the master chat)
+
+- **Privacy manifest:** the app has no `PrivacyInfo.xcprivacy`, but uses APIs Apple asks a reason for (UserDefaults, a file's modification date and size). Mathis agrees to add the manifest with build 3 where needed; it is built with build 3, not in this text step.
+
+- **es-MX:** added as a copy of the Spanish text.
+
+- **French subtitle** "Géométrie sacrée et fonds" (30 characters; "fonds d'écran" would be 33): accepted.
+
+- **Ready shortcut through an iCloud link:** not decided yet; until then the review notes describe building the shortcut by hand.
 
 ### Other fields of the version page
 
