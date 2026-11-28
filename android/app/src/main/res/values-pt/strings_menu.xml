@@ -27,6 +27,8 @@
     <string name="menu_die_layers_detail">novos estilos</string>
     <string name="menu_die_everything">Surpresa</string>
     <string name="menu_die_everything_detail">tudo</string>
+    <string name="menu_start_fresh">Começar do zero</string>
+    <string name="menu_start_fresh_detail">Uma camada, sem texto nem emblema</string>
 
     <!-- Menu: files and settings -->
     <string name="menu_open_file">Abrir arquivo</string>

@@ -23,6 +23,8 @@
     <string name="menu_die_layers_detail">スタイルを変更</string>
     <string name="menu_die_everything">おまかせ</string>
     <string name="menu_die_everything_detail">すべてを変更</string>
+    <string name="menu_start_fresh">最初から始める</string>
+    <string name="menu_start_fresh_detail">レイヤー1つ、テキストとエンブレムなし</string>
 
     <!-- Menu: files and settings -->
     <string name="menu_open_file">ファイルを開く</string>

@@ -23,6 +23,8 @@
     <string name="menu_die_layers_detail">新风格</string>
     <string name="menu_die_everything">随机惊喜</string>
     <string name="menu_die_everything_detail">全部更换</string>
+    <string name="menu_start_fresh">重新开始</string>
+    <string name="menu_start_fresh_detail">一个图层，无文字和徽标</string>
 
     <!-- Menu: files and settings -->
     <string name="menu_open_file">打开文件</string>

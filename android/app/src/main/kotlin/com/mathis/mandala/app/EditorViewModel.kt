@@ -940,6 +940,14 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         _selected.value = 0
     }
 
+    /** "Start fresh": the plain mandala of [Editing.fresh]; one step in the history like the dice, so back restores. */
+    fun startFresh() {
+        anotherMandala()
+        record(_params.value) // a change younger than the history delay is kept too, so back finds it
+        _params.value = Editing.fresh()
+        _selected.value = 0
+    }
+
     /** Surprise mandalas stay within the free line without Pro, so they can always be kept. */
     private fun surpriseLayers(): Int = if (proState.value.unlocked) Randomize.MAX_LAYERS else ProFeatures.FREE_LAYERS
 

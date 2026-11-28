@@ -25,6 +25,8 @@
     <string name="menu_die_layers_detail">new styles</string>
     <string name="menu_die_everything">Surprise me</string>
     <string name="menu_die_everything_detail">everything</string>
+    <string name="menu_start_fresh">Start fresh</string>
+    <string name="menu_start_fresh_detail">One layer, no text or emblem</string>
 
     <!-- Menu: files and settings -->
     <string name="menu_open_file">Open file</string>
