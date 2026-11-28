@@ -4,7 +4,8 @@ import Foundation
 
 /// Debug only: puts the editor into a state for screenshots in the simulator, where tapping through is
 /// slow (IOS-5). Launch arguments: `-shotFavourite <id prefix>` opens a starter or favourite,
-/// `-shotEmblem YES` switches the emblem on, `-shotStartFresh YES` starts fresh, `-shotMove layer|emblem|text` and `-shotDraw lines|spray`
+/// `-shotEmblem YES` switches the emblem on, `-shotStartFresh YES` starts fresh, `-shotTryNew variation|layers|everything`
+/// (with `-shotSheet menu`) shows the menu's comparison with a new mandala of that kind, `-shotMove layer|emblem|text` and `-shotDraw lines|spray`
 /// start moving or drawing; `-shotSheet` and `-shotTourStep` open a sheet or the tour; `-startTab layers|scene|emblem|text|draw` (read by `ControlTabs`) opens a tab.
 /// The save sheet (WP-8): `-shotSave YES` opens it, `-shotFormat <SaveFormat name>` (SQUARE, SCREEN, FOUR_FIVE …),
 /// `-shotVideo YES` the Video tab, `-shotFill YES` Fill, `-shotAdjust YES` with Adjust open (read by `SaveSheet`).
@@ -38,6 +39,13 @@ enum ShotSetup {
                 Engine.trace("shotBuy purchase")
                 model.proStore.simulatePurchaseForScreenshots()
             }
+        }
+        // `-shotTryNew layers`: the die in the menu, as a tap on it would do (the App Store screenshots, STORE-2).
+        switch d.string(forKey: "shotTryNew") {
+        case "variation": model.tryNew(.variation)
+        case "layers": model.tryNew(.layers)
+        case "everything": model.tryNew(.everything)
+        default: break
         }
         if let mode = textColour { Task { await textColourSetup(mode, model) } }
         // `-shotStartFresh YES`: the menu's "Start fresh" a moment after the start, as a tap on it would do.
