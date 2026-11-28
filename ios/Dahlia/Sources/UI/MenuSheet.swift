@@ -403,13 +403,17 @@ struct Pill: View {
     let action: () -> Void
     @Environment(\.tokens) private var t
     @Environment(\.isEnabled) private var enabled
+    /// How many Dynamic Type sizes the label sits below the heading role.
+    private static let labelSteps = 2
 
     var body: some View {
         Button(action: action) {
             VStack(spacing: Spacing.xs) {
                 Image(systemName: icon).foregroundStyle(enabled ? t.accent : t.textMuted).menuIcon()
-                // The card title role, like the dice below (Android's cards have semibold labels).
-                Text(label).textRole(.heading).foregroundStyle(enabled ? t.text : t.textMuted).lineLimit(1).minimumScaleFactor(0.7)
+                // Semibold like the dice titles below, but smaller, as Android's labelLarge under its 24-point icons: the heading
+                // role two Dynamic Type sizes down (15 points at the default size; Mathis, 28 November 2026).
+                Text(label).textRole(.heading).typeSizeSmaller(by: Self.labelSteps)
+                    .foregroundStyle(enabled ? t.text : t.textMuted).lineLimit(1).minimumScaleFactor(0.7)
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, Spacing.md)

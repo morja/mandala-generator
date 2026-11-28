@@ -647,3 +647,20 @@ struct DieSymbol: View {
         .accessibilityHidden(true)
     }
 }
+
+extension View {
+    /// The same text role a few Dynamic Type sizes smaller, following the user's text size; for a label that belongs
+    /// between two roles (the menu cards' labels).
+    func typeSizeSmaller(by steps: Int) -> some View { modifier(SmallerTypeSize(steps: steps)) }
+}
+
+private struct SmallerTypeSize: ViewModifier {
+    let steps: Int
+    @Environment(\.dynamicTypeSize) private var size
+
+    func body(content: Content) -> some View {
+        let all = DynamicTypeSize.allCases
+        let index = all.firstIndex(of: size) ?? 0
+        content.dynamicTypeSize(all[max(0, index - steps)])
+    }
+}

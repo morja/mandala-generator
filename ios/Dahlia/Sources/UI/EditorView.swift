@@ -30,8 +30,8 @@ struct EditorView: View {
             Spacer(minLength: 0)
             barButton("safari", Texts.playTitle, tint: t.text, target: .play) { model.openPlay() }
             barButton(Texts.newKind(.everything), target: .topDie, action: { model.surprise() }) { DieSymbol(name: "die.face.5") }
-            // Android's filled download arrow; the star is filled as on Android (IOS-14).
-            barButton("arrow.down.to.line", Texts.saveImage, tint: t.accent, target: .save) { showSave = true }
+            // The arrow into the box, iOS's save symbol (Mathis, 28 November 2026); the star is filled as on Android (IOS-14).
+            barButton("square.and.arrow.down", Texts.saveImage, tint: t.accent, target: .save) { showSave = true }
             barButton("star.fill", Texts.favourites, tint: t.text, target: .favourites) { showFavorites = true }
             barButton("ellipsis", Texts.more, tint: t.text, target: .more) { showMenu = true }
         }
