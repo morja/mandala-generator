@@ -24,4 +24,6 @@ This program is free software: you can redistribute it and/or modify it under th
 
 Additional permission under GNU GPL version 3 section 7: If you modify this Program, or any covered work, by linking or combining it with the Google Play Billing Library, the Google Play Core libraries (such as Google Play In-App Review) or with the system and platform libraries of Android, macOS or iOS (or modified versions of those libraries), containing parts covered by the terms of their own licences, the licensors of this Program grant you additional permission to convey the resulting work. You may also convey the Program through app stores (such as Google Play and the Apple App Store) whose terms of service add restrictions on use or copying.
 
+The save icon in both apps is the Material Design icon "file_download" by Google, under the Apache License 2.0.
+
 Contributions are accepted under the same terms. See [ADR-0008](docs/adr/0008-open-source-gpl.md).

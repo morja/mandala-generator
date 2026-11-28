@@ -13,6 +13,9 @@ struct EditorView: View {
     @State private var showMenu = false
     @State private var header: ControlHeader?
     @Environment(\.scenePhase) private var scenePhase
+    /// The save arrow's box: Android's 24 dp icon box at the iPhone's scale (393 points for Android's 360 dp), growing
+    /// with the text size like the symbols beside it.
+    @ScaledMetric(relativeTo: .callout) private var saveSide = Sizes.icon * 1.09
     /// Moves the folding along with the change of size, but not with every change of the layout.
     private static let foldAnimation = Animation.easeInOut(duration: 0.25)
     /// How much the picture's side grows per point the controls are pulled past their top. The rubber band moves the
@@ -32,10 +35,10 @@ struct EditorView: View {
             // SF Symbols differ in size among themselves; each is shifted by Dynamic Type sizes until its glyph is as large as
             // Android's icon beside it on a phone of the same width (IOS-14, measured on the comparison pictures).
             barButton(Texts.newKind(.everything), optical: 1, target: .topDie, action: { model.surprise() }) { DieSymbol(name: "die.face.5") }
-            // The arrow into the box, iOS's save symbol (Mathis, 28 November 2026), raised a point: its box sits low in the
-            // symbol, so it looked lower than its neighbours.
-            barButton(Texts.saveImage, optical: -2, target: .save, action: { showSave = true }) {
-                Image(systemName: "square.and.arrow.down").foregroundStyle(t.accent).offset(y: -Spacing.xs / 4)
+            // Android's save glyph, the Material download arrow onto a line (asset SaveArrow; Mathis, 28 November 2026), in a
+            // box as much larger than Android's 24 dp as an iPhone point is smaller than a dp on a phone of the same width.
+            barButton(Texts.saveImage, target: .save, action: { showSave = true }) {
+                Image("SaveArrow").resizable().scaledToFit().foregroundStyle(t.accent).frame(width: saveSide, height: saveSide)
             }
             // Filled as on Android.
             barButton("star.fill", Texts.favourites, tint: t.text, optical: -1, target: .favourites) { showFavorites = true }
