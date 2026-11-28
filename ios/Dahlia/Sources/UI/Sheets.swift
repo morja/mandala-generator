@@ -8,6 +8,9 @@ struct FavoritesSheet: View {
     @Environment(EditorModel.self) private var model
     @Environment(\.tokens) private var t
     @State private var selected = Set<String>()
+    /// On the iPad the half-height detent would pin the sheet to the bottom of the window; there it is a form sheet in
+    /// the middle. (Inside a form sheet the size class reads compact, so the device decides.)
+    private static let pad = UIDevice.current.userInterfaceIdiom == .pad
 
     var body: some View {
         // A favourite deleted elsewhere (or brought back by Undo's opposite) drops out of the selection.
@@ -65,8 +68,8 @@ struct FavoritesSheet: View {
             }
         }
         .padding(.horizontal, Spacing.lg)
-        .presentationDetents([.medium, .large])
-        .sheetSurface()
+        .presentationDetents(Self.pad ? [.large] : [.medium, .large])
+        .sheetSurface(fitted: true)
     }
 }
 
@@ -113,7 +116,10 @@ struct FavoriteTile: View {
 
 /// The look of every sheet, as Android's ModalBottomSheet: the surface colour, a shade lighter than the editor, and a
 /// visible grabber (IOS-14).
+/// On the iPad a sheet is a form sheet in the middle of the window; `fitted` makes it as tall as its content there
+/// (on the iPhone the detents decide).
 private struct SheetSurface: ViewModifier {
+    var fitted = false
     @Environment(\.tokens) private var t
 
     func body(content: Content) -> some View {
@@ -121,11 +127,12 @@ private struct SheetSurface: ViewModifier {
             .background(t.surface)
             .presentationBackground(t.surface)
             .presentationDragIndicator(.visible)
+            .presentationSizing(.form.fitted(horizontal: false, vertical: fitted))
     }
 }
 
 extension View {
-    func sheetSurface() -> some View { modifier(SheetSurface()) }
+    func sheetSurface(fitted: Bool = false) -> some View { modifier(SheetSurface(fitted: fitted)) }
 }
 
 /// A sheet as tall as its content, so the picture stays visible above it (Android's menu and Pro sheets); it scrolls
@@ -144,6 +151,6 @@ struct FittedSheet<Content: View>: View {
         // The sheet floats above the home indicator and adds its inset below the detent, so the content's own bottom
         // padding is room enough.
         .presentationDetents(height > 0 ? [.height(max(height - bottomInset, height / 2))] : [.medium])
-        .sheetSurface()
+        .sheetSurface(fitted: true)
     }
 }
