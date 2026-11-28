@@ -29,10 +29,16 @@ struct EditorView: View {
             barButton("arrow.uturn.forward", Texts.forward, tint: t.text, enabled: model.shell.canGoForward) { model.goForward() }
             Spacer(minLength: 0)
             barButton("safari", Texts.playTitle, tint: t.text, target: .play) { model.openPlay() }
-            barButton(Texts.newKind(.everything), target: .topDie, action: { model.surprise() }) { DieSymbol(name: "die.face.5") }
-            // The arrow into the box, iOS's save symbol (Mathis, 28 November 2026); the star is filled as on Android (IOS-14).
-            barButton("square.and.arrow.down", Texts.saveImage, tint: t.accent, target: .save) { showSave = true }
-            barButton("star.fill", Texts.favourites, tint: t.text, target: .favourites) { showFavorites = true }
+            // SF Symbols differ in size among themselves; each is shifted by Dynamic Type sizes until its glyph is as large as
+            // Android's icon beside it on a phone of the same width (IOS-14, measured on the comparison pictures).
+            barButton(Texts.newKind(.everything), optical: 1, target: .topDie, action: { model.surprise() }) { DieSymbol(name: "die.face.5") }
+            // The arrow into the box, iOS's save symbol (Mathis, 28 November 2026), raised a point: its box sits low in the
+            // symbol, so it looked lower than its neighbours.
+            barButton(Texts.saveImage, optical: -2, target: .save, action: { showSave = true }) {
+                Image(systemName: "square.and.arrow.down").foregroundStyle(t.accent).offset(y: -Spacing.xs / 4)
+            }
+            // Filled as on Android.
+            barButton("star.fill", Texts.favourites, tint: t.text, optical: -1, target: .favourites) { showFavorites = true }
             barButton("ellipsis", Texts.more, tint: t.text, target: .more) { showMenu = true }
         }
         .padding(.horizontal, Spacing.sm)
@@ -40,20 +46,22 @@ struct EditorView: View {
         .padding(.vertical, Spacing.sm)
     }
 
-    private func barButton(_ symbol: String, _ label: String, tint: Color, enabled: Bool = true, target: TourTarget? = nil, action: @escaping () -> Void) -> some View {
-        barButton(label, enabled: enabled, target: target, action: action) {
+    private func barButton(_ symbol: String, _ label: String, tint: Color, enabled: Bool = true, optical: Int = 0, target: TourTarget? = nil,
+                           action: @escaping () -> Void) -> some View {
+        barButton(label, enabled: enabled, optical: optical, target: target, action: action) {
             Image(systemName: symbol).foregroundStyle(enabled ? tint : t.textMuted)
         }
     }
 
     /// A 48-point button with a 24-point icon, as Android's IconButton; the heading role gives the symbols Android's
-    /// heavier line.
-    private func barButton<Icon: View>(_ label: String, enabled: Bool = true, target: TourTarget? = nil, action: @escaping () -> Void,
-                                       @ViewBuilder icon: () -> Icon) -> some View {
+    /// heavier line, `optical` shifts a symbol by Dynamic Type sizes to the size of Android's icon.
+    private func barButton<Icon: View>(_ label: String, enabled: Bool = true, optical: Int = 0, target: TourTarget? = nil,
+                                       action: @escaping () -> Void, @ViewBuilder icon: () -> Icon) -> some View {
         Button(action: action) {
             icon()
                 .textRole(.heading)
                 .imageScale(.large)
+                .typeSizeShifted(by: optical)
                 .frame(width: Sizes.icon * 2, height: Sizes.icon * 2)
                 .contentShape(Rectangle())
                 .tourAnchor(target)

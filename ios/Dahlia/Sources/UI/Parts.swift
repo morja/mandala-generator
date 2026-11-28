@@ -649,18 +649,19 @@ struct DieSymbol: View {
 }
 
 extension View {
-    /// The same text role a few Dynamic Type sizes smaller, following the user's text size; for a label that belongs
-    /// between two roles (the menu cards' labels).
-    func typeSizeSmaller(by steps: Int) -> some View { modifier(SmallerTypeSize(steps: steps)) }
+    /// The same text role a few Dynamic Type sizes smaller (negative) or larger, following the user's text size: for a
+    /// label that belongs between two roles (the menu cards' labels), and to give SF Symbols, which differ in size among
+    /// themselves, the size of Android's icons (IOS-14).
+    func typeSizeShifted(by steps: Int) -> some View { modifier(ShiftedTypeSize(steps: steps)) }
 }
 
-private struct SmallerTypeSize: ViewModifier {
+private struct ShiftedTypeSize: ViewModifier {
     let steps: Int
     @Environment(\.dynamicTypeSize) private var size
 
     func body(content: Content) -> some View {
         let all = DynamicTypeSize.allCases
         let index = all.firstIndex(of: size) ?? 0
-        content.dynamicTypeSize(all[max(0, index - steps)])
+        content.dynamicTypeSize(all[min(all.count - 1, max(0, index + steps))])
     }
 }
