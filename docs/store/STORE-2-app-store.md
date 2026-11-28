@@ -46,6 +46,8 @@ Apple allows 55 characters for the description, so the Play text (STORE-1) was s
 
 - Build 1.0 (3) uploaded on 28 November 2026 from `main` at be16ee6 (iPhone sizes like Android IOS-14, iPad full screen IOS-15, daily wallpaper as a tip, "Remove Pro parts", privacy manifest in app and widget). Internal group "Team" got it automatically; added to "Freunde" with English "What to Test" notes, and Beta App Review passed at once ("Testing"). The friend tester had installed 1.0 (2) on an iPhone SE (3rd generation). Upload needed a fresh Xcode sign-in.
 
+- Build 1.0 (4) uploaded on 28 November 2026 with the team API key (no Xcode sign-in), adds "Start fresh". Added to "Freunde" through the App Store Connect API with English test notes and submitted to Beta App Review ("Waiting for Review"); "Team" got it automatically.
+
 ### Open, with the packages
 
 - Screenshots (WP-13, a later step); review screenshot of the product (plan below). Listing texts, privacy label, export compliance, age rating and review notes are prepared below and wait for Mathis to enter them. The first in-app purchase is submitted together with the first app version.
