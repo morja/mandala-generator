@@ -48,6 +48,8 @@ Apple allows 55 characters for the description, so the Play text (STORE-1) was s
 
 - Build 1.0 (4) uploaded on 28 November 2026 with the team API key (no Xcode sign-in), adds "Start fresh". Added to "Freunde" through the App Store Connect API with English test notes and submitted to Beta App Review ("Waiting for Review"); "Team" got it automatically.
 
+- Build 1.0 (5) uploaded on 28 November 2026 with the team API key from `main` at 700f022: the Shortcuts action is called "Today's wallpaper" (German "Heutiger Hintergrund"; the widget keeps "Mandala of the day"), and the wallpaper page and the "purchases turned off" message say "this device" instead of "this iPhone", because both show on the iPad. Not added to an external group and not set on the App Store version (the master chat does that).
+
 ### Open, with the packages
 
 - Screenshots, listing, age rating, review information and the product's review screenshot were entered through the API on 28 November 2026 (section "Version 1.0 in App Store Connect" below). The first in-app purchase is submitted together with the first app version.
