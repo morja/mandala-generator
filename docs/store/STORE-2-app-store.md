@@ -48,9 +48,55 @@ Apple allows 55 characters for the description, so the Play text (STORE-1) was s
 
 ### Open, with the packages
 
-- Screenshots (WP-13, a later step); review screenshot of the product (plan below). Listing texts, privacy label, export compliance, age rating and review notes are prepared below and wait for Mathis to enter them. The first in-app purchase is submitted together with the first app version.
+- Screenshots, listing, age rating, review information and the product's review screenshot were entered through the API on 28 November 2026 (section "Version 1.0 in App Store Connect" below). The first in-app purchase is submitted together with the first app version.
 
 - App Group `group.one.tearoom.mandala` and the capability on the App ID (WP-10).
+
+## Version 1.0 in App Store Connect (28 November 2026)
+
+Mathis approved the screenshots on 28 November 2026 ("ok, passt alles", relayed by the master chat). Entered the same day through the App Store Connect API with the team key (key file only in `~/Work/Cockpit/private/appstoreconnect/`); nothing was submitted for review.
+
+### Screenshots
+
+- Seven captioned screenshots per device in all eleven locales, same captions, order and look as the Play set (STORE-1), adapted to iOS: "Home and lock screen as a matching pair" instead of live and daily wallpaper, 21 instead of 23 examples. Captions in `store/ios/captions.json` (Italian, Russian, Korean and Mexican Spanish written new for iOS; es-MX the same as es-ES), English app interface in every locale as on Play.
+
+- Sizes: iPhone 6.9" 1320 × 2868 (display type `APP_IPHONE_67`), iPad 13" 2064 × 2752 (`APP_IPAD_PRO_3GEN_129`), both portrait. Apple scales them down for the smaller devices.
+
+- Raw shots in `store/ios/screenshots/raw/{iphone,ipad}/`, dark appearance, status bar 9:41, starter favourites only. Taken in the iPhone 17 Pro Max and iPad Pro 13-inch (M5) simulators from the Debug build with the debug hooks (`-shotFavourite`, `-startTab`, `-shotSheet`, `-shotSave`, `-shotFormat`, `-shotTryNew`, `-widgetMark NO`); the format menu was opened by a UI test tap. The widget shots show a real home screen with the Release build (name "Dahlia"), widgets placed by a UI test; on the iPad six widgets with different fixed favourites. On the iPad the status bar shows the app name, so its left strip ("Dahlia Debug") was replaced by the same strip from the Release build.
+
+- Render every locale: `bin/store-shots --captions store/ios/captions.json --src store/ios/screenshots/raw/iphone --out store/ios/screenshots --size 1320x2868 --folder iphone`, the same with `ipad` and `2064x2752`. The rendered sets are ignored by Git.
+
+- Known: the iPad wallpaper page says "this iPhone" and shows the collapsed tip "a new wallpaper every day"; Mathis keeps the shots as they are, the text is fixed in a later update.
+
+### What was set
+
+| Where | Value |
+|---|---|
+| Version 1.0 localizations (11 locales) | description, keywords, promotional text from `store/ios/<locale>/`, support URL and marketing URL as above; no What's New (first version) |
+| App information localizations (11 locales) | name, subtitle, privacy policy URL |
+| Copyright | 2026 Mathis Koblin |
+| Categories | Graphics & Design, secondary Lifestyle |
+| Content rights | does not use third-party content |
+| App price | Free, base territory Germany |
+| App availability | all 175 territories, new territories automatically |
+| Age rating declaration | every answer None or No as in the questionnaire above (4+) |
+| App Review information | contact name, phone and email from Mathis' private contact file (not repeated here), no demo account, the notes above |
+| Build | 1.0 (4) |
+| Version release | manual (Mathis releases after approval) |
+| Dahlia Pro | review note above, review screenshot `store/ios/screenshots/raw/iap/pro-sheet.png` (Pro sheet as a free user, "Buy for $3.99"); state "Ready to Submit" |
+| Screenshots | 7 per device and locale, as above |
+
+### Left before submission (in Chrome)
+
+- App Privacy: "No, we do not collect data from this app" and publish the label (the API has no endpoint for it).
+
+- Version page › In-App Purchases and Subscriptions: select "Dahlia Pro", so it goes to review with the version. Through the API the first purchase can only be added by submitting it.
+
+- Check the version page once (screenshots processed, no warnings), then "Add for Review" and submit, only on Mathis' word.
+
+- Export compliance should not be asked (`ITSAppUsesNonExemptEncryption` NO, build 4 shows "uses non-exempt encryption: No").
+
+- The privacy page on tearoom.one must be online with the iPhone wording before the release.
 
 ## Listing and App Store Connect answers for version 1.0 (prepared 26 November 2026)
 

@@ -66,7 +66,7 @@ def check_locale(folder: Path) -> list[str]:
 
 def main() -> int:
     wanted = sys.argv[1:]
-    folders = sorted(p for p in ROOT.iterdir() if p.is_dir() and (not wanted or p.name in wanted))
+    folders = sorted(p for p in ROOT.iterdir() if p.is_dir() and p.name != "screenshots" and (not wanted or p.name in wanted))
     if not folders:
         print("no locale folders found")
         return 1
