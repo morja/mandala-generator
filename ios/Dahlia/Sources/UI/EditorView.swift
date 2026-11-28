@@ -74,6 +74,70 @@ struct EditorView: View {
         .accessibilityLabel(label)
     }
 
+    /// Wide windows (iPad, from Android's `twoPaneMinWidth`): the picture on the left as large as the space allows, the
+    /// controls in a column of Android's `controlsWidth` on the right, as Android's tablet layout. Nothing folds.
+    private var twoPanes: some View {
+        HStack(alignment: .top, spacing: Spacing.xl) {
+            GeometryReader { left in
+                let side = max(0, min(left.size.width, left.size.height - Sizes.statusLine))
+                CanvasView(side: side)
+                    .frame(maxWidth: .infinity, alignment: .top)
+                    .onChange(of: side, initial: true) { _, side in tour.pictureFull = side }
+            }
+            ControlTabs(onHeader: { header = $0 })
+                .frame(width: Spacing.controlsWidth)
+        }
+        .padding(.horizontal, Spacing.lg)
+        .padding(.bottom, Spacing.lg)
+    }
+
+    /// Phone-sized windows: the picture on top, folding as Android's `FoldingCanvas` does, the controls below.
+    private func phone(_ geo: GeometryProxy) -> some View {
+        let fullSide = min(geo.size.width - Spacing.lg * 2, geo.size.height * 0.5)
+        // Moving and drawing keep the picture large (Android's `pinned`).
+        let pinned = model.moveTarget != nil || model.drawTool != nil
+        // Typing in the Text tab folds the picture small; the chosen size comes back with the keyboard gone (QA-10 item 4).
+        let typing = model.textColours.typing != nil
+        let chosen = pinned ? PreviewSize.full : (typing ? PreviewSize.small : model.shell.previewFraction)
+        // The tour folds the picture a little where its card would not fit otherwise; the chosen size comes back after it.
+        let shrunk = tour.running && tour.shrinkBy > 0 && fullSide > 0
+        let held = shrunk ? max(PreviewSize.small, min(chosen, (chosen * fullSide - tour.shrinkBy) / fullSide)) : chosen
+        // Pulling the controls down past their top grows the picture with the finger (Android's nested scroll);
+        // not while moving, drawing, typing or during the tour, which set the size themselves.
+        let pullable = !pinned && !typing && !tour.running && fullSide > 0
+        let fraction = pullable && model.shell.pulling ? min(PreviewSize.full, held + model.shell.pull * Self.pullGain / fullSide) : held
+        let folded = fraction < PreviewSize.full
+        return VStack(spacing: 0) {
+            // The picture stays in view; only the open tab scrolls, so every change is visible.
+            HStack(alignment: .top, spacing: Spacing.md) {
+                CanvasView(side: fullSide * fraction, folded: folded,
+                           fold: pinned ? nil : { model.shell.setPreviewFraction(folded ? PreviewSize.full : PreviewSize.small) })
+                if fraction <= PreviewSize.headerBelow, let header {
+                    VStack(alignment: .leading, spacing: Spacing.xs) {
+                        Text(header.title).textRole(.body).foregroundStyle(t.text).lineLimit(1)
+                        Text(header.detail).textRole(.note).foregroundStyle(t.textMuted).lineLimit(1)
+                    }
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: folded ? .leading : .center)
+            .padding(.horizontal, Spacing.lg)
+            .padding(.bottom, Spacing.xs)
+            // The pull follows the finger at once; button, tap and letting go move with the animation.
+            .animation(model.shell.pulling ? nil : Self.foldAnimation, value: fraction)
+            ControlTabs(onHeader: { header = $0 })
+        }
+        .onChange(of: fullSide * chosen, initial: true) { _, side in tour.pictureFull = side }
+        // Let go: the picture stays where the finger left it, or takes an end when it is close (as on Android).
+        .onChange(of: model.shell.pulling) { was, now in
+            guard was, !now else { return }
+            let pulled = model.shell.pull
+            model.shell.pull = 0
+            guard pullable, pulled > 0 else { return }
+            let landed = PreviewSize.snapped(min(PreviewSize.full, held + pulled * Self.pullGain / fullSide))
+            if landed != model.shell.previewFraction { model.shell.setPreviewFraction(landed) }
+        }
+    }
+
     /// The first picture is drawn without an error and nothing else is on screen or being done.
     private var calm: Bool {
         scenePhase == .active && model.preview != nil && model.previewError == nil && model.message == nil && !tour.running
@@ -85,48 +149,10 @@ struct EditorView: View {
         VStack(spacing: 0) {
             bar
             GeometryReader { geo in
-                let fullSide = min(geo.size.width - Spacing.lg * 2, geo.size.height * 0.5)
-                // Moving and drawing keep the picture large (Android's `pinned`).
-                let pinned = model.moveTarget != nil || model.drawTool != nil
-                // Typing in the Text tab folds the picture small; the chosen size comes back with the keyboard gone (QA-10 item 4).
-                let typing = model.textColours.typing != nil
-                let chosen = pinned ? PreviewSize.full : (typing ? PreviewSize.small : model.shell.previewFraction)
-                // The tour folds the picture a little where its card would not fit otherwise; the chosen size comes back after it.
-                let shrunk = tour.running && tour.shrinkBy > 0 && fullSide > 0
-                let held = shrunk ? max(PreviewSize.small, min(chosen, (chosen * fullSide - tour.shrinkBy) / fullSide)) : chosen
-                // Pulling the controls down past their top grows the picture with the finger (Android's nested scroll);
-                // not while moving, drawing, typing or during the tour, which set the size themselves.
-                let pullable = !pinned && !typing && !tour.running && fullSide > 0
-                let fraction = pullable && model.shell.pulling ? min(PreviewSize.full, held + model.shell.pull * Self.pullGain / fullSide) : held
-                let folded = fraction < PreviewSize.full
-                VStack(spacing: 0) {
-                    // The picture stays in view; only the open tab scrolls, so every change is visible.
-                    HStack(alignment: .top, spacing: Spacing.md) {
-                        CanvasView(side: fullSide * fraction, folded: folded,
-                                   fold: pinned ? nil : { model.shell.setPreviewFraction(folded ? PreviewSize.full : PreviewSize.small) })
-                        if fraction <= PreviewSize.headerBelow, let header {
-                            VStack(alignment: .leading, spacing: Spacing.xs) {
-                                Text(header.title).textRole(.body).foregroundStyle(t.text).lineLimit(1)
-                                Text(header.detail).textRole(.note).foregroundStyle(t.textMuted).lineLimit(1)
-                            }
-                        }
-                    }
-                    .frame(maxWidth: .infinity, alignment: folded ? .leading : .center)
-                    .padding(.horizontal, Spacing.lg)
-                    .padding(.bottom, Spacing.xs)
-                    // The pull follows the finger at once; button, tap and letting go move with the animation.
-                    .animation(model.shell.pulling ? nil : Self.foldAnimation, value: fraction)
-                    ControlTabs(onHeader: { header = $0 })
-                }
-                .onChange(of: fullSide * chosen, initial: true) { _, side in tour.pictureFull = side }
-                // Let go: the picture stays where the finger left it, or takes an end when it is close (as on Android).
-                .onChange(of: model.shell.pulling) { was, now in
-                    guard was, !now else { return }
-                    let pulled = model.shell.pull
-                    model.shell.pull = 0
-                    guard pullable, pulled > 0 else { return }
-                    let landed = PreviewSize.snapped(min(PreviewSize.full, held + pulled * Self.pullGain / fullSide))
-                    if landed != model.shell.previewFraction { model.shell.setPreviewFraction(landed) }
+                if geo.size.width >= Spacing.twoPaneMinWidth {
+                    twoPanes
+                } else {
+                    phone(geo)
                 }
             }
             .background(t.background)

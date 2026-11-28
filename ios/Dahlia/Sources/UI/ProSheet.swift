@@ -34,7 +34,7 @@ struct ProSheet: View {
             .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { height = $0 }
         }
         .presentationDetents(height > 0 ? [.height(height)] : [.medium])
-        .sheetSurface()
+        .sheetSurface(fitted: true)
         // A purchase or restore closes the sheet; the thanks shows as a message (Android: LaunchedEffect(pro.unlocked)).
         .onChange(of: store.unlocked) { _, unlocked in if unlocked { model.closePro() } }
     }

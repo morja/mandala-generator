@@ -65,7 +65,10 @@ struct TourOverlay: View {
         let top = safe.top + Spacing.md
         let bottom = size.height - safe.bottom - Spacing.md
         let docked = cardTop(rings: rings, top: top, bottom: bottom, settled: settled)
-        let width = size.width - 2 * Spacing.md
+        // On wide windows the card is as wide as the control column and stands above it, as on Android.
+        let wide = size.width >= Spacing.twoPaneMinWidth
+        let width = wide ? min(Spacing.controlsWidth, size.width - 2 * Spacing.md) : size.width - 2 * Spacing.md
+        let cardX = wide ? size.width - Spacing.lg - width : Spacing.md
 
         ZStack(alignment: .topLeading) {
             Canvas { ctx, canvasSize in
@@ -88,7 +91,8 @@ struct TourOverlay: View {
                     ctx.stroke(shape(drawn, corner), with: .color(t.accent), lineWidth: line)
                     guard ring.line else { continue }
                     let x = ring.rect.midX
-                    guard x >= Spacing.md, x <= canvasSize.width - Spacing.md else { continue }
+                    // Only where the line meets the card.
+                    guard x >= cardX + Spacing.md, x <= cardX + width - Spacing.md else { continue }
                     let from = docked >= ring.rect.maxY ? ring.rect.maxY : docked + cardHeight
                     let to = docked >= ring.rect.maxY ? docked : ring.rect.minY
                     if to - from >= Spacing.lg {
@@ -106,7 +110,7 @@ struct TourOverlay: View {
             TourCard(state: state, onNext: next, onBack: tour.back, onSkip: end)
                 .frame(width: width)
                 .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { cardHeight = $0 }
-                .offset(x: Spacing.md, y: docked)
+                .offset(x: cardX, y: docked)
         }
         .frame(width: size.width, height: size.height)
         .onChange(of: settled ? docked : nil) { _, y in
