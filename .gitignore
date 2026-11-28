@@ -15,3 +15,7 @@ docs/qa/shots/
 
 # widget sheet runs (bin/widget-sheet); approved pictures live in docs/qa/widget-sheet/reference/
 docs/qa/widget-sheet/latest/
+
+# App Store screenshots: only the raw shots are tracked; every language is rendered from captions.json (STORE-2)
+store/ios/screenshots/*/
+!store/ios/screenshots/raw/
