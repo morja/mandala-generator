@@ -59,6 +59,8 @@ private val LIBRARIES = listOf(
     Library("AndroidX and Jetpack Compose", "Apache License 2.0", APACHE_URL),
     Library("Kotlin standard library and kotlinx.coroutines", "Apache License 2.0", APACHE_URL),
     Library("kotlinx.serialization", "Apache License 2.0", APACHE_URL),
+    // The save icon in the top bar (EditorIcons.Save).
+    Library("Material Design icon \"file_download\" (Google)", "Apache License 2.0", APACHE_URL),
     Library("Google Play Billing Library, Google Play In-App Review and Google Play services", "Android Software Development Kit License", ANDROID_SDK_TERMS_URL),
     Library(
         "Firebase encoders, Google Data Transport, Guava ListenableFuture, javax.inject, JSpecify and JetBrains annotations " +

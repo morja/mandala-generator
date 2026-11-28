@@ -18,11 +18,12 @@ struct AboutView: View {
         + "permission to convey the resulting work. You may also convey the Program through app stores (such as Google Play "
         + "and the Apple App Store) whose terms of service add restrictions on use or copying."
 
-    /// What the iPhone app is built with: the Kotlin runtime and kotlinx.serialization inside MandalaCore. SwiftUI,
-    /// StoreKit and the other system frameworks belong to iOS and are covered by the section 7 permission.
+    /// What the iPhone app is built with: the Kotlin runtime and kotlinx.serialization inside MandalaCore, and the save
+    /// icon. SwiftUI, StoreKit and the other system frameworks belong to iOS and are covered by the section 7 permission.
     private static let libraries = [
         ("Kotlin standard library and Kotlin/Native runtime", "Apache License 2.0"),
         ("kotlinx.serialization", "Apache License 2.0"),
+        ("Material Design icon \"file_download\" (Google)", "Apache License 2.0"),
     ]
 
     private var version: String {
