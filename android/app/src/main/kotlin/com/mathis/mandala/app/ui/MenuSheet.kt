@@ -272,7 +272,7 @@ private fun NewMandala(onTryNew: (NewKind) -> Unit) {
 @Composable
 private fun StartFreshRow(onStartFresh: () -> Unit) {
     MenuRow(
-        EditorIcons.StartFresh, stringResource(R.string.menu_start_fresh), stringResource(R.string.menu_start_fresh_detail),
+        EditorIcons.Reset, stringResource(R.string.menu_start_fresh), stringResource(R.string.menu_start_fresh_detail),
         onClick = onStartFresh,
     ) {}
 }

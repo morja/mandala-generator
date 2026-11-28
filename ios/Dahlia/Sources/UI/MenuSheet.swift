@@ -139,7 +139,7 @@ struct MenuSheet: View {
                 ForEach(Self.dice, id: \.kind) { die in DieTile(die: die) { model.tryNew(die.kind) } }
             }
             // "Start fresh" below the dice: one plain layer, at once and without asking; back in the history restores.
-            MenuRow(icon: "doc", label: Texts.menuStartFresh, detail: Texts.menuStartFreshDetail, action: {
+            MenuRow(icon: "arrow.counterclockwise", label: Texts.menuStartFresh, detail: Texts.menuStartFreshDetail, action: {
                 model.startFresh()
                 close()
             }) { EmptyView() }
