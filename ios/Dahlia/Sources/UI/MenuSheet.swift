@@ -144,7 +144,7 @@ struct MenuSheet: View {
                 close()
             }) { EmptyView() }
             .padding(.top, Spacing.sm)
-            divider.padding(.top, Spacing.sm)
+            divider
             MenuRow(icon: "moon", label: Texts.menuTheme, detail: nil, action: nil) { themeChoice }
             divider
             MenuRow(icon: "slider.horizontal.3", label: Texts.menuMore, detail: nil, action: { page = .more }) { chevron }
