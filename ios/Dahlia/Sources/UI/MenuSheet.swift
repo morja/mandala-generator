@@ -381,10 +381,18 @@ private struct DieTile: View {
 }
 
 extension View {
-    /// A menu icon in Android's 24-point box: the symbol one scale above the body text, in the heading weight, so it has
-    /// the size and line of Android's icons (IOS-14).
-    func menuIcon() -> some View {
-        textRole(.heading).imageScale(.large).frame(minWidth: Sizes.icon, minHeight: Sizes.icon)
+    /// A menu icon the size of Android's 24-point icons: the symbol one scale above the body text, in the heading weight,
+    /// so it has their size and line (IOS-14), centred in a box of the same size for every symbol, so the texts beside
+    /// and below share one edge.
+    func menuIcon() -> some View { modifier(MenuIconBox()) }
+}
+
+private struct MenuIconBox: ViewModifier {
+    /// The box grows with the text size, like the symbol in it.
+    @ScaledMetric(relativeTo: .headline) private var side = Sizes.icon + Spacing.xs
+
+    func body(content: Content) -> some View {
+        content.textRole(.heading).imageScale(.large).frame(width: side, height: side)
     }
 }
 

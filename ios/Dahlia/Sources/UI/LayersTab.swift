@@ -73,7 +73,8 @@ private struct ActionButton: View {
         Button(action: action) {
             Text(label).textRole(.heading).lineLimit(1).minimumScaleFactor(0.75)
                 .foregroundStyle(enabled ? t.accent : t.textMuted)
-                .padding(.horizontal, Spacing.md)
+                // A small step, so "Добавить Дублировать Удалить" fits beside the die in the larger text role (IOS-14).
+                .padding(.horizontal, Spacing.sm)
                 .frame(minHeight: Sizes.icon * 2)
                 .contentShape(Rectangle())
         }

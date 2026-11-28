@@ -133,13 +133,17 @@ extension View {
 struct FittedSheet<Content: View>: View {
     @ViewBuilder var content: Content
     @State private var height: CGFloat = 0
+    @State private var bottomInset: CGFloat = 0
 
     var body: some View {
         ScrollView {
             content.onGeometryChange(for: CGFloat.self) { $0.size.height } action: { height = $0 }
         }
+        .onGeometryChange(for: CGFloat.self) { $0.safeAreaInsets.bottom } action: { bottomInset = $0 }
         .scrollBounceBehavior(.basedOnSize)
-        .presentationDetents(height > 0 ? [.height(height)] : [.medium])
+        // The sheet floats above the home indicator and adds its inset below the detent, so the content's own bottom
+        // padding is room enough.
+        .presentationDetents(height > 0 ? [.height(max(height - bottomInset, height / 2))] : [.medium])
         .sheetSurface()
     }
 }

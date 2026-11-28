@@ -96,7 +96,7 @@ struct SliderRow: View {
         GeometryReader { geo in
             HStack(spacing: 0) {
                 // A long word ("Насыщенность") shrinks a little rather than run into the slider.
-                Text(label).textRole(.body).foregroundStyle(t.text).lineLimit(1).minimumScaleFactor(0.8)
+                Text(label).textRole(.body).foregroundStyle(t.text).lineLimit(1).minimumScaleFactor(0.7)
                     .frame(width: geo.size.width * 0.34, alignment: .leading)
                 ResettableSlider(value: binding.wrappedValue, range: range, step: step, label: label,
                                  valueText: display?(value) ?? (step == nil ? String(format: "%.2f", value) : String(Int(value.rounded()))),
@@ -510,7 +510,9 @@ struct SwitchHeader: View {
                 .buttonStyle(.plain)
                 .accessibilityLabel(dieLabel)
                 Button(action: onReset) {
-                    Text(Texts.reset).textRole(.heading).foregroundStyle(t.accent).frame(minHeight: Sizes.icon * 2)
+                    // One line; the label beside it wraps instead (as in the Scene tab's effects row).
+                    Text(Texts.reset).textRole(.heading).foregroundStyle(t.accent).lineLimit(1).fixedSize()
+                        .frame(minHeight: Sizes.icon * 2)
                 }
                 .buttonStyle(.plain)
                 .padding(.horizontal, Spacing.sm)
@@ -549,9 +551,10 @@ struct ModeButton: View {
 
     var body: some View {
         Button(action: action) {
-            Text(label).textRole(.heading).lineLimit(1)
+            // One line; a long label ("Рисовать на изображении") shrinks a little rather than being cut.
+            Text(label).textRole(.heading).lineLimit(1).minimumScaleFactor(0.85)
                 .foregroundStyle(active ? t.accent : (enabled ? t.onAccent : t.textMuted))
-                .padding(.horizontal, Spacing.lg)
+                .padding(.horizontal, Spacing.md)
                 .frame(maxWidth: wide ? .infinity : nil, minHeight: Sizes.icon * 2)
                 .background(active ? t.accentSoft : (enabled ? t.accent : t.surfaceRaised), in: Capsule())
                 .contentShape(Capsule())
