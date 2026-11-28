@@ -21,29 +21,29 @@
     <string name="pro_restore_not_found">A App Store não encontrou nenhuma compra do Pro para esta Conta Apple. Se você comprou o Pro com outra Conta Apple, inicie sessão com ela em Ajustes, seu nome, Mídia e Compras, e toque em “Restaurar compra” de novo.</string>
     <string name="pro_restore_unreachable">Não foi possível acessar a App Store, então nada foi verificado. Tente novamente mais tarde.</string>
     <string name="pro_purchase_not_started">A App Store não conseguiu abrir a compra. Tente novamente.</string>
-    <string name="editor_pro_unavailable">As compras estão desativadas neste iPhone. Você pode permiti-las em Ajustes, em Tempo de Uso.</string>
+    <string name="editor_pro_unavailable">As compras estão desativadas neste dispositivo. Você pode permiti-las em Ajustes, em Tempo de Uso.</string>
     <string name="editor_pro_adds_wallpapers">Planos de fundo: tela inicial e de bloqueio em par.</string>
     <!-- The widget list on the Dahlia page (WP-10): iOS changes a widget through Edit Widget. -->
     <string name="menu_widgets_about">Cada widget tem sua própria mandala e suas cores. Para mudá-las, toque e segure o widget e escolha Editar Widget.</string>
     <string name="menu_widgets_empty">Para adicionar, toque e segure um espaço vazio da tela inicial, toque em Editar e depois em Adicionar Widget, e escolha Dahlia.</string>
     <!-- The wallpaper page, its tip and the Shortcuts action (WP-11, the daily page removed 26 November 2026): iOS lets no app set the wallpaper. -->
-    <string name="ios_wallpaper_about">Este mandala preenchendo a tela deste iPhone. O iOS não deixa nenhum app definir o papel de parede sozinho, então o Dahlia o salva em Fotos para você defini-lo.</string>
+    <string name="ios_wallpaper_about">Este mandala preenchendo a tela deste dispositivo. O iOS não deixa nenhum app definir o papel de parede sozinho, então o Dahlia o salva em Fotos para você defini-lo.</string>
     <string name="ios_wallpaper_save_both">Salvar os dois em Fotos</string>
     <string name="ios_wallpaper_set_title">Definir no iOS</string>
     <string name="ios_wallpaper_set_one">Abra a imagem em Fotos, toque em Compartilhar e depois em Usar como Papel de Parede. Toque em Adicionar e depois em Definir como Par de Papéis de Parede.</string>
     <string name="ios_wallpaper_set_pair">Abra a imagem da tela bloqueada em Fotos, toque em Compartilhar, depois em Usar como Papel de Parede e toque em Adicionar. Escolha Personalizar Tela de Início, toque em Fotos e escolha a imagem da tela de início.</string>
     <string name="ios_wallpaper_saved">Salvo em Fotos. Abra lá e toque em Compartilhar e depois em Usar como Papel de Parede.</string>
     <string name="ios_wallpapers_saved">Os dois foram salvos em Fotos: a tela bloqueada e a tela de início.</string>
-    <string name="ios_intent_title">Mandala do dia</string>
+    <string name="ios_intent_title">Papel de parede de hoje</string>
     <string name="ios_intent_description">O mandala de hoje entre seus favoritos, preenchendo a tela, pronto para Definir Foto do Papel de Parede.</string>
     <string name="ios_intent_screen">Tela</string>
-    <string name="ios_intent_needs_pro">Mandala do dia vem com o Dahlia Pro. Abra o Dahlia para obtê-lo.</string>
+    <string name="ios_intent_needs_pro">Papel de parede de hoje vem com o Dahlia Pro. Abra o Dahlia para obtê-lo.</string>
     <!-- Siri and Spotlight phrases of the action; ${applicationName} is the app's name. -->
-    <string name="shortcut_phrase_1">${applicationName} mandala do dia</string>
-    <string name="shortcut_phrase_2">Mandala do dia do ${applicationName}</string>
+    <string name="shortcut_phrase_1">${applicationName} papel de parede de hoje</string>
+    <string name="shortcut_phrase_2">Papel de parede de hoje do ${applicationName}</string>
     <string name="pair_home_screen">Tela inicial</string>
     <string name="ios_wallpaper_tip_title">Dica: um papel de parede novo a cada dia</string>
-    <string name="ios_wallpaper_tip_steps">O app Atalhos pode definir um dos seus favoritos como papel de parede toda manhã. A ação Mandala do dia vem com o Pro e usa os favoritos da troca diária dos widgets (Dahlia, Widgets).\n1. Em Atalhos, crie um novo atalho e adicione Mandala do dia do Dahlia, com Tela em Tela Bloqueada. Depois adicione Definir Foto do Papel de Parede, escolha a tela bloqueada e desative Mostrar Pré-visualização.\n2. Adicione Mandala do dia de novo com Tela de Início e um segundo Definir Foto do Papel de Parede para a tela de início.\n3. Para que rode todos os dias, adicione uma automação com Hora do Dia, um horário como 7:00, Diariamente e Executar Imediatamente.</string>
+    <string name="ios_wallpaper_tip_steps">O app Atalhos pode definir um dos seus favoritos como papel de parede toda manhã. A ação Papel de parede de hoje vem com o Pro e usa os favoritos da troca diária dos widgets (Dahlia, Widgets).\n1. Em Atalhos, crie um novo atalho e adicione Papel de parede de hoje do Dahlia, com Tela em Tela Bloqueada. Depois adicione Definir Foto do Papel de Parede, escolha a tela bloqueada e desative Mostrar Pré-visualização.\n2. Adicione Papel de parede de hoje de novo com Tela de Início e um segundo Definir Foto do Papel de Parede para a tela de início.\n3. Para que rode todos os dias, adicione uma automação com Hora do Dia, um horário como 7:00, Diariamente e Executar Imediatamente.</string>
     <string name="ios_widgets_daily_favourites">Favoritos da troca diária</string>
-    <string name="message_daily_needs_favourite">Mandala do dia usa seus favoritos, um de cada vez; adicione um primeiro.</string>
+    <string name="message_daily_needs_favourite">Papel de parede de hoje usa seus favoritos, um de cada vez; adicione um primeiro.</string>
 </resources>

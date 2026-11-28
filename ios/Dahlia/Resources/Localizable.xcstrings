@@ -17638,61 +17638,61 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Käufe sind auf diesem iPhone ausgeschaltet. Du kannst sie in den Einstellungen unter Bildschirmzeit erlauben."
+            "value" : "Käufe sind auf diesem Gerät ausgeschaltet. Du kannst sie in den Einstellungen unter Bildschirmzeit erlauben."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Purchases are turned off on this iPhone. They can be allowed in Settings under Screen Time."
+            "value" : "Purchases are turned off on this device. They can be allowed in Settings under Screen Time."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Las compras están desactivadas en este iPhone. Puedes permitirlas en Ajustes, en Tiempo de uso."
+            "value" : "Las compras están desactivadas en este dispositivo. Puedes permitirlas en Ajustes, en Tiempo de uso."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Les achats sont désactivés sur cet iPhone. Vous pouvez les autoriser dans Réglages, sous Temps d’écran."
+            "value" : "Les achats sont désactivés sur cet appareil. Vous pouvez les autoriser dans Réglages, sous Temps d’écran."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Gli acquisti sono disattivati su questo iPhone. Puoi consentirli in Impostazioni, in Tempo di utilizzo."
+            "value" : "Gli acquisti sono disattivati su questo dispositivo. Puoi consentirli in Impostazioni, in Tempo di utilizzo."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "このiPhoneでは購入がオフになっています。「設定」の「スクリーンタイム」で許可できます。"
+            "value" : "このデバイスでは購入がオフになっています。「設定」の「スクリーンタイム」で許可できます。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "이 iPhone에서는 구매가 꺼져 있습니다. 설정의 스크린 타임에서 허용할 수 있습니다."
+            "value" : "이 기기에서는 구매가 꺼져 있습니다. 설정의 스크린 타임에서 허용할 수 있습니다."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "As compras estão desativadas neste iPhone. Você pode permiti-las em Ajustes, em Tempo de Uso."
+            "value" : "As compras estão desativadas neste dispositivo. Você pode permiti-las em Ajustes, em Tempo de Uso."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Покупки на этом iPhone отключены. Их можно разрешить в «Настройки» → «Экранное время»."
+            "value" : "Покупки на этом устройстве отключены. Их можно разрешить в «Настройки» → «Экранное время»."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "此 iPhone 已关闭购买。可在“设置”的“屏幕使用时间”中允许。"
+            "value" : "此设备 已关闭购买。可在“设置”的“屏幕使用时间”中允许。"
           }
         }
       }
@@ -20971,7 +20971,7 @@
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Le mandala du jour tiré de vos favoris, plein écran, prêt pour Définir la photo du fond d'écran."
+            "value" : "Le fond d’écran du jour tiré de vos favoris, plein écran, prêt pour Définir la photo du fond d'écran."
           }
         },
         "it" : {
@@ -20983,13 +20983,13 @@
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "お気に入りの中から今日のマンダラを、画面いっぱいに。「壁紙の写真を設定」にそのまま使えます。"
+            "value" : "お気に入りの中から今日の壁紙を、画面いっぱいに。「壁紙の写真を設定」にそのまま使えます。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "즐겨찾기 중 오늘의 만다라를 화면 가득 채워, 배경화면 사진 설정에 바로 쓸 수 있게 합니다."
+            "value" : "즐겨찾기 중 오늘의 배경화면을 화면 가득 채워, 배경화면 사진 설정에 바로 쓸 수 있게 합니다."
           }
         },
         "pt-BR" : {
@@ -21018,61 +21018,61 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "„Mandala des Tages“ gibt es mit Dahlia Pro. Öffne Dahlia, um es zu holen."
+            "value" : "„Heutiger Hintergrund“ gibt es mit Dahlia Pro. Öffne Dahlia, um es zu holen."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mandala of the day comes with Dahlia Pro. Open Dahlia to get it."
+            "value" : "Today's wallpaper comes with Dahlia Pro. Open Dahlia to get it."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mandala del día viene con Dahlia Pro. Abre Dahlia para conseguirlo."
+            "value" : "Fondo de hoy viene con Dahlia Pro. Abre Dahlia para conseguirlo."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mandala du jour est inclus avec Dahlia Pro. Ouvrez Dahlia pour l'obtenir."
+            "value" : "Fond d’écran du jour est inclus avec Dahlia Pro. Ouvrez Dahlia pour l'obtenir."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mandala del giorno è incluso in Dahlia Pro. Apri Dahlia per ottenerlo."
+            "value" : "Sfondo di oggi è incluso in Dahlia Pro. Apri Dahlia per ottenerlo."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "「今日のマンダラ」は Dahlia Pro に含まれます。Dahlia を開いて入手してください。"
+            "value" : "「今日の壁紙」は Dahlia Pro に含まれます。Dahlia を開いて入手してください。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "오늘의 만다라는 Dahlia Pro에 포함되어 있습니다. Dahlia를 열어 받으세요."
+            "value" : "오늘의 배경화면은 Dahlia Pro에 포함되어 있습니다. Dahlia를 열어 받으세요."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mandala do dia vem com o Dahlia Pro. Abra o Dahlia para obtê-lo."
+            "value" : "Papel de parede de hoje vem com o Dahlia Pro. Abra o Dahlia para obtê-lo."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "«Мандала дня» входит в Dahlia Pro. Откройте Dahlia, чтобы получить её."
+            "value" : "«Обои на сегодня» входят в Dahlia Pro. Откройте Dahlia, чтобы получить их."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "“今日曼陀罗”包含在 Dahlia Pro 中。打开 Dahlia 即可获得。"
+            "value" : "“今日壁纸”包含在 Dahlia Pro 中。打开 Dahlia 即可获得。"
           }
         }
       }
@@ -21148,61 +21148,61 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mandala des Tages"
+            "value" : "Heutiger Hintergrund"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mandala of the day"
+            "value" : "Today's wallpaper"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mandala del día"
+            "value" : "Fondo de hoy"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mandala du jour"
+            "value" : "Fond d’écran du jour"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mandala del giorno"
+            "value" : "Sfondo di oggi"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "今日のマンダラ"
+            "value" : "今日の壁紙"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "오늘의 만다라"
+            "value" : "오늘의 배경화면"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mandala do dia"
+            "value" : "Papel de parede de hoje"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Мандала дня"
+            "value" : "Обои на сегодня"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "今日曼陀罗"
+            "value" : "今日壁纸"
           }
         }
       }
@@ -21668,61 +21668,61 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Dieses Mandala füllt den Bildschirm dieses iPhones. iOS lässt keine App den Hintergrund selbst setzen, deshalb sichert Dahlia es in Fotos, und du legst es dort fest."
+            "value" : "Dieses Mandala füllt den Bildschirm dieses Geräts. iOS lässt keine App den Hintergrund selbst setzen, deshalb sichert Dahlia es in Fotos, und du legst es dort fest."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "This mandala filling the screen of this iPhone. iOS lets no app set the wallpaper itself, so Dahlia saves it to Photos for you to set."
+            "value" : "This mandala filling the screen of this device. iOS lets no app set the wallpaper itself, so Dahlia saves it to Photos for you to set."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Este mandala llenando la pantalla de este iPhone. iOS no deja que ninguna app establezca el fondo por sí misma, así que Dahlia lo guarda en Fotos para que lo establezcas tú."
+            "value" : "Este mandala llenando la pantalla de este dispositivo. iOS no deja que ninguna app establezca el fondo por sí misma, así que Dahlia lo guarda en Fotos para que lo establezcas tú."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ce mandala plein écran sur cet iPhone. iOS ne laisse aucune app définir le fond d'écran elle-même ; Dahlia l'enregistre donc dans Photos et vous le définissez là-bas."
+            "value" : "Ce mandala plein écran sur cet appareil. iOS ne laisse aucune app définir le fond d'écran elle-même ; Dahlia l'enregistre donc dans Photos et vous le définissez là-bas."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Questo mandala a schermo intero su questo iPhone. iOS non permette a nessuna app di impostare lo sfondo da sola, quindi Dahlia lo salva in Foto e lo imposti tu da lì."
+            "value" : "Questo mandala a schermo intero su questo dispositivo. iOS non permette a nessuna app di impostare lo sfondo da sola, quindi Dahlia lo salva in Foto e lo imposti tu da lì."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "このiPhoneの画面いっぱいに表示されるマンダラです。iOSではアプリが壁紙を直接設定できないため、Dahliaが「写真」に保存し、設定はご自身で行います。"
+            "value" : "このデバイスの画面いっぱいに表示されるマンダラです。iOSではアプリが壁紙を直接設定できないため、Dahliaが「写真」に保存し、設定はご自身で行います。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "이 iPhone 화면을 가득 채우는 만다라입니다. iOS에서는 앱이 배경화면을 직접 설정할 수 없어서, Dahlia가 사진 앱에 저장하고 설정은 직접 하셔야 합니다."
+            "value" : "이 기기 화면을 가득 채우는 만다라입니다. iOS에서는 앱이 배경화면을 직접 설정할 수 없어서, Dahlia가 사진 앱에 저장하고 설정은 직접 하셔야 합니다."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Este mandala preenchendo a tela deste iPhone. O iOS não deixa nenhum app definir o papel de parede sozinho, então o Dahlia o salva em Fotos para você defini-lo."
+            "value" : "Este mandala preenchendo a tela deste dispositivo. O iOS não deixa nenhum app definir o papel de parede sozinho, então o Dahlia o salva em Fotos para você defini-lo."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Эта мандала на весь экран этого iPhone. iOS не позволяет приложениям самим ставить обои, поэтому Dahlia сохраняет её в «Фото», а вы устанавливаете её там."
+            "value" : "Эта мандала на весь экран этого устройства. iOS не позволяет приложениям самим ставить обои, поэтому Dahlia сохраняет её в «Фото», а вы устанавливаете её там."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "这张曼陀罗铺满这台 iPhone 的屏幕。iOS 不允许应用自行设置壁纸，所以 Dahlia 会把它存到“照片”，由你在那里设置。"
+            "value" : "这张曼陀罗铺满这台设备 的屏幕。iOS 不允许应用自行设置壁纸，所以 Dahlia 会把它存到“照片”，由你在那里设置。"
           }
         }
       }
@@ -22058,61 +22058,61 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Die App „Kurzbefehle“ kann jeden Morgen einen deiner Favoriten als Hintergrundbild festlegen. Ihre Aktion „Mandala des Tages“ gibt es mit Pro; sie nimmt die Favoriten des täglichen Wechsels der Widgets (Dahlia, Widgets).\n1. Erstelle in „Kurzbefehle“ einen neuen Kurzbefehl und füge „Mandala des Tages“ von Dahlia hinzu, mit „Bildschirm“ auf „Sperrbildschirm“. Füge danach „Hintergrundbild festlegen“ hinzu, wähle den Sperrbildschirm und schalte „Vorschau anzeigen“ aus.\n2. Füge „Mandala des Tages“ noch einmal mit „Home-Bildschirm“ hinzu und ein zweites „Hintergrundbild festlegen“ für den Home-Bildschirm.\n3. Damit er täglich läuft, lege eine Automation mit „Tageszeit“ an, mit einer Uhrzeit wie 7:00, „Täglich“ und „Sofort ausführen“."
+            "value" : "Die App „Kurzbefehle“ kann jeden Morgen einen deiner Favoriten als Hintergrundbild festlegen. Ihre Aktion „Heutiger Hintergrund“ gibt es mit Pro; sie nimmt die Favoriten des täglichen Wechsels der Widgets (Dahlia, Widgets).\n1. Erstelle in „Kurzbefehle“ einen neuen Kurzbefehl und füge „Heutiger Hintergrund“ von Dahlia hinzu, mit „Bildschirm“ auf „Sperrbildschirm“. Füge danach „Hintergrundbild festlegen“ hinzu, wähle den Sperrbildschirm und schalte „Vorschau anzeigen“ aus.\n2. Füge „Heutiger Hintergrund“ noch einmal mit „Home-Bildschirm“ hinzu und ein zweites „Hintergrundbild festlegen“ für den Home-Bildschirm.\n3. Damit er täglich läuft, lege eine Automation mit „Tageszeit“ an, mit einer Uhrzeit wie 7:00, „Täglich“ und „Sofort ausführen“."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "The Shortcuts app can set one of your favourites as wallpaper every morning. Its action Mandala of the day comes with Pro and takes the favourites of the widgets' daily turn (Dahlia, Widgets).\n1. In Shortcuts, make a new shortcut and add Mandala of the day from Dahlia, with Screen set to Lock screen. Add Set Wallpaper Photo after it, choose the lock screen and turn off Show Preview.\n2. Add Mandala of the day again with Home screen, and a second Set Wallpaper Photo for the home screen.\n3. Let it run every day: add an automation with Time of Day, a time such as 7:00, Daily and Run Immediately."
+            "value" : "The Shortcuts app can set one of your favourites as wallpaper every morning. Its action Today's wallpaper comes with Pro and takes the favourites of the widgets' daily turn (Dahlia, Widgets).\n1. In Shortcuts, make a new shortcut and add Today's wallpaper from Dahlia, with Screen set to Lock screen. Add Set Wallpaper Photo after it, choose the lock screen and turn off Show Preview.\n2. Add Today's wallpaper again with Home screen, and a second Set Wallpaper Photo for the home screen.\n3. Let it run every day: add an automation with Time of Day, a time such as 7:00, Daily and Run Immediately."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "La app Atajos puede poner uno de tus favoritos como fondo cada mañana. Su acción Mandala del día viene con Pro y usa los favoritos del cambio diario de los widgets (Dahlia, Widgets).\n1. En Atajos, crea un atajo nuevo y añade Mandala del día de Dahlia, con Pantalla en Pantalla de bloqueo. Añade después Establecer foto de fondo, elige la pantalla de bloqueo y desactiva Mostrar vista previa.\n2. Añade Mandala del día otra vez con Pantalla de inicio y un segundo Establecer foto de fondo para la pantalla de inicio.\n3. Para que se ejecute cada día, añade una automatización con Hora del día, una hora como las 7:00, Diariamente y Ejecutar inmediatamente."
+            "value" : "La app Atajos puede poner uno de tus favoritos como fondo cada mañana. Su acción Fondo de hoy viene con Pro y usa los favoritos del cambio diario de los widgets (Dahlia, Widgets).\n1. En Atajos, crea un atajo nuevo y añade Fondo de hoy de Dahlia, con Pantalla en Pantalla de bloqueo. Añade después Establecer foto de fondo, elige la pantalla de bloqueo y desactiva Mostrar vista previa.\n2. Añade Fondo de hoy otra vez con Pantalla de inicio y un segundo Establecer foto de fondo para la pantalla de inicio.\n3. Para que se ejecute cada día, añade una automatización con Hora del día, una hora como las 7:00, Diariamente y Ejecutar inmediatamente."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "L'app Raccourcis peut mettre l'un de vos favoris en fond d'écran chaque matin. Son action Mandala du jour est incluse avec Pro et reprend les favoris de la rotation quotidienne des widgets (Dahlia, Widgets).\n1. Dans Raccourcis, créez un nouveau raccourci et ajoutez Mandala du jour de Dahlia, avec Écran sur Écran verrouillé. Ajoutez ensuite Définir la photo du fond d'écran, choisissez l'écran verrouillé et désactivez Afficher l'aperçu.\n2. Ajoutez à nouveau Mandala du jour avec Écran d'accueil et une seconde action Définir la photo du fond d'écran pour l'écran d'accueil.\n3. Pour qu'il s'exécute chaque jour, ajoutez une automatisation avec Heure de la journée, une heure comme 7:00, Tous les jours et Exécuter immédiatement."
+            "value" : "L'app Raccourcis peut mettre l'un de vos favoris en fond d'écran chaque matin. Son action Fond d’écran du jour est incluse avec Pro et reprend les favoris de la rotation quotidienne des widgets (Dahlia, Widgets).\n1. Dans Raccourcis, créez un nouveau raccourci et ajoutez Fond d’écran du jour de Dahlia, avec Écran sur Écran verrouillé. Ajoutez ensuite Définir la photo du fond d'écran, choisissez l'écran verrouillé et désactivez Afficher l'aperçu.\n2. Ajoutez à nouveau Fond d’écran du jour avec Écran d'accueil et une seconde action Définir la photo du fond d'écran pour l'écran d'accueil.\n3. Pour qu'il s'exécute chaque jour, ajoutez une automatisation avec Heure de la journée, une heure comme 7:00, Tous les jours et Exécuter immédiatement."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "L'app Comandi rapidi può impostare ogni mattina uno dei tuoi preferiti come sfondo. La sua azione Mandala del giorno è inclusa con Pro e usa i preferiti del cambio quotidiano dei widget (Dahlia, Widget).\n1. In Comandi rapidi, crea un nuovo comando e aggiungi Mandala del giorno di Dahlia, con Schermo su Schermata di blocco. Aggiungi poi Imposta foto sfondo, scegli la schermata di blocco e disattiva Mostra anteprima.\n2. Aggiungi di nuovo Mandala del giorno con Schermata Home e un secondo Imposta foto sfondo per la schermata Home.\n3. Per farlo eseguire ogni giorno, aggiungi un'automazione con Ora del giorno, un orario come 7:00, Ogni giorno ed Esegui immediatamente."
+            "value" : "L'app Comandi rapidi può impostare ogni mattina uno dei tuoi preferiti come sfondo. La sua azione Sfondo di oggi è inclusa con Pro e usa i preferiti del cambio quotidiano dei widget (Dahlia, Widget).\n1. In Comandi rapidi, crea un nuovo comando e aggiungi Sfondo di oggi di Dahlia, con Schermo su Schermata di blocco. Aggiungi poi Imposta foto sfondo, scegli la schermata di blocco e disattiva Mostra anteprima.\n2. Aggiungi di nuovo Sfondo di oggi con Schermata Home e un secondo Imposta foto sfondo per la schermata Home.\n3. Per farlo eseguire ogni giorno, aggiungi un'automazione con Ora del giorno, un orario come 7:00, Ogni giorno ed Esegui immediatamente."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "「ショートカット」アプリで、毎朝お気に入りの1つを壁紙にできます。アクション「今日のマンダラ」は Pro に含まれ、ウィジェットの日替わりのお気に入りを使います（Dahlia、ウィジェット）。\n1. 「ショートカット」で新規ショートカットを作り、Dahlia の「今日のマンダラ」を追加して、「画面」を「ロック画面」にします。その後に「壁紙の写真を設定」を追加し、ロック画面を選んで「プレビューを表示」をオフにします。\n2. 「今日のマンダラ」を「ホーム画面」でもう一度追加し、ホーム画面用の「壁紙の写真を設定」をもう1つ追加します。\n3. 毎日実行するには、「時刻」のオートメーションを追加し、7:00 などの時刻、「毎日」、「すぐに実行」を設定します。"
+            "value" : "「ショートカット」アプリで、毎朝お気に入りの1つを壁紙にできます。アクション「今日の壁紙」は Pro に含まれ、ウィジェットの日替わりのお気に入りを使います（Dahlia、ウィジェット）。\n1. 「ショートカット」で新規ショートカットを作り、Dahlia の「今日の壁紙」を追加して、「画面」を「ロック画面」にします。その後に「壁紙の写真を設定」を追加し、ロック画面を選んで「プレビューを表示」をオフにします。\n2. 「今日の壁紙」を「ホーム画面」でもう一度追加し、ホーム画面用の「壁紙の写真を設定」をもう1つ追加します。\n3. 毎日実行するには、「時刻」のオートメーションを追加し、7:00 などの時刻、「毎日」、「すぐに実行」を設定します。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "단축어 앱으로 매일 아침 즐겨찾기 하나를 배경화면으로 설정할 수 있습니다. 동작 ‘오늘의 만다라’는 Pro에 포함되어 있으며 위젯의 매일 바뀌는 즐겨찾기를 사용합니다(Dahlia, 위젯).\n1. 단축어 앱에서 새로운 단축어를 만들고 Dahlia의 오늘의 만다라를 추가한 다음 화면을 잠금 화면으로 설정하세요. 그 뒤에 배경화면 사진 설정을 추가하고 잠금 화면을 선택한 다음 미리보기 보기를 끄세요.\n2. 오늘의 만다라를 홈 화면으로 한 번 더 추가하고, 홈 화면용 배경화면 사진 설정을 하나 더 추가하세요.\n3. 매일 실행되게 하려면 시간 자동화를 추가하고 7:00 같은 시각, 매일, 즉시 실행을 설정하세요."
+            "value" : "단축어 앱으로 매일 아침 즐겨찾기 하나를 배경화면으로 설정할 수 있습니다. 동작 ‘오늘의 배경화면’은 Pro에 포함되어 있으며 위젯의 매일 바뀌는 즐겨찾기를 사용합니다(Dahlia, 위젯).\n1. 단축어 앱에서 새로운 단축어를 만들고 Dahlia의 오늘의 배경화면을 추가한 다음 화면을 잠금 화면으로 설정하세요. 그 뒤에 배경화면 사진 설정을 추가하고 잠금 화면을 선택한 다음 미리보기 보기를 끄세요.\n2. 오늘의 배경화면을 홈 화면으로 한 번 더 추가하고, 홈 화면용 배경화면 사진 설정을 하나 더 추가하세요.\n3. 매일 실행되게 하려면 시간 자동화를 추가하고 7:00 같은 시각, 매일, 즉시 실행을 설정하세요."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "O app Atalhos pode definir um dos seus favoritos como papel de parede toda manhã. A ação Mandala do dia vem com o Pro e usa os favoritos da troca diária dos widgets (Dahlia, Widgets).\n1. Em Atalhos, crie um novo atalho e adicione Mandala do dia do Dahlia, com Tela em Tela Bloqueada. Depois adicione Definir Foto do Papel de Parede, escolha a tela bloqueada e desative Mostrar Pré-visualização.\n2. Adicione Mandala do dia de novo com Tela de Início e um segundo Definir Foto do Papel de Parede para a tela de início.\n3. Para que rode todos os dias, adicione uma automação com Hora do Dia, um horário como 7:00, Diariamente e Executar Imediatamente."
+            "value" : "O app Atalhos pode definir um dos seus favoritos como papel de parede toda manhã. A ação Papel de parede de hoje vem com o Pro e usa os favoritos da troca diária dos widgets (Dahlia, Widgets).\n1. Em Atalhos, crie um novo atalho e adicione Papel de parede de hoje do Dahlia, com Tela em Tela Bloqueada. Depois adicione Definir Foto do Papel de Parede, escolha a tela bloqueada e desative Mostrar Pré-visualização.\n2. Adicione Papel de parede de hoje de novo com Tela de Início e um segundo Definir Foto do Papel de Parede para a tela de início.\n3. Para que rode todos os dias, adicione uma automação com Hora do Dia, um horário como 7:00, Diariamente e Executar Imediatamente."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Приложение «Команды» может каждое утро ставить на обои одну из ваших избранных мандал. Его действие «Мандала дня» входит в Pro и берёт избранное, которое сменяется в виджетах (Dahlia, Виджеты).\n1. В «Командах» создайте новую команду и добавьте «Мандала дня» из Dahlia, указав «Экран»: «Экран блокировки». После неё добавьте «Установить фото обоев», выберите экран блокировки и выключите «Показать предпросмотр».\n2. Ещё раз добавьте «Мандала дня» с «Экран «Домой»» и второе «Установить фото обоев» для экрана «Домой».\n3. Чтобы она выполнялась каждый день, добавьте автоматизацию «Время суток» с временем, например 7:00, «Ежедневно» и «Выполнять сразу»."
+            "value" : "Приложение «Команды» может каждое утро ставить на обои одну из ваших избранных мандал. Его действие «Обои на сегодня» входит в Pro и берёт избранное, которое сменяется в виджетах (Dahlia, Виджеты).\n1. В «Командах» создайте новую команду и добавьте «Обои на сегодня» из Dahlia, указав «Экран»: «Экран блокировки». После неё добавьте «Установить фото обоев», выберите экран блокировки и выключите «Показать предпросмотр».\n2. Ещё раз добавьте «Обои на сегодня» с «Экран «Домой»» и второе «Установить фото обоев» для экрана «Домой».\n3. Чтобы она выполнялась каждый день, добавьте автоматизацию «Время суток» с временем, например 7:00, «Ежедневно» и «Выполнять сразу»."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "“快捷指令”App 可以每天早上把你的一个收藏设为壁纸。它的操作“今日曼陀罗”包含在 Pro 中，使用小组件每日轮换的收藏（Dahlia，小组件）。\n1. 在“快捷指令”中新建快捷指令，添加 Dahlia 的“今日曼陀罗”，并把“屏幕”设为“锁定屏幕”。在其后添加“设置壁纸照片”，选取锁定屏幕，并关闭“显示预览”。\n2. 再添加一次“今日曼陀罗”并选“主屏幕”，再添加第二个用于主屏幕的“设置壁纸照片”。\n3. 要让它每天运行，请添加“特定时间”自动化，设定 7:00 之类的时间、“每天”和“立即运行”。"
+            "value" : "“快捷指令”App 可以每天早上把你的一个收藏设为壁纸。它的操作“今日壁纸”包含在 Pro 中，使用小组件每日轮换的收藏（Dahlia，小组件）。\n1. 在“快捷指令”中新建快捷指令，添加 Dahlia 的“今日壁纸”，并把“屏幕”设为“锁定屏幕”。在其后添加“设置壁纸照片”，选取锁定屏幕，并关闭“显示预览”。\n2. 再添加一次“今日壁纸”并选“主屏幕”，再添加第二个用于主屏幕的“设置壁纸照片”。\n3. 要让它每天运行，请添加“特定时间”自动化，设定 7:00 之类的时间、“每天”和“立即运行”。"
           }
         }
       }
@@ -27022,61 +27022,61 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "„Mandala des Tages“ wechselt durch deine Favoriten; füge zuerst einen hinzu."
+            "value" : "„Heutiger Hintergrund“ wechselt durch deine Favoriten; füge zuerst einen hinzu."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mandala of the day takes your favourites in turn; add one first."
+            "value" : "Today's wallpaper takes your favourites in turn; add one first."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mandala del día usa tus favoritos por turnos; añade uno primero."
+            "value" : "Fondo de hoy usa tus favoritos por turnos; añade uno primero."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mandala du jour reprend vos favoris à tour de rôle ; ajoutez-en d'abord un."
+            "value" : "Fond d’écran du jour reprend vos favoris à tour de rôle ; ajoutez-en d'abord un."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mandala del giorno usa a turno i tuoi preferiti; prima aggiungine uno."
+            "value" : "Sfondo di oggi usa a turno i tuoi preferiti; prima aggiungine uno."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "「今日のマンダラ」はお気に入りを順番に使います。まずお気に入りを追加してください。"
+            "value" : "「今日の壁紙」はお気に入りを順番に使います。まずお気に入りを追加してください。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "오늘의 만다라는 즐겨찾기를 차례로 사용합니다. 먼저 즐겨찾기를 추가하세요."
+            "value" : "오늘의 배경화면은 즐겨찾기를 차례로 사용합니다. 먼저 즐겨찾기를 추가하세요."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mandala do dia usa seus favoritos, um de cada vez; adicione um primeiro."
+            "value" : "Papel de parede de hoje usa seus favoritos, um de cada vez; adicione um primeiro."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "«Мандала дня» берёт мандалы из избранного по очереди; сначала добавьте одну."
+            "value" : "«Обои на сегодня» берут мандалы из избранного по очереди; сначала добавьте одну."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "“今日曼陀罗”会轮流使用你的收藏，请先添加一个收藏。"
+            "value" : "“今日壁纸”会轮流使用你的收藏，请先添加一个收藏。"
           }
         }
       }

@@ -5,7 +5,7 @@ import UIKit
 
 // The wallpaper on the iPhone (PLAN-4 WP-11, F5 a, ADR-0014 amended for iOS): iOS lets no app set the wallpaper, so
 // the app saves the screen-sized picture (or the pair: lock screen with the finish, home screen darker) to Photos, and
-// the Pro Shortcuts action "Mandala of the day" hands today's picture to Shortcuts' own "Set Wallpaper". The daily turn
+// the Pro Shortcuts action "Today's wallpaper" hands today's picture to Shortcuts' own "Set Wallpaper". The daily turn
 // is a function of the date, the same rule the widgets follow (`DailyTurn`, days from 4:00, `WidgetDay`).
 
 /// Whose turn it is today, for the widgets and the Shortcuts action alike.

@@ -3,8 +3,9 @@ import Foundation
 @preconcurrency import MandalaCore
 import UniformTypeIdentifiers
 
-// "Mandala of the day" for Shortcuts (PLAN-4 WP-11, F5 a, Pro): returns today's wallpaper picture for the lock or the
-// home screen, so a personal automation ("every day at 7:00, Run Immediately: Mandala of the day, Set Wallpaper") gives
+// "Today's wallpaper" for Shortcuts (PLAN-4 WP-11, F5 a, Pro; shown as "Mandala of the day" until 28 November 2026, the type
+// keeps that name so shortcuts people already built keep working): returns today's wallpaper picture for the lock or the
+// home screen, so a personal automation ("every day at 7:00, Run Immediately: Today's wallpaper, Set Wallpaper") gives
 // the iPhone a new wallpaper each morning, as Android's daily wallpaper does. It runs in the app's process without
 // opening the app; the picture is usually rendered ahead by the app (WidgetSync), otherwise it is drawn here.
 
@@ -97,8 +98,8 @@ struct DahliaShortcuts: AppShortcutsProvider {
         AppShortcut(
             intent: MandalaOfTheDayIntent(),
             phrases: [
-                "\(.applicationName) mandala of the day",
-                "Mandala of the day from \(.applicationName)",
+                "\(.applicationName) today's wallpaper",
+                "Today's wallpaper from \(.applicationName)",
             ],
             shortTitle: "ios_intent_title",
             systemImageName: "photo.on.rectangle"

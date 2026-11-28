@@ -21,29 +21,29 @@
     <string name="pro_restore_not_found">App Store 未找到此 Apple 账户的 Pro 购买记录。如果你用其他 Apple 账户购买了 Pro，请在“设置”&gt;你的姓名&gt;“媒体与购买项目”中登录该账户，然后再次轻点“恢复购买”。</string>
     <string name="pro_restore_unreachable">无法连接 App Store，因此未能检查。请稍后再试。</string>
     <string name="pro_purchase_not_started">App Store 无法打开购买页面。请重试。</string>
-    <string name="editor_pro_unavailable">此 iPhone 已关闭购买。可在“设置”的“屏幕使用时间”中允许。</string>
+    <string name="editor_pro_unavailable">此设备 已关闭购买。可在“设置”的“屏幕使用时间”中允许。</string>
     <string name="editor_pro_adds_wallpapers">壁纸：主屏幕和锁屏成对设置。</string>
     <!-- The widget list on the Dahlia page (WP-10): iOS changes a widget through Edit Widget. -->
     <string name="menu_widgets_about">每个小组件都有自己的曼陀罗和颜色。要更改，请长按小组件并选择“编辑小组件”。</string>
     <string name="menu_widgets_empty">要添加，请长按主屏幕空白处，轻点“编辑”，再轻点“添加小组件”，然后选择 Dahlia。</string>
     <!-- The wallpaper page, its tip and the Shortcuts action (WP-11, the daily page removed 26 November 2026): iOS lets no app set the wallpaper. -->
-    <string name="ios_wallpaper_about">这张曼陀罗铺满这台 iPhone 的屏幕。iOS 不允许应用自行设置壁纸，所以 Dahlia 会把它存到“照片”，由你在那里设置。</string>
+    <string name="ios_wallpaper_about">这张曼陀罗铺满这台设备 的屏幕。iOS 不允许应用自行设置壁纸，所以 Dahlia 会把它存到“照片”，由你在那里设置。</string>
     <string name="ios_wallpaper_save_both">两张都存到“照片”</string>
     <string name="ios_wallpaper_set_title">在 iOS 中设置</string>
     <string name="ios_wallpaper_set_one">在“照片”中打开图片，轻点“共享”，然后轻点“用作壁纸”。轻点“添加”，再轻点“设为壁纸对”。</string>
     <string name="ios_wallpaper_set_pair">在“照片”中打开锁屏图片，轻点“共享”，然后轻点“用作壁纸”，再轻点“添加”。选取“自定主屏幕”，轻点“照片”，然后选取主屏幕图片。</string>
     <string name="ios_wallpaper_saved">已存到“照片”。请在那里打开它，轻点“共享”，然后轻点“用作壁纸”。</string>
     <string name="ios_wallpapers_saved">两张都已存到“照片”：锁屏和主屏幕。</string>
-    <string name="ios_intent_title">今日曼陀罗</string>
+    <string name="ios_intent_title">今日壁纸</string>
     <string name="ios_intent_description">今天从你的收藏中选出的曼陀罗，铺满屏幕，可直接用于“设置壁纸照片”。</string>
     <string name="ios_intent_screen">屏幕</string>
-    <string name="ios_intent_needs_pro">“今日曼陀罗”包含在 Dahlia Pro 中。打开 Dahlia 即可获得。</string>
+    <string name="ios_intent_needs_pro">“今日壁纸”包含在 Dahlia Pro 中。打开 Dahlia 即可获得。</string>
     <!-- Siri and Spotlight phrases of the action; ${applicationName} is the app's name. -->
-    <string name="shortcut_phrase_1">${applicationName} 今日曼陀罗</string>
-    <string name="shortcut_phrase_2">${applicationName} 的今日曼陀罗</string>
+    <string name="shortcut_phrase_1">${applicationName} 今日壁纸</string>
+    <string name="shortcut_phrase_2">${applicationName} 的今日壁纸</string>
     <string name="pair_home_screen">主屏幕</string>
     <string name="ios_wallpaper_tip_title">提示：每天一张新壁纸</string>
-    <string name="ios_wallpaper_tip_steps">“快捷指令”App 可以每天早上把你的一个收藏设为壁纸。它的操作“今日曼陀罗”包含在 Pro 中，使用小组件每日轮换的收藏（Dahlia，小组件）。\n1. 在“快捷指令”中新建快捷指令，添加 Dahlia 的“今日曼陀罗”，并把“屏幕”设为“锁定屏幕”。在其后添加“设置壁纸照片”，选取锁定屏幕，并关闭“显示预览”。\n2. 再添加一次“今日曼陀罗”并选“主屏幕”，再添加第二个用于主屏幕的“设置壁纸照片”。\n3. 要让它每天运行，请添加“特定时间”自动化，设定 7:00 之类的时间、“每天”和“立即运行”。</string>
+    <string name="ios_wallpaper_tip_steps">“快捷指令”App 可以每天早上把你的一个收藏设为壁纸。它的操作“今日壁纸”包含在 Pro 中，使用小组件每日轮换的收藏（Dahlia，小组件）。\n1. 在“快捷指令”中新建快捷指令，添加 Dahlia 的“今日壁纸”，并把“屏幕”设为“锁定屏幕”。在其后添加“设置壁纸照片”，选取锁定屏幕，并关闭“显示预览”。\n2. 再添加一次“今日壁纸”并选“主屏幕”，再添加第二个用于主屏幕的“设置壁纸照片”。\n3. 要让它每天运行，请添加“特定时间”自动化，设定 7:00 之类的时间、“每天”和“立即运行”。</string>
     <string name="ios_widgets_daily_favourites">每日轮换的收藏</string>
-    <string name="message_daily_needs_favourite">“今日曼陀罗”会轮流使用你的收藏，请先添加一个收藏。</string>
+    <string name="message_daily_needs_favourite">“今日壁纸”会轮流使用你的收藏，请先添加一个收藏。</string>
 </resources>

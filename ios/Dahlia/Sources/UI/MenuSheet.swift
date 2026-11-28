@@ -286,7 +286,7 @@ struct MenuSheet: View {
                 Text(Texts.menuWidgetsEmpty).textRole(.note).foregroundStyle(t.textMuted).padding(.top, Spacing.md)
             }
 
-            // Which favourites the daily turn takes (and the Shortcuts action "Mandala of the day"); the iPhone has no
+            // Which favourites the daily turn takes (and the Shortcuts action "Today's wallpaper"); the iPhone has no
             // daily wallpaper page, so the choice lives with the widgets (26 November 2026).
             let chosen = model.dailyShown
             let count = model.favorites.filter { chosen?.contains($0.id) ?? true }.count

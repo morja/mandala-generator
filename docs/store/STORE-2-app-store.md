@@ -82,7 +82,7 @@ In `store/ios/<locale>/`, one folder per app language (PLAN-4 F10 a), named with
 
 - **French subtitle** "Géométrie sacrée et fonds" (30 characters; "fonds d'écran" would be 33): accepted.
 
-- **Ready shortcut through an iCloud link:** dropped. Mathis decided later the same day that the iPhone app does not offer the daily wallpaper as a feature: it becomes a text tip in the app, the Shortcuts action "Mandala of the day" stays (Pro) but is not advertised. The listing texts in all locales were changed accordingly (no new wallpaper every morning, no Shortcuts automation); the review notes mention the action only as optional.
+- **Ready shortcut through an iCloud link:** dropped. Mathis decided later the same day that the iPhone app does not offer the daily wallpaper as a feature: it becomes a text tip in the app, the Shortcuts action "Mandala of the day" stays (Pro) but is not advertised. On 28 November 2026 the action was renamed "Today's wallpaper" (German "Heutiger Hintergrund") because the widget has the same name; the widget keeps "Mandala of the day". The listing texts in all locales were changed accordingly (no new wallpaper every morning, no Shortcuts automation); the review notes mention the action only as optional.
 
 ### Other fields of the version page
 
@@ -146,7 +146,7 @@ The symbols (Om, Dharma wheel, Sri Yantra …) and the spiritual quotes are not 
 > - Pro features after buying in the sandbox: up to five layers (Layers tab, +), the Emblem and Text tabs, saving at 2048 px and as a video (the save arrow in the navigation bar, then Picture or Video), the SVG line drawing (⋯ › More › Line drawing) and the wallpaper pair (⋯ › Wallpaper › Save both to Photos).
 >
 > Optional: Shortcuts action (Pro)
-> The app provides the App Intent "Mandala of the day" (parameter Screen: Lock screen or Home screen). It appears in the Shortcuts app under Dahlia without setup and returns today's picture from the user's favourites, for example for "Set Wallpaper Photo". It needs no setup to review the app; without Pro it answers "Mandala of the day comes with Dahlia Pro".
+> The app provides the App Intent "Today's wallpaper" (parameter Screen: Lock screen or Home screen). It appears in the Shortcuts app under Dahlia without setup and returns today's picture from the user's favourites, for example for "Set Wallpaper Photo". It needs no setup to review the app; without Pro it answers "Today's wallpaper comes with Dahlia Pro".
 >
 > Widget
 > Long-press the home screen › Edit › Add Widget › Dahlia › "Mandala of the day" (small, medium, large). The widget is free and shows a favourite; with Pro it changes every morning at 4:00.

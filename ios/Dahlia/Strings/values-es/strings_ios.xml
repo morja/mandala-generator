@@ -21,29 +21,29 @@
     <string name="pro_restore_not_found">El App Store no ha encontrado ninguna compra de Pro para esta cuenta de Apple. Si compraste Pro con otra cuenta de Apple, inicia sesión con ella en Ajustes, tu nombre, Contenido y compras, y vuelve a tocar «Restaurar compra».</string>
     <string name="pro_restore_unreachable">No se pudo conectar con el App Store, así que no se ha comprobado nada. Vuelve a intentarlo más tarde.</string>
     <string name="pro_purchase_not_started">El App Store no pudo abrir la compra. Vuelve a intentarlo.</string>
-    <string name="editor_pro_unavailable">Las compras están desactivadas en este iPhone. Puedes permitirlas en Ajustes, en Tiempo de uso.</string>
+    <string name="editor_pro_unavailable">Las compras están desactivadas en este dispositivo. Puedes permitirlas en Ajustes, en Tiempo de uso.</string>
     <string name="editor_pro_adds_wallpapers">Fondos de pantalla: inicio y bloqueo en pareja.</string>
     <!-- The widget list on the Dahlia page (WP-10): iOS changes a widget through Edit Widget. -->
     <string name="menu_widgets_about">Cada widget tiene su propio mandala y sus colores. Para cambiarlos, mantén pulsado el widget y elige Editar widget.</string>
     <string name="menu_widgets_empty">Para añadir uno, mantén pulsado un espacio vacío de la pantalla de inicio, toca Editar y luego Añadir widget, y elige Dahlia.</string>
     <!-- The wallpaper page, its tip and the Shortcuts action (WP-11, the daily page removed 26 November 2026): iOS lets no app set the wallpaper. -->
-    <string name="ios_wallpaper_about">Este mandala llenando la pantalla de este iPhone. iOS no deja que ninguna app establezca el fondo por sí misma, así que Dahlia lo guarda en Fotos para que lo establezcas tú.</string>
+    <string name="ios_wallpaper_about">Este mandala llenando la pantalla de este dispositivo. iOS no deja que ninguna app establezca el fondo por sí misma, así que Dahlia lo guarda en Fotos para que lo establezcas tú.</string>
     <string name="ios_wallpaper_save_both">Guardar ambos en Fotos</string>
     <string name="ios_wallpaper_set_title">Establecerlo en iOS</string>
     <string name="ios_wallpaper_set_one">Abre la imagen en Fotos, toca Compartir y luego Usar como fondo de pantalla. Toca Añadir y luego Establecer como par de fondos.</string>
     <string name="ios_wallpaper_set_pair">Abre la imagen de la pantalla de bloqueo en Fotos, toca Compartir, luego Usar como fondo de pantalla y toca Añadir. Elige Personalizar pantalla de inicio, toca Fotos y elige la imagen de la pantalla de inicio.</string>
     <string name="ios_wallpaper_saved">Guardado en Fotos. Ábrelo allí y toca Compartir y luego Usar como fondo de pantalla.</string>
     <string name="ios_wallpapers_saved">Se han guardado ambos en Fotos: el de la pantalla de bloqueo y el de la pantalla de inicio.</string>
-    <string name="ios_intent_title">Mandala del día</string>
+    <string name="ios_intent_title">Fondo de hoy</string>
     <string name="ios_intent_description">El mandala de hoy de tus favoritos, a pantalla completa, listo para Establecer foto de fondo.</string>
     <string name="ios_intent_screen">Pantalla</string>
-    <string name="ios_intent_needs_pro">Mandala del día viene con Dahlia Pro. Abre Dahlia para conseguirlo.</string>
+    <string name="ios_intent_needs_pro">Fondo de hoy viene con Dahlia Pro. Abre Dahlia para conseguirlo.</string>
     <!-- Siri and Spotlight phrases of the action; ${applicationName} is the app's name. -->
-    <string name="shortcut_phrase_1">${applicationName} mandala del día</string>
-    <string name="shortcut_phrase_2">Mandala del día de ${applicationName}</string>
+    <string name="shortcut_phrase_1">${applicationName} fondo de hoy</string>
+    <string name="shortcut_phrase_2">Fondo de hoy de ${applicationName}</string>
     <string name="pair_home_screen">Pantalla de inicio</string>
     <string name="ios_wallpaper_tip_title">Consejo: un fondo nuevo cada día</string>
-    <string name="ios_wallpaper_tip_steps">La app Atajos puede poner uno de tus favoritos como fondo cada mañana. Su acción Mandala del día viene con Pro y usa los favoritos del cambio diario de los widgets (Dahlia, Widgets).\n1. En Atajos, crea un atajo nuevo y añade Mandala del día de Dahlia, con Pantalla en Pantalla de bloqueo. Añade después Establecer foto de fondo, elige la pantalla de bloqueo y desactiva Mostrar vista previa.\n2. Añade Mandala del día otra vez con Pantalla de inicio y un segundo Establecer foto de fondo para la pantalla de inicio.\n3. Para que se ejecute cada día, añade una automatización con Hora del día, una hora como las 7:00, Diariamente y Ejecutar inmediatamente.</string>
+    <string name="ios_wallpaper_tip_steps">La app Atajos puede poner uno de tus favoritos como fondo cada mañana. Su acción Fondo de hoy viene con Pro y usa los favoritos del cambio diario de los widgets (Dahlia, Widgets).\n1. En Atajos, crea un atajo nuevo y añade Fondo de hoy de Dahlia, con Pantalla en Pantalla de bloqueo. Añade después Establecer foto de fondo, elige la pantalla de bloqueo y desactiva Mostrar vista previa.\n2. Añade Fondo de hoy otra vez con Pantalla de inicio y un segundo Establecer foto de fondo para la pantalla de inicio.\n3. Para que se ejecute cada día, añade una automatización con Hora del día, una hora como las 7:00, Diariamente y Ejecutar inmediatamente.</string>
     <string name="ios_widgets_daily_favourites">Favoritos del cambio diario</string>
-    <string name="message_daily_needs_favourite">Mandala del día usa tus favoritos por turnos; añade uno primero.</string>
+    <string name="message_daily_needs_favourite">Fondo de hoy usa tus favoritos por turnos; añade uno primero.</string>
 </resources>

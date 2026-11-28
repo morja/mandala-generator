@@ -21,29 +21,29 @@
     <string name="pro_restore_not_found">L’App Store n’a trouvé aucun achat de Pro pour ce compte Apple. Si vous avez acheté Pro avec un autre compte Apple, connectez-vous avec celui-ci dans Réglages, votre nom, Contenu multimédia et achats, puis touchez à nouveau « Restaurer l’achat ».</string>
     <string name="pro_restore_unreachable">L’App Store n’a pas pu être joint, rien n’a donc été vérifié. Veuillez réessayer plus tard.</string>
     <string name="pro_purchase_not_started">L’App Store n’a pas pu ouvrir l’achat. Veuillez réessayer.</string>
-    <string name="editor_pro_unavailable">Les achats sont désactivés sur cet iPhone. Vous pouvez les autoriser dans Réglages, sous Temps d’écran.</string>
+    <string name="editor_pro_unavailable">Les achats sont désactivés sur cet appareil. Vous pouvez les autoriser dans Réglages, sous Temps d’écran.</string>
     <string name="editor_pro_adds_wallpapers">Fonds d’écran : accueil et verrouillage en duo.</string>
     <!-- The widget list on the Dahlia page (WP-10): iOS changes a widget through Edit Widget. -->
     <string name="menu_widgets_about">Chaque widget a son propre mandala et ses couleurs. Pour les changer, maintenez le doigt sur le widget et choisissez Modifier le widget.</string>
     <string name="menu_widgets_empty">Pour en ajouter un, maintenez le doigt sur un espace libre de l\'écran d\'accueil, touchez Modifier, puis Ajouter un widget, et choisissez Dahlia.</string>
     <!-- The wallpaper page, its tip and the Shortcuts action (WP-11, the daily page removed 26 November 2026): iOS lets no app set the wallpaper. -->
-    <string name="ios_wallpaper_about">Ce mandala plein écran sur cet iPhone. iOS ne laisse aucune app définir le fond d\'écran elle-même ; Dahlia l\'enregistre donc dans Photos et vous le définissez là-bas.</string>
+    <string name="ios_wallpaper_about">Ce mandala plein écran sur cet appareil. iOS ne laisse aucune app définir le fond d\'écran elle-même ; Dahlia l\'enregistre donc dans Photos et vous le définissez là-bas.</string>
     <string name="ios_wallpaper_save_both">Enregistrer les deux dans Photos</string>
     <string name="ios_wallpaper_set_title">Le définir dans iOS</string>
     <string name="ios_wallpaper_set_one">Ouvrez l\'image dans Photos, touchez Partager, puis Utiliser comme fond d\'écran. Touchez Ajouter, puis Définir comme paire de fonds d\'écran.</string>
     <string name="ios_wallpaper_set_pair">Ouvrez l\'image de l\'écran verrouillé dans Photos, touchez Partager, puis Utiliser comme fond d\'écran, et touchez Ajouter. Choisissez Personnaliser l\'écran d\'accueil, touchez Photos et choisissez l\'image de l\'écran d\'accueil.</string>
     <string name="ios_wallpaper_saved">Enregistré dans Photos. Ouvrez-le là-bas et touchez Partager, puis Utiliser comme fond d\'écran.</string>
     <string name="ios_wallpapers_saved">Les deux sont enregistrés dans Photos : l\'écran verrouillé et l\'écran d\'accueil.</string>
-    <string name="ios_intent_title">Mandala du jour</string>
-    <string name="ios_intent_description">Le mandala du jour tiré de vos favoris, plein écran, prêt pour Définir la photo du fond d\'écran.</string>
+    <string name="ios_intent_title">Fond d’écran du jour</string>
+    <string name="ios_intent_description">Le fond d’écran du jour tiré de vos favoris, plein écran, prêt pour Définir la photo du fond d\'écran.</string>
     <string name="ios_intent_screen">Écran</string>
-    <string name="ios_intent_needs_pro">Mandala du jour est inclus avec Dahlia Pro. Ouvrez Dahlia pour l\'obtenir.</string>
+    <string name="ios_intent_needs_pro">Fond d’écran du jour est inclus avec Dahlia Pro. Ouvrez Dahlia pour l\'obtenir.</string>
     <!-- Siri and Spotlight phrases of the action; ${applicationName} is the app's name. -->
-    <string name="shortcut_phrase_1">${applicationName} mandala du jour</string>
-    <string name="shortcut_phrase_2">Mandala du jour de ${applicationName}</string>
+    <string name="shortcut_phrase_1">${applicationName} fond d’écran du jour</string>
+    <string name="shortcut_phrase_2">Fond d’écran du jour de ${applicationName}</string>
     <string name="pair_home_screen">Écran d\'accueil</string>
     <string name="ios_wallpaper_tip_title">Astuce : un nouveau fond d’écran chaque jour</string>
-    <string name="ios_wallpaper_tip_steps">L\'app Raccourcis peut mettre l\'un de vos favoris en fond d\'écran chaque matin. Son action Mandala du jour est incluse avec Pro et reprend les favoris de la rotation quotidienne des widgets (Dahlia, Widgets).\n1. Dans Raccourcis, créez un nouveau raccourci et ajoutez Mandala du jour de Dahlia, avec Écran sur Écran verrouillé. Ajoutez ensuite Définir la photo du fond d\'écran, choisissez l\'écran verrouillé et désactivez Afficher l\'aperçu.\n2. Ajoutez à nouveau Mandala du jour avec Écran d\'accueil et une seconde action Définir la photo du fond d\'écran pour l\'écran d\'accueil.\n3. Pour qu\'il s\'exécute chaque jour, ajoutez une automatisation avec Heure de la journée, une heure comme 7:00, Tous les jours et Exécuter immédiatement.</string>
+    <string name="ios_wallpaper_tip_steps">L\'app Raccourcis peut mettre l\'un de vos favoris en fond d\'écran chaque matin. Son action Fond d’écran du jour est incluse avec Pro et reprend les favoris de la rotation quotidienne des widgets (Dahlia, Widgets).\n1. Dans Raccourcis, créez un nouveau raccourci et ajoutez Fond d’écran du jour de Dahlia, avec Écran sur Écran verrouillé. Ajoutez ensuite Définir la photo du fond d\'écran, choisissez l\'écran verrouillé et désactivez Afficher l\'aperçu.\n2. Ajoutez à nouveau Fond d’écran du jour avec Écran d\'accueil et une seconde action Définir la photo du fond d\'écran pour l\'écran d\'accueil.\n3. Pour qu\'il s\'exécute chaque jour, ajoutez une automatisation avec Heure de la journée, une heure comme 7:00, Tous les jours et Exécuter immédiatement.</string>
     <string name="ios_widgets_daily_favourites">Favoris de la rotation quotidienne</string>
-    <string name="message_daily_needs_favourite">Mandala du jour reprend vos favoris à tour de rôle ; ajoutez-en d\'abord un.</string>
+    <string name="message_daily_needs_favourite">Fond d’écran du jour reprend vos favoris à tour de rôle ; ajoutez-en d\'abord un.</string>
 </resources>

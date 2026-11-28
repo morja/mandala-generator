@@ -1,132 +1,132 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-    "${applicationName} mandala of the day" : {
+    "${applicationName} today's wallpaper" : {
       "extractionState" : "manual",
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "${applicationName} Mandala des Tages"
+            "value" : "${applicationName} heutiger Hintergrund"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "${applicationName} mandala of the day"
+            "value" : "${applicationName} today's wallpaper"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "${applicationName} mandala del día"
+            "value" : "${applicationName} fondo de hoy"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "${applicationName} mandala du jour"
+            "value" : "${applicationName} fond d’écran du jour"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "${applicationName} mandala del giorno"
+            "value" : "${applicationName} sfondo di oggi"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "${applicationName} 今日のマンダラ"
+            "value" : "${applicationName} 今日の壁紙"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "${applicationName} 오늘의 만다라"
+            "value" : "${applicationName} 오늘의 배경화면"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "${applicationName} mandala do dia"
+            "value" : "${applicationName} papel de parede de hoje"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "${applicationName} мандала дня"
+            "value" : "${applicationName} обои на сегодня"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "${applicationName} 今日曼陀罗"
+            "value" : "${applicationName} 今日壁纸"
           }
         }
       }
     },
-    "Mandala of the day from ${applicationName}" : {
+    "Today's wallpaper from ${applicationName}" : {
       "extractionState" : "manual",
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mandala des Tages von ${applicationName}"
+            "value" : "Heutiger Hintergrund von ${applicationName}"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mandala of the day from ${applicationName}"
+            "value" : "Today's wallpaper from ${applicationName}"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mandala del día de ${applicationName}"
+            "value" : "Fondo de hoy de ${applicationName}"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mandala du jour de ${applicationName}"
+            "value" : "Fond d’écran du jour de ${applicationName}"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mandala del giorno di ${applicationName}"
+            "value" : "Sfondo di oggi di ${applicationName}"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "${applicationName} の今日のマンダラ"
+            "value" : "${applicationName} の今日の壁紙"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "${applicationName}의 오늘의 만다라"
+            "value" : "${applicationName}의 오늘의 배경화면"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mandala do dia do ${applicationName}"
+            "value" : "Papel de parede de hoje do ${applicationName}"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Мандала дня из ${applicationName}"
+            "value" : "Обои на сегодня из ${applicationName}"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "${applicationName} 的今日曼陀罗"
+            "value" : "${applicationName} 的今日壁纸"
           }
         }
       }
