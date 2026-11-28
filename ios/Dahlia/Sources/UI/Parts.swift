@@ -96,7 +96,7 @@ struct SliderRow: View {
         GeometryReader { geo in
             HStack(spacing: 0) {
                 // A long word ("Насыщенность") shrinks a little rather than run into the slider.
-                Text(label).textRole(.body).foregroundStyle(t.text).lineLimit(1).minimumScaleFactor(0.8)
+                Text(label).textRole(.body).foregroundStyle(t.text).lineLimit(1).minimumScaleFactor(0.7)
                     .frame(width: geo.size.width * 0.34, alignment: .leading)
                 ResettableSlider(value: binding.wrappedValue, range: range, step: step, label: label,
                                  valueText: display?(value) ?? (step == nil ? String(format: "%.2f", value) : String(Int(value.rounded()))),
@@ -510,7 +510,9 @@ struct SwitchHeader: View {
                 .buttonStyle(.plain)
                 .accessibilityLabel(dieLabel)
                 Button(action: onReset) {
-                    Text(Texts.reset).textRole(.heading).foregroundStyle(t.accent).frame(minHeight: Sizes.icon * 2)
+                    // One line; the label beside it wraps instead (as in the Scene tab's effects row).
+                    Text(Texts.reset).textRole(.heading).foregroundStyle(t.accent).lineLimit(1).fixedSize()
+                        .frame(minHeight: Sizes.icon * 2)
                 }
                 .buttonStyle(.plain)
                 .padding(.horizontal, Spacing.sm)
@@ -549,9 +551,10 @@ struct ModeButton: View {
 
     var body: some View {
         Button(action: action) {
-            Text(label).textRole(.heading).lineLimit(1)
+            // One line; a long label ("Рисовать на изображении") shrinks a little rather than being cut.
+            Text(label).textRole(.heading).lineLimit(1).minimumScaleFactor(0.85)
                 .foregroundStyle(active ? t.accent : (enabled ? t.onAccent : t.textMuted))
-                .padding(.horizontal, Spacing.lg)
+                .padding(.horizontal, Spacing.md)
                 .frame(maxWidth: wide ? .infinity : nil, minHeight: Sizes.icon * 2)
                 .background(active ? t.accentSoft : (enabled ? t.accent : t.surfaceRaised), in: Capsule())
                 .contentShape(Capsule())
@@ -627,5 +630,38 @@ struct MoveButton: View {
         ModeButton(label: active ? Texts.done : Texts.moveOnImage, active: active, enabled: active || enabled) {
             model.setMoveTarget(active ? nil : target)
         }
+    }
+}
+
+/// A die as Android draws its dice: the accent outline on a soft fill of the accent (Android's `line(DIE, soft = DIE)`).
+/// The filled symbol in the soft colour lies under the outline one, whose dots cover the filled one's cut-outs.
+struct DieSymbol: View {
+    let name: String
+    @Environment(\.tokens) private var t
+
+    var body: some View {
+        ZStack {
+            Image(systemName: name + ".fill").foregroundStyle(t.accentSoft)
+            Image(systemName: name).foregroundStyle(t.accent)
+        }
+        .accessibilityHidden(true)
+    }
+}
+
+extension View {
+    /// The same text role a few Dynamic Type sizes smaller (negative) or larger, following the user's text size: for a
+    /// label that belongs between two roles (the menu cards' labels), and to give SF Symbols, which differ in size among
+    /// themselves, the size of Android's icons (IOS-14).
+    func typeSizeShifted(by steps: Int) -> some View { modifier(ShiftedTypeSize(steps: steps)) }
+}
+
+private struct ShiftedTypeSize: ViewModifier {
+    let steps: Int
+    @Environment(\.dynamicTypeSize) private var size
+
+    func body(content: Content) -> some View {
+        let all = DynamicTypeSize.allCases
+        let index = all.firstIndex(of: size) ?? 0
+        content.dynamicTypeSize(all[min(all.count - 1, max(0, index + steps))])
     }
 }

@@ -57,9 +57,9 @@ struct SaveSheet: View {
                 MessageBar(message: message) { model.message = nil }.padding(.top, Spacing.md)
             }
         }
-        .background(t.background)
+        // Always large: the frame takes the height the other parts leave.
         .presentationDetents([.large])
-        .presentationBackground(t.background)
+        .sheetSurface()
         // The sheet stays while an export runs, so its Cancel and progress stay in reach.
         .interactiveDismissDisabled(busy)
         .onAppear {
@@ -290,7 +290,7 @@ private struct WallpaperSheet: View {
     @Environment(\.tokens) private var t
 
     var body: some View {
-        ScrollView {
+        FittedSheet {
             WallpaperPage(page: Binding(get: { .wallpaper }, set: { if $0 != .wallpaper { close() } }), close: close, backLabel: Texts.saveImage)
                 .padding(.horizontal, Spacing.lg)
                 .padding(.top, Spacing.xl)
@@ -302,9 +302,6 @@ private struct WallpaperSheet: View {
                 MessageBar(message: message) { model.message = nil }.padding(.top, Spacing.md)
             }
         }
-        .background(t.background)
-        .presentationDetents([.large])
-        .presentationBackground(t.background)
         .proSheet()
     }
 }

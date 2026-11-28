@@ -33,10 +33,8 @@ struct ProSheet: View {
             .padding(.bottom, Spacing.xl)
             .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { height = $0 }
         }
-        .background(t.background)
         .presentationDetents(height > 0 ? [.height(height)] : [.medium])
-        .presentationDragIndicator(.visible)
-        .presentationBackground(t.background)
+        .sheetSurface()
         // A purchase or restore closes the sheet; the thanks shows as a message (Android: LaunchedEffect(pro.unlocked)).
         .onChange(of: store.unlocked) { _, unlocked in if unlocked { model.closePro() } }
     }

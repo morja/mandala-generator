@@ -48,9 +48,9 @@ struct PlaySheet: View {
         .padding(.horizontal, Spacing.lg)
         .padding(.top, Spacing.md)
         .padding(.bottom, Spacing.lg)
-        .background(t.background)
+        // Always large: the picture takes the height the field and the buttons leave.
         .presentationDetents([.large])
-        .presentationBackground(t.background)
+        .sheetSurface()
         // The field takes its own touches; only Done closes the sheet (Android: a swipe outside the field).
         .interactiveDismissDisabled()
     }

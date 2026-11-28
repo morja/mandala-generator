@@ -52,7 +52,8 @@ struct MenuSheet: View {
     @State private var lineDrawing: SvgDocument?
 
     var body: some View {
-        ScrollView {
+        // As tall as the page, so the picture stays visible above the menu (Android's ModalBottomSheet, IOS-14).
+        FittedSheet {
             VStack(alignment: .leading, spacing: 0) {
                 if let candidate = model.shell.candidate {
                     Compare(candidate: candidate, close: close)
@@ -78,9 +79,6 @@ struct MenuSheet: View {
             .padding(.top, Spacing.xl)
             .padding(.bottom, Spacing.xl)
         }
-        .background(t.background)
-        .presentationDetents([.large])
-        .presentationBackground(t.background)
         // The comparison belongs to the open menu only.
         .onDisappear { model.closeCandidate() }
         // A Pro request from here (the line drawing, Share, "Dahlia Pro") shows on top of the menu.
@@ -121,9 +119,6 @@ struct MenuSheet: View {
                     close()
                 }
                 .disabled(!model.canAddFavorite)
-                // The screen-sized picture or the pair to Photos, with how to set it in iOS (WP-11).
-                Pill(icon: "iphone", label: Texts.menuWallpaper) { page = .wallpaper }
-                    .disabled(model.save.busy)
                 // The square picture through the share sheet, drawn after the menu closed (Android's KeepRow).
                 Pill(icon: "square.and.arrow.up", label: Texts.share) {
                     // With Pro features but without Pro the Pro sheet opens on top of the menu; "Share without Pro parts" goes on.
@@ -134,6 +129,9 @@ struct MenuSheet: View {
                     if model.mayKeep(Texts.share, then: share) { share() }
                 }
                 .disabled(model.save.busy)
+                // The screen-sized picture or the pair to Photos, with how to set it in iOS (WP-11).
+                Pill(icon: "iphone", label: Texts.menuWallpaper) { page = .wallpaper }
+                    .disabled(model.save.busy)
             }
             .padding(.top, Spacing.md)
             Text(Texts.menuNewMandala).textRole(.heading).foregroundStyle(t.text).padding(.top, Spacing.xl).padding(.bottom, Spacing.sm)
@@ -269,13 +267,13 @@ struct MenuSheet: View {
             ForEach(widgetRows) { row in
                 HStack(spacing: Spacing.md) {
                     Thumb(image: row.thumbnail).frame(width: Sizes.favourite / 2, height: Sizes.favourite / 2)
-                    VStack(alignment: .leading, spacing: 0) {
-                        Text(row.title).textRole(.body).foregroundStyle(t.text)
+                    VStack(alignment: .leading, spacing: MenuSheet.detailGap) {
+                        Text(row.title).textRole(.body).typeSizeShifted(by: MenuSheet.rowTitleSteps).foregroundStyle(t.text)
                         Text(row.detail).textRole(.note).foregroundStyle(t.textMuted).lineLimit(2)
                     }
                     Spacer(minLength: 0)
                 }
-                .padding(.vertical, Spacing.md)
+                .padding(.vertical, MenuSheet.detailRowPadding)
                 divider
             }
             if widgetRows.isEmpty {
@@ -305,11 +303,11 @@ struct MenuSheet: View {
             ForEach([("slider.horizontal.3", Texts.proAddsMaking), ("square.and.arrow.down", Texts.proAddsSaving),
                      ("photo", Texts.proAddsWallpapers)], id: \.0) { icon, text in
                 HStack(alignment: .top, spacing: Spacing.md) {
-                    Image(systemName: icon).foregroundStyle(t.textMuted).frame(width: Sizes.icon)
+                    Image(systemName: icon).foregroundStyle(t.textMuted).menuIcon()
                     Text(text).textRole(.body).foregroundStyle(t.text).fixedSize(horizontal: false, vertical: true)
                     Spacer(minLength: 0)
                 }
-                .padding(.vertical, Spacing.md)
+                .padding(.vertical, MenuSheet.rowPadding)
                 divider
             }
             Text(Texts.menuProOnce).textRole(.note).foregroundStyle(t.textMuted).padding(.top, Spacing.md)
@@ -320,7 +318,7 @@ struct MenuSheet: View {
 
     var divider: some View { Rectangle().fill(t.outline).frame(height: Sizes.swatchRing / 2) }
 
-    var chevron: some View { Image(systemName: "chevron.right").foregroundStyle(t.textMuted) }
+    var chevron: some View { Image(systemName: "chevron.right").foregroundStyle(t.textMuted).textRole(.heading).typeSizeShifted(by: MenuSheet.chevronSteps) }
 
     /// Dark or light, as two halves of one rounded control (not following the system, as on Android).
     private var themeChoice: some View {
@@ -330,7 +328,7 @@ struct MenuSheet: View {
                 Button { lightTheme = light } label: {
                     Text(light ? Texts.menuThemeLight : Texts.menuThemeDark).textRole(.heading)
                         .foregroundStyle(on ? t.text : t.textMuted)
-                        .padding(.horizontal, Spacing.md).padding(.vertical, Spacing.xs)
+                        .padding(.horizontal, Spacing.md).padding(.vertical, Spacing.sm)
                         .background(on ? t.surface : t.surfaceRaised, in: Capsule())
                 }
                 .buttonStyle(.plain)
@@ -350,6 +348,20 @@ struct MenuSheet: View {
     ]
     /// How many steps of change the dice show (Android: one, two or three of three).
     static let stepCount = 3
+    /// Dynamic Type sizes the dice symbols sit above the other menu icons, so they match Android's (IOS-14).
+    static let dieOptical = 1
+    /// Menu line titles two Dynamic Type sizes above the body role (19 points at the default size): Android's bodyLarge on
+    /// a phone of the same width (IOS-14, measured).
+    static let rowTitleSteps = 2
+    /// The chevron at the end of a line, one size above the heading role, as Android's.
+    static let chevronSteps = 1
+    /// Above and below a menu line: a quarter of the small step more than Android's 12, so a line is as tall as on an
+    /// Android phone of the same width (IOS-14).
+    static let rowPadding = Spacing.md + Spacing.xs / 4
+    /// A line with a muted line below its title: a little more, because Android's taller line heights give such a line more
+    /// air than SF's (measured, IOS-14); and a small gap between title and detail.
+    static let detailRowPadding = rowPadding + Spacing.xs / 2
+    static let detailGap = Spacing.xs / 2
 }
 
 /// A die of the menu: icon, name, what changes, and how much (one, two or three of three steps).
@@ -361,7 +373,8 @@ private struct DieTile: View {
     var body: some View {
         Button(action: action) {
             VStack(spacing: Spacing.xs) {
-                Image(systemName: die.icon).foregroundStyle(t.accent)
+                // SF's dice are small among its symbols: a size up matches Android's die (IOS-14).
+                DieSymbol(name: die.icon).menuIcon(optical: MenuSheet.dieOptical)
                 Text(Texts.newKind(die.kind)).textRole(.heading).foregroundStyle(t.text).lineLimit(1).minimumScaleFactor(0.7)
                 Text(Texts.newKindDetail(die.kind)).textRole(.note).foregroundStyle(t.textMuted).lineLimit(1).minimumScaleFactor(0.7)
                 HStack(spacing: Spacing.xs) {
@@ -373,12 +386,30 @@ private struct DieTile: View {
             }
             .frame(maxWidth: .infinity)
             .padding(.horizontal, Spacing.xs)
-            .padding(.vertical, Spacing.md)
+            // Android's card height on a phone of the same width (IOS-14).
+            .padding(.vertical, Spacing.lg)
             .background(t.surfaceRaised, in: RoundedRectangle(cornerRadius: Radius.md))
         }
         .buttonStyle(.plain)
         .accessibilityLabel(Texts.newKind(die.kind))
         .accessibilityHint(Texts.newKindDetail(die.kind))
+    }
+}
+
+extension View {
+    /// A menu icon the size of Android's 24-point icons: the symbol one scale above the heading text, in its weight, so it
+    /// has their size and line (IOS-14), centred in a box of the same size for every symbol, so the texts beside and below
+    /// share one edge. `optical` shifts a symbol that SF draws larger or smaller than its neighbours, in Dynamic Type sizes.
+    func menuIcon(optical: Int = 0) -> some View { modifier(MenuIconBox(optical: optical)) }
+}
+
+private struct MenuIconBox: ViewModifier {
+    let optical: Int
+    /// The box grows with the text size, like the symbol in it.
+    @ScaledMetric(relativeTo: .callout) private var side = Sizes.icon + Spacing.xs
+
+    func body(content: Content) -> some View {
+        content.textRole(.heading).imageScale(.large).typeSizeShifted(by: optical).frame(width: side, height: side)
     }
 }
 
@@ -389,15 +420,23 @@ struct Pill: View {
     let action: () -> Void
     @Environment(\.tokens) private var t
     @Environment(\.isEnabled) private var enabled
+    /// How many Dynamic Type sizes the label sits below the heading role, and the icon below the other menu icons.
+    private static let labelSteps = -2
+    private static let iconOptical = -1
 
     var body: some View {
         Button(action: action) {
             VStack(spacing: Spacing.xs) {
-                Image(systemName: icon).foregroundStyle(enabled ? t.accent : t.textMuted)
-                Text(label).textRole(.note).foregroundStyle(enabled ? t.text : t.textMuted)
+                // The filled star and the share box are large among SF's symbols: one size down matches Android's icons.
+                Image(systemName: icon).foregroundStyle(enabled ? t.accent : t.textMuted).menuIcon(optical: Self.iconOptical)
+                // Semibold like the dice titles below, but smaller, as Android's labelMedium under its icons: the heading role
+                // two Dynamic Type sizes down (14 points at the default size; Mathis, 28 November 2026).
+                Text(label).textRole(.heading).typeSizeShifted(by: Self.labelSteps)
+                    .foregroundStyle(enabled ? t.text : t.textMuted).lineLimit(1).minimumScaleFactor(0.7)
             }
             .frame(maxWidth: .infinity)
-            .padding(.vertical, Spacing.md)
+            // Android's card height on a phone of the same width (IOS-14).
+            .padding(.vertical, Spacing.md + Spacing.xs / 2)
             .background(t.surfaceRaised, in: RoundedRectangle(cornerRadius: Radius.md))
         }
         .buttonStyle(.plain)
@@ -415,15 +454,15 @@ struct MenuRow<Trailing: View>: View {
 
     var body: some View {
         let row = HStack(spacing: Spacing.md) {
-            Image(systemName: icon).foregroundStyle(t.textMuted).frame(width: Sizes.icon)
-            VStack(alignment: .leading, spacing: 0) {
-                Text(label).textRole(.body).foregroundStyle(t.text)
+            Image(systemName: icon).foregroundStyle(t.textMuted).menuIcon()
+            VStack(alignment: .leading, spacing: MenuSheet.detailGap) {
+                Text(label).textRole(.body).typeSizeShifted(by: MenuSheet.rowTitleSteps).foregroundStyle(t.text)
                 if let detail { Text(detail).textRole(.note).foregroundStyle(t.textMuted).multilineTextAlignment(.leading) }
             }
             Spacer(minLength: 0)
             trailing
         }
-        .padding(.vertical, Spacing.md)
+        .padding(.vertical, detail == nil ? MenuSheet.rowPadding : MenuSheet.detailRowPadding)
         .contentShape(Rectangle())
         if let action {
             Button(action: action) { row }.buttonStyle(.plain)
@@ -444,16 +483,16 @@ struct SwitchMenuRow: View {
 
     var body: some View {
         HStack(spacing: Spacing.md) {
-            Image(systemName: icon).foregroundStyle(t.textMuted).frame(width: Sizes.icon)
-            VStack(alignment: .leading, spacing: 0) {
-                Text(label).textRole(.body).foregroundStyle(t.text)
+            Image(systemName: icon).foregroundStyle(t.textMuted).menuIcon()
+            VStack(alignment: .leading, spacing: MenuSheet.detailGap) {
+                Text(label).textRole(.body).typeSizeShifted(by: MenuSheet.rowTitleSteps).foregroundStyle(t.text)
                 Text(detail).textRole(.note).foregroundStyle(t.textMuted).multilineTextAlignment(.leading)
             }
             Spacer(minLength: 0)
             Toggle("", isOn: Binding(get: { checked }, set: { onChange($0) })).labelsHidden().tint(t.accent)
                 .accessibilityLabel(label)
         }
-        .padding(.vertical, Spacing.md)
+        .padding(.vertical, MenuSheet.detailRowPadding)
         .contentShape(Rectangle())
         .onTapGesture { onChange(!checked) }
     }

@@ -13,6 +13,9 @@ struct EditorView: View {
     @State private var showMenu = false
     @State private var header: ControlHeader?
     @Environment(\.scenePhase) private var scenePhase
+    /// The save arrow's box: Android's 24 dp icon box at the iPhone's scale (393 points for Android's 360 dp), growing
+    /// with the text size like the symbols beside it.
+    @ScaledMetric(relativeTo: .callout) private var saveSide = Sizes.icon * 1.09
     /// Moves the folding along with the change of size, but not with every change of the layout.
     private static let foldAnimation = Animation.easeInOut(duration: 0.25)
     /// How much the picture's side grows per point the controls are pulled past their top. The rubber band moves the
@@ -29,19 +32,40 @@ struct EditorView: View {
             barButton("arrow.uturn.forward", Texts.forward, tint: t.text, enabled: model.shell.canGoForward) { model.goForward() }
             Spacer(minLength: 0)
             barButton("safari", Texts.playTitle, tint: t.text, target: .play) { model.openPlay() }
-            barButton("die.face.5", Texts.newKind(.everything), tint: t.accent, target: .topDie) { model.surprise() }
-            barButton("square.and.arrow.down", Texts.saveImage, tint: t.accent, target: .save) { showSave = true }
-            barButton(model.isFavorite ? "star.fill" : "star", Texts.favourites, tint: t.text, target: .favourites) { showFavorites = true }
+            // SF Symbols differ in size among themselves; each is shifted by Dynamic Type sizes until its glyph is as large as
+            // Android's icon beside it on a phone of the same width (IOS-14, measured on the comparison pictures).
+            barButton(Texts.newKind(.everything), optical: 1, target: .topDie, action: { model.surprise() }) { DieSymbol(name: "die.face.5") }
+            // Android's save glyph, the Material download arrow onto a line (asset SaveArrow; Mathis, 28 November 2026), in a
+            // box as much larger than Android's 24 dp as an iPhone point is smaller than a dp on a phone of the same width.
+            barButton(Texts.saveImage, target: .save, action: { showSave = true }) {
+                Image("SaveArrow").resizable().scaledToFit().foregroundStyle(t.accent).frame(width: saveSide, height: saveSide)
+            }
+            // Filled as on Android.
+            barButton("star.fill", Texts.favourites, tint: t.text, optical: -1, target: .favourites) { showFavorites = true }
             barButton("ellipsis", Texts.more, tint: t.text, target: .more) { showMenu = true }
         }
         .padding(.horizontal, Spacing.sm)
-        .padding(.vertical, Spacing.xs)
+        // 64 points high, as Android's TopAppBar.
+        .padding(.vertical, Spacing.sm)
     }
 
-    private func barButton(_ symbol: String, _ label: String, tint: Color, enabled: Bool = true, target: TourTarget? = nil, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
+    private func barButton(_ symbol: String, _ label: String, tint: Color, enabled: Bool = true, optical: Int = 0, target: TourTarget? = nil,
+                           action: @escaping () -> Void) -> some View {
+        barButton(label, enabled: enabled, optical: optical, target: target, action: action) {
             Image(systemName: symbol).foregroundStyle(enabled ? tint : t.textMuted)
-                .frame(width: Sizes.swatch + Spacing.xs, height: Sizes.swatch + Spacing.xs)
+        }
+    }
+
+    /// A 48-point button with a 24-point icon, as Android's IconButton; the heading role gives the symbols Android's
+    /// heavier line, `optical` shifts a symbol by Dynamic Type sizes to the size of Android's icon.
+    private func barButton<Icon: View>(_ label: String, enabled: Bool = true, optical: Int = 0, target: TourTarget? = nil,
+                                       action: @escaping () -> Void, @ViewBuilder icon: () -> Icon) -> some View {
+        Button(action: action) {
+            icon()
+                .textRole(.heading)
+                .imageScale(.large)
+                .typeSizeShifted(by: optical)
+                .frame(width: Sizes.icon * 2, height: Sizes.icon * 2)
                 .contentShape(Rectangle())
                 .tourAnchor(target)
         }

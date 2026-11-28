@@ -84,15 +84,17 @@ struct Tokens: Sendable {
 
 /// Text roles on Dynamic Type (approval A9): six roles on the system text styles (SF Pro), so large system
 /// text works. Sizes at the default setting; the roles of one size differ by weight or digits, neighbouring
-/// sizes by at least 1.2 (28, 20, 15, 12). The mapping from Android's type scale is in docs/IOS-3-strings-and-tokens.md.
+/// sizes by about 1.2 (28, 22, 16 and 15, 13; body to note 1.15, as Android's bodyMedium to bodySmall); `heading` (16,
+/// semibold) sits beside `body` by weight. Measured against the Android app on a phone of the same width, so both read
+/// the same size; the menu's line titles sit two Dynamic Type sizes above `body`, as Android's bodyLarge (IOS-14). The mapping from Android's type scale is in docs/IOS-3-strings-and-tokens.md.
 enum TextRole {
     /// Large screen titles; no screen uses it yet.
     case display
     /// Sheet titles (Android titleMedium).
     case title
-    /// Group headings, tabs and buttons (Android titleSmall): the body size, heavier.
+    /// Group headings, tabs, buttons and card titles (Android titleSmall and labelLarge): a point below the body, heavier.
     case heading
-    /// Labels and rows (Android bodyMedium).
+    /// Labels and rows (Android bodyMedium); the menu's line titles two sizes larger (Android bodyLarge).
     case body
     /// Summaries and hints, shown muted (Android bodySmall).
     case note
@@ -102,11 +104,11 @@ enum TextRole {
     var font: Font {
         switch self {
         case .display: .title
-        case .title: .title3.weight(.semibold)
-        case .heading: .subheadline.weight(.semibold)
+        case .title: .title2.weight(.semibold)
+        case .heading: .callout.weight(.semibold)
         case .body: .subheadline
-        case .note: .caption
-        case .value: .caption.monospacedDigit()
+        case .note: .footnote
+        case .value: .footnote.monospacedDigit()
         }
     }
 }

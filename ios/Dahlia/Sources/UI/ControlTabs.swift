@@ -3,7 +3,8 @@ import SwiftUI
 
 /// The tabs under the picture: a fixed row of five equal text tabs with an amber line under the open one,
 /// as Android's PrimaryTabRow (F13 a), no sideways scrolling. The row keeps the controls' side inset; when a
-/// label does not fit its fifth, all five labels take the next smaller text role together (F13).
+/// label does not fit its fifth, all five labels step down one Dynamic Type size together, up to three steps, and
+/// only then take the next smaller text role (F13; the steps since the larger roles of IOS-14).
 struct ControlTabs: View {
     enum Tab: CaseIterable {
         case layers, scene, emblem, text, draw
@@ -24,11 +25,22 @@ struct ControlTabs: View {
     @State private var book = ScrollBook()
     @State private var before: TourRestore?
     @Environment(\.tokens) private var t
+    @Environment(\.dynamicTypeSize) private var typeSize
+    /// How many Dynamic Type sizes the tab labels may step down before they take the smaller role.
+    private static let typeSteps = 3
+
+    /// Up to three sizes below the user's text size, largest first (German "Zeichnen" fits one of them at 390 points).
+    private var smallerSizes: [DynamicTypeSize] {
+        let all = DynamicTypeSize.allCases
+        guard let index = all.firstIndex(of: typeSize) else { return [] }
+        return Array(all[max(0, index - Self.typeSteps)..<index].reversed())
+    }
 
     var body: some View {
         VStack(spacing: 0) {
             ViewThatFits(in: .horizontal) {
                 tabRow(.heading)
+                ForEach(smallerSizes, id: \.self) { size in tabRow(.heading).dynamicTypeSize(size) }
                 tabRow(.note)
                 // Only at the largest text sizes: the labels shrink rather than run into each other.
                 tabRow(.note, shrinking: true)

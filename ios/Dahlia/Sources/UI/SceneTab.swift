@@ -158,7 +158,9 @@ private struct EffectsControls: View {
                     .buttonStyle(.plain)
                     .accessibilityLabel(Texts.randomEffects)
                     Button { model.apply(editing.resetEffects(params: model.params)) } label: {
-                        Text(Texts.reset).textRole(.heading).foregroundStyle(t.accent).frame(minHeight: Sizes.icon * 2)
+                        // One line; the label beside it wraps instead ("Zurücksetzen" next to "Effekte anzeigen").
+                        Text(Texts.reset).textRole(.heading).foregroundStyle(t.accent).lineLimit(1).fixedSize()
+                            .frame(minHeight: Sizes.icon * 2)
                     }
                     .buttonStyle(.plain)
                     .padding(.horizontal, Spacing.sm)
