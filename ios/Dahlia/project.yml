@@ -22,7 +22,7 @@ settings:
     CODE_SIGN_STYLE: Automatic
     TARGETED_DEVICE_FAMILY: "1,2"
     MARKETING_VERSION: "1.0"
-    CURRENT_PROJECT_VERSION: "2"
+    CURRENT_PROJECT_VERSION: "3"
 targets:
   Dahlia:
     type: application
@@ -81,6 +81,8 @@ targets:
       - path: Shared
       - path: Sources/Theme/Tokens.swift
       - path: Resources/Localizable.xcstrings
+      # The widget is its own bundle and needs the privacy manifest too (it reads the App Group defaults).
+      - path: Resources/PrivacyInfo.xcprivacy
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: $(DAHLIA_BUNDLE_ID).widget
