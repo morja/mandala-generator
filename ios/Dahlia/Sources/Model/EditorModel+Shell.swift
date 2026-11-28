@@ -80,6 +80,14 @@ extension EditorModel {
         selected = 0
     }
 
+    /// The menu's "Start fresh": one plain layer (`Editing.fresh` in the shared module). One step in the history,
+    /// like the dice, so going back restores the mandala before (Android's `startFresh`).
+    func startFresh() {
+        shell.historyTask?.cancel()
+        recordHistory(params) // a change younger than the history delay is kept too, so back finds it
+        replace(IosShell.shared.fresh())
+    }
+
     /// Makes a new mandala of this kind and draws it small; the current one stays.
     func tryNew(_ kind: NewKind) {
         let next = IosShell.shared.nextMandala(current: params, kind: kind, pro: proOwned)

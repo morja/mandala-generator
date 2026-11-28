@@ -217,6 +217,26 @@ object Editing {
         outputSize = EXPORT_SIZE,
     )
 
+    /** Seed of the "Start fresh" mandala: fixed, so it is the same picture every time and on both phones. */
+    const val FRESH_SEED: ULong = 1uL
+
+    /** Palette of the "Start fresh" mandala: Ice, calm blues and white, one of [offeredPalettes]. */
+    const val FRESH_PALETTE = 14
+
+    /**
+     * "Start fresh" (a tester's wish, 28 November 2026): a plain mandala to build on. One Spirograph
+     * layer, as on the first start, at the default values in calm colours, centred; background, scene
+     * effects, drawing, spray, text and emblem off and at their defaults. Uses no Pro feature. Nothing of
+     * the mandala before carries over; the app records it as one step, so going back restores it.
+     */
+    fun fresh(): MandalaParameters = MandalaParameters(
+        layers = listOf(StyleLayer(style = MandalaStyle.SPIROGRAPH, scale = 0.8, paletteIndex = FRESH_PALETTE, seed = FRESH_SEED)),
+        // An emblem switched on later starts like a new one in the app (see [switched]).
+        emblemLayer = EmblemLayerSettings(glowMode = EmblemGlowMode.LIGHT),
+        seed = FRESH_SEED,
+        outputSize = EXPORT_SIZE,
+    )
+
     fun MandalaParameters.updateLayer(index: Int, change: (StyleLayer) -> StyleLayer): MandalaParameters {
         if (index !in layers.indices) return this
         return copy(layers = layers.toMutableList().also { it[index] = change(it[index]) })

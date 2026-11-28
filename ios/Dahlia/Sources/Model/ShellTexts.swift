@@ -19,6 +19,8 @@ extension Texts {
     static let menuNoLayers = shellText("menu_no_layers")
     static let menuFavourite = shellText("menu_favourite")
     static let menuNewMandala = shellText("menu_new_mandala")
+    static let menuStartFresh = shellText("menu_start_fresh")
+    static let menuStartFreshDetail = shellText("menu_start_fresh_detail")
     static let menuTheme = shellText("menu_theme")
     static let menuThemeDark = shellText("menu_theme_dark")
     static let menuThemeLight = shellText("menu_theme_light")

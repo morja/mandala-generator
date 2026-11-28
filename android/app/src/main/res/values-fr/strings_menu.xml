@@ -27,6 +27,8 @@
     <string name="menu_die_layers_detail">nouveaux styles</string>
     <string name="menu_die_everything">Surprenez-moi</string>
     <string name="menu_die_everything_detail">tout</string>
+    <string name="menu_start_fresh">Repartir de zéro</string>
+    <string name="menu_start_fresh_detail">Un calque, sans texte ni emblème</string>
 
     <!-- Menu: files and settings -->
     <string name="menu_open_file">Ouvrir un fichier</string>

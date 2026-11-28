@@ -60,6 +60,9 @@ object IosShell {
     /** The top bar's die: "Surprise me" (Android's `surprise`). */
     fun surprise(current: MandalaParameters, pro: Boolean): MandalaParameters = current.randomAll(Random, surpriseLayers(pro))
 
+    /** The menu's "Start fresh": the plain mandala of [Editing.fresh], the same as on Android. */
+    fun fresh(): MandalaParameters = Editing.fresh()
+
     /** A small picture of a new mandala for the menu's comparison (Android: `Editing.CANDIDATE_SIZE`, fast glow). */
     fun renderCandidate(params: MandalaParameters, fast: Boolean, threads: Int, ticket: RenderTicket, loader: ImageLoader?): Rendered? = try {
         val size = Editing.CANDIDATE_SIZE

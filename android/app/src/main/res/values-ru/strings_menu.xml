@@ -29,6 +29,8 @@
     <string name="menu_die_layers_detail">новые стили</string>
     <string name="menu_die_everything">Сюрприз</string>
     <string name="menu_die_everything_detail">всё</string>
+    <string name="menu_start_fresh">Начать заново</string>
+    <string name="menu_start_fresh_detail">Один слой, без текста и эмблемы</string>
 
     <!-- Menu: files and settings -->
     <string name="menu_open_file">Открыть файл</string>

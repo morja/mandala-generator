@@ -23,6 +23,8 @@
     <string name="menu_die_layers_detail">새 스타일</string>
     <string name="menu_die_everything">깜짝 만다라</string>
     <string name="menu_die_everything_detail">전부 새로</string>
+    <string name="menu_start_fresh">새로 시작</string>
+    <string name="menu_start_fresh_detail">레이어 1개, 텍스트와 엠블럼 없음</string>
 
     <!-- Menu: files and settings -->
     <string name="menu_open_file">파일 열기</string>

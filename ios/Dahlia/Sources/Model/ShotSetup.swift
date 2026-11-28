@@ -4,7 +4,7 @@ import Foundation
 
 /// Debug only: puts the editor into a state for screenshots in the simulator, where tapping through is
 /// slow (IOS-5). Launch arguments: `-shotFavourite <id prefix>` opens a starter or favourite,
-/// `-shotEmblem YES` switches the emblem on, `-shotMove layer|emblem|text` and `-shotDraw lines|spray`
+/// `-shotEmblem YES` switches the emblem on, `-shotStartFresh YES` starts fresh, `-shotMove layer|emblem|text` and `-shotDraw lines|spray`
 /// start moving or drawing; `-shotSheet` and `-shotTourStep` open a sheet or the tour; `-startTab layers|scene|emblem|text|draw` (read by `ControlTabs`) opens a tab.
 /// The save sheet (WP-8): `-shotSave YES` opens it, `-shotFormat <SaveFormat name>` (SQUARE, SCREEN, FOUR_FIVE …),
 /// `-shotVideo YES` the Video tab, `-shotFill YES` Fill, `-shotAdjust YES` with Adjust open (read by `SaveSheet`).
@@ -40,6 +40,13 @@ enum ShotSetup {
             }
         }
         if let mode = textColour { Task { await textColourSetup(mode, model) } }
+        // `-shotStartFresh YES`: the menu's "Start fresh" a moment after the start, as a tap on it would do.
+        if d.bool(forKey: "shotStartFresh") {
+            Task {
+                try? await Task.sleep(for: .seconds(2))
+                model.startFresh()
+            }
+        }
     }
 
     /// The text colours (IOS-12): `-shotTextColour group|glow|fineTune|standOut|sheet|drag|cancel` opens the Text tab's

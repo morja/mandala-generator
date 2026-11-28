@@ -138,7 +138,13 @@ struct MenuSheet: View {
             HStack(spacing: Spacing.sm) {
                 ForEach(Self.dice, id: \.kind) { die in DieTile(die: die) { model.tryNew(die.kind) } }
             }
-            divider.padding(.top, Spacing.xl)
+            // "Start fresh" below the dice: one plain layer, at once and without asking; back in the history restores.
+            MenuRow(icon: "arrow.counterclockwise", label: Texts.menuStartFresh, detail: Texts.menuStartFreshDetail, action: {
+                model.startFresh()
+                close()
+            }) { EmptyView() }
+            .padding(.top, Spacing.sm)
+            divider
             MenuRow(icon: "moon", label: Texts.menuTheme, detail: nil, action: nil) { themeChoice }
             divider
             MenuRow(icon: "slider.horizontal.3", label: Texts.menuMore, detail: nil, action: { page = .more }) { chevron }

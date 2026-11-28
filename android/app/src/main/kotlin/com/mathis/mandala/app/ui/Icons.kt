@@ -58,7 +58,7 @@ object EditorIcons {
     /** The line drawing: a pen. */
     val LineArt = line("M4,20l1.2,-4.6L15.5,5.1a2,2 0 0,1 2.8,0l0.6,0.6a2,2 0 0,1 0,2.8L8.6,18.8zM13.5,7.1l3.4,3.4",
         soft = "M4,20l1.2,-4.6L15.5,5.1a2,2 0 0,1 2.8,0l0.6,0.6a2,2 0 0,1 0,2.8L8.6,18.8z")
-    /** The play field's row (DM-21 D): back to the middle, and the point as the new middle. */
+    /** The play field's row (DM-21 D): back to the middle, and the point as the new middle. Also "Start fresh" in the menu. */
     val Reset = line("M4.5,10a7.5,7.5 0 1,1 2.2,7.2M4.5,4.5v5.5h5.5")
     val Centre = line("M12,5.5a6.5,6.5 0 1,0 0,13a6.5,6.5 0 1,0 0,-13zM12,3v2.5M12,18.5V21M3,12h2.5M18.5,12H21", dots = dots(12 to 12))
     /** The play field: a compass, a circle with a needle. */

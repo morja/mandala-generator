@@ -96,6 +96,8 @@ internal class MenuActions(
     val hasPointLayers: Boolean,
     val onLineDrawing: (VectorExport.Look) -> Unit,
     val onTryNew: (NewKind) -> Unit,
+    /** Sets the plain mandala ("Start fresh") and closes the menu. */
+    val onStartFresh: () -> Unit,
     /** Opens the play field (UX-1 19). */
     val onUseNew: () -> Unit,
     val onBackToMenu: () -> Unit,
@@ -158,6 +160,7 @@ internal fun MenuSheet(
                     Current(params, image)
                     KeepRow(busy, actions)
                     NewMandala(actions.onTryNew)
+                    StartFreshRow(actions.onStartFresh)
                     MainRows(lightTheme, actions, onPage = { page = it })
                 }
             }
@@ -262,6 +265,18 @@ private fun NewMandala(onTryNew: (NewKind) -> Unit) {
     }
 }
 
+/**
+ * "Start fresh", below the dice: one plain layer instead of a random mandala. It acts at once, without
+ * asking: going back in the history restores the mandala before (Mathis, 28 November 2026).
+ */
+@Composable
+private fun StartFreshRow(onStartFresh: () -> Unit) {
+    MenuRow(
+        EditorIcons.Reset, stringResource(R.string.menu_start_fresh), stringResource(R.string.menu_start_fresh_detail),
+        onClick = onStartFresh,
+    ) {}
+}
+
 /** A menu line with an icon, a title, a line below it and a switch; the whole line switches. */
 @Composable
 private fun SwitchMenuRow(icon: ImageVector, title: String, subtitle: String?, checked: Boolean, onChange: (Boolean) -> Unit) {
@@ -283,7 +298,8 @@ private fun SwitchMenuRow(icon: ImageVector, title: String, subtitle: String?, c
 @Composable
 private fun MainRows(lightTheme: Boolean, actions: MenuActions, onPage: (MenuPage) -> Unit) {
     val t = LocalTokens.current
-    Column(Modifier.padding(top = Spacing.md)) {
+    // "Start fresh" above brings its own space, so the divider follows it directly.
+    Column {
         HorizontalDivider(color = t.outline)
         // A setting that keeps running, so a row of its own with its state, not among the wallpaper
         // entries that set one right away (Mathis, 28 October 2026).
