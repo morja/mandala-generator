@@ -50,6 +50,8 @@ Apple allows 55 characters for the description, so the Play text (STORE-1) was s
 
 - Build 1.0 (5) uploaded on 28 November 2026 with the team API key from `main` at 700f022: the Shortcuts action is called "Today's wallpaper" (German "Heutiger Hintergrund"; the widget keeps "Mandala of the day"), and the wallpaper page and the "purchases turned off" message say "this device" instead of "this iPhone", because both show on the iPad. Not added to an external group and not set on the App Store version (the master chat does that).
 
+- 28 November 2026, evening: App Privacy set to "Data Not Collected" and published (Chrome); Dahlia Pro added to the draft review submission; version 1.0 switched to build 1.0 (5); descriptions in all 11 locales name the iPad next to the iPhone. China mainland removed from the availability of the app and of Dahlia Pro (Mathis' decision), because Apple now requires a Security Assessment report and an AIGC services declaration for China mainland; Hong Kong, Taiwan and Macau stay. Adding the version to the submission is still blocked by the DAC7 compliance information, which Mathis enters himself.
+
 ### Open, with the packages
 
 - Screenshots, listing, age rating, review information and the product's review screenshot were entered through the API on 28 November 2026 (section "Version 1.0 in App Store Connect" below). The first in-app purchase is submitted together with the first app version.
