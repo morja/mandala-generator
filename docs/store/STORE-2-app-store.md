@@ -80,8 +80,8 @@ Mathis approved the screenshots on 28 November 2026 ("ok, passt alles", relayed 
 | App price | Free, base territory Germany |
 | App availability | all 175 territories, new territories automatically |
 | Age rating declaration | every answer None or No as in the questionnaire above (4+) |
-| App Review information | contact name, phone and email from Mathis' private contact file (not repeated here), no demo account, the notes above |
-| Build | 1.0 (4) |
+| App Review information | contact name, phone and email from Mathis' private contact file (not repeated here), no demo account, the notes above; later the same day the Shortcuts action was renamed to "Today's wallpaper" there and its Pro answer worded neutrally ("without Pro it answers that the action comes with Dahlia Pro") |
+| Build | 1.0 (4); the master chat switches to 1.0 (5) before submitting |
 | Version release | manual (Mathis releases after approval) |
 | Dahlia Pro | review note above, review screenshot `store/ios/screenshots/raw/iap/pro-sheet.png` (Pro sheet as a free user, "Buy for $3.99"); state "Ready to Submit" |
 | Screenshots | 7 per device and locale, as above |
